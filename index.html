@@ -1,6 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pull-Down Header with Logo</title>
+<style>
+  body { margin: 0; font-family: Arial, sans-serif; }
+  .header { background: #333; color: #fff; padding: 20px; text-align: center; }
+  .logo { height: 50px; }
+  .pull-down-content { display: none; background-color: #f1f1f1; padding: 50px 0; text-align: center; }
+</style>
+<script>
+function togglePullDown() {
+  var content = document.getElementById("pullDownContent");
+  if (content.style.display === "block") {
+    content.style.display = "none";
+  } else {
+    content.style.display = "block";
+  }
+}
+</script>
+</head>
+<body>
+
+<div class="header" onclick="togglePullDown()">
+  <img src="your-logo-url.png" alt="Logo" class="logo">
+</div>
+
+<div id="pullDownContent" class="pull-down-content">
+  <p>Here's some content you can see when you pull down the header.</p>
+</div>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STEVEN'S GAMES</title>
@@ -152,38 +187,4 @@
   </a>
 </body>
 </html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pull-Down Header with Logo</title>
-<style>
-  body { margin: 0; font-family: Arial, sans-serif; }
-  .header { background: #333; color: #fff; padding: 20px; text-align: center; }
-  .logo { height: 50px; }
-  .pull-down-content { display: none; background-color: #f1f1f1; padding: 50px 0; text-align: center; }
-</style>
-<script>
-function togglePullDown() {
-  var content = document.getElementById("pullDownContent");
-  if (content.style.display === "block") {
-    content.style.display = "none";
-  } else {
-    content.style.display = "block";
-  }
-}
-</script>
-</head>
-<body>
-
-<div class="header" onclick="togglePullDown()">
-  <img src="your-logo-url.png" alt="Logo" class="logo">
-</div>
-
-<div id="pullDownContent" class="pull-down-content">
-  <p>Here's some content you can see when you pull down the header.</p>
-</div>
-
-</body>
-</html>
+  
