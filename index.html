@@ -187,4 +187,37 @@ function togglePullDown() {
   </a>
 </body>
 </html>
-  
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Video Embedded</title>
+<style>
+  .video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+  }
+  .video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+</head>
+<body>
+
+<div class="video-container">
+  <!-- Replace "YOUR_VIDEO_ID" with the actual ID of the YouTube video you want to embed -->
+  <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen></iframe>
+</div>
+
+</body>
+</html>
