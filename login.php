@@ -3,7 +3,7 @@ session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
-    $correctPassword = 'yourpassword'; // Replace with your password
+    $correctPassword = '960057228'; // Replace with your password
 
     if ($password === $correctPassword) {
         $_SESSION['authenticated'] = true;
