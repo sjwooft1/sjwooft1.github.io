@@ -1,60 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Protected Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        #login-form {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-        }
-        #protected-content {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <div id="login-form">
-        <h2>Login</h2>
-        <input type="password" id="password" placeholder="Enter Password">
-        <button onclick="checkPassword()">Submit</button>
-    </div>
-
-    <div id="protected-content">
-        <h1>Welcome to the Protected Page</h1>
-        <p>This is some protected content.</p>
-    </div>
-
-    <script>
-        document.getElementById('login-form').style.display = 'flex';
-
-        function checkPassword() {
-            const password = document.getElementById('password').value;
-            const correctPassword = 'yourpassword'; // Replace with your password
-
-            if (password === correctPassword) {
-                document.getElementById('login-form').style.display = 'none';
-                document.getElementById('protected-content').style.display = 'block';
-            } else {
-                alert('Incorrect password, please try again.');
-            }
-        }
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STEVENS</title>
