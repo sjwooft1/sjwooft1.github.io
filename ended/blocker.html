@@ -22,6 +22,15 @@
     </style>
 </head>
 <body>
-    <iframe src="https://s.artclass.site/load.html?app=google" frameborder="0" allowfullscreen sandbox="allow-scripts allow-same-origin"></iframe>
+    <div id="iframeContainer"></div>
+    <script>
+        var iframe = document.createElement('iframe');
+        iframe.src = "https://s.artclass.site/load.html?app=google";
+        iframe.width = "80%";
+        iframe.height = "80%";
+        iframe.frameBorder = "0";
+        iframe.allowFullscreen = true;
+        document.getElementById('iframeContainer').appendChild(iframe);
+    </script>
 </body>
 </html>
