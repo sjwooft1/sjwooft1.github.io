@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Race Registration</title>
+  <style>
+    :root{--accent:#ff7f11;--bg:#f7f7f7}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; margin:0; background:var(--bg); color:#111}
+    .container{max-width:600px; margin:0 auto; padding:20px}
+    .header{background:linear-gradient(90deg,#fff 0,#fff); padding:20px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.08); margin-bottom:20px; text-align:center}
+    h1{margin:0; font-size:28px; color:var(--accent)}
+    .subtitle{color:#666; margin-top:8px}
+    .form-container{background:#fff; padding:30px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .container{padding:10px; max-width:100%}
+      .header{padding:15px; margin-bottom:15px}
+      h1{font-size:24px}
+      .form-container{padding:20px}
+      .time-inputs{grid-template-columns:1fr 1fr 1fr; gap:8px}
+      .registered-runners{padding:15px}
+      .runner-item{flex-direction:column; align-items:flex-start; gap:4px}
+      .runner-details{font-size:11px}
+    }
+    
+    @media (max-width: 480px) {
+      .container{padding:8px}
+      .header{padding:12px; margin-bottom:12px}
+      h1{font-size:20px}
+      .form-container{padding:15px}
+      .time-inputs{grid-template-columns:1fr 1fr 1fr; gap:6px}
+      .time-inputs input{font-size:14px; padding:8px}
+      .btn{font-size:14px; padding:10px 16px}
+      .registered-runners{padding:12px}
+      .runner-item{padding:8px 0}
+    }
+    .form-group{margin-bottom:20px}
+    label{display:block; font-size:14px; font-weight:600; margin-bottom:8px; color:#333}
+    input, select{width:100%; padding:12px; border:2px solid #ddd; border-radius:8px; font-size:16px; box-sizing:border-box}
+    input:focus, select:focus{outline:none; border-color:var(--accent)}
+    .btn{background:var(--accent); color:#fff; border:0; padding:12px 24px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:600; width:100%}
+    .btn:hover{background:#e66f0a}
+    .btn:disabled{background:#ccc; cursor:not-allowed}
+    .success{background:#d4edda; color:#155724; padding:12px; border-radius:8px; margin-top:15px; display:none}
+    .error{background:#f8d7da; color:#721c24; padding:12px; border-radius:8px; margin-top:15px; display:none}
+    .time-inputs{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+    .time-inputs input{text-align:center}
+    .help-text{font-size:12px; color:#666; margin-top:5px}
+    .registered-runners{margin-top:30px; padding:20px; background:#f8f9fa; border-radius:8px}
+    .runner-item{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #ddd}
+    .runner-item:last-child{border-bottom:none}
+    .runner-info{flex:1}
+    .runner-name{font-weight:600}
+    .runner-details{font-size:12px; color:#666; margin-top:2px}
+    .admin-link{text-align:center; margin-top:20px}
+    .admin-link a{color:var(--accent); text-decoration:none; font-weight:600}
+    .admin-link a:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Race Registration</h1>
+      <div class="subtitle">Register for the Brighton 5K 2025</div>
+      <div id="countdownDisplay" style="font-size:20px; font-weight:600; margin-top:15px; padding:10px; background:rgba(255,255,255,0.9); border-radius:8px; display:none;">
+        <div id="countdownText">Countdown will appear here</div>
+      </div>
+    </div>
+
+    <div class="form-container">
+      <form id="registrationForm">
+        <div class="form-group">
+          <label for="runnerName">Full Name *</label>
+          <input type="text" id="runnerName" name="name" required placeholder="Enter your full name">
+        </div>
+    
+        <div class="form-group">
+          <label for="runnerSize">Shirt Size *</label>
+          <select id="runnerSize" name="size" required>
+            <option value="">-- Select a size --</option>
+            <option value="XS">Extra Small</option>
+            <option value="S">Small</option>
+            <option value="M">Medium</option>
+            <option value="L">Large</option>
+            <option value="XL">Extra Large</option>
+            <option value="XXL">Double Extra Large</option>
+          </select>
+        </div>
+    
+        <div class="form-group">
+          <label for="estimatedTime">Estimated Finish Time *</label>
+          <div class="time-inputs">
+            <input type="number" id="minutes" name="minutes" min="0" max="59" placeholder="MM" required>
+            <input type="number" id="seconds" name="seconds" min="0" max="59" placeholder="SS" required>
+            <input type="number" id="milliseconds" name="milliseconds" min="0" max="999" placeholder="MS" required>
+          </div>
+          <div class="help-text">Enter your estimated finish time in MM:SS.MS format</div>
+        </div>
+    
+
+        <button type="submit" class="btn" id="submitBtn">Register for Race</button>
+      </form>
+
+      <div class="success" id="successMessage">
+        Registration successful! Your bib number will be assigned based on your estimated time.
+      </div>
+
+      <div class="error" id="errorMessage">
+        Registration failed. Please try again.
+      </div>
+    </div>
+
+    <div class="registered-runners" id="registeredRunners" style="display:none">
+      <h3>Recently Registered Runners</h3>
+      <div id="runnersList"></div>
+    </div>
+
+    <div class="admin-link">
+      <a href="orgnizer.html">Go to Race Organizer</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDUnAV-DL-Saw2ByPY6GF8aDaZbVCXDIH4",
+      authDomain: "the-race-organizer.firebaseapp.com",
+      databaseURL: "https://the-race-organizer-default-rtdb.firebaseio.com",
+      projectId: "the-race-organizer",
+      storageBucket: "the-race-organizer.firebasestorage.app",
+      messagingSenderId: "265977321479",
+      appId: "1:265977321479:web:23d3f3077e8e766323b2a2",
+      measurementId: "G-PKGPD78DYM"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Form elements
+    const form = document.getElementById('registrationForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const registeredRunners = document.getElementById('registeredRunners');
+    const runnersList = document.getElementById('runnersList');
+
+    // Convert time inputs to milliseconds
+    function getTimeInMs() {
+      const minutes = parseInt(document.getElementById('minutes').value) || 0;
+      const seconds = parseInt(document.getElementById('seconds').value) || 0;
+      const milliseconds = parseInt(document.getElementById('milliseconds').value) || 0;
+      return (minutes * 60 + seconds) * 1000 + milliseconds;
+    }
+
+    // Format time for display
+    function formatTime(ms) {
+      const totalMs = Math.max(0, Math.floor(ms));
+      const minutes = Math.floor(totalMs / 60000);
+      const seconds = Math.floor((totalMs % 60000) / 1000);
+      const msPart = totalMs % 1000;
+      return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(msPart).padStart(3,'0')}`;
+    }
+
+    // Show success message
+    function showSuccess() {
+      successMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+      form.reset();
+      setTimeout(() => {
+        successMessage.style.display = 'none';
+      }, 5000);
+    }
+
+    // Show error message
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
+      setTimeout(() => {
+        errorMessage.style.display = 'none';
+      }, 5000);
+    }
+
+    // Load and display registered runners
+    function loadRegisteredRunners() {
+      const runnersRef = ref(db, 'registrations');
+      onValue(runnersRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const runners = Object.values(data).sort((a, b) => a.estimatedTime - b.estimatedTime);
+          if (runners.length > 0) {
+            registeredRunners.style.display = 'block';
+            runnersList.innerHTML = '';
+            runners.forEach((runner, index) => {
+              const runnerDiv = document.createElement('div');
+              runnerDiv.className = 'runner-item';
+              runnerDiv.innerHTML = `
+                <div class="runner-info">
+                  <div class="runner-name">${runner.name}</div>
+                  <div class="runner-details">
+                    Shirt Size: ${runner.size} | 
+                    Estimated Time: ${formatTime(runner.estimatedTime)} | 
+                    Bib: ${String(index + 1).padStart(4, '0')} | 
+                    Registered: ${new Date(runner.registeredAt).toLocaleString()}
+                  </div>
+                </div>
+              `;
+              runnersList.appendChild(runnerDiv);
+            });
+          } else {
+            registeredRunners.style.display = 'none';
+          }
+        } else {
+          registeredRunners.style.display = 'none';
+        }
+      });
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('runnerName').value.trim();
+      const size = document.getElementById('runnerSize').value.trim();
+      const estimatedTime = getTimeInMs();
+
+      if (!name) {
+        showError('Please enter your name');
+        return;
+      }
+
+      if (!size) {
+        showError('Please enter your shirt size');
+        return;
+      }
+
+      if (estimatedTime <= 0) {
+        showError('Please enter a valid estimated time');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Registering...';
+
+      try {
+        const registrationData = {
+          name: name,
+          size: size,
+          estimatedTime: estimatedTime,
+          registeredAt: Date.now()
+        };
+
+        // Save to Firebase
+        const newRegistrationRef = push(ref(db, 'registrations'));
+        await set(newRegistrationRef, registrationData);
+
+        showSuccess();
+        loadRegisteredRunners(); // Refresh the list
+      } catch (error) {
+        console.error('Registration error:', error);
+        showError('Registration failed. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Register for Race';
+      }
+    });
+
+    // Load registered runners on page load
+    loadRegisteredRunners();
+
+    /* ---------- countdown timer ---------- */
+    let countdownInterval = null;
+    let raceStartTime = null;
+
+    function updateCountdown() {
+      if (!raceStartTime) {
+        document.getElementById('countdownDisplay').style.display = 'none';
+        return;
+      }
+
+      const now = new Date().getTime();
+      const distance = raceStartTime - now;
+
+      if (distance < 0) {
+        document.getElementById('countdownText').innerHTML = 'Race has started!';
+        document.getElementById('countdownDisplay').style.display = 'block';
+        document.getElementById('countdownDisplay').style.background = 'rgba(212, 237, 218, 0.9)';
+        clearInterval(countdownInterval);
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      let countdownText = '';
+      if (days > 0) countdownText += `${days}d `;
+      if (hours > 0 || days > 0) countdownText += `${hours}h `;
+      if (minutes > 0 || hours > 0 || days > 0) countdownText += `${minutes}m `;
+      countdownText += `${seconds}s`;
+
+      document.getElementById('countdownText').innerHTML = countdownText;
+      document.getElementById('countdownDisplay').style.display = 'block';
+      document.getElementById('countdownDisplay').style.background = 'rgba(255,255,255,0.9)';
+    }
+
+    function loadRaceStartTime() {
+      // Load from Firebase
+      const raceStartRef = ref(db, 'raceStartTime');
+      onValue(raceStartRef, (snapshot) => {
+        if (snapshot.exists()) {
+          raceStartTime = snapshot.val();
+          
+          // Clear existing interval
+          if (countdownInterval) {
+            clearInterval(countdownInterval);
+          }
+          
+          // Start countdown
+          updateCountdown();
+          countdownInterval = setInterval(updateCountdown, 1000);
+        } else {
+          // No race time set
+          if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+          }
+          document.getElementById('countdownDisplay').style.display = 'none';
+        }
+      });
+    }
+
+    // Load race start time on page load
+    loadRaceStartTime();
+  </script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Race Spectator View</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    body{margin:0;font-family:sans-serif;background:#f7f7f7}
+    header{background:#222;color:#fff;padding:10px 16px}
+    h1{margin:0;font-size:20px}
+    #map{height:50vh}
+    .panel{padding:12px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:6px;border-bottom:1px solid #ddd}
+    th{text-align:left;background:#eee}
+    .muted{color:#666;font-size:14px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Race Spectator View</h1>
+    <div id="raceClock" class="muted" style="font-size:28px; margin-top:4px;"></div>
+  </header>
+  <div id="map"></div>
+  <div class="panel">
+    <h2>Live Leaderboard</h2>
+    <div id="leaderboard" class="muted">Waiting for results…</div>
+    <div id="runnerResult" style="margin-top:20px"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // --- Live Race Clock from Firebase (math done locally) ---
+    function formatRaceMs(ms){
+      const m = Math.floor(ms/60000), s = Math.floor((ms%60000)/1000), msPart=ms%1000;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(msPart).padStart(3,'0')}`;
+    }
+    let lastRaceClock = {raceStart:null, running:false, paused:false, pausedAt:null};
+    let serverTimeOffset = 0;
+    function getServerNow() {
+      return Date.now() + serverTimeOffset;
+    }
+    function updateRaceClockDisplay(){
+      const el = document.getElementById('raceClock');
+      if(!lastRaceClock.raceStart) { el.textContent = 'Race clock: 00:00.000'; return; }
+      let ms = 0;
+      if (lastRaceClock.paused && lastRaceClock.pausedAt) {
+  // Freeze at paused time
+  ms = lastRaceClock.pausedAt - lastRaceClock.raceStart;
+} else if (lastRaceClock.running) {
+  // Keep ticking
+  ms = getServerNow() - lastRaceClock.raceStart;
+}
+      el.textContent = 'Race clock: ' + formatRaceMs(Math.max(0, ms));
+    }
+    setInterval(updateRaceClockDisplay, 100);
+    // Listen for Firebase server time offset
+    function listenServerTimeOffset(db) {
+      import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js').then(({ref, onValue}) => {
+        onValue(ref(db, ".info/serverTimeOffset"), snap => {
+          serverTimeOffset = snap.val() || 0;
+        });
+      });
+    }
+  </script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    // Firebase Config (same as organizer)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDUnAV-DL-Saw2ByPY6GF8aDaZbVCXDIH4",
+      authDomain: "the-race-organizer.firebaseapp.com",
+      databaseURL: "https://the-race-organizer-default-rtdb.firebaseio.com",
+      projectId: "the-race-organizer",
+      storageBucket: "the-race-organizer.firebasestorage.app",
+      messagingSenderId: "265977321479",
+      appId: "1:265977321479:web:23d3f3077e8e766323b2a2",
+      measurementId: "G-PKGPD78DYM"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // --- Map ---
+    const map = L.map('map').setView([39.8283, -98.5795], 4);
+    const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+    const labels = L.tileLayer('https://sampleserver6.arcgisonline.com/ArcGIS/rest/services/');
+    sat.addTo(map);
+    labels.addTo(map);
+    let poly = L.polyline([], {color:"#ff7f11", weight:4}).addTo(map);
+
+    // --- Leaderboard Sync ---
+    function formatMs(ms){
+      const m = Math.floor(ms/60000), s = Math.floor((ms%60000)/1000), msPart=ms%1000;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(msPart).padStart(3,'0')}`;
+    }
+
+    onValue(ref(db,"results"), snap=>{
+      const results = snap.val();
+      if(!results){ document.getElementById("leaderboard").textContent="No results yet."; return; }
+      const arr = Object.values(results).filter(r=>r.finishTime!=null);
+      arr.sort((a,b)=>a.finishTime-b.finishTime);
+      let html = "<table><thead><tr><th>Place</th><th>Name</th><th>Bib</th><th>Time</th></tr></thead><tbody>";
+      arr.forEach((r,i)=>{
+        const bib = r.bibNumber || r.bib || '';
+        html += `<tr><td>${i+1}</td><td>${r.name}</td><td>${bib}</td><td>${formatMs(r.finishTime)}</td></tr>`;
+      });
+      html += "</tbody></table>";
+      document.getElementById("leaderboard").innerHTML = html;
+
+      // Show personal result if ?result=id
+      const params = new URLSearchParams(window.location.search);
+      const rid = params.get("result");
+      if(rid && results[rid]){
+        const rr = results[rid];
+        const time = rr.finishTime? formatMs(rr.finishTime): "Not finished";
+        const bib = rr.bibNumber || rr.bib || '–';
+        document.getElementById("runnerResult").innerHTML =
+          `<h3>Runner Result</h3>
+           <div><b>${rr.name}</b> (Bib ${bib})</div>
+           <div>Time: ${time}</div>`;
+      }
+    });
+
+    // --- Route Sync ---
+    let arrowMarkers = [], mileMarkers = [];
+    onValue(ref(db,"route"), snap=>{
+      const data = snap.val();
+      if(data && data.points){
+        poly.setLatLngs(data.points);
+        if(data.points.length>1) map.fitBounds(poly.getBounds());
+
+        // Remove old arrows/markers
+        arrowMarkers.forEach(m=>map.removeLayer(m));
+        arrowMarkers = [];
+        mileMarkers.forEach(m=>map.removeLayer(m));
+        mileMarkers = [];
+
+        // Add arrows for direction
+        for (let i = 1; i < data.points.length; i += Math.max(1, Math.floor(data.points.length/30))) {
+          const p1 = data.points[i-1], p2 = data.points[i];
+          if (!p1 || !p2) continue;
+          const angle = Math.atan2(p2.lat-p1.lat, p2.lng-p1.lng) * 180/Math.PI;
+          const arrow = L.marker([(p1.lat+p2.lat)/2, (p1.lng+p2.lng)/2], {
+            icon: L.divIcon({
+              className: 'route-arrow',
+              html: `<div style=\"transform: rotate(${angle}deg); font-size:22px; color:#ff7f11;\">&#8594;</div>`
+            }),
+            interactive: false
+          }).addTo(map);
+          arrowMarkers.push(arrow);
+        }
+
+        // Add mile/km markers
+        function toRad(v){return v*Math.PI/180;}
+        function kmBetween(a,b){
+          const R=6371;
+          const dLat=toRad(b.lat-a.lat), dLon=toRad(b.lng-a.lng);
+          const la=toRad(a.lat), lb=toRad(b.lat);
+          const sin1=Math.sin(dLat/2), sin2=Math.sin(dLon/2);
+          const aa=sin1*sin1+Math.cos(la)*Math.cos(lb)*sin2*sin2;
+          const c=2*Math.atan2(Math.sqrt(aa),Math.sqrt(1-aa));
+          return R*c;
+        }
+        let dist=0, lastMile=0, lastKm=0;
+        for(let i=1;i<data.points.length;i++){
+          const seg=kmBetween(data.points[i-1],data.points[i]);
+          dist+=seg;
+          // Mile marker
+          if(dist*0.621371>=lastMile+1){
+            lastMile++;
+            const m=L.marker(data.points[i],{
+              icon:L.divIcon({
+                className:'mile-marker',
+                html:`<div style='background:#fff;border:2px solid #ff7f11;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#ff7f11;box-shadow:0 2px 8px #0002;'>${lastMile}<span style='font-size:11px;margin-left:2px;'>mi</span></div>`
+              }),
+              interactive:false
+            }).addTo(map);
+            mileMarkers.push(m);
+          }
+          // Km marker
+          if(dist>=lastKm+1){
+            lastKm++;
+            const m=L.marker(data.points[i],{
+              icon:L.divIcon({
+                className:'mile-marker',
+                html:`<div style='background:#fff;border:2px solid #2196f3;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#2196f3;box-shadow:0 2px 8px #0002;font-size:13px;'>${lastKm}<span style='font-size:10px;margin-left:1px;'>km</span></div>`
+              }),
+              interactive:false
+            }).addTo(map);
+            mileMarkers.push(m);
+          }
+        }
+      }
+    });
+
+    // Add CSS for arrows and markers
+    const style = document.createElement('style');
+    style.innerHTML = `.route-arrow { pointer-events: none; }
+    .mile-marker { pointer-events: none; }
+    .mile-marker div { font-family: system-ui, sans-serif; }`;
+    document.head.appendChild(style);
+
+    // --- Race clock sync ---
+    onValue(ref(db, "raceClock"), snap => {
+      const data = snap.val();
+      if(data) lastRaceClock = data;
+      else lastRaceClock = {raceStart:null, running:false, paused:false, pausedAt:null};
+    });
+    // Listen for server time offset
+    listenServerTimeOffset(db);
+  </script>
+  <script>
+    // Live clock logic
+    function updateClock() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('liveClock').textContent = `${hh}:${mm}:${ss}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>

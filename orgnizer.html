@@ -1,0 +1,2260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Race Timer & Route</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <style>
+    :root{--accent:#ff7f11;--bg:#f7f7f7}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; margin:0; background:var(--bg); color:#111}
+    header{background:linear-gradient(90deg,#fff 0,#fff); padding:12px 18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+    h1{margin:0; font-size:18px}
+    .container{display:grid; grid-template-columns:1fr 460px; gap:14px; padding:14px}
+    #map{height:560px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.08); width:100%}
+    .panel{background:#fff; padding:12px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06); height:560px; overflow:auto}
+    
+    /* Mobile responsiveness */
+    @media (max-width: 1024px) {
+      .container{grid-template-columns:1fr; gap:10px; padding:10px}
+      .panel{height:auto; max-height:70vh}
+      #map{height:400px}
+      header{flex-direction:column; align-items:flex-start; gap:8px}
+      .header-links{margin-left:0; margin-top:8px}
+    }
+    
+    @media (max-width: 768px) {
+      .container{padding:8px; gap:8px}
+      .panel{padding:8px; height:auto; max-height:60vh}
+      #map{height:300px}
+      header{padding:8px 12px}
+      h1{font-size:16px}
+      .muted{font-size:12px}
+      .btn{font-size:12px; padding:6px 8px}
+      .btn.small{font-size:11px; padding:4px 6px}
+    }
+    
+    @media (max-width: 480px) {
+      .container{padding:4px; gap:4px}
+      .panel{padding:6px}
+      #map{height:250px}
+      header{padding:6px 8px}
+      h1{font-size:14px}
+      .flex{flex-direction:column; align-items:stretch; gap:4px}
+      .controls{flex-direction:column; gap:4px}
+      .runner-row{flex-direction:column; align-items:stretch; gap:4px}
+      .runner-row > div{min-width:auto}
+    }
+    label{display:block; font-size:13px; margin-top:8px}
+    input, button, select, textarea{font-size:14px}
+    .controls{display:flex; gap:8px; margin-top:8px}
+    .runner-row{display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px dashed #eee}
+    .runner-row .name{flex:1}
+    table{width:100%; border-collapse:collapse}
+    th,td{padding:6px; text-align:left; border-bottom:1px solid #eee}
+    .muted{color:#666; font-size:13px}
+    .btn{background:var(--accent); color:#fff; border:0; padding:8px 10px; border-radius:8px; cursor:pointer}
+    .btn.secondary{background:#eee; color:#111}
+    .small{padding:6px 8px; font-size:13px}
+    .flex{display:flex; gap:8px}
+    .leftCol{min-width:0}
+    .bibDesigner{margin-top:10px; padding-top:8px; border-top:1px solid #f0f0f0}
+    .preview{border:1px dashed #eee; padding:10px; margin-top:8px; background:#fafafa}
+    footer{padding:12px; font-size:13px; color:#444}
+
+    /* Printable bib styles */
+    #printArea{display:none}
+    .print-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:10px}
+    .bib{
+      width:800px; height:600px; border-radius:8px; border:2px solid #222; background:white; padding:10px; box-sizing:border-box;
+      display:flex; flex-direction:column; justify-content:space-between; align-items:center;
+      page-break-inside:avoid;
+      position:relative; /* for QR absolute positioning */
+    }
+    .bib .raceTitle{font-size:48px; font-weight:700}
+    .bib .bibNumber{font-size:160px; font-weight:900; letter-spacing:4px; text-align:center; width:100%; display:block; margin:0 auto;}
+    .bib .name{font-size:38px; font-weight:600}
+    .bib .sponsor{font-size:28px; color:#666}
+    .bib .qrWrap{
+      width:56px; height:56px; position:absolute; bottom:10px; right:10px; /* smaller and bottom right */
+      z-index:2;
+      background:transparent;
+      display:flex; align-items:end; justify-content:end;
+    }
+    .bib .barcodeWrap{display:none !important;}
+
+    /* Timing Screen Modal Styles */
+    .timing-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      overflow-y: auto;
+    }
+    
+    .timing-modal.open {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .timing-content {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 90vw;
+      max-height: 90vh;
+      width: 1000px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+    
+    .timing-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #eee;
+    }
+    
+    .timing-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+      margin: 0;
+    }
+    
+    .close-timing {
+      background: #ff4444;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    .timing-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      border-left: 4px solid var(--accent);
+    }
+    
+    .stat-number {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 0;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+      margin: 5px 0 0 0;
+    }
+    
+    .timing-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .timing-btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .timing-btn.primary {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .timing-btn.secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .timing-btn.success {
+      background: #28a745;
+      color: white;
+    }
+    
+    .timing-btn.danger {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .runners-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .runner-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 2px solid transparent;
+      transition: box-shadow 0.2s ease, transform 0.1s ease;
+      position: relative;
+      transform: translateZ(0); /* Force GPU acceleration */
+      will-change: transform; /* Optimize transitions */
+    }
+    
+    .runner-card.finished {
+      border-color: #28a745;
+      background: #f8fff9;
+    }
+    
+    .runner-card.finishing {
+      border-color: #ffc107;
+      background: #fffbf0;
+      transform: scale(0.98);
+    }
+    
+    .runner-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
+    }
+    
+    .runner-card:active {
+      transform: translateY(0px);
+    }
+    
+    .runner-info {
+      margin-bottom: 10px;
+    }
+    
+    .runner-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+      margin: 0 0 5px 0;
+    }
+    
+    .runner-details {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+    
+    .runner-time {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 10px 0;
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      text-align: center;
+    }
+    
+    .runner-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    
+    .finish-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 40px;
+      position: relative;
+      z-index: 10;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .finish-btn:not(:disabled) {
+      background: #28a745;
+      color: white;
+      box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+    
+    .finish-btn:not(:disabled):hover {
+      background: #218838;
+      box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+    }
+    
+    .finish-btn:not(:disabled):active {
+      box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+    
+    .finish-btn:disabled {
+      background: #6c757d;
+      color: white;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    
+    .search-box {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    
+    .search-box:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .keyboard-hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    /* Mobile responsiveness for timing screen */
+    @media (max-width: 768px) {
+      .timing-content {
+        max-width: 95vw;
+        max-height: 95vh;
+        padding: 15px;
+        margin: 10px;
+      }
+      
+      .timing-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      
+      .stat-card {
+        padding: 10px;
+      }
+      
+      .stat-number {
+        font-size: 20px;
+      }
+      
+      .timing-controls {
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .timing-btn {
+        width: 100%;
+        padding: 12px;
+      }
+      
+      .runners-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        max-height: 300px;
+      }
+      
+      .runner-card {
+        padding: 12px;
+      }
+      
+      .runner-name {
+        font-size: 16px;
+      }
+      
+      .runner-details {
+        font-size: 12px;
+      }
+      
+      .timing-title {
+        font-size: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .timing-content {
+        padding: 10px;
+        margin: 5px;
+      }
+      
+      .timing-stats {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      
+      .stat-number {
+        font-size: 18px;
+      }
+      
+      .runner-card {
+        padding: 10px;
+      }
+      
+      .runner-name {
+        font-size: 14px;
+      }
+      
+      .finish-btn {
+        padding: 10px 8px;
+        font-size: 12px;
+      }
+    }
+
+    @media print {
+      body *{visibility:hidden}
+      #printArea, #printArea *{visibility:visible}
+      #printArea{position:fixed; left:0; top:0; width:100%; height:100%; padding:0.5in; box-sizing:border-box;}
+      .print-grid{
+        display:grid; 
+        grid-template-columns:repeat(2, 1fr); 
+        gap:0.3in; 
+        width:100%; 
+        height:100%;
+        box-sizing:border-box;
+      }
+      .bib{
+        width:100%; 
+        height:100%; 
+        max-width:4.5in; 
+        max-height:3in; 
+        min-height:2.5in;
+        border-radius:8px; 
+        border:2px solid #222; 
+        background:white; 
+        padding:0.2in; 
+        box-sizing:border-box;
+        display:flex; 
+        flex-direction:column; 
+        justify-content:space-between; 
+        align-items:center;
+        page-break-inside:avoid;
+        position:relative;
+        margin:0 auto;
+      }
+      .bib .raceTitle{font-size:0.4in; font-weight:700; margin:0.05in 0;}
+      .bib .bibNumber{font-size:1.2in; font-weight:900; letter-spacing:0.05in; text-align:center; width:100%; display:block; margin:0.1in auto; line-height:1;}
+      .bib .name{font-size:0.3in; font-weight:600; margin:0.05in 0;}
+      .bib .sponsor{font-size:0.2in; color:#666; margin:0.05in 0;}
+      .bib .qrWrap{
+        width:0.4in; 
+        height:0.4in; 
+        position:absolute; 
+        bottom:0.1in; 
+        right:0.1in;
+        z-index:2;
+        background:transparent;
+        display:flex; 
+        align-items:end; 
+        justify-content:end;
+      }
+      @page { 
+        size: letter landscape; 
+        margin:0.5in;
+      }
+    }
+
+    /* Add CSS for arrows and markers */
+    .route-arrow { pointer-events: none; }
+    .mile-marker { pointer-events: none; }
+    .mile-marker div { font-family: system-ui, sans-serif; }
+    
+    /* Notification system */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #28a745;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
+    }
+    .notification.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .notification.error {
+      background: #dc3545;
+    }
+    .notification.warning {
+      background: #ffc107;
+      color: #000;
+    }
+    
+    /* Settings panel */
+    .settings-panel {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+      border: 1px solid #dee2e6;
+    }
+    .settings-panel label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    .settings-panel input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Race Timer & Route</h1>
+      <div class="muted">Single-file prototype — open locally</div>
+    </div>
+    <div class="header-links" style="margin-left: auto;">
+      <a href="https://sites.google.com/view/brighton5k/registration" style="color: var(--accent); text-decoration: none; font-weight: 600;">Registration Page</a>
+    </div>
+    <div class="header-links" style="margin-left: auto;">
+      <a href="https://sites.google.com/view/brighton5k/bib-printer" style="color: var(--accent); text-decoration: none; font-weight: 600;">Bib Printer</a>
+    </div>
+  </header>
+  
+  <div class="settings-panel">
+    <h3 style="margin-top:0;">Settings</h3>
+    <label>
+      <input type="checkbox" id="skipConfirmations" checked>
+      Skip confirmation dialogs (faster operation)
+    </label>
+    <label>
+      <input type="checkbox" id="showNotifications" checked>
+      Show success notifications
+    </label>
+  </div>
+  <div class="container">
+    <div class="leftCol">
+      <div id="map"></div>
+      <div style="display:flex; gap:8px; margin-top:10px; align-items:center; flex-wrap:wrap">
+        <div class="muted">Route points: <span id="pts">0</span></div>
+        <div class="muted">Distance: <strong id="dist_km">0.00</strong> km / <strong id="dist_mi">0.00</strong> mi</div>
+        <div style="display:flex; gap:4px; flex-wrap:wrap">
+          <button id="clearRoute" class="btn secondary small">Clear Route</button>
+          <button id="exportRoute" class="btn small">Export GeoJSON</button>
+          <label for="gpxFile" class="btn small" style="margin:0; cursor:pointer; display:inline-block;">
+            Import GPX
+            <input type="file" id="gpxFile" accept=".gpx" style="display:none;">
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <section>
+        <h3>Race Timer</h3>
+        <div class="flex" style="align-items:center; margin-top:6px">
+          <div style="font-size:28px; font-weight:600" id="clock">00:00.000</div>
+          <div style="margin-left:auto; display:flex; gap:8px">
+            <button id="startBtn" class="btn">Start</button>
+            <button id="pauseBtn" class="btn secondary">Pause</button>
+            <button id="resetBtn" class="btn secondary">Reset</button>
+          </div>
+        </div>
+        <div class="muted" style="margin-top:6px">Press <strong>Start</strong> to begin the race — then use the Finish button for each runner.</div>
+      </section>
+
+      <hr/>
+      <section>
+        <h3>Race Countdown</h3>
+        <div style="margin-bottom:10px">
+          <label>Race Start Date & Time
+            <input type="datetime-local" id="raceStartTime" style="width:100%; margin-top:4px"/>
+          </label>
+          <div class="controls" style="margin-top:8px">
+            <button id="setRaceTime" class="btn small">Set Race Time</button>
+            <button id="clearRaceTime" class="btn secondary small">Clear</button>
+          </div>
+        </div>
+        <div id="countdownDisplay" style="font-size:24px; font-weight:600; text-align:center; padding:15px; background:#f8f9fa; border-radius:8px; margin-top:10px; display:none;">
+          <div id="countdownText">Countdown will appear here</div>
+        </div>
+      </section>
+
+      <hr/>
+      <section>
+        <h3>Register Runner</h3>
+        <label>Name<input id="name" placeholder="Runner name"/></label>
+        <label>Estimated Time (MM:SS.MS)<input id="estimatedTime" placeholder="e.g. 25:30.500"/></label>
+        <div class="controls">
+          <button id="addRunner" class="btn">Add Runner</button>
+          <button id="loadFromRegistrations" class="btn secondary">Load from Registrations</button>
+          <button id="loadSample" class="btn secondary">Load Sample</button>
+        </div>
+      </section>
+
+      <hr/>
+      <section>
+        <h3>Runners & Timing</h3>
+        <div style="display:flex; gap:8px; margin-bottom:10px">
+          <button id="openTimingScreen" class="btn">Open Timing Screen</button>
+          <button id="removeAllRunners" class="btn secondary small">Remove All Runners</button>
+          <button id="removeFinishedRunners" class="btn secondary small">Remove Finished Runners</button>
+        </div>
+        <div id="runnersList"></div>
+      </section>
+
+      <div class="bibDesigner">
+        <div>
+
+          <div style="display:flex; gap:8px; align-items:center; margin-top:6px">
+            <label style="flex:1">
+              Select runners to print:
+              <select id="runnerSelect" multiple style="height:110px; width:100%; margin-top:6px"></select>
+            </label>
+            <div style="width:170px">
+              <label>Include QR <input type="checkbox" id="optQr" checked></label>
+              <label>Include Barcode <input type="checkbox" id="optBarcode" checked></label>
+              <label>Scale
+                <select id="optScale">
+                  <option value="100">100%</option>
+                  <option value="90">90%</option>
+                  <option value="80">80%</option>
+                  <option value="70">70%</option>
+                </select>
+              </label>
+              <div style="margin-top:6px">
+                <button id="generateBibs" class="btn small">Generate Bibs</button>
+                <button id="printBibs" class="btn secondary small">Print</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview" id="previewArea">
+            <div class="muted">Preview will appear here after generating.</div>
+          </div>
+        </div>
+      </div>
+
+      <hr/>
+      <section>
+        <h3>Registration Management</h3>
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px">
+          <button id="viewRegistrations" class="btn small">View All Registrations</button>
+          <button id="clearAllRegistrations" class="btn secondary small" style="background:#fdd; color:#a00">Clear All Registrations</button>
+        </div>
+        <div id="registrationsArea" style="margin-top:8px; max-height:200px; overflow-y:auto; display:none;"></div>
+      </section>
+
+      <hr/>
+      <section>
+        <h3>Results</h3>
+        <div style="display:flex; gap:8px; align-items:center">
+          <button id="showResults" class="btn small">Show Leaderboard</button>
+          <button id="exportCsv" class="btn small">Export CSV</button>
+          <button id="clearAll" class="btn secondary small">Clear All</button>
+          <button id="clearFirebase" class="btn secondary small" style="background:#fdd; color:#a00">Clear Firebase Timing</button>
+        </div>
+        <div id="resultsArea" style="margin-top:8px"></div>
+      </section>
+
+    </div>
+  </div>
+  <footer>
+    Tips: Click on the map to add route points; the script will calculate total route distance (approx). Data is saved to localStorage so refreshing won't lose it. To share route with runners export the GeoJSON.
+  </footer>
+  
+  <!-- Notification container -->
+  <div id="notification" class="notification"></div>
+
+  <!-- print area -->
+  <div id="printArea" aria-hidden="true" style="padding:12px">
+    <div id="printGrid" class="print-grid"></div>
+  </div>
+
+  <!-- Timing Screen Modal -->
+  <div id="timingModal" class="timing-modal">
+    <div class="timing-content">
+      <div class="timing-header">
+        <h2 class="timing-title">Race Timing Screen</h2>
+        <button id="closeTiming" class="close-timing">✕ Close</button>
+      </div>
+      
+      <div class="timing-stats">
+        <div class="stat-card">
+          <div class="stat-number" id="totalRunners">0</div>
+          <div class="stat-label">Total Runners</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="finishedRunners">0</div>
+          <div class="stat-label">Finished</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="remainingRunners">0</div>
+          <div class="stat-label">Remaining</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="currentTime">00:00.000</div>
+          <div class="stat-label">Race Time</div>
+        </div>
+      </div>
+      
+      <div class="timing-controls">
+        <button id="startRaceFromTiming" class="timing-btn primary">Start Race</button>
+        <button id="pauseRaceFromTiming" class="timing-btn secondary">Pause Race</button>
+        <button id="resetRaceFromTiming" class="timing-btn danger">Reset Race</button>
+        <button id="finishAllRemaining" class="timing-btn success">Finish All Remaining</button>
+        <button id="exportResultsFromTiming" class="timing-btn secondary">Export Results</button>
+      </div>
+      
+      <input type="text" id="runnerSearch" class="search-box" placeholder="Search runners by name or bib number...">
+      
+      <div class="runners-grid" id="timingRunnersGrid">
+        <!-- Runner cards will be populated here -->
+      </div>
+      
+      <div class="keyboard-hint">
+        💡 Tip: Press <strong>F</strong> to quickly finish the first unfinished runner, or click on any runner card to finish them
+      </div>
+    </div>
+  </div>
+
+  <!-- Libraries for QR and Barcode -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <script>
+    /* ---------- state and helpers ---------- */
+    const state = {
+      route: [],
+      runners: [],
+      raceStart: null,
+      running: false,
+      paused: false,
+      pausedAt: null
+    }
+
+    // Notification system
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      const showNotifications = document.getElementById('showNotifications');
+      
+      if (!showNotifications || !showNotifications.checked) return;
+      
+      notification.textContent = message;
+      notification.className = `notification ${type}`;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+
+    const toRad = v => v * Math.PI / 180;
+    function kmBetween(a,b){
+      const R = 6371;
+      const dLat = toRad(b.lat - a.lat);
+      const dLon = toRad(b.lng - a.lng);
+      const la = toRad(a.lat);
+      const lb = toRad(b.lat);
+      const sin1 = Math.sin(dLat/2);
+      const sin2 = Math.sin(dLon/2);
+      const aa = sin1*sin1 + Math.cos(la)*Math.cos(lb)*sin2*sin2;
+      const c = 2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1-aa));
+      return R * c;
+    }
+
+    function calcRouteDistance(points){
+      let d = 0;
+      for(let i = 1; i < points.length; i++) d += kmBetween(points[i-1], points[i]);
+      return d;
+    }
+
+    /* ---------- map ---------- */
+    const map = L.map('map').setView([39.8283, -98.5795], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19, attribution:'Tiles © Esri'}).addTo(map);
+    let markers = [];
+    let poly = L.polyline([], {color: '#ff7f11'}).addTo(map);
+
+    function refreshRouteDisplay(){
+      markers.forEach(m=>map.removeLayer(m));
+      markers = [];
+      poly.setLatLngs(state.route);
+      state.route.forEach(pt=>{ const m = L.circleMarker(pt,{radius:6}).addTo(map); markers.push(m); });
+      document.getElementById('pts').textContent = state.route.length;
+      const km = calcRouteDistance(state.route);
+      document.getElementById('dist_km').textContent = km.toFixed(2);
+      document.getElementById('dist_mi').textContent = (km * 0.621371).toFixed(2);
+
+      // --- Add arrows for direction ---
+      if (window.routeArrows) {
+        window.routeArrows.forEach(a => map.removeLayer(a));
+      }
+      window.routeArrows = [];
+      for (let i = 1; i < state.route.length; i += Math.max(1, Math.floor(state.route.length/30))) {
+        const p1 = state.route[i-1], p2 = state.route[i];
+        if (!p1 || !p2) continue;
+        const angle = Math.atan2(p2.lat-p1.lat, p2.lng-p1.lng) * 180/Math.PI;
+        const arrow = L.marker([(p1.lat+p2.lat)/2, (p1.lng+p2.lng)/2], {
+          icon: L.divIcon({
+            className: 'route-arrow',
+            html: `<div style="transform: rotate(${angle}deg); font-size:22px; color:var(--accent);">&#8594;</div>`
+          }),
+          interactive: false
+        }).addTo(map);
+        window.routeArrows.push(arrow);
+      }
+
+      // --- Add mile and km markers ---
+      if (window.mileMarkers) window.mileMarkers.forEach(m => map.removeLayer(m));
+      window.mileMarkers = [];
+      let dist = 0, lastMile = 0, lastKm = 0;
+      for (let i = 1; i < state.route.length; i++) {
+        const seg = kmBetween(state.route[i-1], state.route[i]);
+        dist += seg;
+        // Mile marker
+        if (dist*0.621371 >= lastMile + 1) {
+          lastMile++;
+          const m = L.marker(state.route[i], {
+            icon: L.divIcon({
+              className: 'mile-marker',
+              html: `<div style='background:#fff;border:2px solid var(--accent);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--accent);box-shadow:0 2px 8px #0002;'>${lastMile}<span style='font-size:11px;margin-left:2px;'>mi</span></div>`
+            }),
+            interactive: false
+          }).addTo(map);
+          window.mileMarkers.push(m);
+        }
+        // Km marker
+        if (dist >= lastKm + 1) {
+          lastKm++;
+          const m = L.marker(state.route[i], {
+            icon: L.divIcon({
+              className: 'mile-marker',
+              html: `<div style='background:#fff;border:2px solid #2196f3;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#2196f3;box-shadow:0 2px 8px #0002;font-size:13px;'>${lastKm}<span style='font-size:10px;margin-left:1px;'>km</span></div>`
+            }),
+            interactive: false
+          }).addTo(map);
+          window.mileMarkers.push(m);
+        }
+      }
+    }
+
+    map.on('click', e => {
+      state.route.push({lat: e.latlng.lat, lng: e.latlng.lng});
+      refreshRouteDisplay();
+      saveLocal();
+    });
+
+    document.getElementById('clearRoute').addEventListener('click', ()=>{ state.route = []; refreshRouteDisplay(); saveLocal(); });
+
+    document.getElementById('exportRoute').addEventListener('click', ()=>{
+      const km = calcRouteDistance(state.route);
+      const gj = {type:'Feature', geometry:{type:'LineString', coordinates: state.route.map(p=>[p.lng,p.lat])}, properties:{distance_km: km, distance_mi: km * 0.621371}};
+      const blob = new Blob([JSON.stringify(gj,null,2)],{type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'turkey_trot_route.geojson'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    /* ---------- GPX import functionality ---------- */
+    document.getElementById('gpxFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      if (!file.name.toLowerCase().endsWith('.gpx')) {
+        alert('Please select a GPX file');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const gpxText = e.target.result;
+          const gpxPoints = parseGPX(gpxText);
+          
+          if (gpxPoints.length === 0) {
+            alert('No track points found in GPX file');
+            return;
+          }
+          
+          // Clear existing route
+          state.route = [];
+          
+          // Add GPX points to route
+          state.route = gpxPoints;
+          refreshRouteDisplay();
+          saveLocal();
+          
+          
+          
+          // Clear the file input
+          document.getElementById('gpxFile').value = '';
+        } catch (error) {
+          console.error('Error parsing GPX:', error);
+          alert('Error parsing GPX file: ' + error.message);
+        }
+      };
+      
+      reader.readAsText(file);
+    });
+
+    function parseGPX(gpxText) {
+      const parser = new DOMParser();
+      const gpxDoc = parser.parseFromString(gpxText, 'text/xml');
+      
+      // Check for parsing errors
+      const parseError = gpxDoc.querySelector('parsererror');
+      if (parseError) {
+        throw new Error('Invalid GPX file format');
+      }
+      
+      const points = [];
+      
+      // Look for track points in various GPX elements
+      const trackPoints = gpxDoc.querySelectorAll('trkpt, rtept, wpt');
+      
+      trackPoints.forEach(point => {
+        const lat = parseFloat(point.getAttribute('lat'));
+        const lng = parseFloat(point.getAttribute('lon'));
+        
+        if (!isNaN(lat) && !isNaN(lng)) {
+          points.push({ lat, lng });
+        }
+      });
+      
+      // If no track points found, try to find coordinates in other elements
+      if (points.length === 0) {
+        const coords = gpxText.match(/-?\d+\.?\d*,-?\d+\.?\d*/g);
+        if (coords) {
+          coords.forEach(coord => {
+            const [lng, lat] = coord.split(',').map(Number);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              points.push({ lat, lng });
+            }
+          });
+        }
+      }
+      
+      return points;
+    }
+
+    /* ---------- timer ---------- */
+    const clockEl = document.getElementById('clock');
+    let rafId = null;
+
+    function formatMs(ms){
+      const totalMs = Math.max(0, Math.floor(ms));
+      const minutes = Math.floor(totalMs / 60000);
+      const seconds = Math.floor((totalMs % 60000) / 1000);
+      const msPart = totalMs % 1000;
+      return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(msPart).padStart(3,'0')}`;
+    }
+
+    function currentElapsed(){
+      if(state.raceStart == null) return 0;
+      if(state.paused && state.pausedAt != null) return state.pausedAt - state.raceStart;
+      return Date.now() - state.raceStart;
+    }
+
+    function tick(){
+      if(!state.running) return;
+      clockEl.textContent = formatMs(currentElapsed());
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function startRace(){
+      if(state.raceStart == null){ state.raceStart = Date.now(); state.running = true; state.paused = false; state.pausedAt = null; rafId = requestAnimationFrame(tick); }
+      else if(state.paused){ const resumeAt = Date.now(); const pausedDuration = resumeAt - state.pausedAt; state.raceStart += pausedDuration; state.paused = false; state.pausedAt = null; state.running = true; rafId = requestAnimationFrame(tick); }
+      renderRunners(); saveLocal();
+    }
+
+    function togglePause(){
+      if(state.raceStart == null) return;
+      if(state.running){ state.paused = true; state.pausedAt = Date.now(); state.running = false; cancelAnimationFrame(rafId); }
+      else if(state.paused){ const resumeAt = Date.now(); const pausedDuration = resumeAt - state.pausedAt; state.raceStart += pausedDuration; state.paused = false; state.pausedAt = null; state.running = true; rafId = requestAnimationFrame(tick); }
+      renderRunners(); saveLocal();
+    }
+
+    function resetRace(){
+      state.raceStart = null; state.running = false; state.paused = false; state.pausedAt = null; cancelAnimationFrame(rafId); clockEl.textContent = '00:00.000'; state.runners.forEach(r=>{ r.finishTime = null; r.finishedAt = null; }); renderRunners(); saveLocal();
+    }
+
+    document.getElementById('startBtn').addEventListener('click', startRace);
+    document.getElementById('pauseBtn').addEventListener('click', async () => {
+    await set(ref(db, 'raceClock'), {
+      raceStart: state.raceStart,
+      pausedAt: Date.now(),
+      running: false,
+      paused: true
+    });
+    togglePause();
+});
+    document.getElementById('resetBtn').addEventListener('click', resetRace);
+
+    /* ---------- countdown timer ---------- */
+    let countdownInterval = null;
+    let raceStartTime = null;
+
+    function updateCountdown() {
+      if (!raceStartTime) {
+        document.getElementById('countdownDisplay').style.display = 'none';
+        return;
+      }
+
+      const now = new Date().getTime();
+      const distance = raceStartTime - now;
+
+      if (distance < 0) {
+        document.getElementById('countdownText').innerHTML = 'Race has started!';
+        document.getElementById('countdownDisplay').style.display = 'block';
+        document.getElementById('countdownDisplay').style.background = '#d4edda';
+        clearInterval(countdownInterval);
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      let countdownText = '';
+      if (days > 0) countdownText += `${days}d `;
+      if (hours > 0 || days > 0) countdownText += `${hours}h `;
+      if (minutes > 0 || hours > 0 || days > 0) countdownText += `${minutes}m `;
+      countdownText += `${seconds}s`;
+
+      document.getElementById('countdownText').innerHTML = countdownText;
+      document.getElementById('countdownDisplay').style.display = 'block';
+      document.getElementById('countdownDisplay').style.background = '#f8f9fa';
+    }
+
+    function setRaceStartTime() {
+      const input = document.getElementById('raceStartTime');
+      const dateTimeValue = input.value;
+      
+      if (!dateTimeValue) {
+        alert('Please select a date and time for the race start');
+        return;
+      }
+
+      raceStartTime = new Date(dateTimeValue).getTime();
+      
+      // Clear existing interval
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
+      
+      // Start countdown
+      updateCountdown();
+      countdownInterval = setInterval(updateCountdown, 1000);
+      
+      // Save to localStorage
+      localStorage.setItem('raceStartTime', raceStartTime.toString());
+      
+      // Save to Firebase
+      if (window.mainSet && window.mainRef) {
+        window.mainSet(window.mainRef(window.mainDb, 'raceStartTime'), raceStartTime);
+      }
+      
+      alert('Race start time set successfully!');
+    }
+
+    function clearRaceStartTime() {
+      raceStartTime = null;
+      
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      
+      document.getElementById('countdownDisplay').style.display = 'none';
+      document.getElementById('raceStartTime').value = '';
+      
+      // Clear from localStorage
+      localStorage.removeItem('raceStartTime');
+      
+      // Clear from Firebase
+      if (window.mainSet && window.mainRef) {
+        window.mainSet(window.mainRef(window.mainDb, 'raceStartTime'), null);
+      }
+    }
+
+    function loadRaceStartTime() {
+      // Load from localStorage first
+      const savedTime = localStorage.getItem('raceStartTime');
+      if (savedTime) {
+        raceStartTime = parseInt(savedTime);
+        const date = new Date(raceStartTime);
+        document.getElementById('raceStartTime').value = date.toISOString().slice(0, 16);
+        
+        // Start countdown
+        updateCountdown();
+        countdownInterval = setInterval(updateCountdown, 1000);
+      }
+      
+      // Also try to load from Firebase
+      if (window.mainRef && window.mainDb) {
+        import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js').then(({ get, ref }) => {
+          get(ref(window.mainDb, 'raceStartTime')).then((snapshot) => {
+            if (snapshot.exists() && !raceStartTime) {
+              raceStartTime = snapshot.val();
+              const date = new Date(raceStartTime);
+              document.getElementById('raceStartTime').value = date.toISOString().slice(0, 16);
+              
+              // Start countdown
+              updateCountdown();
+              countdownInterval = setInterval(updateCountdown, 1000);
+            }
+          });
+        });
+      }
+    }
+
+    // Event listeners for countdown controls
+    document.getElementById('setRaceTime').addEventListener('click', setRaceStartTime);
+    document.getElementById('clearRaceTime').addEventListener('click', clearRaceStartTime);
+
+    // Load race start time on page load
+    loadRaceStartTime();
+
+    /* ---------- runner removal functions ---------- */
+    function removeAllRunners() {
+      
+      
+      
+        // Remove from Firebase
+        state.runners.forEach(runner => {
+          removeRunnerFromFirebase(runner.id);
+        });
+        
+        state.runners = [];
+        renderRunners();
+        saveLocal();
+        
+      }
+    
+
+    function removeFinishedRunners() {
+      const finishedRunners = state.runners.filter(r => r.finishTime != null);
+      
+      if (finishedRunners.length === 0) {
+        alert('No finished runners to remove');
+        return;
+      }
+      
+      if (confirm(`Are you sure you want to remove ${finishedRunners.length} finished runner(s)? This cannot be undone.`)) {
+        // Remove from Firebase
+        finishedRunners.forEach(runner => {
+          removeRunnerFromFirebase(runner.id);
+        });
+        
+        state.runners = state.runners.filter(r => r.finishTime == null);
+        renderRunners();
+        saveLocal();
+        alert(`${finishedRunners.length} finished runner(s) removed`);
+      }
+    }
+
+    function removeRunnerFromFirebase(runnerId) {
+      if (window.mainSet && window.mainRef) {
+        window.mainSet(window.mainRef(window.mainDb, "results/" + runnerId), null);
+      }
+    }
+
+    // Event listeners for removal buttons
+    document.getElementById('removeAllRunners').addEventListener('click', removeAllRunners);
+    document.getElementById('removeFinishedRunners').addEventListener('click', removeFinishedRunners);
+
+    /* ---------- Timing Screen Functions ---------- */
+    let timingModal = null;
+    let searchFilter = '';
+    let timingUpdateInterval = null;
+
+    async function openTimingScreen() {
+      timingModal = document.getElementById('timingModal');
+      timingModal.classList.add('open');
+      
+      // Load current race state from Firebase if available
+      
+      
+      updateTimingScreen();
+      
+      // Setup event delegation for finish buttons
+      setupTimingEventDelegation();
+      
+      // Start real-time updates
+      if (timingUpdateInterval) {
+        clearInterval(timingUpdateInterval);
+      }
+      timingUpdateInterval = setInterval(updateTimingScreen, 100);
+      
+      // Focus search box
+      document.getElementById('runnerSearch').focus();
+    }
+
+    async function loadRaceStateFromFirebase() {
+      if (!window.mainRef || !window.mainDb) return;
+      
+      try {
+        const { get } = window.firebaseDatabase || await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js');
+        const db = window.mainDb;
+        
+        // Load race clock state
+        const clockRef = window.mainRef(db, 'raceClock');
+        const clockSnapshot = await get(clockRef);
+        if (clockSnapshot.exists()) {
+          const clockData = clockSnapshot.val();
+          if (clockData) {
+            state.raceStart = clockData.raceStart;
+            state.running = clockData.running || false;
+            state.paused = clockData.paused || false;
+            state.pausedAt = clockData.pausedAt;
+          }
+        }
+        
+        // Load runner results
+        const resultsRef = window.mainRef(db, 'results');
+        const resultsSnapshot = await get(resultsRef);
+        if (resultsSnapshot.exists()) {
+          const results = resultsSnapshot.val();
+          // Update local runners with Firebase data, and add any missing runners from Firebase
+          Object.entries(results).forEach(([id, result]) => {
+            let localRunner = state.runners.find(r => r.id === id);
+            if (!localRunner) {
+              // Add missing runner from Firebase
+              localRunner = {
+                id,
+                name: result.name || 'Unknown',
+                estimatedTime: result.estimatedTime || null,
+                finishTime: result.finishTime || null,
+                finishedAt: result.finishedAt || null
+              };
+              state.runners.push(localRunner);
+            } else {
+              localRunner.finishTime = result.finishTime;
+              localRunner.finishedAt = result.finishedAt;
+            }
+          });
+        }
+        
+        // Update the main display
+        renderRunners();
+        saveLocal();
+        
+        // Also sync current local state to Firebase to ensure consistency
+        await syncAllRunnersToFirebase();
+      } catch (error) {
+        console.error('Error loading race state from Firebase:', error);
+      }
+    }
+
+    async function syncAllRunnersToFirebase() {
+      if (!window.mainSet || !window.mainRef || !window.mainDb) return;
+      
+      try {
+        // Calculate bib numbers for all runners
+        const allRunnersSorted = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+        
+        for (const runner of state.runners) {
+          const bibIndex = allRunnersSorted.findIndex(r => r.id === runner.id);
+          const bibNumber = bibIndex >= 0 ? String(bibIndex + 1).padStart(4, '0') : '—';
+          
+          await window.mainSet(window.mainRef(window.mainDb, "results/" + runner.id), {
+            name: runner.name,
+            bibNumber: bibNumber,
+            estimatedTime: runner.estimatedTime || null,
+            finishTime: runner.finishTime || null,
+            finishedAt: runner.finishedAt || null
+          });
+        }
+      } catch (error) {
+        console.error('Error syncing runners to Firebase:', error);
+      }
+    }
+
+    function closeTimingScreen() {
+      if (timingModal) {
+        timingModal.classList.remove('open');
+      }
+      if (timingUpdateInterval) {
+        clearInterval(timingUpdateInterval);
+        timingUpdateInterval = null;
+      }
+    }
+
+    function updateTimingScreen() {
+      if (!timingModal || !timingModal.classList.contains('open')) return;
+      
+      // Update stats
+      const totalRunners = state.runners.length;
+      const finishedRunners = state.runners.filter(r => r.finishTime != null).length;
+      const remainingRunners = totalRunners - finishedRunners;
+      
+      document.getElementById('totalRunners').textContent = totalRunners;
+      document.getElementById('finishedRunners').textContent = finishedRunners;
+      document.getElementById('remainingRunners').textContent = remainingRunners;
+      document.getElementById('currentTime').textContent = formatMs(currentElapsed());
+      
+      // Update control buttons
+      const startBtn = document.getElementById('startRaceFromTiming');
+      const pauseBtn = document.getElementById('pauseRaceFromTiming');
+      const resetBtn = document.getElementById('resetRaceFromTiming');
+      
+      if (state.raceStart == null) {
+        startBtn.textContent = 'Start Race';
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        resetBtn.disabled = false;
+      } else if (state.running) {
+        startBtn.textContent = 'Race Running';
+        startBtn.disabled = true;
+        pauseBtn.textContent = 'Pause Race';
+        pauseBtn.disabled = false;
+        resetBtn.disabled = false;
+      } else if (state.paused) {
+        startBtn.textContent = 'Resume Race';
+        startBtn.disabled = false;
+        pauseBtn.textContent = 'Race Paused';
+        pauseBtn.disabled = true;
+        resetBtn.disabled = false;
+      }
+      
+      // Update runners grid
+      renderTimingRunners();
+      
+      // Periodically sync race clock to Firebase (every 5 seconds)
+      if (state.raceStart != null && Math.random() < 0.1) { // 10% chance every update (roughly every 5 seconds)
+        syncRaceClockToFirebase();
+      }
+    }
+
+    async function syncRaceClockToFirebase() {
+      if (!window.mainSet || !window.mainRef || !window.mainDb) return;
+      
+      try {
+        await window.mainSet(window.mainRef(window.mainDb, 'raceClock'), {
+          raceStart: state.raceStart,
+          running: state.running,
+          paused: state.paused,
+          pausedAt: state.pausedAt
+        });
+      } catch (error) {
+        console.error('Error syncing race clock to Firebase:', error);
+      }
+    }
+
+    function renderTimingRunners() {
+      const grid = document.getElementById('timingRunnersGrid');
+      if (!grid) return;
+    
+      // Sort runners by estimated time
+      const sortedRunners = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+      const searchTerm = searchFilter.toLowerCase();
+      
+      const filteredRunners = sortedRunners.filter(runner => {
+        const name = (runner.name || '').toLowerCase();
+        const bibIndex = sortedRunners.findIndex(r => r.id === runner.id);
+        const bibNumber = bibIndex >= 0 ? String(bibIndex + 1).padStart(4, '0') : '—';
+        return name.includes(searchTerm) || bibNumber.includes(searchTerm);
+      });
+    
+      // Generate and compare each runner card individually
+      filteredRunners.forEach(runner => {
+        const existingCard = grid.querySelector(`[data-runner-id="${runner.id}"]`);
+        const bibIndex = sortedRunners.findIndex(r => r.id === runner.id);
+        const bibNumber = bibIndex >= 0 ? String(bibIndex + 1).padStart(4, '0') : '—';
+        const isFinished = runner.finishTime != null;
+        const estimatedTime = runner.estimatedTime ? formatMs(runner.estimatedTime) : '—';
+        const finishTime = runner.finishTime ? formatMs(runner.finishTime) : '—';
+        
+        if (!existingCard) {
+          // Create new card if it doesn't exist
+          const card = document.createElement('div');
+          card.className = `runner-card ${isFinished ? 'finished' : ''}`;
+          card.setAttribute('data-runner-id', runner.id);
+          
+          // Create card content with minimal nesting
+          const info = document.createElement('div');
+          info.className = 'runner-info';
+          info.innerHTML = `
+            <h3 class="runner-name">${runner.name}</h3>
+            <p class="runner-details">Bib #${bibNumber} • Est: ${estimatedTime}</p>
+          `;
+          
+          const time = document.createElement('div');
+          time.className = 'runner-time';
+          
+          const actions = document.createElement('div');
+          actions.className = 'runner-actions';
+          const finishBtn = document.createElement('button');
+          finishBtn.className = 'finish-btn';
+          finishBtn.disabled = isFinished || !state.running;
+          finishBtn.textContent = isFinished ? 'Finished' : 'Finish';
+          actions.appendChild(finishBtn);
+          
+          card.appendChild(info);
+          card.appendChild(time);
+          card.appendChild(actions);
+          grid.appendChild(card);
+        } else {
+          // Update existing card
+          // Only update class if finished state changed
+          if (isFinished !== existingCard.classList.contains('finished')) {
+            existingCard.className = `runner-card ${isFinished ? 'finished' : ''}`;
+          }
+          
+          // Update info if needed
+          const info = existingCard.querySelector('.runner-info');
+          const newInfoHTML = `
+            <h3 class="runner-name">${runner.name}</h3>
+            <p class="runner-details">Bib #${bibNumber} • Est: ${estimatedTime}</p>
+          `;
+          if (info.innerHTML !== newInfoHTML) {
+            info.innerHTML = newInfoHTML;
+          }
+          
+          // Update time display
+          const time = existingCard.querySelector('.runner-time');
+          const timeText = isFinished ? `Finished: ${finishTime}` : `Current: ${state.running ? formatMs(currentElapsed()) : '00:00.000'}`;
+          if (time.textContent !== timeText) {
+            time.textContent = timeText;
+          }
+          
+          // Update button state without recreating
+          const finishBtn = existingCard.querySelector('.finish-btn');
+          if (finishBtn) {
+            const shouldBeDisabled = isFinished || !state.running;
+            if (finishBtn.disabled !== shouldBeDisabled) {
+              finishBtn.disabled = shouldBeDisabled;
+            }
+            if (finishBtn.textContent !== (isFinished ? 'Finished' : 'Finish')) {
+              finishBtn.textContent = isFinished ? 'Finished' : 'Finish';
+            }
+          }
+        }
+      });
+    
+      // Remove cards for runners that are no longer in the filtered list
+      Array.from(grid.children).forEach(card => {
+        const runnerId = card.getAttribute('data-runner-id');
+        if (!filteredRunners.some(r => r.id === runnerId)) {
+          grid.removeChild(card);
+        }
+      });
+    }
+    
+
+    // Use event delegation for better performance and reliability
+    function setupTimingEventDelegation() {
+      const grid = document.getElementById('timingRunnersGrid');
+      if (!grid) return;
+      
+      // Remove existing event listeners
+      grid.removeEventListener('click', handleTimingGridClick);
+      grid.removeEventListener('touchstart', handleTimingGridTouch);
+      grid.removeEventListener('touchend', handleTimingGridTouchEnd);
+      
+      // Add new event listeners
+      grid.addEventListener('click', handleTimingGridClick);
+      grid.addEventListener('touchstart', handleTimingGridTouch);
+      grid.addEventListener('touchend', handleTimingGridTouchEnd);
+    }
+
+    function handleTimingGridClick(e) {
+      const finishBtn = e.target.closest('.finish-btn');
+      const card = e.target.closest('.runner-card');
+      
+      if (finishBtn) {
+        e.stopPropagation();
+        e.preventDefault();
+        const runnerId = finishBtn.getAttribute('data-runner-id');
+        const runner = state.runners.find(r => r.id === runnerId);
+        
+        if (runner && !runner.finishTime && state.raceStart != null) {
+          finishRunnerWithFeedback(finishBtn, card, runnerId);
+        }
+      } else if (card) {
+        const runnerId = card.getAttribute('data-runner-id');
+        const runner = state.runners.find(r => r.id === runnerId);
+        
+        if (runner && !runner.finishTime && state.raceStart != null) {
+          const finishBtn = card.querySelector('.finish-btn');
+          finishRunnerWithFeedback(finishBtn, card, runnerId);
+        }
+      }
+    }
+
+    function handleTimingGridTouch(e) {
+      e.stopPropagation();
+    }
+
+    function handleTimingGridTouchEnd(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      
+      const finishBtn = e.target.closest('.finish-btn');
+      const card = e.target.closest('.runner-card');
+      
+      if (finishBtn) {
+        const runnerId = finishBtn.getAttribute('data-runner-id');
+        const runner = state.runners.find(r => r.id === runnerId);
+        
+        if (runner && !runner.finishTime && state.raceStart != null) {
+          finishRunnerWithFeedback(finishBtn, card, runnerId);
+        }
+      }
+    }
+
+    function finishRunnerWithFeedback(finishBtn, card, runnerId) {
+      // Add visual feedback
+      card.classList.add('finishing');
+      finishBtn.textContent = 'Finishing...';
+      finishBtn.disabled = true;
+      
+      setTimeout(() => {
+        finishRunner(runnerId);
+        updateTimingScreen();
+      }, 150);
+    }
+
+    async function finishAllRemaining() {
+      if (state.raceStart == null) {
+        alert('Please start the race first');
+        return;
+      }
+      
+      const remaining = state.runners.filter(r => r.finishTime == null);
+      if (remaining.length === 0) {
+        alert('No remaining runners to finish');
+        return;
+      }
+      
+      if (confirm(`Finish all ${remaining.length} remaining runners?`)) {
+        const elapsed = currentElapsed();
+        remaining.forEach(runner => {
+          runner.finishTime = elapsed;
+          runner.finishedAt = Date.now();
+        });
+        
+        // Save all runners to Firebase
+        if (window.mainSet && window.mainRef && window.mainDb) {
+          // Calculate bib numbers for all runners
+          const allRunnersSorted = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+          
+          for (const runner of remaining) {
+            const bibIndex = allRunnersSorted.findIndex(r => r.id === runner.id);
+            const bibNumber = bibIndex >= 0 ? String(bibIndex + 1).padStart(4, '0') : '—';
+            
+            await window.mainSet(window.mainRef(window.mainDb, "results/" + runner.id), {
+              name: runner.name,
+              bibNumber: bibNumber,
+              estimatedTime: runner.estimatedTime || null,
+              finishTime: runner.finishTime || null,
+              finishedAt: runner.finishedAt || null
+            });
+          }
+        }
+        
+        renderRunners();
+        saveLocal();
+        updateTimingScreen();
+        alert(`Finished ${remaining.length} runners`);
+      }
+    }
+
+    // Event listeners for timing screen
+    document.getElementById('openTimingScreen').addEventListener('click', openTimingScreen);
+    document.getElementById('closeTiming').addEventListener('click', closeTimingScreen);
+    document.getElementById('startRaceFromTiming').addEventListener('click', async () => {
+      startRace();
+      // Also sync to Firebase
+      if (window.mainSet && window.mainRef && window.mainDb) {
+        await window.mainSet(window.mainRef(window.mainDb, 'raceClock'), {
+          raceStart: state.raceStart,
+          running: state.running,
+          paused: state.paused,
+          pausedAt: state.pausedAt
+        });
+      }
+      updateTimingScreen();
+    });
+    document.getElementById('pauseRaceFromTiming').addEventListener('click', async () => {
+      togglePause();
+      // Also sync to Firebase
+      if (window.mainSet && window.mainRef && window.mainDb) {
+        await window.mainSet(window.mainRef(window.mainDb, 'raceClock'), {
+          raceStart: state.raceStart,
+          running: state.running,
+          paused: state.paused,
+          pausedAt: state.pausedAt
+        });
+      }
+      updateTimingScreen();
+    });
+    document.getElementById('resetRaceFromTiming').addEventListener('click', async () => {
+      const { getDatabase, ref, set } = window.firebaseDatabase || await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js');
+      const db = window.firebaseDb || getDatabase();
+      
+        // Also sync to Firebase
+        set(ref(db, 'raceClock'), null);
+        set(ref(db, 'results'), null);
+        resetRace();
+        
+        updateTimingScreen();
+      }
+    );
+    document.getElementById('finishAllRemaining').addEventListener('click', finishAllRemaining);
+    document.getElementById('exportResultsFromTiming').addEventListener('click', () => {
+      document.getElementById('exportCsv').click();
+    });
+
+    // Search functionality
+    document.getElementById('runnerSearch').addEventListener('input', (e) => {
+      searchFilter = e.target.value;
+      renderTimingRunners();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Only work when timing screen is open
+      if (!timingModal || !timingModal.classList.contains('open')) return;
+      
+      // F key to finish first unfinished runner
+      // F key to finish fastest (lowest estimated time) unfinished runner
+      if (e.key === 'f' || e.key === 'F') {
+       e.preventDefault();
+       if (state.raceStart != null) {
+        const fastestUnfinished = [...state.runners]
+         .filter(r => r.finishTime == null && r.estimatedTime != null)
+         .sort((a, b) => a.estimatedTime - b.estimatedTime)[0];
+        if (fastestUnfinished) {
+         finishRunner(fastestUnfinished.id);
+         updateTimingScreen();
+    }
+  }
+}
+
+      
+      // Escape to close timing screen
+      if (e.key === 'Escape') {
+        closeTimingScreen();
+      }
+    });
+
+    // Close timing screen when clicking outside
+    document.getElementById('timingModal').addEventListener('click', (e) => {
+      if (e.target.id === 'timingModal') {
+        closeTimingScreen();
+      }
+    });
+
+    /* ---------- registration management functions ---------- */
+    async function viewRegistrations() {
+      try {
+        const { getDatabase, ref, get } = window.firebaseDatabase || await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js');
+        const db = window.firebaseDb || getDatabase();
+        const registrationsRef = ref(db, 'registrations');
+        const snapshot = await get(registrationsRef);
+        
+        const area = document.getElementById('registrationsArea');
+        area.innerHTML = '';
+        
+        if (snapshot.exists()) {
+          const registrations = snapshot.val();
+          const runners = Object.entries(registrations).sort((a, b) => a[1].estimatedTime - b[1].estimatedTime);
+          
+          if (runners.length === 0) {
+            area.innerHTML = '<div class="muted">No registrations found</div>';
+          } else {
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            
+            // Header
+            const thead = document.createElement('thead');
+            thead.innerHTML = '<tr style="background:#f8f9fa"><th style="padding:8px; border:1px solid #ddd">Name</th><th style="padding:8px; border:1px solid #ddd">Est. Time</th><th style="padding:8px; border:1px solid #ddd">Registered</th><th style="padding:8px; border:1px solid #ddd">Actions</th></tr>';
+            table.appendChild(thead);
+            
+            // Body
+            const tbody = document.createElement('tbody');
+            runners.forEach(([id, registration], index) => {
+              const bibNumber = String(index + 1).padStart(4, '0');
+              const size = registration.size;
+              const estimatedTime = formatMs(registration.estimatedTime);
+              const registeredDate = new Date(registration.registeredAt).toLocaleString();
+              
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td style="padding:8px; border:1px solid #ddd"><strong>${escapeHtml(registration.name)}</strong><br><small class="muted">Bib: ${bibNumber}</small></td>
+                <td style="padding:8px; border:1px solid #ddd">${estimatedTime}</td>
+                <td style="padding:8px; border:1px solid #ddd">${size}</td>
+                <td style="padding:8px; border:1px solid #ddd">${registeredDate}</td>
+                <td style="padding:8px; border:1px solid #ddd">
+                  <button class="btn secondary small" onclick="removeRegistration('${id}', '${escapeHtml(registration.name)}')">Remove</button>
+                </td>
+              `;
+              tbody.appendChild(row);
+            });
+            table.appendChild(tbody);
+            area.appendChild(table);
+          }
+        } else {
+          area.innerHTML = '<div class="muted">No registrations found</div>';
+        }
+        
+        area.style.display = 'block';
+      } catch (error) {
+        console.error('Error loading registrations:', error);
+        alert('Failed to load registrations: ' + error.message);
+      }
+    }
+
+    async function removeRegistration(registrationId, runnerName) {
+      if (!confirm(`Remove ${runnerName} from registrations? This will also remove them from the race if they are currently loaded.`)) {
+        return;
+      }
+      
+      try {
+        const { getDatabase, ref, remove } = window.firebaseDatabase || await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js');
+        const db = window.firebaseDb || getDatabase();
+        
+        // Remove from registrations
+        await remove(ref(db, 'registrations/' + registrationId));
+        
+        // Also remove from results if they exist
+        await remove(ref(db, 'results/' + registrationId));
+        
+        // Remove from local state if they exist
+        state.runners = state.runners.filter(r => r.id !== registrationId);
+        renderRunners();
+        saveLocal();
+        
+        alert(`${runnerName} removed from registrations`);
+        
+        // Refresh the registrations view
+        viewRegistrations();
+      } catch (error) {
+        console.error('Error removing registration:', error);
+        alert('Failed to remove registration: ' + error.message);
+      }
+    }
+
+    async function clearAllRegistrations() {
+      if (!confirm('Are you sure you want to delete ALL registrations? This cannot be undone and will also clear all race data.')) {
+        return;
+      }
+      
+      try {
+        const { getDatabase, ref, remove } = window.firebaseDatabase || await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js');
+        const db = window.firebaseDb || getDatabase();
+        
+        // Remove all registrations
+        await remove(ref(db, 'registrations'));
+        
+        // Also clear all results
+        await remove(ref(db, 'results'));
+        
+        // Clear local state
+        state.runners = [];
+        renderRunners();
+        saveLocal();
+        
+        alert('All registrations and race data cleared');
+        
+        // Hide registrations area
+        document.getElementById('registrationsArea').style.display = 'none';
+      } catch (error) {
+        console.error('Error clearing registrations:', error);
+        alert('Failed to clear registrations: ' + error.message);
+      }
+    }
+
+    // Event listeners for registration management
+    document.getElementById('viewRegistrations').addEventListener('click', viewRegistrations);
+    document.getElementById('clearAllRegistrations').addEventListener('click', clearAllRegistrations);
+
+    // Make removeRegistration globally available for onclick handlers
+    window.removeRegistration = removeRegistration;
+
+    /* ---------- runners ---------- */
+    function makeId(){ return Math.random().toString(36).slice(2,9); }
+    function addRunnerObj(obj){ obj.id = makeId(); obj.finishTime = null; obj.finishedAt = null; state.runners.push(obj); renderRunners(); saveLocal(); }
+
+    document.getElementById('addRunner').addEventListener('click', ()=>{
+      const name = document.getElementById('name').value.trim(); 
+      const estimatedTimeStr = document.getElementById('estimatedTime').value.trim();
+      if(!name) return alert('Please enter a name');
+      if(!estimatedTimeStr) return alert('Please enter estimated time');
+      
+      // Parse estimated time (MM:SS.MS format)
+      const timeMatch = estimatedTimeStr.match(/^(\d{1,2}):(\d{2})\.(\d{3})$/);
+      if(!timeMatch) return alert('Please enter time in MM:SS.MS format (e.g. 25:30.500)');
+      
+      const minutes = parseInt(timeMatch[1]);
+      const seconds = parseInt(timeMatch[2]);
+      const milliseconds = parseInt(timeMatch[3]);
+      const estimatedTime = (minutes * 60 + seconds) * 1000 + milliseconds;
+      
+      addRunnerObj({name, estimatedTime}); 
+      document.getElementById('name').value = ''; 
+      document.getElementById('estimatedTime').value = '';
+    });
+
+    document.getElementById('loadSample').addEventListener('click', ()=>{ 
+      addRunnerObj({name:'Alice',estimatedTime:25*60*1000+30*1000+500}); 
+      addRunnerObj({name:'Bob',estimatedTime:24*60*1000+15*1000+200}); 
+      addRunnerObj({name:'Carlos',estimatedTime:26*60*1000+45*1000+800}); 
+    });
+
+    // Load runners from Firebase registrations
+    document.getElementById('loadFromRegistrations').addEventListener('click', async ()=>{
+      try {
+        const { getDatabase, ref, get } = window.firebaseDatabase || await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js');
+        const db = window.firebaseDb || getDatabase();
+        const registrationsRef = ref(db, 'registrations');
+        const snapshot = await get(registrationsRef);
+        
+        if (snapshot.exists()) {
+          const registrations = snapshot.val();
+          const runners = Object.values(registrations);
+          
+          // Clear existing runners
+          state.runners = [];
+          
+          // Add registered runners
+          runners.forEach(registration => {
+            addRunnerObj({
+              name: registration.name,
+              estimatedTime: registration.estimatedTime
+            });
+          });
+          
+          
+          
+        }
+      } catch (error) {
+        console.error('Error loading registrations:', error);
+        alert('Failed to load registrations: ' + error.message);
+      }
+    });
+
+    function finishRunner(id){
+      if(state.raceStart == null) return alert('Start the race first');
+      const elapsed = currentElapsed();
+      const r = state.runners.find(x=>x.id===id); 
+      if(!r) return; 
+      if(r.finishTime) return;
+      
+      r.finishTime = elapsed;
+      r.finishedAt = Date.now();
+      
+      // Save to Firebase
+      if (window.mainSet && window.mainRef && window.mainDb) {
+        const allRunnersSorted = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+        const bibIndex = allRunnersSorted.findIndex(runner => runner.id === r.id);
+        const bibNumber = bibIndex >= 0 ? String(bibIndex + 1).padStart(4, '0') : '—';
+        
+        window.mainSet(window.mainRef(window.mainDb, "results/" + r.id), {
+          name: r.name,
+          bibNumber: bibNumber,
+          estimatedTime: r.estimatedTime || null,
+          finishTime: r.finishTime,
+          finishedAt: r.finishedAt
+        });
+      }
+      
+      renderRunners(); 
+      saveLocal();
+    }
+
+    function renderRunners(){
+      const container = document.getElementById('runnersList'); container.innerHTML = '';
+      const runnerSelect = document.getElementById('runnerSelect'); runnerSelect.innerHTML = '';
+      
+      // Sort runners by estimated time (fastest first) and assign bib numbers
+      const sortedRunners = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+      
+      sortedRunners.forEach((r, index) => {
+        const bibNumber = String(index + 1).padStart(4, '0');
+        const div = document.createElement('div'); div.className = 'runner-row';
+        const name = document.createElement('div'); name.className = 'name'; 
+        name.innerHTML = `<strong>${escapeHtml(r.name)}</strong> <div class='muted'>Bib: ${bibNumber} | Est: ${r.estimatedTime ? formatMs(r.estimatedTime) : '—'}</div>`;
+        const time = document.createElement('div'); time.style.minWidth = '110px'; time.textContent = r.finishTime != null ? formatMs(r.finishTime) : '—';
+        const btn = document.createElement('button'); btn.className = 'btn small'; btn.textContent = r.finishTime ? 'Finished' : 'Finish';
+        btn.disabled = !!r.finishTime || state.raceStart == null;
+        btn.addEventListener('click', ()=> finishRunner(r.id));
+        const del = document.createElement('button'); del.className = 'btn secondary small'; del.textContent = 'Remove'; del.addEventListener('click', ()=>{ 
+          if(confirm(`Remove ${r.name} from the race?`)) {
+            state.runners = state.runners.filter(x=>x.id!==r.id); 
+            removeRunnerFromFirebase(r.id);
+            renderRunners(); 
+            saveLocal(); 
+          }
+        });
+        const design = document.createElement('button'); design.className = 'btn secondary small'; design.textContent = 'Design Bib'; design.addEventListener('click', ()=>{ openDesignerFor(r.id) });
+        div.appendChild(name); div.appendChild(time); div.appendChild(btn); div.appendChild(design); div.appendChild(del);
+        container.appendChild(div);
+
+        // add to multi-select
+        const opt = document.createElement('option'); opt.value = r.id; opt.textContent = `${r.name} — Bib: ${bibNumber}`; runnerSelect.appendChild(opt);
+      });
+      clockEl.textContent = formatMs(currentElapsed());
+    }
+
+    function openDesignerFor(rid){
+      const sel = document.getElementById('runnerSelect');
+      for(const opt of sel.options) opt.selected = (opt.value === rid);
+      // scroll preview into view
+      document.getElementById('previewArea').scrollIntoView({behavior:'smooth', block:'center'});
+    }
+
+    /* ---------- results display & result link handling ---------- */
+    document.getElementById('showResults').addEventListener('click', ()=>{
+      const area = document.getElementById('resultsArea'); area.innerHTML = '';
+      const finished = state.runners.filter(r=>r.finishTime!=null).sort((a,b)=>a.finishTime-b.finishTime);
+      if(finished.length === 0){ area.innerHTML = '<div class="muted">No finishers yet</div>'; return; }
+      const tbl = document.createElement('table'); const thead = document.createElement('thead'); thead.innerHTML = '<tr><th>Place</th><th>Name</th><th>Bib</th><th>Time</th><th>Est. Time</th></tr>'; tbl.appendChild(thead);
+      const tbody = document.createElement('tbody'); 
+      
+      // Get all runners sorted by estimated time to determine bib numbers
+      const allRunnersSorted = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+      
+      finished.forEach((r,i)=>{ 
+        const bibIndex = allRunnersSorted.findIndex(runner => r.id === r.id);
+        const bibNumber = bibIndex >= 0 ? String(bibIndex + 1).padStart(4, '0') : '—';
+        const estimatedTime = r.estimatedTime ? formatMs(r.estimatedTime) : '—';
+        const tr = document.createElement('tr'); 
+        tr.innerHTML = `<td>${i+1}</td><td>${escapeHtml(r.name)}</td><td>${bibNumber}</td><td>${formatMs(r.finishTime)}</td><td>${estimatedTime}</td>`; 
+        tbody.appendChild(tr); 
+      }); 
+      tbl.appendChild(tbody); area.appendChild(tbl);
+    });
+
+    document.getElementById('exportCsv').addEventListener('click', ()=>{
+      const header = ['Place','Name','Bib','Time_ms','Time_human','Estimated_Time_ms','Estimated_Time_human'];
+      const finished = state.runners.filter(r=>r.finishTime!=null).sort((a,b)=>a.finishTime-b.finishTime);
+      
+      // Get all runners sorted by estimated time to determine bib numbers
+      const allRunnersSorted = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+      
+      const rows = finished.map((r,i)=>{
+        const bibIndex = allRunnersSorted.findIndex(runner => r.id === r.id);
+        const bibNumber = bibIndex >= 0 ? String(bibIndex + 1).padStart(4, '0') : '—';
+        const estimatedTime = r.estimatedTime || 0;
+        return [i+1, r.name, bibNumber, r.finishTime, formatMs(r.finishTime), estimatedTime, formatMs(estimatedTime)];
+      });
+      
+      const csv = [header.join(','), ...rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))].join('\n');
+      const blob = new Blob([csv],{type:'text/csv'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'turkey_trot_results.csv'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('clearAll').addEventListener('click', ()=>{ 
+      const skipConfirmations = document.getElementById('skipConfirmations').checked;
+      
+      if (!skipConfirmations) {
+        if(!confirm('Clear all saved data?')) return; 
+      }
+      
+      state.runners = []; 
+      state.route = []; 
+      state.raceStart = null; 
+      state.running = false; 
+      state.paused = false; 
+      state.pausedAt = null; 
+      renderRunners(); 
+      refreshRouteDisplay(); 
+      saveLocal(); 
+      document.getElementById('clock').textContent = '00:00.000';
+      showNotification('All local data cleared');
+    });
+
+    document.getElementById('clearFirebase').addEventListener('click', async ()=>{
+      const skipConfirmations = document.getElementById('skipConfirmations').checked;
+      
+      if (!skipConfirmations) {
+        if(!confirm('Are you sure you want to delete ALL timing data from Firebase? This cannot be undone.')) return;
+      }
+      
+      showNotification('Clearing Firebase data...', 'warning');
+      
+      try {
+        // Dynamically import Firebase modules if needed
+        const { getDatabase, ref, remove } = window.firebaseDatabase || await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js');
+        const db = window.firebaseDb || getDatabase();
+        await remove(ref(db, 'results'));
+        showNotification('All timing data cleared from Firebase.');
+      } catch (e) {
+        showNotification('Failed to clear Firebase timing data: ' + (e && e.message ? e.message : e), 'error');
+      }
+    });
+
+    /* ---------- local storage ---------- */
+    function saveLocal(){ const toSave = { route: state.route, runners: state.runners, raceStart: state.raceStart, paused: state.paused, pausedAt: state.pausedAt }; localStorage.setItem('turkey_trot_v1', JSON.stringify(toSave)); }
+    function loadLocal(){ const raw = localStorage.getItem('turkey_trot_v1'); if(!raw) return; try{ const parsed = JSON.parse(raw); state.route = parsed.route || []; state.runners = parsed.runners || []; state.raceStart = typeof parsed.raceStart === 'number' ? parsed.raceStart : null; state.paused = !!parsed.paused; state.pausedAt = typeof parsed.pausedAt === 'number' ? parsed.pausedAt : null; state.running = false; }catch(e){ console.warn('load failed', e); } }
+
+    loadLocal(); refreshRouteDisplay(); renderRunners();
+    setInterval(saveLocal,5000);
+
+    /* ---------- Bib generation & printing ---------- */
+
+    function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+    function buildResultLink(r){
+      const base = (document.getElementById('baseResultsUrl').value || '').trim();
+      if(base){
+        // if base provided, append bib or id
+        // allow {id} placeholder
+        if(base.includes('{id}')) return base.replace(/{id}/g, encodeURIComponent(r.id));
+        if(base.toLowerCase().includes('=') && base.includes('?')) return base + encodeURIComponent(r.id);
+        // assume base ends with a parameter entry point
+        return base + encodeURIComponent(r.id);
+      }
+      // default: same page with ?result=<id>
+      const url = new URL(window.location.href);
+      url.searchParams.set('result', r.id);
+      return url.toString();
+    }
+
+    function generateSingleBibDOM(r, opts){
+      const container = document.createElement('div');
+      container.style.transform = `scale(${opts.scale/100})`;
+      container.style.transformOrigin = 'top left';
+      container.className = 'bib';
+      const title = document.createElement('div'); title.className = 'raceTitle'; title.textContent = opts.title || 'Race';
+      
+      // Calculate bib number based on estimated time
+      const allRunnersSorted = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+      const bibIndex = allRunnersSorted.findIndex(r => r.id === r.id);
+      const bibNumber = bibIndex >= 0 ? String(bibIndex + 1).padStart(4, '0') : '—';
+      
+      const num = document.createElement('div'); num.className = 'bibNumber'; num.textContent = bibNumber;
+      const name = document.createElement('div'); name.className = 'name'; name.textContent = r.name;
+      const sponsor = document.createElement('div'); sponsor.className = 'sponsor'; sponsor.textContent = 'Powered by Patterson Farms';
+      const mid = document.createElement('div'); mid.style.display='flex'; mid.style.gap='12px'; mid.style.alignItems='center'; mid.style.justifyContent='center';
+      // QR
+      const qrWrap = document.createElement('div'); qrWrap.className = 'qrWrap';
+      // barcode (removed)
+      // const barWrap = document.createElement('div'); barWrap.className = 'barcodeWrap';
+      mid.appendChild(num); // only bib number centered
+      container.appendChild(title);
+      container.appendChild(mid);
+      container.appendChild(name);
+      container.appendChild(sponsor);
+      container.appendChild(qrWrap); // add QR as last child for bottom right
+
+      // attach meta for rendering
+      container._qrWrap = qrWrap;
+      // container._barWrap = barWrap; (removed)
+      container._resultLink = 'https://sites.google.com/view/brighton5k/home?authuser=0';
+      container.setAttribute('data-result-link', container._resultLink); // store for print
+      return container;
+    }
+
+    function renderCodesForBibDOM(dom, opts){
+      // clear
+      dom._qrWrap.innerHTML = '';
+      // dom._barWrap.innerHTML = ''; (removed)
+
+      if(opts.qr){
+        const q = document.createElement('div');
+        dom._qrWrap.appendChild(q);
+        new QRCode(q, {
+          text: dom._resultLink,
+          width: 56,
+          height: 56
+        });
+      }
+      // if(opts.barcode){ ... } (removed)
+    }
+
+    
+
+    document.getElementById('printBibs').addEventListener('click', ()=>{
+      const pg = document.getElementById('printGrid');
+      if(!pg || !pg.children.length) {
+        showNotification('Generate bibs first', 'warning');
+        return;
+      }
+      
+      showNotification('Preparing print...', 'warning');
+      
+      // Ensure QR code is rendered for print (force re-render for all print bibs)
+      Array.from(pg.querySelectorAll('.bib')).forEach(bib => {
+        const qrWrap = bib.querySelector('.qrWrap');
+        if (qrWrap) {
+          qrWrap.innerHTML = '';
+          const q = document.createElement('div');
+          qrWrap.appendChild(q);
+          // Use data-result-link attribute for print clones
+          const link = bib._resultLink || bib.getAttribute('data-result-link') || window.location.href;
+          new QRCode(q, {
+            text: link,
+            width: 56,
+            height: 56
+          });
+        }
+      });
+      // Ensure print area is visible
+      document.getElementById('printArea').style.display = 'block';
+      
+      // Try multiple print methods
+      setTimeout(()=>{
+        try {
+          window.print();
+          showNotification('Print dialog opened');
+        } catch (error) {
+          console.error("Print error:", error);
+          showNotification('Print failed. Try Ctrl+P or Cmd+P', 'error');
+        }
+      }, 200);
+    });
+
+    /* ---------- show result if ?result= in url ---------- */
+    function showResultFromUrl(){
+      const params = new URLSearchParams(window.location.search);
+      const rid = params.get('result') || params.get('resultId') || params.get('viewResult');
+      if(!rid) return;
+      const runner = state.runners.find(r=>r.id === rid);
+      const area = document.getElementById('resultsArea'); area.innerHTML = '';
+      if(!runner){ area.innerHTML = '<div class="muted">Runner not found (maybe data not loaded in this browser)</div>'; return; }
+      
+      // Calculate bib number based on estimated time
+      const allRunnersSorted = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+      const bibIndex = allRunnersSorted.findIndex(r => r.id === runner.id);
+      const bibNumber = bibIndex >= 0 ? String(bibIndex + 1).padStart(4, '0') : '—';
+      
+      const time = runner.finishTime != null ? formatMs(runner.finishTime) : 'Not finished';
+      const estimatedTime = runner.estimatedTime ? formatMs(runner.estimatedTime) : '—';
+      const html = `<div style="padding:12px; border:1px solid #eee; background:#fff">
+        <h3>Result — ${escapeHtml(runner.name)}</h3>
+        <div><strong>Bib:</strong> ${bibNumber}</div>
+        <div><strong>Time:</strong> ${escapeHtml(time)}</div>
+        <div><strong>Estimated Time:</strong> ${escapeHtml(estimatedTime)}</div>
+        <div style="margin-top:8px"><button id="showLeaderboardBtn" class="btn small">Show Full Leaderboard</button></div>
+      </div>`;
+      area.innerHTML = html;
+      const btn = document.getElementById('showLeaderboardBtn'); if(btn) btn.addEventListener('click', ()=>document.getElementById('showResults').click());
+      // scroll results into view
+      document.getElementById('resultsArea').scrollIntoView({behavior:'smooth', block:'center'});
+    }
+
+    // run on load
+    setTimeout(showResultFromUrl, 600);
+
+    /* ---------- small helpers ---------- */
+    // allow drag&drop of baseResultsUrl or copy link? (omitted for brevity)
+    // If user wants hosted links, they can fill baseResultsUrl with e.g. https://example.com/results?bib=
+
+  </script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getDatabase, ref, set, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+// Note: Start, Pause, and Reset button event listeners are already defined above
+// These duplicate listeners have been removed to prevent conflicts
+  
+// Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDUnAV-DL-Saw2ByPY6GF8aDaZbVCXDIH4",
+    authDomain: "the-race-organizer.firebaseapp.com",
+    databaseURL: "https://the-race-organizer-default-rtdb.firebaseio.com",
+    projectId: "the-race-organizer",
+    storageBucket: "the-race-organizer.firebasestorage.app",
+    messagingSenderId: "265977321479",
+    appId: "1:265977321479:web:23d3f3077e8e766323b2a2",
+    measurementId: "G-PKGPD78DYM"
+  };
+
+  // Init
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  window.mainDb = db;
+  window.mainSet = set;
+  window.mainRef = ref;
+  window.firebaseDb = db;
+  window.firebaseDatabase = { getDatabase, ref, set, remove, get };
+
+  // Save route to Firebase
+  function saveRouteToFirebase() {
+    set(ref(db, "route"), {
+      points: state.route,
+      updatedAt: Date.now()
+    });
+  }
+
+  // Save runner results to Firebase
+  function saveRunnerToFirebase(runner) {
+    // Calculate bib number based on estimated time
+    const allRunnersSorted = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+    const bibIndex = allRunnersSorted.findIndex(r => r.id === runner.id);
+    const bibNumber = bibIndex >= 0 ? String(bibIndex + 1).padStart(4, '0') : '—';
+    
+    set(ref(db, "results/" + runner.id), {
+      name: runner.name,
+      bibNumber: bibNumber,
+      estimatedTime: runner.estimatedTime || null,
+      finishTime: runner.finishTime || null,
+      finishedAt: runner.finishedAt || null
+    });
+  }
+
+  // Make saveRunnerToFirebase globally available
+  window.saveRunnerToFirebase = saveRunnerToFirebase;
+
+  // --- Race clock sync to Firebase (write only on state change) ---
+  function writeRaceClockToFirebase() {
+    set(ref(db, 'raceClock'), {
+      raceStart: state.raceStart,
+      running: state.running,
+      paused: state.paused,
+      pausedAt: state.pausedAt
+    });
+  }
+  // Patch start/pause/reset to sync clock
+
+  const _resetRace = resetRace;
+  resetRace = function() {
+    _resetRace();
+    set(ref(db, 'raceClock'), null);
+  };
+
+  // Hook into your existing functions:
+  const _finishRunner = finishRunner;
+  finishRunner = function(id) {
+    _finishRunner(id);
+    const r = state.runners.find(x => x.id === id);
+    if (r) saveRunnerToFirebase(r);
+  };
+
+  const _refreshRouteDisplay = refreshRouteDisplay;
+  refreshRouteDisplay = function() {
+    _refreshRouteDisplay();
+    saveRouteToFirebase();
+  };
+
+  
+
+  // Note: Clear Firebase button event listener is already defined above
+  // This duplicate listener has been removed to prevent conflicts
+</script>
+
+</body>
+</html>

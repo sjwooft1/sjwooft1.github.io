@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Brighton Oaks 5k - Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #3b6e22;
+      --accent2: #ff7f11;
+      --bg: #f7f7f7;
+      --hero-overlay: rgba(0,0,0,0.45);
+    }
+    body {
+      margin: 0;
+      font-family: 'Roboto', Arial, sans-serif;
+      background: var(--bg);
+      color: #222;
+    }
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .navbar .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .navbar img.logo-img {
+      height: 54px;
+      width: 54px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--accent);
+      box-shadow: 0 2px 8px #0002;
+    }
+    .navbar .nav-links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      margin-left: 24px;
+      font-size: 18px;
+      transition: color 0.2s;
+    }
+    .navbar .nav-links a:hover {
+      color: var(--accent2);
+    }
+    .hero {
+      min-height: 60vh;
+      background: url('PATH/TO/YOUR/HERO-IMAGE.jpg') center/cover no-repeat;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--hero-overlay);
+      z-index: 1;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      color: #fff;
+      padding: 40px 16px 32px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .hero-content img.hero-logo {
+      width: 180px;
+      max-width: 80vw;
+      margin-bottom: 18px;
+      filter: drop-shadow(0 4px 16px #0008);
+    }
+    .hero-content h1 {
+      font-family: 'Luckiest Guy', cursive;
+      font-size: 3.2rem;
+      margin: 0 0 12px 0;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 2px 4px 12px #000a;
+    }
+    .hero-content .countdown {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 12px 0 24px 0;
+      background: rgba(0,0,0,0.25);
+      padding: 10px 24px;
+      border-radius: 12px;
+      display: inline-block;
+      letter-spacing: 1px;
+    }
+    .hero-content .hero-buttons {
+      display: flex;
+      gap: 18px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .hero-content .hero-buttons a {
+      background: var(--accent2);
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 14px 32px;
+      border-radius: 10px;
+      text-decoration: none;
+      box-shadow: 0 2px 12px #0003;
+      transition: background 0.2s, transform 0.15s;
+      border: none;
+      outline: none;
+      cursor: pointer;
+    }
+    .hero-content .hero-buttons a.secondary {
+      background: var(--accent);
+    }
+    .hero-content .hero-buttons a:hover {
+      background: #222;
+      color: #fff;
+      transform: translateY(-2px) scale(1.04);
+    }
+    .about-section {
+      background: url('PATH/TO/YOUR/ABOUT-IMAGE.jpg') center/cover no-repeat;
+      padding: 60px 0 60px 0;
+      color: #fff;
+      position: relative;
+      text-align: center;
+    }
+    .about-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(59,110,34,0.7);
+      z-index: 1;
+    }
+    .about-content {
+      position: relative;
+      z-index: 2;
+      max-width: 700px;
+      margin: 0 auto;
+      background: rgba(0,0,0,0.18);
+      border-radius: 18px;
+      padding: 32px 18px;
+      box-shadow: 0 2px 16px #0002;
+    }
+    .about-content h2 {
+      font-family: 'Luckiest Guy', cursive;
+      font-size: 2.2rem;
+      margin-bottom: 12px;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+    .about-content p {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      color: #fff;
+    }
+    .footer {
+      background: #222;
+      color: #fff;
+      text-align: center;
+      padding: 36px 12px 18px 12px;
+      position: relative;
+    }
+    .footer .footer-art {
+      width: 220px;
+      max-width: 80vw;
+      margin: 0 auto 18px auto;
+      display: block;
+      filter: drop-shadow(0 2px 8px #000a);
+    }
+    .footer p {
+      margin: 0;
+      font-size: 1rem;
+      color: #fff;
+      opacity: 0.8;
+    }
+    @media (max-width: 700px) {
+      .hero-content h1 { font-size: 2.1rem; }
+      .about-content h2 { font-size: 1.3rem; }
+      .hero-content img.hero-logo { width: 120px; }
+      .footer .footer-art { width: 120px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="logo">
+      <img src="PATH/TO/YOUR/LOGO.png" alt="Brighton Oaks 5k Logo" class="logo-img" />
+      <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="https://sites.google.com/view/brighton5k/registration" target="_blank">Register</a>
+      <a href="race-tools.html">Race Tools</a>
+    </div>
+  </nav>
+  <section class="hero">
+    <div class="hero-content">
+      <img src="PATH/TO/YOUR/LOGO.png" alt="Brighton Oaks 5k Logo" class="hero-logo" />
+      <h1>Welcome to the Brighton Oaks 5k!</h1>
+      <div class="countdown" id="countdown">Race Day: ...</div>
+      <div class="hero-buttons">
+        <a href="https://sites.google.com/view/brighton5k/registration" target="_blank">Register Now</a>
+        <a href="race-tools.html" class="secondary">Race Tools</a>
+      </div>
+    </div>
+  </section>
+  <section class="about-section">
+    <div class="about-content">
+      <h2>Run, Race, and Celebrate!</h2>
+      <p>
+        Join us for a fun-filled 5k through the beautiful Brighton Oaks trails! Whether you're a seasoned runner or just out for a stroll, this event is for everyone. Enjoy the scenic course, friendly competition, and a great community atmosphere. Ready, set, go!
+      </p>
+    </div>
+  </section>
+  <footer class="footer">
+    <img src="PATH/TO/YOUR/FOOTER-ART.png" alt="Runner Art" class="footer-art" />
+    <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
+  </footer>
+  <script>
+    // Countdown Timer
+    const raceDate = new Date('2025-11-27T09:00:00'); // Example: Nov 27, 2025, 9:00 AM
+    function updateCountdown() {
+      const now = new Date();
+      const diff = raceDate - now;
+      if (diff <= 0) {
+        document.getElementById('countdown').textContent = 'The race is on!';
+        return;
+      }
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const mins = Math.floor((diff / (1000 * 60)) % 60);
+      const secs = Math.floor((diff / 1000) % 60);
+      document.getElementById('countdown').textContent = `Race Day: ${days}d ${hours}h ${mins}m ${secs}s`;
+    }
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+  </script>
+</body>
+</html>
