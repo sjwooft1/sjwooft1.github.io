@@ -1,6 +1,58 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- Include in <head> (once per page) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #3b6e22;
+    --accent2: #ff7f11;
+  }
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .navbar .logo {
+    display: flex;
+    align-items: center;
+  }
+  .navbar .nav-links a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    margin-left: 24px;
+    font-size: 18px;
+    transition: color 0.2s;
+  }
+  .navbar .nav-links a:hover {
+    color: var(--accent2);
+  }
+</style>
+
+<!-- Place inside <body> at the very top -->
+<nav class="navbar">
+  <div class="logo">
+    <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">
+      Brighton Oaks 5k
+    </span>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="registration.html" target="_blank">Register</a>
+    <a href="orgnizer.html">Organizer</a>
+    <a href="results.html">Results</a>
+  </div>
+</nav>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Race Timer & Route</title>
