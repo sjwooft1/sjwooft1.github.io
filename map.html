@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Turkey Trot XC Course Viewer</title>
+  <title>Brighton Oaks XC Course Viewer</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
@@ -36,17 +36,18 @@
 
   <!-- Leaflet -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- GPX parser (correct one) -->
+  <!-- GPX parser -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
-  <!-- Turf.js -->
+  <!-- Turf.js for distance -->
   <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-  <!-- Arrows -->
+  <!-- Polyline arrows -->
   <script src="https://unpkg.com/leaflet-polylinedecorator@1.7.0/dist/leaflet.polylineDecorator.min.js"></script>
 
   <script>
     const map = L.map('map').setView([39.0, -77.0], 13);
 
-    const esriSat = L.tileLayer(
+    // Satellite background
+    L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       { attribution: 'Tiles © Esri' }
     ).addTo(map);
@@ -54,25 +55,22 @@
     const markersLayer = L.layerGroup().addTo(map);
     const arrowsLayer = L.layerGroup().addTo(map);
 
-    new L.GPX("Turkey Trot Route.gpx", {
+    // Load your GPX file
+    new L.GPX("Brighton Oaks course.kml.GPX", {
       async: true,
       polyline_options: { color: "#333", weight: 4, opacity: 0.95 }
     }).on("loaded", function(e) {
       const gpx = e.target;
       map.fitBounds(gpx.getBounds());
 
-      // Safely extract latlngs
+      // Extract latlngs
       let latlngs = gpx.getLayers()[0]._latlngs;
-      if (Array.isArray(latlngs[0])) {
-        latlngs = latlngs.flat();
-      }
+      if (Array.isArray(latlngs[0])) latlngs = latlngs.flat();
 
-      console.log("LatLng count:", latlngs.length);
-
-      // Add start/finish
+      // Start/Finish
       if (latlngs.length > 1) {
-        L.marker([latlngs[0].lat, latlngs[0].lng]).addTo(markersLayer).bindPopup("Start");
-        L.marker([latlngs[latlngs.length-1].lat, latlngs[latlngs.length-1].lng]).addTo(markersLayer).bindPopup("Finish");
+        L.marker(latlngs[0]).addTo(markersLayer).bindPopup("Start");
+        L.marker(latlngs[latlngs.length-1]).addTo(markersLayer).bindPopup("Finish");
       }
 
       // Convert to Turf line
@@ -81,8 +79,6 @@
 
       const totalKm = turf.length(line, { units: "kilometers" });
       const totalMiles = totalKm / 1.609344;
-
-      console.log("Course length:", totalKm.toFixed(2), "km");
 
       // Add arrows
       const arrowPolyline = L.polyline(latlngs, {color: "#333", weight:4});
