@@ -36,8 +36,8 @@
 
   <!-- Leaflet -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- GPX parser -->
-  <script src="https://unpkg.com/leaflet-gpx@1.7.0/gpx.min.js"></script>
+  <!-- GPX parser (correct one) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
   <!-- Turf.js -->
   <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
   <!-- Arrows -->
@@ -51,7 +51,6 @@
       { attribution: 'Tiles © Esri' }
     ).addTo(map);
 
-    const courseLayer = L.layerGroup().addTo(map);
     const markersLayer = L.layerGroup().addTo(map);
     const arrowsLayer = L.layerGroup().addTo(map);
 
@@ -62,40 +61,38 @@
       const gpx = e.target;
       map.fitBounds(gpx.getBounds());
 
-      // Extract latlngs from GPX polyline
-      let latlngs = gpx.getPolyline().getLatLngs();
-
-      // Sometimes GPX returns nested arrays (segments), flatten if needed
-      if (Array.isArray(latlngs[0]) && latlngs[0][0].lat !== undefined) {
+      // Safely extract latlngs
+      let latlngs = gpx.getLayers()[0]._latlngs;
+      if (Array.isArray(latlngs[0])) {
         latlngs = latlngs.flat();
       }
 
-      // Convert to [lng, lat] for turf
-      const coords = latlngs.map(ll => [ll.lng, ll.lat]);
-      const line = turf.lineString(coords);
+      console.log("LatLng count:", latlngs.length);
 
-      // Draw arrows
-      L.polylineDecorator(gpx.getPolyline(), {
-        patterns: [
-          { offset: 10, repeat: 80, symbol: L.Symbol.arrowHead({ pixelSize: 10, pathOptions: {color:'#333'} }) }
-        ]
-      }).addTo(arrowsLayer);
-
-      // Add Start + Finish
+      // Add start/finish
       if (latlngs.length > 1) {
         L.marker([latlngs[0].lat, latlngs[0].lng]).addTo(markersLayer).bindPopup("Start");
         L.marker([latlngs[latlngs.length-1].lat, latlngs[latlngs.length-1].lng]).addTo(markersLayer).bindPopup("Finish");
       }
 
-      // Add mile/km markers
-      addDistanceMarkers(line);
-    }).addTo(courseLayer);
+      // Convert to Turf line
+      const coords = latlngs.map(ll => [ll.lng, ll.lat]);
+      const line = turf.lineString(coords);
 
-    function addDistanceMarkers(line) {
       const totalKm = turf.length(line, { units: "kilometers" });
       const totalMiles = totalKm / 1.609344;
 
-      // km markers
+      console.log("Course length:", totalKm.toFixed(2), "km");
+
+      // Add arrows
+      const arrowPolyline = L.polyline(latlngs, {color: "#333", weight:4});
+      L.polylineDecorator(arrowPolyline, {
+        patterns: [
+          { offset: 20, repeat: 100, symbol: L.Symbol.arrowHead({ pixelSize: 12, pathOptions: {color:'#333'} }) }
+        ]
+      }).addTo(arrowsLayer);
+
+      // KM markers
       for (let k=1; k<=Math.floor(totalKm); k++) {
         const pt = turf.along(line, k, { units: "kilometers" });
         const [lng,lat] = pt.geometry.coordinates;
@@ -104,17 +101,16 @@
         }).addTo(markersLayer).bindPopup(`${k} km`);
       }
 
-      // mile markers
+      // Mile markers
       for (let m=1; m<=Math.floor(totalMiles); m++) {
         const kmAtMile = m * 1.609344;
-        if (kmAtMile > totalKm) break;
         const pt = turf.along(line, kmAtMile, { units: "kilometers" });
         const [lng,lat] = pt.geometry.coordinates;
         L.circleMarker([lat,lng], {
           radius: 7, fillColor: "#ff5722", color:"#fff", weight:1.25, fillOpacity:1
         }).addTo(markersLayer).bindPopup(`${m} mile`);
       }
-    }
+    }).addTo(map);
   </script>
 </body>
 </html>
