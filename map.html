@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Turkey Trot XC Course Viewer</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    html,body,#map { height: 100%; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; }
+    .legend {
+      position: absolute;
+      bottom: 14px;
+      left: 12px;
+      z-index: 1000;
+      background: rgba(255,255,255,0.95);
+      border-radius: 8px;
+      padding: 8px 10px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      font-size: 13px;
+    }
+    .legend div { margin: 4px 0; display:flex; gap:8px; align-items:center; }
+    .swatch { width:14px; height:14px; border-radius:3px; display:inline-block; }
+    .mile-swatch { background:#ff5722; }
+    .km-swatch { background:#1976d2; }
+    .course-swatch { width:28px; height:6px; background:#333; border-radius:4px; display:inline-block; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="legend">
+    <div><span class="swatch mile-swatch"></span> Mile markers</div>
+    <div><span class="swatch km-swatch"></span> Kilometer markers</div>
+    <div><span class="course-swatch"></span> Course</div>
+  </div>
+
+  <!-- Leaflet core -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- GPX plugin -->
+  <script src="https://unpkg.com/leaflet-gpx@1.7.0/gpx.min.js"></script>
+  <!-- Turf.js for distance calculations -->
+  <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
+  <!-- PolylineDecorator for arrows -->
+  <script src="https://unpkg.com/leaflet-polylinedecorator@1.7.0/dist/leaflet.polylineDecorator.min.js"></script>
+
+  <script>
+    const map = L.map('map').setView([39.0, -77.0], 13);
+
+    // Satellite tiles
+    const esriSat = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: 'Tiles © Esri — Satellite' }
+    ).addTo(map);
+
+    const courseLayer = L.layerGroup().addTo(map);
+    const markersLayer = L.layerGroup().addTo(map);
+    const arrowsLayer = L.layerGroup().addTo(map);
+
+    // Load GPX
+    new L.GPX("Turkey Trot Route.gpx", {
+      async: true,
+      polyline_options: { color: "#333", weight: 4, opacity: 0.95 }
+    }).on("loaded", function(e) {
+      const gpx = e.target;
+      map.fitBounds(gpx.getBounds());
+
+      // Convert GPX polyline to Turf LineString
+      const latlngs = gpx.getPolyline().getLatLngs().map(ll => [ll.lat, ll.lng]);
+      const line = turf.lineString(latlngs.map(([lat,lng]) => [lng,lat]));
+
+      // Draw arrows
+      L.polylineDecorator(gpx.getPolyline(), {
+        patterns: [
+          { offset: 10, repeat: 80, symbol: L.Symbol.arrowHead({ pixelSize: 10, pathOptions: {color:'#333',fillOpacity:0.8} }) }
+        ]
+      }).addTo(arrowsLayer);
+
+      // Add markers
+      addDistanceMarkers(line);
+    }).addTo(courseLayer);
+
+    function addDistanceMarkers(line) {
+      const totalKm = turf.length(line, { units: "kilometers" });
+      const totalMiles = totalKm / 1.609344;
+
+      // km markers
+      for (let k=1; k<=Math.floor(totalKm); k++) {
+        const pt = turf.along(line, k, { units: "kilometers" });
+        const [lng,lat] = pt.geometry.coordinates;
+        L.circleMarker([lat,lng], {
+          radius: 6, fillColor: "#1976d2", color:"#fff", weight:1, fillOpacity:1
+        }).addTo(markersLayer).bindPopup(`${k} km`);
+      }
+
+      // mile markers
+      for (let m=1; m<=Math.floor(totalMiles); m++) {
+        const kmAtMile = m * 1.609344;
+        if (kmAtMile > totalKm) break;
+        const pt = turf.along(line, kmAtMile, { units: "kilometers" });
+        const [lng,lat] = pt.geometry.coordinates;
+        L.circleMarker([lat,lng], {
+          radius: 7, fillColor: "#ff5722", color:"#fff", weight:1.25, fillOpacity:1
+        }).addTo(markersLayer).bindPopup(`${m} mile`);
+      }
+    }
+  </script>
+</body>
+</html>
