@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Brighton Oaks 5k - Map</title>
+  <title>Turkey Trot XC Course Viewer</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     html,body,#map { height: 100%; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; }
     .legend {
       position: absolute;
       bottom: 14px;
@@ -35,29 +34,27 @@
     <div><span class="course-swatch"></span> Course</div>
   </div>
 
-  <!-- Leaflet core -->
+  <!-- Leaflet -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- GPX plugin -->
+  <!-- GPX parser -->
   <script src="https://unpkg.com/leaflet-gpx@1.7.0/gpx.min.js"></script>
-  <!-- Turf.js for distance calculations -->
+  <!-- Turf.js -->
   <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-  <!-- PolylineDecorator for arrows -->
+  <!-- Arrows -->
   <script src="https://unpkg.com/leaflet-polylinedecorator@1.7.0/dist/leaflet.polylineDecorator.min.js"></script>
 
   <script>
     const map = L.map('map').setView([39.0, -77.0], 13);
 
-    // Satellite tiles
     const esriSat = L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      { attribution: 'Tiles © Esri — Satellite' }
+      { attribution: 'Tiles © Esri' }
     ).addTo(map);
 
     const courseLayer = L.layerGroup().addTo(map);
     const markersLayer = L.layerGroup().addTo(map);
     const arrowsLayer = L.layerGroup().addTo(map);
 
-    // Load GPX
     new L.GPX("Turkey Trot Route.gpx", {
       async: true,
       polyline_options: { color: "#333", weight: 4, opacity: 0.95 }
@@ -65,18 +62,32 @@
       const gpx = e.target;
       map.fitBounds(gpx.getBounds());
 
-      // Convert GPX polyline to Turf LineString
-      const latlngs = gpx.getPolyline().getLatLngs().map(ll => [ll.lat, ll.lng]);
-      const line = turf.lineString(latlngs.map(([lat,lng]) => [lng,lat]));
+      // Extract latlngs from GPX polyline
+      let latlngs = gpx.getPolyline().getLatLngs();
+
+      // Sometimes GPX returns nested arrays (segments), flatten if needed
+      if (Array.isArray(latlngs[0]) && latlngs[0][0].lat !== undefined) {
+        latlngs = latlngs.flat();
+      }
+
+      // Convert to [lng, lat] for turf
+      const coords = latlngs.map(ll => [ll.lng, ll.lat]);
+      const line = turf.lineString(coords);
 
       // Draw arrows
       L.polylineDecorator(gpx.getPolyline(), {
         patterns: [
-          { offset: 10, repeat: 80, symbol: L.Symbol.arrowHead({ pixelSize: 10, pathOptions: {color:'#333',fillOpacity:0.8} }) }
+          { offset: 10, repeat: 80, symbol: L.Symbol.arrowHead({ pixelSize: 10, pathOptions: {color:'#333'} }) }
         ]
       }).addTo(arrowsLayer);
 
-      // Add markers
+      // Add Start + Finish
+      if (latlngs.length > 1) {
+        L.marker([latlngs[0].lat, latlngs[0].lng]).addTo(markersLayer).bindPopup("Start");
+        L.marker([latlngs[latlngs.length-1].lat, latlngs[latlngs.length-1].lng]).addTo(markersLayer).bindPopup("Finish");
+      }
+
+      // Add mile/km markers
       addDistanceMarkers(line);
     }).addTo(courseLayer);
 
