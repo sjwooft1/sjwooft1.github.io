@@ -46,11 +46,11 @@
 
 <!-- Place inside <body> at the very top -->
 <nav class="navbar">
-  <div class="logo">
-    <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">
-      Brighton Oaks 5k
-    </span>
+  <a href="index.html">
+  <div class="logo"> 
+    <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
   </div>
+  </a>
   <div class="nav-links">
     <a href="index.html">Home</a>
     <a href="registration.html" target="_blank">Register</a>
@@ -70,7 +70,12 @@
     h1{margin:0; font-size:28px; color:var(--accent)}
     .subtitle{color:#666; margin-top:8px}
     .form-container{background:#fff; padding:30px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-    
+   
+    a {
+  text-decoration: none; /* Removes the underline from the link */
+  color: inherit; /* Inherits text color from the parent element */
+   }
+   
     /* Mobile responsiveness */
     @media (max-width: 768px) {
       .container{padding:10px; max-width:100%}
