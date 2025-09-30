@@ -618,6 +618,7 @@
         <div style="display:flex; gap:4px; flex-wrap:wrap">
           <button id="clearRoute" class="btn secondary small">Clear Route</button>
           <button id="exportRoute" class="btn small">Export GeoJSON</button>
+          <button id="saveRouteFirebase" class="btn success small">Save Route to Firebase</button>
           <label for="gpxFile" class="btn small" style="margin:0; cursor:pointer; display:inline-block;">
             Import GPX
             <input type="file" id="gpxFile" accept=".gpx" style="display:none;">
@@ -925,11 +926,21 @@
     document.getElementById('clearRoute').addEventListener('click', ()=>{ state.route = []; refreshRouteDisplay(); saveLocal(); });
 
     document.getElementById('exportRoute').addEventListener('click', ()=>{
-      const km = calcRouteDistance(state.route);
-      const gj = {type:'Feature', geometry:{type:'LineString', coordinates: state.route.map(p=>[p.lng,p.lat])}, properties:{distance_km: km, distance_mi: km * 0.621371}};
-      const blob = new Blob([JSON.stringify(gj,null,2)],{type:'application/json'});
+      const geojson = {
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: state.route.map(pt=>[pt.lng, pt.lat]) },
+        properties: { name: 'Race Route' }
+      };
+      const blob = new Blob([JSON.stringify(geojson,null,2)],{type:'application/json'});
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = 'turkey_trot_route.geojson'; a.click(); URL.revokeObjectURL(url);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'route.geojson'; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('saveRouteFirebase').addEventListener('click', ()=>{
+      saveRouteToFirebase();
+      showNotification('Route saved to Firebase!','success');
     });
 
     /* ---------- GPX import functionality ---------- */
