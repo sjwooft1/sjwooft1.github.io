@@ -201,13 +201,21 @@
       .hero-content img.hero-logo { width: 120px; }
       .footer .footer-art { width: 120px; }
     }
+    a {
+  text-decoration: none; /* Removes the underline from the link */
+  color: inherit; /* Inherits text color from the parent element */
+}
+
   </style>
 </head>
 <body>
   <nav class="navbar">
-    <div class="logo">
-      <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
-    </div>
+  <a href="index.html">
+  <div class="logo"> 
+    <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
+  </div>
+</a>
+
     <div class="nav-links">
       <a href="index.html">Home</a>
       <a href="registration.html" target="_blank">Register</a>
