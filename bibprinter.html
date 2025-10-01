@@ -12,6 +12,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
    <style>
+     @font-face{
+       font-family: 'Oakhill';
+       src: url('Oakhill.ttf') format('truetype');
+     }
      :root {
        --accent: #3b6e22;
        --accent2: #ff7f11;
@@ -42,12 +46,14 @@
        letter-spacing: 1px;
        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
      }
-     .navbar .nav-links {
+    .navbar .nav-links {
+      font-family: 'Oakhill', sans-serif;
        display: flex;
        align-items: center;
        gap: 8px;
      }
-     .navbar .nav-links a {
+    .navbar .nav-links a {
+      font-family: 'Oakhill', sans-serif;
        color: var(--accent);
        text-decoration: none;
        font-weight: 600;
