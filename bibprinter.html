@@ -244,17 +244,35 @@
         margin: 0;
         padding: 0;
       }
-      button, input[type="file"], h1, p, .settings-panel, .notification {
+      /* Hide all non-bib elements when printing */
+      .navbar, .footer, button, input[type="file"], h1, p, .settings-panel, .notification, 
+      .footer-links, .footer-art, .footer p {
         display: none !important;
       }
       .bib {
         box-shadow: none;
         margin: 10px auto;
         page-break-inside: avoid;
+        width: 700px;
+        height: 400px;
       }
       #bibs {
         margin: 0;
         padding: 0;
+        width: 100%;
+      }
+      /* Ensure only bibs are visible */
+      body * {
+        visibility: hidden;
+      }
+      #bibs, #bibs * {
+        visibility: visible;
+      }
+      #bibs {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
       }
     }
   </style>
