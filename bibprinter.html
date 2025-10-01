@@ -1,58 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
+  <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="BO 5k" />
+  <link rel="manifest" href="/Favicon Generator/site.webmanifest" />
   <!-- Include in <head> (once per page) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --accent: #3b6e22;
-    --accent2: #ff7f11;
-  }
-  .navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 32px;
-    background: #fff;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .navbar .logo {
-    display: flex;
-    align-items: center;
-  }
-  .navbar .nav-links a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 700;
-    margin-left: 24px;
-    font-size: 18px;
-    transition: color 0.2s;
-  }
-  .navbar .nav-links a:hover {
-    color: var(--accent2);
-  }
-</style>
-
-<!-- Place inside <body> at the very top -->
-<nav class="navbar">
-  <a href="index.html">
-  <div class="logo"> 
-    <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
-  </div>
-  </a>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="registration.html">Register</a>
-    <a href="orgnizer.html">Organizer</a>
-    <a href="results.html">Results</a>
-  </div>
-</nav>
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+   <style>
+     :root {
+       --accent: #3b6e22;
+       --accent2: #ff7f11;
+       --text-dark: #2c3e50;
+       --text-light: #7f8c8d;
+     }
+     .navbar {
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       padding: 16px 24px;
+       background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+       box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+       position: sticky;
+       top: 0;
+       z-index: 1000;
+       border-bottom: 1px solid rgba(60, 110, 34, 0.1);
+     }
+     .navbar .logo {
+       display: flex;
+       align-items: center;
+       flex-shrink: 0;
+     }
+     .navbar .logo span {
+       font-family: 'Luckiest Guy', cursive;
+       font-size: 1.8rem;
+       color: var(--accent2);
+       letter-spacing: 1px;
+       text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+     }
+     .navbar .nav-links {
+       display: flex;
+       align-items: center;
+       gap: 8px;
+     }
+     .navbar .nav-links a {
+       color: var(--accent);
+       text-decoration: none;
+       font-weight: 600;
+       font-size: 16px;
+       padding: 8px 16px;
+       border-radius: 8px;
+       transition: all 0.3s ease;
+       position: relative;
+       overflow: hidden;
+     }
+     .navbar .nav-links a:hover {
+       color: var(--accent2);
+       background: rgba(255, 127, 17, 0.1);
+       transform: translateY(-1px);
+     }
+     .navbar .nav-links a.active {
+       background: var(--accent);
+       color: white;
+     }
+     
+     /* Mobile responsiveness */
+     @media (max-width: 768px) {
+       .navbar {
+         padding: 12px 16px;
+         flex-wrap: wrap;
+       }
+       .navbar .logo span {
+         font-size: 1.4rem;
+       }
+       .navbar .nav-links {
+         gap: 4px;
+         margin-top: 8px;
+         width: 100%;
+         justify-content: center;
+       }
+       .navbar .nav-links a {
+         font-size: 14px;
+         padding: 6px 12px;
+       }
+     }
+     
+     @media (max-width: 480px) {
+       .navbar .nav-links {
+         flex-wrap: wrap;
+         gap: 2px;
+       }
+       .navbar .nav-links a {
+         font-size: 13px;
+         padding: 4px 8px;
+       }
+     }
+   </style>
+  
+  <!-- Place inside <body> at the very top -->
+   <nav class="navbar">
+     <div class="logo">
+       <span>Brighton Oaks 5k</span>
+     </div>
+     <div class="nav-links">
+       <a href="index.html">Home</a>
+       <a href="registration.html" target="_blank">Register</a>
+       <a href="orgnizer.html">Organizer</a>
+       <a href="results.html">Results</a>
+       <a href="bibprinter.html" class="active">Bib Printer</a>
+     </div>
+   </nav>
   <meta charset="UTF-8">
   <title>Race Bib Maker</title>
   <style>
@@ -200,9 +261,7 @@
 </head>
 <body>
   <h1>Race Bib Maker</h1>
-  <div class="header-links" style="margin-left: auto;">
-      <a href="index.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">Home Page</a>
-    </div>
+  
   <div class="settings-panel">
     <h3 style="margin-top:0;">Settings</h3>
     <label>
@@ -215,8 +274,7 @@
     </label>
   </div>
   
-  <p>Upload a race logo (optional):</p>
-  <input type="file" id="logoUpload" accept="image/*"><br>
+  <p>Race logo: <strong>bright.png</strong> (automatically loaded)</p>
   <button onclick="loadRunners()">Load Runners & Generate Bibs</button>
   <button onclick="printBibs()">Print Bibs</button>
   <button onclick="manualPrint()" style="background:#17a2b8; color:white;">Manual Print (Ctrl+P)</button>
@@ -249,18 +307,13 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    let uploadedLogo = null;
+    let uploadedLogo = "bright.png"; // Automatically set to bright.png
 
-    // Handle logo upload
-    document.getElementById("logoUpload").addEventListener("change", function(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          uploadedLogo = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
+    // Load bright.png automatically when page loads
+    window.addEventListener('load', function() {
+      // Set the logo to bright.png automatically
+      uploadedLogo = "bright.png";
+      showNotification("Bright.png logo loaded automatically");
     });
 
     // ---------- REPLACE loadRunners() WITH THIS ----------
@@ -346,12 +399,12 @@ function createBib(name, bibNum, estimatedMs) {
   bib.className = "bib";
 
   // Logo (if uploaded)
-  // Logo (if uploaded) -> bottom-left
+  // Logo (bright.png) -> bottom-left
 if (uploadedLogo) {
   const logo = document.createElement("img");
   logo.className = "logo";
   logo.src = uploadedLogo;
-  logo.alt = "Race Logo";
+  logo.alt = "Brighton Oaks 5k Logo";
   bib.appendChild(logo);
 }
 
@@ -515,9 +568,96 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+  </script>
+     <style>
+   .footer {
+     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+     color: #fff;
+     text-align: center;
+     padding: 40px 20px 20px 20px;
+     position: relative;
+     margin-top: 40px;
+     border-top: 3px solid var(--accent2);
+   }
+   .footer::before {
+     content: '';
+     position: absolute;
+     top: 0;
+     left: 0;
+     right: 0;
+     height: 3px;
+     background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 50%, var(--accent) 100%);
+   }
+   .footer .footer-art {
+     width: 180px;
+     max-width: 80vw;
+     margin: 0 auto 20px auto;
+     display: block;
+     filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+     transition: transform 0.3s ease;
+   }
+   .footer .footer-art:hover {
+     transform: scale(1.05);
+   }
+   .footer p {
+     margin: 0;
+     font-size: 1rem;
+     color: #ecf0f1;
+     opacity: 0.9;
+     font-weight: 500;
+   }
+   .footer .footer-links {
+     margin-top: 16px;
+     display: flex;
+     justify-content: center;
+     gap: 24px;
+     flex-wrap: wrap;
+   }
+   .footer .footer-links a {
+     color: #bdc3c7;
+     text-decoration: none;
+     font-size: 14px;
+     transition: color 0.3s ease;
+   }
+   .footer .footer-links a:hover {
+     color: var(--accent2);
+   }
+   @media (max-width: 768px) {
+     .footer {
+       padding: 30px 16px 16px 16px;
+     }
+     .footer .footer-art { 
+       width: 140px; 
+     }
+     .footer .footer-links {
+       gap: 16px;
+     }
+   }
+   @media (max-width: 480px) {
+     .footer .footer-art { 
+       width: 120px; 
+     }
+     .footer .footer-links {
+       flex-direction: column;
+       gap: 8px;
+     }
+   }
+    </style>
 
+   <!-- Place inside <body> at the very bottom -->
+   <footer class="footer">
+     <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art" />
+     <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
+     <div class="footer-links">
+       <a href="index.html">Home</a>
+       <a href="registration.html">Register</a>
+       <a href="orgnizer.html">Organizer</a>
+       <a href="results.html">Results</a>
+       <a href="bibprinter.html">Bib Printer</a>
+     </div>
+   </footer>
   
-// ---------- END createBib() ----------
+
 
   </script>
 </body>
