@@ -15,47 +15,103 @@
   :root {
     --accent: #3b6e22;
     --accent2: #ff7f11;
+    --text-dark: #2c3e50;
+    --text-light: #7f8c8d;
   }
   .navbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 32px;
-    background: #fff;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(60, 110, 34, 0.1);
   }
   .navbar .logo {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+  }
+  .navbar .logo span {
+    font-family: 'Luckiest Guy', cursive;
+    font-size: 1.8rem;
+    color: var(--accent2);
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  }
+  .navbar .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   .navbar .nav-links a {
     color: var(--accent);
     text-decoration: none;
-    font-weight: 700;
-    margin-left: 24px;
-    font-size: 18px;
-    transition: color 0.2s;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
   }
   .navbar .nav-links a:hover {
     color: var(--accent2);
+    background: rgba(255, 127, 17, 0.1);
+    transform: translateY(-1px);
+  }
+  .navbar .nav-links a.active {
+    background: var(--accent);
+    color: white;
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .navbar {
+      padding: 12px 16px;
+      flex-wrap: wrap;
+    }
+    .navbar .logo span {
+      font-size: 1.4rem;
+    }
+    .navbar .nav-links {
+      gap: 4px;
+      margin-top: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+    .navbar .nav-links a {
+      font-size: 14px;
+      padding: 6px 12px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .navbar .nav-links {
+      flex-wrap: wrap;
+      gap: 2px;
+    }
+    .navbar .nav-links a {
+      font-size: 13px;
+      padding: 4px 8px;
+    }
   }
 </style>
 
 <!-- Place inside <body> at the very top -->
 <nav class="navbar">
   <div class="logo">
-    <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">
-      Brighton Oaks 5k
-    </span>
+    <span>Brighton Oaks 5k</span>
   </div>
   <div class="nav-links">
     <a href="index.html">Home</a>
-    <a href="registration.html" target="_blank">Register</a>
-    <a href="orgnizer.html">Organizer</a>
+    <a href="registration.html">Register</a>
+    <a href="orgnizer.html" class="active">Organizer</a>
     <a href="results.html">Results</a>
+    <a href="bibprinter.html">Bib Printer</a>
   </div>
 </nav>
 
