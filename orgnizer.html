@@ -68,23 +68,22 @@
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; margin:0; background:var(--bg); color:#111}
     header{background:linear-gradient(90deg,#fff 0,#fff); padding:12px 18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap}
     h1{margin:0; font-size:18px}
-    .container{display:grid; grid-template-columns:1fr 460px; gap:14px; padding:14px}
-    #map{height:560px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.08); width:100%}
-    .panel{background:#fff; padding:12px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06); height:560px; overflow:auto}
+    .container{display:grid; grid-template-columns:1fr; gap:14px; padding:14px}
+    #map{height:calc(100vh - 180px); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.08); width:100%}
+    .panel{display:none}
+    .top-toolbar{display:flex; gap:8px; align-items:center; justify-content:center; padding:8px 14px; background:#fff; border-bottom:1px solid #eee; position:sticky; top:56px; z-index:5}
     
     /* Mobile responsiveness */
     @media (max-width: 1024px) {
       .container{grid-template-columns:1fr; gap:10px; padding:10px}
-      .panel{height:auto; max-height:70vh}
-      #map{height:400px}
+      #map{height:calc(100vh - 180px)}
       header{flex-direction:column; align-items:flex-start; gap:8px}
       .header-links{margin-left:0; margin-top:8px}
     }
     
     @media (max-width: 768px) {
       .container{padding:8px; gap:8px}
-      .panel{padding:8px; height:auto; max-height:60vh}
-      #map{height:300px}
+      #map{height:calc(100vh - 180px)}
       header{padding:8px 12px}
       h1{font-size:16px}
       .muted{font-size:12px}
@@ -113,6 +112,9 @@
     .muted{color:#666; font-size:13px}
     .btn{background:var(--accent); color:#fff; border:0; padding:8px 10px; border-radius:8px; cursor:pointer}
     .btn.secondary{background:#eee; color:#111}
+    .btn.success{background:#28a745; color:#fff}
+    .btn.success:hover{background:#218838}
+    .btn.warning{background:#ffc107; color:#111}
     .small{padding:6px 8px; font-size:13px}
     .flex{display:flex; gap:8px}
     .leftCol{min-width:0}
@@ -597,6 +599,13 @@
       <a href="bibprinter.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">Bib Printer</a>
     </div>
   </header>
+  <div class="top-toolbar">
+    <button id="openRouteTools" class="btn small secondary">Route Tools</button>
+    <button id="openTimingScreenTop" class="btn small">Timing</button>
+    <button id="openRegistrations" class="btn small">Registrations</button>
+    <button id="openResults" class="btn small">Results</button>
+    <button id="openBibs" class="btn small secondary">Bib Designer</button>
+  </div>
   
   <div class="settings-panel">
     <h3 style="margin-top:0;">Settings</h3>
@@ -612,129 +621,26 @@
   <div class="container">
     <div class="leftCol">
       <div id="map"></div>
-      <div style="display:flex; gap:8px; margin-top:10px; align-items:center; flex-wrap:wrap">
-        <div class="muted">Route points: <span id="pts">0</span></div>
-        <div class="muted">Distance: <strong id="dist_km">0.00</strong> km / <strong id="dist_mi">0.00</strong> mi</div>
-        <div style="display:flex; gap:4px; flex-wrap:wrap">
+      <div style="display:flex; gap:12px; margin-top:10px; align-items:center; flex-wrap:wrap">
+        <div class="muted" style="display:flex; gap:12px; align-items:center">
+          <span style="display:inline-flex; gap:8px; align-items:center; background:#fff; border:1px solid #eee; padding:6px 10px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.04)">
+            <span>📍 Points: <strong id="pts">0</strong></span>
+            <span>•</span>
+            <span>📏 <strong id="dist_km">0.00</strong> km / <strong id="dist_mi">0.00</strong> mi</span>
+          </span>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-left:auto">
+          <span class="muted" style="align-self:center; margin-right:4px">Route Tools:</span>
           <button id="clearRoute" class="btn secondary small">Clear Route</button>
           <button id="exportRoute" class="btn small">Export GeoJSON</button>
-          <button id="saveRouteFirebase" class="btn success small">Save Route to Firebase</button>
-          <label for="gpxFile" class="btn small" style="margin:0; cursor:pointer; display:inline-block;">
-            Import GPX
+          <label for="gpxFile" class="btn small" style="margin:0; cursor:pointer; display:inline-block;">Import GPX
             <input type="file" id="gpxFile" accept=".gpx" style="display:none;">
           </label>
+          <button id="saveRouteFirebase" class="btn success small">Save Route to Firebase</button>
         </div>
       </div>
     </div>
-    <div class="panel">
-      <section>
-        <h3>Race Timer</h3>
-        <div class="flex" style="align-items:center; margin-top:6px">
-          <div style="font-size:28px; font-weight:600" id="clock">00:00.000</div>
-          <div style="margin-left:auto; display:flex; gap:8px">
-            <button id="startBtn" class="btn">Start</button>
-            <button id="pauseBtn" class="btn secondary">Pause</button>
-            <button id="resetBtn" class="btn secondary">Reset</button>
-          </div>
-        </div>
-        <div class="muted" style="margin-top:6px">Press <strong>Start</strong> to begin the race — then use the Finish button for each runner.</div>
-      </section>
-
-      <hr/>
-      <section>
-        <h3>Race Countdown</h3>
-        <div style="margin-bottom:10px">
-          <label>Race Start Date & Time
-            <input type="datetime-local" id="raceStartTime" style="width:100%; margin-top:4px"/>
-          </label>
-          <div class="controls" style="margin-top:8px">
-            <button id="setRaceTime" class="btn small">Set Race Time</button>
-            <button id="clearRaceTime" class="btn secondary small">Clear</button>
-          </div>
-        </div>
-        <div id="countdownDisplay" style="font-size:24px; font-weight:600; text-align:center; padding:15px; background:#f8f9fa; border-radius:8px; margin-top:10px; display:none;">
-          <div id="countdownText">Countdown will appear here</div>
-        </div>
-      </section>
-
-      <hr/>
-      <section>
-        <h3>Register Runner</h3>
-        <label>Name<input id="name" placeholder="Runner name"/></label>
-        <label>Estimated Time (MM:SS.MS)<input id="estimatedTime" placeholder="e.g. 25:30.500"/></label>
-        <div class="controls">
-          <button id="addRunner" class="btn">Add Runner</button>
-          <button id="loadFromRegistrations" class="btn secondary">Load from Registrations</button>
-          <button id="loadSample" class="btn secondary">Load Sample</button>
-        </div>
-      </section>
-
-      <hr/>
-      <section>
-        <h3>Runners & Timing</h3>
-        <div style="display:flex; gap:8px; margin-bottom:10px">
-          <button id="openTimingScreen" class="btn">Open Timing Screen</button>
-          <button id="removeAllRunners" class="btn secondary small">Remove All Runners</button>
-          <button id="removeFinishedRunners" class="btn secondary small">Remove Finished Runners</button>
-        </div>
-        <div id="runnersList"></div>
-      </section>
-
-      <div class="bibDesigner">
-        <div>
-
-          <div style="display:flex; gap:8px; align-items:center; margin-top:6px">
-            <label style="flex:1">
-              Select runners to print:
-              <select id="runnerSelect" multiple style="height:110px; width:100%; margin-top:6px"></select>
-            </label>
-            <div style="width:170px">
-              <label>Include QR <input type="checkbox" id="optQr" checked></label>
-              <label>Include Barcode <input type="checkbox" id="optBarcode" checked></label>
-              <label>Scale
-                <select id="optScale">
-                  <option value="100">100%</option>
-                  <option value="90">90%</option>
-                  <option value="80">80%</option>
-                  <option value="70">70%</option>
-                </select>
-              </label>
-              <div style="margin-top:6px">
-                <button id="generateBibs" class="btn small">Generate Bibs</button>
-                <button id="printBibs" class="btn secondary small">Print</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="preview" id="previewArea">
-            <div class="muted">Preview will appear here after generating.</div>
-          </div>
-        </div>
-      </div>
-
-      <hr/>
-      <section>
-        <h3>Registration Management</h3>
-        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px">
-          <button id="viewRegistrations" class="btn small">View All Registrations</button>
-          <button id="clearAllRegistrations" class="btn secondary small" style="background:#fdd; color:#a00">Clear All Registrations</button>
-        </div>
-        <div id="registrationsArea" style="margin-top:8px; max-height:200px; overflow-y:auto; display:none;"></div>
-      </section>
-
-      <hr/>
-      <section>
-        <h3>Results</h3>
-        <div style="display:flex; gap:8px; align-items:center">
-          <button id="showResults" class="btn small">Show Leaderboard</button>
-          <button id="exportCsv" class="btn small">Export CSV</button>
-          <button id="clearAll" class="btn secondary small">Clear All</button>
-          <button id="clearFirebase" class="btn secondary small" style="background:#fdd; color:#a00">Clear Firebase Timing</button>
-        </div>
-        <div id="resultsArea" style="margin-top:8px"></div>
-      </section>
-
-    </div>
+    <!-- Right panel content moved into modals to avoid scrolling -->
   </div>
   <footer>
     Tips: Click on the map to add route points; the script will calculate total route distance (approx). Data is saved to localStorage so refreshing won't lose it. To share route with runners export the GeoJSON.
@@ -792,6 +698,46 @@
       <div class="keyboard-hint">
         💡 Tip: Press <strong>F</strong> to quickly finish the first unfinished runner, or click on any runner card to finish them
       </div>
+    </div>
+  </div>
+
+  <!-- Registrations Modal -->
+  <div id="registrationsModal" class="timing-modal">
+    <div class="timing-content">
+      <div class="timing-header">
+        <h2 class="timing-title">Registrations</h2>
+        <button id="closeRegistrations" class="close-timing">✕ Close</button>
+      </div>
+      <div class="controls" style="justify-content:space-between; flex-wrap:wrap">
+        <div class="flex">
+          <button id="refreshRegistrations" class="timing-btn secondary">Refresh</button>
+          <button id="clearAllRegistrations" class="timing-btn danger">Clear All</button>
+        </div>
+        <div class="flex">
+          <input id="regName" placeholder="Name" class="search-box" style="max-width:220px"/>
+          <input id="regEstimatedTime" placeholder="MM:SS.MS" class="search-box" style="max-width:160px"/>
+          <input id="shirtSize" placeholder="Shirt Size" class="search-box" style="max-width:160px"/>
+          <button id="addRegistration" class="timing-btn success">Add</button>
+        </div>
+      </div>
+      <div id="registrationsArea" class="runners-grid" style="max-height:60vh"></div>
+    </div>
+  </div>
+
+  <!-- Results Modal -->
+  <div id="resultsModal" class="timing-modal">
+    <div class="timing-content">
+      <div class="timing-header">
+        <h2 class="timing-title">Results</h2>
+        <button id="closeResults" class="close-timing">✕ Close</button>
+      </div>
+      <div class="controls" style="justify-content:space-between; flex-wrap:wrap">
+        <div class="flex">
+          <button id="exportCsvTop" class="timing-btn secondary">Export CSV</button>
+          <button id="clearFirebase" class="timing-btn danger">Clear Firebase Timing</button>
+        </div>
+      </div>
+      <div id="resultsArea" style="margin-top:8px"></div>
     </div>
   </div>
 
@@ -1066,17 +1012,42 @@
       state.raceStart = null; state.running = false; state.paused = false; state.pausedAt = null; cancelAnimationFrame(rafId); clockEl.textContent = '00:00.000'; state.runners.forEach(r=>{ r.finishTime = null; r.finishedAt = null; }); renderRunners(); saveLocal();
     }
 
-    document.getElementById('startBtn').addEventListener('click', startRace);
-    document.getElementById('pauseBtn').addEventListener('click', async () => {
-    await set(ref(db, 'raceClock'), {
-      raceStart: state.raceStart,
-      pausedAt: Date.now(),
-      running: false,
-      paused: true
+    // Top toolbar buttons
+    document.getElementById('openTimingScreenTop').addEventListener('click', openTimingScreen);
+    document.getElementById('openRouteTools').addEventListener('click', ()=>{
+      showNotification('Route tools are below the map.');
+      document.getElementById('map').scrollIntoView({behavior:'smooth'});
     });
-    togglePause();
-});
-    document.getElementById('resetBtn').addEventListener('click', resetRace);
+    document.getElementById('openRegistrations').addEventListener('click', ()=>{
+      const m = document.getElementById('registrationsModal'); m.classList.add('open');
+      viewRegistrations();
+    });
+    document.getElementById('openResults').addEventListener('click', ()=>{
+      const m = document.getElementById('resultsModal'); m.classList.add('open');
+      document.getElementById('showResults').click();
+    });
+    document.getElementById('openBibs').addEventListener('click', ()=>{
+      showNotification('Open Bib Designer in Bib Printer page');
+      window.location.href = 'bibprinter.html';
+    });
+
+    // Timer controls moved to timing modal; keep bindings for keyboard
+    document.getElementById('startBtn') && document.getElementById('startBtn').addEventListener('click', startRace);
+    document.getElementById('pauseBtn') && document.getElementById('pauseBtn').addEventListener('click', async () => {
+      try {
+        if (window.mainSet && window.mainRef && window.mainDb) {
+          await window.mainSet(window.mainRef(window.mainDb, 'raceClock'), {
+            raceStart: state.raceStart,
+            pausedAt: Date.now(),
+            running: false,
+            paused: true
+          });
+        }
+      } finally {
+        togglePause();
+      }
+    });
+    document.getElementById('resetBtn') && document.getElementById('resetBtn').addEventListener('click', resetRace);
 
     /* ---------- countdown timer ---------- */
     let countdownInterval = null;
@@ -1197,12 +1168,14 @@
       }
     }
 
-    // Event listeners for countdown controls
-    document.getElementById('setRaceTime').addEventListener('click', setRaceStartTime);
-    document.getElementById('clearRaceTime').addEventListener('click', clearRaceStartTime);
+    // Event listeners for countdown controls (elements may not exist in no-scroll layout)
+    document.getElementById('setRaceTime') && document.getElementById('setRaceTime').addEventListener('click', setRaceStartTime);
+    document.getElementById('clearRaceTime') && document.getElementById('clearRaceTime').addEventListener('click', clearRaceStartTime);
 
-    // Load race start time on page load
-    loadRaceStartTime();
+    // Load race start time on page load (only if controls exist)
+    (function(){
+      if (document.getElementById('raceStartTime')) loadRaceStartTime();
+    })();
 
     /* ---------- runner removal functions ---------- */
     function removeAllRunners() {
@@ -1248,9 +1221,9 @@
       }
     }
 
-    // Event listeners for removal buttons
-    document.getElementById('removeAllRunners').addEventListener('click', removeAllRunners);
-    document.getElementById('removeFinishedRunners').addEventListener('click', removeFinishedRunners);
+    // Event listeners for removal buttons (guarded)
+    document.getElementById('removeAllRunners') && document.getElementById('removeAllRunners').addEventListener('click', removeAllRunners);
+    document.getElementById('removeFinishedRunners') && document.getElementById('removeFinishedRunners').addEventListener('click', removeFinishedRunners);
 
     /* ---------- Timing Screen Functions ---------- */
     let timingModal = null;
@@ -1261,8 +1234,9 @@
       timingModal = document.getElementById('timingModal');
       timingModal.classList.add('open');
       
-      // Load current race state from Firebase if available
-      
+      // Load current race state and registrations from Firebase
+      await loadRaceStateFromFirebase();
+      await loadRegistrationsIntoRunners();
       
       updateTimingScreen();
       
@@ -1650,8 +1624,11 @@
     }
 
     // Event listeners for timing screen
-    document.getElementById('openTimingScreen').addEventListener('click', openTimingScreen);
+    document.getElementById('openTimingScreen') && document.getElementById('openTimingScreen').addEventListener('click', openTimingScreen);
     document.getElementById('closeTiming').addEventListener('click', closeTimingScreen);
+    document.getElementById('closeRegistrations').addEventListener('click', ()=> document.getElementById('registrationsModal').classList.remove('open'));
+    document.getElementById('closeResults').addEventListener('click', ()=> document.getElementById('resultsModal').classList.remove('open'));
+    document.getElementById('exportCsvTop').addEventListener('click', ()=> document.getElementById('exportCsv').click());
     document.getElementById('startRaceFromTiming').addEventListener('click', async () => {
       startRace();
       // Also sync to Firebase
@@ -1759,7 +1736,7 @@
             
             // Header
             const thead = document.createElement('thead');
-            thead.innerHTML = '<tr style="background:#f8f9fa"><th style="padding:8px; border:1px solid #ddd">Name</th><th style="padding:8px; border:1px solid #ddd">Est. Time</th><th style="padding:8px; border:1px solid #ddd">Registered</th><th style="padding:8px; border:1px solid #ddd">Actions</th></tr>';
+            thead.innerHTML = '<tr style="background:#f8f9fa"><th style="padding:8px; border:1px solid #ddd">Name</th><th style="padding:8px; border:1px solid #ddd">Est. Time</th><th style="padding:8px; border:1px solid #ddd">Shirt Size</th><th style="padding:8px; border:1px solid #ddd">Time registered</th><th style="padding:8px; border:1px solid #ddd">Actions</th></tr>';
             table.appendChild(thead);
             
             // Body
@@ -1857,8 +1834,25 @@
     }
 
     // Event listeners for registration management
-    document.getElementById('viewRegistrations').addEventListener('click', viewRegistrations);
-    document.getElementById('clearAllRegistrations').addEventListener('click', clearAllRegistrations);
+    document.getElementById('viewRegistrations') && document.getElementById('viewRegistrations').addEventListener('click', viewRegistrations);
+    document.getElementById('clearAllRegistrations') && document.getElementById('clearAllRegistrations').addEventListener('click', clearAllRegistrations);
+    document.getElementById('refreshRegistrations').addEventListener('click', viewRegistrations);
+    document.getElementById('addRegistration').addEventListener('click', async ()=>{
+      const name = document.getElementById('regName').value.trim();
+      const est = document.getElementById('regEstimatedTime').value.trim();
+      const size = document.getElementById('shirtSize').value.trim();
+      if(!name || !est) return alert('Enter name and time');
+      const m = est.match(/^(\d{1,2}):(\d{2})\.(\d{3})$/); if(!m) return alert('Time MM:SS.MS');
+      const ms = (parseInt(m[1])*60 + parseInt(m[2]))*1000 + parseInt(m[3]);
+      try {
+        const { getDatabase, ref, set } = window.firebaseDatabase || await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js');
+        const db = window.firebaseDb || getDatabase();
+        const id = Math.random().toString(36).slice(2,9);
+        await set(ref(db,'registrations/'+id), { name, estimatedTime: ms, registeredAt: Date.now(), size });
+        document.getElementById('regName').value=''; document.getElementById('regEstimatedTime').value='';
+        viewRegistrations();
+      } catch(err){ alert('Failed to add: '+ err.message); }
+    });
 
     // Make removeRegistration globally available for onclick handlers
     window.removeRegistration = removeRegistration;
@@ -1894,7 +1888,7 @@
     });
 
     // Load runners from Firebase registrations
-    document.getElementById('loadFromRegistrations').addEventListener('click', async ()=>{
+    async function loadRegistrationsIntoRunners() {
       try {
         const { getDatabase, ref, get } = window.firebaseDatabase || await import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js');
         const db = window.firebaseDb || getDatabase();
@@ -1912,18 +1906,22 @@
           runners.forEach(registration => {
             addRunnerObj({
               name: registration.name,
-              estimatedTime: registration.estimatedTime
+              estimatedTime: registration.estimatedTime,
+              size: registration.size
             });
           });
           
-          
-          
+          showNotification(`Loaded ${runners.length} registrations from Firebase`);
+        } else {
+          showNotification('No registrations found in Firebase');
         }
       } catch (error) {
         console.error('Error loading registrations:', error);
-        alert('Failed to load registrations: ' + error.message);
+        showNotification('Failed to load registrations: ' + error.message, 'error');
       }
-    });
+    }
+
+    document.getElementById('loadFromRegistrations') && document.getElementById('loadFromRegistrations').addEventListener('click', loadRegistrationsIntoRunners);
 
     function finishRunner(id){
       if(state.raceStart == null) return alert('Start the race first');
@@ -1955,37 +1953,49 @@
     }
 
     function renderRunners(){
-      const container = document.getElementById('runnersList'); container.innerHTML = '';
-      const runnerSelect = document.getElementById('runnerSelect'); runnerSelect.innerHTML = '';
+      // Only render if containers exist (avoid errors in no-scroll layout)
+      const container = document.getElementById('runnersList');
+      const runnerSelect = document.getElementById('runnerSelect');
       
-      // Sort runners by estimated time (fastest first) and assign bib numbers
-      const sortedRunners = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
-      
-      sortedRunners.forEach((r, index) => {
-        const bibNumber = String(index + 1).padStart(4, '0');
-        const div = document.createElement('div'); div.className = 'runner-row';
-        const name = document.createElement('div'); name.className = 'name'; 
-        name.innerHTML = `<strong>${escapeHtml(r.name)}</strong> <div class='muted'>Bib: ${bibNumber} | Est: ${r.estimatedTime ? formatMs(r.estimatedTime) : '—'}</div>`;
-        const time = document.createElement('div'); time.style.minWidth = '110px'; time.textContent = r.finishTime != null ? formatMs(r.finishTime) : '—';
-        const btn = document.createElement('button'); btn.className = 'btn small'; btn.textContent = r.finishTime ? 'Finished' : 'Finish';
-        btn.disabled = !!r.finishTime || state.raceStart == null;
-        btn.addEventListener('click', ()=> finishRunner(r.id));
-        const del = document.createElement('button'); del.className = 'btn secondary small'; del.textContent = 'Remove'; del.addEventListener('click', ()=>{ 
-          if(confirm(`Remove ${r.name} from the race?`)) {
-            state.runners = state.runners.filter(x=>x.id!==r.id); 
-            removeRunnerFromFirebase(r.id);
-            renderRunners(); 
-            saveLocal(); 
-          }
+      if (container) {
+        container.innerHTML = '';
+        
+        // Sort runners by estimated time (fastest first) and assign bib numbers
+        const sortedRunners = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+        
+        sortedRunners.forEach((r, index) => {
+          const bibNumber = String(index + 1).padStart(4, '0');
+          const div = document.createElement('div'); div.className = 'runner-row';
+          const name = document.createElement('div'); name.className = 'name'; 
+          name.innerHTML = `<strong>${escapeHtml(r.name)}</strong> <div class='muted'>Bib: ${bibNumber} | Est: ${r.estimatedTime ? formatMs(r.estimatedTime) : '—'}</div>`;
+          const time = document.createElement('div'); time.style.minWidth = '110px'; time.textContent = r.finishTime != null ? formatMs(r.finishTime) : '—';
+          const btn = document.createElement('button'); btn.className = 'btn small'; btn.textContent = r.finishTime ? 'Finished' : 'Finish';
+          btn.disabled = !!r.finishTime || state.raceStart == null;
+          btn.addEventListener('click', ()=> finishRunner(r.id));
+          const del = document.createElement('button'); del.className = 'btn secondary small'; del.textContent = 'Remove'; del.addEventListener('click', ()=>{ 
+            if(confirm(`Remove ${r.name} from the race?`)) {
+              state.runners = state.runners.filter(x=>x.id!==r.id); 
+              removeRunnerFromFirebase(r.id);
+              renderRunners(); 
+              saveLocal(); 
+            }
+          });
+          const design = document.createElement('button'); design.className = 'btn secondary small'; design.textContent = 'Design Bib'; design.addEventListener('click', ()=>{ openDesignerFor(r.id) });
+          div.appendChild(name); div.appendChild(time); div.appendChild(btn); div.appendChild(design); div.appendChild(del);
+          container.appendChild(div);
         });
-        const design = document.createElement('button'); design.className = 'btn secondary small'; design.textContent = 'Design Bib'; design.addEventListener('click', ()=>{ openDesignerFor(r.id) });
-        div.appendChild(name); div.appendChild(time); div.appendChild(btn); div.appendChild(design); div.appendChild(del);
-        container.appendChild(div);
-
-        // add to multi-select
-        const opt = document.createElement('option'); opt.value = r.id; opt.textContent = `${r.name} — Bib: ${bibNumber}`; runnerSelect.appendChild(opt);
-      });
-      clockEl.textContent = formatMs(currentElapsed());
+      }
+      
+      if (runnerSelect) {
+        runnerSelect.innerHTML = '';
+        const sortedRunners = [...state.runners].sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+        sortedRunners.forEach((r, index) => {
+          const bibNumber = String(index + 1).padStart(4, '0');
+          const opt = document.createElement('option'); opt.value = r.id; opt.textContent = `${r.name} — Bib: ${bibNumber}`; runnerSelect.appendChild(opt);
+        });
+      }
+      
+      if (clockEl) clockEl.textContent = formatMs(currentElapsed());
     }
 
     function openDesignerFor(rid){
@@ -2236,6 +2246,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
   import { getDatabase, ref, set, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+  import { get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
 // Note: Start, Pause, and Reset button event listeners are already defined above
 // These duplicate listeners have been removed to prevent conflicts
@@ -2268,6 +2279,7 @@
       updatedAt: Date.now()
     });
   }
+  window.saveRouteToFirebase = saveRouteToFirebase;
 
   // Save runner results to Firebase
   function saveRunnerToFirebase(runner) {
