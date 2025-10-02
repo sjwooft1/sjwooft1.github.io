@@ -16,7 +16,15 @@
   <style>
     @font-face{
       font-family: 'Oakhill';
-      src: url('Oakhill.ttf') format('truetype');
+      src: url('fonts/Oakhill.ttf') format('truetype');
+    }
+    @font-face{
+      font-family: 'run';
+      src: url('fonts/RUNNING DEMO.otf') format('opentype');
+    }
+    @font-face{
+      font-family: 'about';
+      src: url('fonts/No Running In The Halls.ttf') format('truetype');
     }
   :root {
     --accent: #3b6e22;
@@ -49,13 +57,13 @@
     text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
   }
   .navbar .nav-links {
-    font-family: 'Oakhill', sans-serif;
+    font-family: 'run', truetype;;
     display: flex;
     align-items: center;
     gap: 8px;
   }
   .navbar .nav-links a {
-    font-family: 'Oakhill', sans-serif;
+    font-family: 'run', truetype; 
     color: var(--accent);
     text-decoration: none;
     font-weight: 600;
@@ -86,14 +94,14 @@
       font-size: 1.4rem;
     }
     .navbar .nav-links {
-      font-family: 'Oakhill', sans-serif;
+      font-family: 'run', truetype;
       gap: 4px;
       margin-top: 8px;
       width: 100%;
       justify-content: center;
     }
     .navbar .nav-links a {
-      font-family: 'Oakhill', sans-serif;
+      font-family: 'run', truetype;
       font-size: 14px;
       padding: 6px 12px;
     }
@@ -101,12 +109,12 @@
   
   @media (max-width: 480px) {
     .navbar .nav-links {
-      font-family: 'Oakhill', sans-serif;
+      font-family: 'run', truetype;
       flex-wrap: wrap;
       gap: 2px;
     }
     .navbar .nav-links a {
-      font-family: 'Oakhill', sans-serif;
+      font-family: 'run', sans-serif;
       font-size: 13px;
       padding: 4px 8px;
     }
@@ -169,6 +177,7 @@
       justify-content: center;
     }
     .hero-content .hero-buttons a {
+      font-family: 'Oakhill', opentype;
       background: var(--accent2);
       color: #fff;
       font-size: 1.2rem;
@@ -206,6 +215,7 @@
       z-index: 1;
     }
     .about-content {
+      font-family: 'about', truetype;
       position: relative;
       z-index: 2;
       max-width: 700px;

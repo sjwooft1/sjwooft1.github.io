@@ -12,10 +12,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
    <style>
-     @font-face{
-       font-family: 'Oakhill';
-       src: url('Oakhill.ttf') format('truetype');
-     }
+    @font-face{
+      font-family: 'Oakhill';
+      src: url('fonts/Oakhill.ttf') format('truetype');
+    }
+    @font-face{
+      font-family: 'run';
+      src: url('fonts/RUNNING DEMO.otf') format('opentype');
+    }
      :root {
        --accent: #3b6e22;
        --accent2: #ff7f11;
@@ -47,13 +51,13 @@
        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
      }
     .navbar .nav-links {
-      font-family: 'Oakhill', sans-serif;
+      font-family: 'run', sans-serif;
        display: flex;
        align-items: center;
        gap: 8px;
      }
     .navbar .nav-links a {
-      font-family: 'Oakhill', sans-serif;
+      font-family: 'run', sans-serif;
        color: var(--accent);
        text-decoration: none;
        font-weight: 600;
@@ -196,6 +200,35 @@
     }
     #bibs {
       margin-top: 20px;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      html, body { overflow-x: hidden; }
+      button, input[type="file"] { font-size: 14px; padding: 8px 14px; }
+      .bib {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 7 / 4;
+        padding: 12px;
+        border-width: 6px;
+        margin: 16px auto;
+      }
+      .race-title { font-size: 28px; letter-spacing: 1px; }
+      .bib-number { font-size: 100px; }
+      .runner-name { font-size: 22px; }
+      .logo { width: 90px; bottom: 12px; left: 12px; }
+      .qrcode { bottom: 12px; right: 12px; }
+      #bibs { padding: 0 10px; }
+    }
+    
+    @media (max-width: 480px) {
+      button, input[type="file"] { font-size: 13px; padding: 8px 12px; }
+      .bib { border-width: 5px; padding: 10px; margin: 12px auto; }
+      .race-title { font-size: 22px; }
+      .bib-number { font-size: 80px; letter-spacing: 1px; }
+      .runner-name { font-size: 18px; }
+      .logo { width: 72px; }
     }
     /* Notification system */
     .notification {
