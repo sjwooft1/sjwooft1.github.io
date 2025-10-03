@@ -25,6 +25,7 @@
     --accent2: #ff7f11;
     --text-dark: #2c3e50;
     --text-light: #7f8c8d;
+    --hero-overlay: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.5) 100%);
   }
   .navbar {
     display: flex;
@@ -653,6 +654,10 @@
   </style>
 </head>
 <body>
+  <section class="hero" style="min-height:40vh;background:url('images/road.jpeg') center/cover no-repeat fixed;position:relative;display:flex;align-items:center;justify-content:center;text-align:center">
+    <div style="position:relative;z-index:1;color:#fff;padding:40px 16px"><h1 style="margin:0;font-size:28px;color:#fff;text-shadow:0 4px 12px rgba(0,0,0,0.4)">Race Timer & Route</h1></div>
+    <div style="content:'';position:absolute;inset:0;background:var(--hero-overlay);"></div>
+  </section>
   <header>
     <div>
       <h1>Race Timer & Route</h1>
@@ -2404,7 +2409,7 @@
 </script>
 <style>
   .footer {
-    background: #222;
+    background: #222 url('images/road.jpeg') center/cover no-repeat fixed;
     color: #fff;
     text-align: center;
     padding: 36px 12px 18px 12px;

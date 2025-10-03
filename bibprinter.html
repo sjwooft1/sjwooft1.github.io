@@ -331,7 +331,7 @@
     </label>
   </div>
   
-  <p>Race logo: <strong>bright.png</strong> (automatically loaded)</p>
+  <p>Race logo: <strong>images/bright.png</strong> (automatically loaded)</p>
   <button onclick="loadRunners()">Load Runners & Generate Bibs</button>
   <button onclick="printBibs()">Print Bibs</button>
   <button onclick="manualPrint()" style="background:#17a2b8; color:white;">Manual Print (Ctrl+P)</button>
@@ -364,12 +364,12 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    let uploadedLogo = "bright.png"; // Automatically set to bright.png
+    let uploadedLogo = "images/bright.png"; // Automatically set to bright.png
 
     // Load bright.png automatically when page loads
     window.addEventListener('load', function() {
       // Set the logo to bright.png automatically
-      uploadedLogo = "bright.png";
+      uploadedLogo = "images/bright.png";
       showNotification("Bright.png logo loaded automatically");
     });
 

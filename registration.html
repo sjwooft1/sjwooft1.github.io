@@ -129,13 +129,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Race Registration</title>
   <style>
-    :root{--accent:#ff7f11;--bg:#f7f7f7}
+    :root{--accent:#ff7f11;--bg:#f7f7f7;--hero-overlay: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.5) 100%)}
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; margin:0; background:var(--bg); color:#111}
     .container{max-width:600px; margin:0 auto; padding:20px}
     .header{background:linear-gradient(90deg,#fff 0,#fff); padding:20px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.08); margin-bottom:20px; text-align:center}
     h1{margin:0; font-size:28px; color:var(--accent)}
     .subtitle{color:#666; margin-top:8px}
     .form-container{background:#fff; padding:30px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    /* Hero section */
+    .hero{min-height:40vh; background:url('images/road.jpeg') center/cover no-repeat fixed; position:relative; display:flex; align-items:center; justify-content:center; text-align:center}
+    .hero::before{content:''; position:absolute; inset:0; background:var(--hero-overlay);}
+    .hero-content{position:relative; z-index:1; color:#fff; padding:40px 16px}
+    .hero-content h1{margin:0; font-size:36px; color:#fff; text-shadow:0 4px 12px rgba(0,0,0,0.4)}
    
     a {
   text-decoration: none; /* Removes the underline from the link */
@@ -189,6 +194,11 @@
   </style>
 </head>
 <body>
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Register for the Brighton Oaks 5k</h1>
+    </div>
+  </section>
   <div class="container">
     <div class="header">
       <h1>Race Registration</h1>
@@ -471,7 +481,7 @@
   </script>
   <style>
   .footer {
-    background: #222;
+    background: #222 url('images/road.jpeg') center/cover no-repeat fixed;
     color: #fff;
     text-align: center;
     padding: 36px 12px 18px 12px;

@@ -31,6 +31,7 @@
     --accent2: #ff7f11;
     --text-dark: #2c3e50;
     --text-light: #7f8c8d;
+    --hero-overlay: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.5) 100%);
   }
   .navbar {
     display: flex;
@@ -121,13 +122,15 @@
   }
     .hero {
       min-height: 60vh;
-      background: url('I.png') center/cover no-repeat;
+      background: url('images/trail.jpeg') center/cover no-repeat;
+      background-attachment: fixed;
       position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
+
     }
     .hero::before {
       content: '';
@@ -135,6 +138,49 @@
       inset: 0;
       background: var(--hero-overlay);
       z-index: 1;
+    }
+    
+
+    /* Gallery */
+    .gallery {
+      padding: 48px 16px;
+      background: linear-gradient(180deg, #0d0f10 0%, #111 100%);
+      color: #fff;
+    }
+    .gallery .gallery-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .gallery h2 {
+      font-family: 'Luckiest Guy', cursive;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      margin: 0 0 18px 0;
+      text-align: center;
+      color: #fff;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #000;
+      aspect-ratio: 4 / 3;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease, opacity 0.3s ease;
+    }
+    .gallery-item:hover img {
+      transform: scale(1.06);
+      opacity: 0.95;
     }
     .hero-content {
       position: relative;
@@ -201,7 +247,7 @@
       transform: translateY(-2px) scale(1.04);
     }
     .about-section {
-      background: url('IMG_0700.jpeg') center/cover no-repeat;
+      background: url('images/IMG_0700.jpeg') center/cover no-repeat;
       padding: 60px 0 60px 0;
       color: #fff;
       position: relative;
@@ -211,7 +257,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: rgba(59,110,34,0.7);
+      background: rgba(71, 43, 7, 0.5);
       z-index: 1;
     }
     .about-content {
@@ -238,7 +284,7 @@
       color: #fff;
     }
     .footer {
-      background: #222;
+      background: #222 url('images/I.png') center/cover no-repeat fixed;
       color: #fff;
       text-align: center;
       padding: 36px 12px 18px 12px;
@@ -268,6 +314,8 @@
   color: inherit; /* Inherits text color from the parent element */
 }
 
+    html { scroll-behavior: smooth; }
+
   </style>
 </head>
 <body>
@@ -288,13 +336,36 @@
   </nav>
   <section class="hero">
     <div class="hero-content">
-      <img src="bright.png" alt="Brighton Oaks 5k Logo" class="hero-logo" />
+      <img src="images/bright.png" alt="Brighton Oaks 5k Logo" class="hero-logo" />
       <h1>Welcome to the Brighton Oaks 5k!</h1>
       <div class="countdown" id="countdown">Race Day: ...</div>
       <div class="hero-buttons"> 
         <a href="results.html" class="secondary">Live Results</a>
         <a href="registration.html" target="secondary">Register Now</a>
         <a href="map.html" class="secondary">Course Map</a>
+      </div>
+    </div>
+  </section>
+  
+  <section class="gallery" id="gallery">
+    <div class="gallery-inner">
+      <h2>Scenes from the Course</h2>
+      <div class="gallery-grid">
+        <figure class="gallery-item">
+          <img src="images/trail.jpeg" alt="Forest trail" loading="lazy" />
+        </figure>
+        <figure class="gallery-item">
+          <img src="images/IMG_0700.jpeg" alt="Open fields" loading="lazy" />
+        </figure>
+        <figure class="gallery-item">
+          <img src="images/road.jpeg" alt="Event logo" loading="lazy" />
+        </figure>
+        <figure class="gallery-item">
+          <img src="images/gutpit.jpeg" alt="Course icon" loading="lazy" />
+        </figure>
+        <figure class="gallery-item">
+          <img src="Favicon Generator/web-app-manifest-512x512.png" alt="Runner icon" loading="lazy" />
+        </figure>
       </div>
     </div>
   </section>
