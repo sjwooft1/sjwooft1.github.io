@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Brighton Oaks 5k - Email Registration</title>
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #3b6e22;
+      --accent2: #ff7f11;
+      --bg: #0d0f10;
+      --light: #f8f9fa;
+    }
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: url('images/trail.jpeg') center/cover fixed no-repeat;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .form-container {
+      background: rgba(0,0,0,0.7);
+      border-radius: 20px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+      max-width: 500px;
+      width: 90%;
+      padding: 40px 30px;
+      text-align: center;
+    }
+    h1 {
+      font-family: 'Luckiest Guy', cursive;
+      color: var(--accent2);
+      font-size: 2.2rem;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      text-shadow: 2px 2px 6px #000;
+    }
+    p {
+      font-size: 1.1rem;
+      margin: 10px 0;
+      color: #eee;
+    }
+    label {
+      display: block;
+      text-align: left;
+      margin-top: 15px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fff;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+    }
+    input:focus, select:focus {
+      outline: 2px solid var(--accent2);
+    }
+    .button-container {
+      margin-top: 24px;
+    }
+    a#emailLink {
+      display: inline-block;
+      background: var(--accent2);
+      color: #fff;
+      font-family: 'Luckiest Guy', cursive;
+      text-decoration: none;
+      font-size: 1.2rem;
+      padding: 12px 32px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    }
+    a#emailLink:hover {
+      background: var(--accent);
+      transform: translateY(-2px) scale(1.03);
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h1>Brighton Oaks 5K Registration</h1>
+    <p>Complete the form below and click the button to email your registration to the Brighton Oaks 5K team.</p>
+
+    <label for="name">Full Name:</label>
+    <input type="text" id="name" placeholder="Enter your full name" required>
+
+    
+    <label for="phone">Phone Number:</label>
+    <input type="text" id="phone" placeholder="Enter your phone number">
+
+    <label for="size">Shirt Size:</label>
+    <select id="size">
+      <option value="">Select a size</option>
+      <option>Small</option>
+      <option>Medium</option>
+      <option>Large</option>
+      <option>XL</option>
+      <option>XXL</option>
+    </select>
+
+    <label for="time">Estimated 5K Time (MM:SS.MM):</label>
+    <input type="text" id="time" placeholder="e.g. 25:45.00">
+
+    <div class="button-container">
+      <a id="emailLink" href="#" onclick="sendEmail()">Send Registration Email</a>
+    </div>
+  </div>
+
+  <script>
+    function sendEmail() {
+      const name = document.getElementById('name').value.trim();
+      const age = document.getElementById('age').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const size = document.getElementById('size').value;
+      const time = document.getElementById('time').value.trim();
+
+      const subject = `Brighton Oaks 5K Registration - ${name}`;
+      const body =
+        `Dear Brighton Oaks 5K Team,%0D%0A%0D%0A` +
+        `My name is ${name}, and I would like to register for the Brighton Oaks 5K.%0D%0A%0D%0A` +
+        `Registration Details:%0D%0A` +
+        `Name: ${name}%0D%0A` +
+        `Age: ${age}%0D%0A` +
+        `Phone: ${phone}%0D%0A` +
+        `Shirt Size: ${size}%0D%0A` +
+        `Estimated 5K Time: ${time}%0D%0A%0D%0A` +
+        `Thank you for your time and consideration.%0D%0A%0D%0ASincerely,%0D%0A${name}`;
+
+      const mailtoLink = `mailto:wvwoofpack96@gmail.com?subject=${encodeURIComponent(subject)}&body=${body}`;
+      document.getElementById('emailLink').href = mailtoLink;
+    }
+  </script>
+</body>
+</html>
