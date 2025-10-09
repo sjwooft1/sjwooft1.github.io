@@ -310,8 +310,8 @@
     }
     a {
   text-decoration: none; /* Removes the underline from the link */
-  color: inherit; /* Inherits text color from the parent element */
-}
+   color: inherit; /* Inherits text color from the parent element */
+  }
 
     html { scroll-behavior: smooth; }
 
@@ -333,10 +333,6 @@
     <a href="bibprinter.html">Bib Printer</a>
     </div>
   </nav>
-  <nav class="navbar">
-    ...
-  </nav>
-  
   <!-- Falling leaves canvas -->
   <canvas id="leavesCanvas"
           style="position:fixed;top:0;left:0;width:100%;height:100%;
@@ -354,6 +350,19 @@
       </div>
     </div>
   </section>
+  <button id="sweepBtn"
+        style="position:fixed;bottom:100px;right:20px;
+               background:#3b6e22;color:#fff;
+               border:none;padding:12px 20px;
+               font-size:16px;border-radius:8px;
+               box-shadow:0 2px 6px #0005;
+               cursor:pointer;z-index:10;">
+  Sweep Leaves
+</button>
+<div id="sweeper"
+     style="position:fixed;bottom:100px;left:-80px;
+            font-size:40px;z-index:9;display:none;">🧹</div>
+
   
   <section class="gallery" id="gallery">
     <div class="gallery-inner">
@@ -416,8 +425,26 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
+   // Element reference
+ const footer = document.querySelector(".footer");
+
+// Find where footer starts on the screen (relative to the canvas)
+function getFooterTop() {
+  const rect = footer.getBoundingClientRect();
+  return rect.top; // relative to viewport, same as canvas coordinate space
+}
+
   window.addEventListener("resize", resize);
   resize();
+  
+
+  // Compute where the footer starts on screen
+  function getFooterTop() {
+  const rect = footer.getBoundingClientRect();
+  // rect.top gives position relative to viewport
+  return rect.top + window.scrollY;
+  }
+
   
   // local image paths
   const leafPaths = [
@@ -436,6 +463,8 @@
       if (++loaded === leafPaths.length) startLeaves();
     };
   });
+
+  const pileHeights = new Array(Math.ceil(canvas.width / 4)).fill(0);
   
   function startLeaves() {
     const leaves = [];
@@ -495,7 +524,7 @@
         l.y += l.speedY;
         l.rotation += l.rotationSpeed;
   
-        const groundY = canvas.height - pileHeightAt(l.x) - l.size * 0.5;
+        const groundY = getFooterTop() - pileHeightAt(l.x) - l.size * 0.5;
         if (l.y >= groundY) {
           l.resting = true;
           l.y = groundY;
@@ -516,6 +545,36 @@
   
     animate();
   }
+  const sweepBtn = document.getElementById("sweepBtn");
+const sweeper = document.getElementById("sweeper");
+
+sweepBtn.addEventListener("click", () => {
+  sweeper.style.display = "block";
+  let x = -80;
+  const sweepInterval = setInterval(() => {
+    x += 10;
+    sweeper.style.left = x + "px";
+    if (x > window.innerWidth + 80) {
+      clearInterval(sweepInterval);
+      sweeper.style.display = "none";
+    }
+  }, 30);
+
+  // Animate leaves fading out
+  let fade = 1;
+  const fadeOut = setInterval(() => {
+    fade -= 0.05;
+    canvas.style.opacity = fade;
+    if (fade <= 0) {
+      clearInterval(fadeOut);
+      canvas.style.opacity = 1;
+      // Clear leaves
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Restart fresh
+      startLeaves();
+    }
+  }, 50);
+});
+
   </script>
-  
 </html>
