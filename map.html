@@ -1,165 +1,385 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brighton Oaks 5k - Course Map</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCF_7l0sHPkvknK2R3_KmZD02wl_RqbHww&libraries=geometry"></script>
     <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
-<link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
-<meta name="apple-mobile-web-app-title" content="BO 5k" />
-<link rel="manifest" href="/Favicon Generator/site.webmanifest" />
-  <!-- Include in <head> (once per page) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-<style>
-  @font-face{
-  font-family: 'Oakhill';
-  src: url('fonts/Oakhill.ttf') format('truetype');
-  }
-  @font-face{
-  font-family: 'run';
-  src: url('fonts/RUNNING DEMO.otf') format('opentype');
-  }
-  :root {
-    --accent: #3b6e22;
-    --accent2: #ff7f11;
-    --text-dark: #2c3e50;
-    --text-light: #7f8c8d;
-    --hero-overlay: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.5) 100%);
-  }
-  .navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 24px;
-    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    border-bottom: 1px solid rgba(60, 110, 34, 0.1);
-  }
-  .navbar .logo {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-  }
-  .navbar .logo span {
-    font-family: 'Luckiest Guy', cursive;
-    font-size: 1.8rem;
-    color: var(--accent2);
-    letter-spacing: 1px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-  }
-  .navbar .nav-links {
-  font-family: 'run', sans-serif;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .navbar .nav-links a {
-  font-family: 'run', sans-serif;
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 16px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-  .navbar .nav-links a:hover {
-    color: var(--accent2);
-    background: rgba(255, 127, 17, 0.1);
-    transform: translateY(-1px);
-  }
-  .navbar .nav-links a.active {
-    background: var(--accent);
-    color: white;
-  }
-  
-  /* Mobile responsiveness */
-  @media (max-width: 768px) {
-    .navbar {
-      padding: 12px 16px;
-      flex-wrap: wrap;
-    }
-    .navbar .logo span {
-      font-size: 1.4rem;
-    }
-    .navbar .nav-links {
-      gap: 4px;
-      margin-top: 8px;
-      width: 100%;
-      justify-content: center;
-    }
-    .navbar .nav-links a {
-      font-size: 14px;
-      padding: 6px 12px;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .navbar .nav-links {
-      flex-wrap: wrap;
-      gap: 2px;
-    }
-    .navbar .nav-links a {
-      font-size: 13px;
-      padding: 4px 8px;
-    }
-  }
-</style>
+    <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
+    <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="BO 5k" />
+    <link rel="manifest" href="/Favicon Generator/site.webmanifest" />
+    <!-- Include in <head> (once per page) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @font-face{
+            font-family: 'Oakhill';
+            src: url('fonts/Oakhill.ttf') format('truetype');
+        }
+        @font-face{
+            font-family: 'run';
+            src: url('fonts/RUNNING DEMO.otf') format('opentype');
+        }
+        :root {
+            --accent: #3b6e22;
+            --accent2: #ff7f11;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --hero-overlay: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.5) 100%);
+        }
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(60, 110, 34, 0.1);
+        }
+        .navbar .logo {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .navbar .logo span {
+            font-family: 'Luckiest Guy', cursive;
+            font-size: 1.8rem;
+            color: var(--accent2);
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar .nav-links {
+            font-family: 'run', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .navbar .nav-links a {
+            font-family: 'run', sans-serif;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .navbar .nav-links a:hover {
+            color: var(--accent2);
+            background: rgba(255, 127, 17, 0.1);
+            transform: translateY(-1px);
+        }
+        .navbar .nav-links a.active {
+            background: var(--accent);
+            color: white;
+        }
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 16px;
+                flex-wrap: wrap;
+            }
+            .navbar .logo span {
+                font-size: 1.4rem;
+            }
+            .navbar .nav-links {
+                gap: 4px;
+                margin-top: 8px;
+                width: 100%;
+                justify-content: center;
+            }
+            .navbar .nav-links a {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+        }
+        @media (max-width: 480px) {
+            .navbar .nav-links {
+                flex-wrap: wrap;
+                gap: 2px;
+            }
+            .navbar .nav-links a {
+                font-size: 13px;
+                padding: 4px 8px;
+            }
+        }
+        #map {
+            height: 50vh;
+            width: 100%;
+            margin: 20px 0;
+        }
+        .map-container {
+            padding: 20px;
+        }
+        .legend {
+            background: white;
+            padding: 10px;
+            margin: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            z-index: 1000;
+        }
+        .legend-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        .footer {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid rgba(60, 110, 34, 0.1);
+            margin-top: 40px;
+        }
+        .footer-art {
+            height: 60px;
+            margin-bottom: 10px;
+        }
+        .footer p {
+            color: var(--text-dark);
+            margin: 0;
+            font-size: 14px;
+        }
+        .mile-marker {
+            background: white;
+            border: 2px solid blue;
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-weight: bold;
+            color: blue;
+        }
 
-<!-- Place inside <body> at the very top -->
-<nav class="navbar">
-  <div class="logo">
-    <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
-  </div>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="registration.html">Register</a>
-    <a href="orgnizer.html">Organizer</a>
-    <a href="results.html">Results</a>
-    <a href="bibprinter.html">Bib Printer</a>
-  </div>
-</nav>
-<section class="hero" style="min-height:40vh;background:url('images/road.jpeg') center/cover no-repeat fixed;position:relative;display:flex;align-items:center;justify-content:center;text-align:center">
-  <div style="position:relative;z-index:1;color:#fff;padding:40px 16px"><h1 style="margin:0;font-size:28px;color:#fff;text-shadow:0 4px 12px rgba(0,0,0,0.4)">Course Map</h1></div>
-  <div style="content:'';position:absolute;inset:0;background:var(--hero-overlay);"></div>
- </section>
-<iframe src="https://www.google.com/maps/d/u/0/embed?mid=19mqPPOffqe-mEWuIpccGqvhl0GJi958&ehbc=2E312F" width="100%" height="1000px"></iframe>
-  <style>
-  .footer {
-    background: #222 url('images/road.jpeg') center/cover no-repeat fixed;
-    color: #fff;
-    text-align: center;
-    padding: 36px 12px 18px 12px;
-    position: relative;
-  }
-  .footer .footer-art {
-    width: 220px;
-    max-width: 80vw;
-    margin: 0 auto 18px auto;
-    display: block;
-    filter: drop-shadow(0 2px 8px #000a);
-  }
-  .footer p {
-    margin: 0;
-    font-size: 1rem;
-    color: #fff;
-    opacity: 0.8;
-  }
-  @media (max-width: 700px) {
-    .footer .footer-art { width: 120px; }
-  }
-</style>
+        .arrow-icon {
+            color: orange;
+            font-size: 24px;
+            font-weight: bold;
+            display: inline-block;
+            text-align: center;
+            transform-origin: center center;
+        }
 
-<!-- Place inside <body> at the very bottom -->
-<footer class="footer">
-  <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art" />
-  <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
-</footer>
+        .start-icon, .finish-icon {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Place inside <body> at the very top -->
+    <nav class="navbar">
+        <div class="logo">
+            <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="registration.html">Register</a>
+            <a href="orgnizer.html">Organizer</a>
+            <a href="results.html">Results</a>
+            <a href="bibprinter.html">Bib Printer</a>
+        </div>
+    </nav>
+    <section class="hero" style="min-height:40vh;background:url('images/road.jpeg') center/cover no-repeat fixed;position:relative;display:flex;align-items:center;justify-content:center;text-align:center">
+        <div style="position:relative;z-index:1;color:#fff;padding:40px 16px"><h1 style="margin:0;font-size:28px;color:#fff;text-shadow:0 4px 12px rgba(0,0,0,0.4)">Course Map</h1></div>
+        <div style="content:'';position:absolute;inset:0;background:var(--hero-overlay);"></div>
+    </section>
+    <div class="map-container">
+        <h1>Brighton Oaks 5k Course Map</h1>
+        <div id="map"></div>
+        <div class="legend">
+            <h3>Map Legend</h3>
+            <div class="legend-item">
+                <span class="legend-color" style="background: green;">⚑</span>
+                <span>Start Line</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: red;">⚑</span>
+                <span>Finish Line</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: blue;">●</span>
+                <span>Mile Markers</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: orange;">↠</span>
+                <span>Course Direction</span>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUnAV-DL-Saw2ByPY6GF8aDaZbVCXDIH4",
+            authDomain: "the-race-organizer.firebaseapp.com",
+            databaseURL: "https://the-race-organizer-default-rtdb.firebaseio.com",
+            projectId: "the-race-organizer",
+            storageBucket: "the-race-organizer.appspot.com",
+            messagingSenderId: "265977321479",
+            appId: "1:265977321479:web:23d3f3077e8e766323b2a2",
+            measurementId: "G-PKGPD78DYM"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Initialize map
+        const map = L.map('map').setView([34.9004, -82.4621], 15);
+        
+        // Add tile layers
+        const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+        const labels = L.tileLayer('https://sampleserver6.arcgisonline.com/ArcGIS/rest/services/Reference/WorldTransportation/MapServer/tile/{z}/{y}/{x}');
+        
+        sat.addTo(map);
+        labels.addTo(map);
+
+        // Custom icons
+        const startIcon = L.divIcon({
+            html: '🏁',
+            className: 'start-icon',
+            iconSize: [30, 30]
+        });
+
+        const finishIcon = L.divIcon({
+            html: '🏁',
+            className: 'finish-icon',
+            iconSize: [30, 30]
+        });
+
+        const mileIcon = L.divIcon({
+            html: '📍',
+            className: 'mile-icon',
+            iconSize: [20, 20]
+        });
+
+        // Create course polyline
+        let coursePath = L.polyline([], {
+            color: '#ff7f11',
+            weight: 4
+        }).addTo(map);
+
+        // Function to calculate distance between two points
+        function calculateDistance(point1, point2) {
+            return map.distance(point1, point2);
+        }
+
+        // Function to add mile markers
+        function addMileMarkers(points) {
+            let distance = 0;
+            let mileCount = 1;
+            const mileInMeters = 1609.34;
+
+            for (let i = 1; i < points.length; i++) {
+                const segmentDistance = calculateDistance(points[i-1], points[i]);
+                distance += segmentDistance;
+
+                if (distance >= mileCount * mileInMeters) {
+                    // Calculate interpolated position
+                    const excess = distance - (mileCount * mileInMeters);
+                    const ratio = 1 - (excess / segmentDistance);
+                    const lat = points[i-1].lat + (points[i].lat - points[i-1].lat) * ratio;
+                    const lng = points[i-1].lng + (points[i].lng - points[i-1].lng) * ratio;
+
+                    L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            html: `Mile ${mileCount}`,
+                            className: 'mile-marker',
+                            iconSize: [60, 20]
+                        })
+                    }).addTo(map);
+
+                    mileCount++;
+                }
+            }
+        }
+
+        // Function to add direction arrows
+        function addDirectionArrows(points) {
+            for (let i = 0; i < points.length - 1; i++) {
+                const p1 = points[i];
+                const p2 = points[i + 1];
+                
+                // Calculate bearing between points
+                const dx = p2.lng - p1.lng;
+                const dy = p2.lat - p1.lat;
+                const angle = (Math.atan2(dx, dy) * 180 / Math.PI);
+                
+                const arrowIcon = L.divIcon({
+                    html: '➔',
+                    className: 'arrow-icon',
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+                
+                // Place arrow at first point
+                const marker = L.marker([p1.lat, p1.lng], { 
+                    icon: arrowIcon
+                }).addTo(map);
+                
+                // Rotate arrow to point to next point
+                const arrowElement = marker.getElement().querySelector('.arrow-icon');
+                if (arrowElement) {
+                    arrowElement.style.transform = `rotate(${angle}deg)`;
+                }
+            }
+        }
+
+        // Listen for route changes
+        onValue(ref(db, "route"), snap => {
+            const data = snap.val();
+            console.log("Firebase data:", data); // Add this line
+            if (data && data.points) {
+                const points = data.points;
+                
+                // Clear existing layers
+                map.eachLayer((layer) => {
+                    if (layer !== sat && layer !== labels) {
+                        map.removeLayer(layer);
+                    }
+                });
+
+                // Add course path
+                coursePath = L.polyline(points, {
+                    color: '#ff7f11',
+                    weight: 4
+                }).addTo(map);
+
+                // Add start and finish markers
+                L.marker(points[0], { icon: startIcon }).addTo(map);
+                L.marker(points[points.length - 1], { icon: finishIcon }).addTo(map);
+
+                // Add mile markers and direction arrows
+                addMileMarkers(points);
+                addDirectionArrows(points);
+
+                // Fit map to bounds
+                map.fitBounds(coursePath.getBounds());
+            }
+        });
+    </script>
+    <footer class="footer">
+        <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art">
+        <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
+    </footer>
 </body>
 </html>
