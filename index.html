@@ -333,6 +333,15 @@
     <a href="bibprinter.html">Bib Printer</a>
     </div>
   </nav>
+  <nav class="navbar">
+    ...
+  </nav>
+  
+  <!-- Falling leaves canvas -->
+  <canvas id="leavesCanvas"
+          style="position:fixed;top:0;left:0;width:100%;height:100%;
+                 pointer-events:none;z-index:5;"></canvas>
+  
   <section class="hero">
     <div class="hero-content">
       <img src="images/bright.png" alt="Brighton Oaks 5k Logo" class="hero-logo" />
@@ -400,4 +409,113 @@
     updateCountdown();
   </script>
 </body>
+<script>
+  const canvas = document.getElementById("leavesCanvas");
+  const ctx = canvas.getContext("2d");
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resize);
+  resize();
+  
+  // local image paths
+  const leafPaths = [
+    "images/leaf1.png",
+    "images/leaf2.png",
+    "images/leaf3.png"
+  ];
+  
+  const leafImages = [];
+  let loaded = 0;
+  leafPaths.forEach((path) => {
+    const img = new Image();
+    img.src = path;
+    img.onload = () => {
+      leafImages.push(img);
+      if (++loaded === leafPaths.length) startLeaves();
+    };
+  });
+  
+  function startLeaves() {
+    const leaves = [];
+    const resting = [];
+    const pile = new Array(Math.ceil(canvas.width / 4)).fill(0);
+  
+    function pileHeightAt(x) {
+      const i = Math.floor(x / 4);
+      return pile[i] || 0;
+    }
+    function addPile(x, w, h) {
+      const s = Math.floor((x - w / 2) / 4);
+      const e = Math.floor((x + w / 2) / 4);
+      for (let i = s; i <= e; i++) {
+        if (i >= 0 && i < pile.length) pile[i] += h * 0.25;
+      }
+    }
+  
+    function makeLeaf() {
+      const img = leafImages[Math.floor(Math.random() * leafImages.length)];
+      return {
+        img,
+        x: Math.random() * canvas.width,
+        y: Math.random() * -canvas.height,
+        size: 25 + Math.random() * 35,
+        speedY: 0.8 + Math.random() * 1.8,
+        speedX: Math.random() * 1 - 0.5,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: Math.random() * 0.04 - 0.02,
+        resting: false
+      };
+    }
+  
+    for (let i = 0; i < 80; i++) leaves.push(makeLeaf());
+  
+    function drawLeaf(l) {
+      ctx.save();
+      ctx.translate(l.x, l.y);
+      ctx.rotate(l.rotation);
+      const scale = l.size / Math.max(l.img.width, l.img.height);
+      ctx.drawImage(
+        l.img,
+        -l.img.width / 2 * scale,
+        -l.img.height / 2 * scale,
+        l.img.width * scale,
+        l.img.height * scale
+      );
+      ctx.restore();
+    }
+  
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = leaves.length - 1; i >= 0; i--) {
+        const l = leaves[i];
+        if (l.resting) continue;
+        l.x += l.speedX;
+        l.y += l.speedY;
+        l.rotation += l.rotationSpeed;
+  
+        const groundY = canvas.height - pileHeightAt(l.x) - l.size * 0.5;
+        if (l.y >= groundY) {
+          l.resting = true;
+          l.y = groundY;
+          resting.push({ ...l });
+          addPile(l.x, l.size, l.size);
+          leaves.splice(i, 1);
+          if (Math.random() < 0.8) leaves.push(makeLeaf());
+        }
+  
+        if (l.x < -100) l.x = canvas.width + 100;
+        if (l.x > canvas.width + 100) l.x = -100;
+      }
+  
+      resting.forEach(drawLeaf);
+      leaves.forEach(drawLeaf);
+      requestAnimationFrame(animate);
+    }
+  
+    animate();
+  }
+  </script>
+  
 </html>
