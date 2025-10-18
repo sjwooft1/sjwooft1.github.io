@@ -27,11 +27,11 @@
             src: url('fonts/RUNNING DEMO.otf') format('opentype');
         }
         :root {
-            --accent: #3b6e22;
-            --accent2: #ff7f11;
-            --text-dark: #2c3e50;
-            --text-light: #7f8c8d;
-            --hero-overlay: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.5) 100%);
+            --accent: #873e23; /* warm brown */
+            --accent2: #e76f51; /* pumpkin orange */
+            --text-dark: #4a3021;
+            --text-light: #8b6b61;
+            --hero-overlay: linear-gradient(180deg, rgba(87, 39, 23, 0.55) 0%, rgba(87, 39, 23, 0.35) 45%, rgba(87, 39, 23, 0.5) 100%);
         }
         .navbar {
             display: flex;
@@ -123,15 +123,21 @@
             padding: 20px;
         }
         .legend {
-            background: white;
+            background: #fff8e7;
+            border: 2px solid #873e23;
+            box-shadow: 0 2px 8px rgba(135, 62, 35, 0.2);
             padding: 10px;
             margin: 10px;
-            border: 1px solid #ccc;
             border-radius: 5px;
             position: absolute;
             bottom: 30px;
             right: 10px;
             z-index: 1000;
+        }
+        .legend h3 {
+            color: #873e23;
+            border-bottom: 2px solid #e76f51;
+            padding-bottom: 5px;
         }
         .legend-item {
             margin: 5px 0;
@@ -161,25 +167,26 @@
             font-size: 14px;
         }
         .mile-marker {
-            background: white;
-            border: 2px solid blue;
+            background: #fff8e7;
+            border: 2px solid #873e23;
             border-radius: 4px;
             padding: 2px 4px;
             font-weight: bold;
-            color: blue;
+            color: #873e23;
         }
 
         .arrow-icon {
-            color: orange;
+            color: #e76f51;
             font-size: 24px;
             font-weight: bold;
             display: inline-block;
             text-align: center;
+
             transform-origin: center center;
         }
 
         .start-icon, .finish-icon {
-            font-size: 24px;
+            font-size: 28px;
         }
     </style>
 </head>
@@ -192,7 +199,6 @@
         <div class="nav-links">
             <a href="index.html">Home</a>
             <a href="registration.html">Register</a>
-            <a href="orgnizer.html">Organizer</a>
             <a href="results.html">Results</a>
             <a href="bibprinter.html">Bib Printer</a>
         </div>
@@ -255,7 +261,7 @@
 
         // Custom icons
         const startIcon = L.divIcon({
-            html: '🏁',
+            html: 'start',
             className: 'start-icon',
             iconSize: [30, 30]
         });
@@ -378,8 +384,21 @@
         });
     </script>
     <footer class="footer">
-        <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art">
+        <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art" />
         <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
+        <p style="margin-top: 10px;">
+            <a href="javascript:void(0)" onclick="accessOrganizer()" style="color: var(--accent); text-decoration: none; font-size: 14px;">Race Organizer Access</a>
+        </p>
+        <script>
+            function accessOrganizer() {
+                const password = prompt("Please enter the organizer password:");
+                if (password === "1stannualBO") {
+                    window.location.href = "orgnizer.html";
+                } else {
+                    alert("Incorrect password");
+                }
+            }
+        </script>
     </footer>
 </body>
 </html>

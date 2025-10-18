@@ -326,12 +326,11 @@
 </a>
 
     <div class="nav-links">
-     <a href="index.html" class="active">Home</a>
+    <a href="index.html" class="active">Home</a>
     <a href="registration.html">Register</a>
-    <a href="orgnizer.html">Organizer</a>
     <a href="results.html">Results</a>
     <a href="bibprinter.html">Bib Printer</a>
-    </div>
+  </div>
   </nav>
   <!-- Falling leaves canvas -->
   <canvas id="leavesCanvas"
@@ -395,8 +394,30 @@
     </div>
   </section>
   <footer class="footer">
-    <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art" />
+    <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art">
     <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
+    <p style="margin-top: 10px;">
+        <a href="javascript:void(0)" onclick="accessOrganizer()" style="color: var(--accent); text-decoration: none; font-size: 14px;">Race Organizer Access</a>
+    </p>
+    <script>
+        function accessOrganizer() {
+            // First check if already authenticated
+            if (localStorage.getItem('organizerAuthenticated') || sessionStorage.getItem('organizerAuthenticated')) {
+                window.location.href = "organizer.html";
+                return;
+            }
+            
+            const password = prompt("Please enter the organizer password:");
+            if (password === "1stannualBO") {
+                // Save to both storage types for persistence
+                localStorage.setItem('organizerAuthenticated', 'true');
+                sessionStorage.setItem('organizerAuthenticated', 'true');
+                window.location.href = "organizer.html";
+            } else {
+                alert("Incorrect password");
+            }
+        }
+    </script>
   </footer>
   <script>
     // Countdown Timer

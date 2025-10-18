@@ -120,7 +120,6 @@
   <div class="nav-links">
     <a href="index.html">Home</a>
     <a href="registration.html">Register</a>
-    <a href="orgnizer.html" class="active">Organizer</a>
     <a href="results.html">Results</a>
     <a href="bibprinter.html">Bib Printer</a>
   </div>
@@ -652,6 +651,27 @@
       margin: 0;
     }
   </style>
+  <script>
+        // Check password on page load
+        window.onload = function() {
+            // First check localStorage for persistent auth
+            const persistentAuth = localStorage.getItem('organizerAuthenticated');
+            // Then check sessionStorage for session auth
+            const sessionAuth = sessionStorage.getItem('organizerAuthenticated');
+            
+            if (!persistentAuth && !sessionAuth) {
+                const password = prompt("Please enter the organizer password:");
+                if (password !== "1stannualBO") {
+                    alert("Incorrect password");
+                    window.location.href = "index.html";
+                } else {
+                    // Save to both storage types
+                    localStorage.setItem('organizerAuthenticated', 'true');
+                    sessionStorage.setItem('organizerAuthenticated', 'true');
+                }
+            }
+        }
+    </script>
 </head>
 <body>
   <section class="hero" style="min-height:40vh;background:url('images/road.jpeg') center/cover no-repeat fixed;position:relative;display:flex;align-items:center;justify-content:center;text-align:center">

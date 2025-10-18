@@ -117,12 +117,11 @@
        <span>Brighton Oaks 5k</span>
      </div>
      <div class="nav-links">
-       <a href="index.html">Home</a>
-       <a href="registration.html" target="_blank">Register</a>
-       <a href="orgnizer.html">Organizer</a>
-       <a href="results.html">Results</a>
-       <a href="bibprinter.html" class="active">Bib Printer</a>
-     </div>
+    <a href="index.html">Home</a>
+    <a href="registration.html">Register</a>
+    <a href="results.html">Results</a>
+    <a href="bibprinter.html" class="active">Bib Printer</a>
+  </div>
    </nav>
   <meta charset="UTF-8">
   <title>Race Bib Maker</title>
@@ -703,16 +702,22 @@ document.addEventListener('keydown', function(e) {
 
    <!-- Place inside <body> at the very bottom -->
    <footer class="footer">
-     <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art" />
-     <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
-     <div class="footer-links">
-       <a href="index.html">Home</a>
-       <a href="registration.html">Register</a>
-       <a href="orgnizer.html">Organizer</a>
-       <a href="results.html">Results</a>
-       <a href="bibprinter.html">Bib Printer</a>
-     </div>
-   </footer>
+    <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art" />
+    <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
+    <p style="margin-top: 10px;">
+        <a href="javascript:void(0)" onclick="accessOrganizer()" style="color: var(--accent); text-decoration: none; font-size: 14px;">Race Organizer Access</a>
+    </p>
+    <script>
+        function accessOrganizer() {
+            const password = prompt("Please enter the organizer password:");
+            if (password === "1stannualBO") {
+                window.location.href = "orgnizer.html";
+            } else {
+                alert("Incorrect password");
+            }
+        }
+    </script>
+  </footer>
   
 
 
