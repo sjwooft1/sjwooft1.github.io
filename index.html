@@ -165,6 +165,118 @@
         padding: 6px 12px;
       }
     }
+
+    /* Mobile Optimizations */
+    @media screen and (max-width: 900px) {
+      .hero {
+        min-height: 50vh;
+      }
+      
+      .hero-content {
+        padding: 20px;
+      }
+      
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      
+      .hero p {
+        font-size: 1.2rem;
+      }
+      
+      .features {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 20px;
+      }
+      
+      .feature-card {
+        padding: 20px;
+      }
+      
+      .cta-section {
+        padding: 40px 20px;
+      }
+      
+      .cta-buttons {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .cta-button {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .navbar {
+        padding: 10px;
+      }
+      
+      .navbar .logo {
+        font-size: 1.2rem;
+      }
+      
+      .navbar .nav-links {
+        gap: 6px;
+      }
+      
+      .navbar a {
+        padding: 6px 10px;
+        font-size: 14px;
+      }
+      
+      .hero h1 {
+        font-size: 2rem;
+      }
+      
+      .hero p {
+        font-size: 1rem;
+      }
+      
+      .feature-card h3 {
+        font-size: 1.2rem;
+      }
+      
+      .feature-card p {
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Touch optimizations */
+    @media (hover: none) {
+      button, .cta-button, .navbar a {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      
+      button:active, .cta-button:active, .navbar a:active {
+        transform: scale(0.98);
+      }
+      
+      .notification {
+        bottom: 20px;
+        top: auto;
+        left: 50%;
+        transform: translateX(-50%) translateY(100%);
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+      }
+      
+      .notification.show {
+        transform: translateX(-50%) translateY(0);
+      }
+      
+      .feature-card:hover {
+        transform: none;
+      }
+      
+      .cta-button:hover {
+        transform: none;
+      }
+    }
   </style>
 </head>
 <body>

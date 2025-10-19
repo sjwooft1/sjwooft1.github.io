@@ -184,6 +184,104 @@
                 bottom: 10px;
             }
         }
+
+        /* Mobile Optimizations */
+        @media screen and (max-width: 900px) {
+          .map-container {
+            height: 60vh;
+          }
+          
+          .sidebar {
+            width: 100%;
+            max-width: none;
+            position: relative;
+            height: auto;
+          }
+          
+          .map-controls {
+            padding: 15px;
+            gap: 10px;
+          }
+          
+          .control-button {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+          }
+          
+          .route-info {
+            padding: 15px;
+          }
+          
+          .legend {
+            padding: 15px;
+          }
+        }
+
+        @media screen and (max-width: 480px) {
+          .navbar {
+            padding: 10px;
+          }
+          
+          .navbar .logo {
+            font-size: 1.2rem;
+          }
+          
+          .navbar .nav-links {
+            gap: 6px;
+          }
+          
+          .navbar a {
+            padding: 6px 10px;
+            font-size: 14px;
+          }
+          
+          .map-container {
+            height: 50vh;
+          }
+          
+          .route-info {
+            font-size: 14px;
+          }
+          
+          .legend {
+            font-size: 14px;
+          }
+        }
+
+        /* Touch optimizations */
+        @media (hover: none) {
+          button, .control-button, .navbar a {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+          }
+          
+          button:active, .control-button:active, .navbar a:active {
+            transform: scale(0.98);
+          }
+          
+          .notification {
+            bottom: 20px;
+            top: auto;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+          }
+          
+          .notification.show {
+            transform: translateX(-50%) translateY(0);
+          }
+          
+          /* Adjust map controls for touch */
+          .leaflet-touch .leaflet-bar a {
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 20px;
+          }
+        }
     </style>
 </head>
 <body>

@@ -245,6 +245,107 @@
       .header, .form-container { padding: 20px; }
       .hero-content h1 { font-size: 2rem; }
     }
+
+    /* Mobile Optimizations */
+    @media screen and (max-width: 900px) {
+      .form-container {
+        width: 95%;
+        padding: 20px;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+      
+      .input-group {
+        margin-bottom: 15px;
+      }
+      
+      input, select {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+        padding: 12px;
+      }
+      
+      .submit-button {
+        width: 100%;
+        padding: 14px;
+        font-size: 16px;
+      }
+      
+      .hero {
+        min-height: 40vh;
+      }
+      
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .navbar {
+        padding: 10px;
+      }
+      
+      .navbar .logo {
+        font-size: 1.2rem;
+      }
+      
+      .navbar .nav-links {
+        gap: 6px;
+      }
+      
+      .navbar a {
+        padding: 6px 10px;
+        font-size: 14px;
+      }
+      
+      .form-container {
+        padding: 15px;
+      }
+      
+      .hero h1 {
+        font-size: 1.8rem;
+      }
+      
+      label {
+        font-size: 14px;
+      }
+      
+      .form-note {
+        font-size: 13px;
+      }
+    }
+
+    /* Touch optimizations */
+    @media (hover: none) {
+      button, input[type="submit"], .navbar a {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      
+      button:active, input[type="submit"]:active, .navbar a:active {
+        transform: scale(0.98);
+      }
+      
+      .submit-button:hover {
+        transform: none;
+      }
+      
+      .notification {
+        bottom: 20px;
+        top: auto;
+        left: 50%;
+        transform: translateX(-50%) translateY(100%);
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+      }
+      
+      .notification.show {
+        transform: translateX(-50%) translateY(0);
+      }
+    }
   </style>
 </head>
 <body>
