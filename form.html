@@ -4,40 +4,104 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Brighton Oaks 5k - Email Registration</title>
+  <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
+  <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="BO 5k" />
+  <link rel="manifest" href="/Favicon Generator/site.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    @font-face{
+      font-family: 'Oakhill';
+      src: url('fonts/Oakhill.ttf') format('truetype');
+    }
+    @font-face{
+      font-family: 'run';
+      src: url('fonts/RUNNING DEMO.otf') format('opentype');
+    }
     :root {
       --accent: #3b6e22;
       --accent2: #ff7f11;
-      --bg: #0d0f10;
-      --light: #f8f9fa;
+      --bg: #0f1724;
+      --card: #131f33;
+      --text: #e6eef8;
+      --muted: #9ca3af;
+      --shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     }
-    body {
-      margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: url('images/trail.jpeg') center/cover fixed no-repeat;
-      color: #fff;
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100vh;
+      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+    }
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 28px; background: #101b2f; box-shadow: var(--shadow);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .navbar .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent2);
+      font-family: 'Luckiest Guy', cursive;
+    }
+    .navbar .nav-links { 
+      font-family: 'run', sans-serif;
+      display: flex; 
+      gap: 14px; 
+    }
+    .navbar a {
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 600;
+      transition: all 0.3s ease;
+      padding: 8px 16px;
+      border-radius: 8px;
+    }
+    .navbar a:hover {
+      color: var(--accent2);
+      background: rgba(255, 127, 17, 0.1);
+      transform: translateY(-1px);
+    }
+    .navbar a.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .main-content {
+      min-height: calc(100vh - 180px);
+      padding: 40px 20px;
       display: flex;
       justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      align-items: flex-start;
+      background: url('images/trail.jpeg') center/cover fixed no-repeat;
+      position: relative;
+    }
+    .main-content::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1;
     }
     .form-container {
-      background: rgba(0,0,0,0.7);
-      border-radius: 20px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
       max-width: 500px;
       width: 90%;
       padding: 40px 30px;
       text-align: center;
+      position: relative;
+      z-index: 2;
     }
     h1 {
       font-family: 'Luckiest Guy', cursive;
       color: var(--accent2);
       font-size: 2.2rem;
-      letter-spacing: 1px;
       margin-bottom: 12px;
-      text-shadow: 2px 2px 6px #000;
     }
     p {
       font-size: 1.1rem;
@@ -84,54 +148,73 @@
       background: var(--accent);
       transform: translateY(-2px) scale(1.03);
     }
+    .footer {
+      background: #101b2f;
+      color: #aaa;
+      text-align: center;
+      padding: 30px 12px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .footer-art {
+      height: 60px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .navbar .nav-links { gap: 8px; }
+      .navbar a { 
+        font-size: 14px;
+        padding: 6px 12px;
+      }
+      .form-container { padding: 30px 20px; }
+    }
   </style>
 </head>
 <body>
-  <div class="form-container">
-    <h1>Brighton Oaks 5K Registration</h1>
-    <p>Complete the form below and click the button to email your registration to the Brighton Oaks 5K team.</p>
+  <nav class="navbar">
+    <div class="logo">Brighton Oaks 5K</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="registration.html">Register</a>
+      <a href="results.html">Results</a>
+      <a href="bibprinter.html">Bib Printer</a>
+    </div>
+  </nav>
 
-    <label for="name">Full Name:</label>
-    <input type="text" id="name" placeholder="Enter your full name" required>
+  <div class="main-content">
+    <div class="form-container">
+      <h1>Brighton Oaks 5K Registration</h1>
+      <p>Complete the form below and click the button to email your registration to the Brighton Oaks 5K team.</p>
 
-    
-    <label for="phone">Phone Number:</label>
-    <input type="text" id="phone" placeholder="Enter your phone number">
+      <label for="name">Full Name:</label>
+      <input type="text" id="name" placeholder="Enter your full name" required>
 
-    <label for="size">Shirt Size:</label>
-    <select id="size">
-      <option value="">Select a size</option>
-      <option>Small</option>
-      <option>Medium</option>
-      <option>Large</option>
-      <option>XL</option>
-      <option>XXL</option>
-    </select>
+      <label for="phone">Phone Number:</label>
+      <input type="text" id="phone" placeholder="Enter your phone number">
 
-    <label for="time">Estimated 5K Time (MM:SS.MM):</label>
-    <input type="text" id="time" placeholder="e.g. 25:45.00">
+      <label for="size">Shirt Size:</label>
+      <select id="size">
+        <option value="">Select a size</option>
+        <option>Small</option>
+        <option>Medium</option>
+        <option>Large</option>
+        <option>XL</option>
+        <option>XXL</option>
+      </select>
 
-    <div class="button-container">
-      <a id="emailLink" href="#" onclick="sendEmail()">Send Registration Email</a>
+      <label for="time">Estimated 5K Time (MM:SS.MM):</label>
+      <input type="text" id="time" placeholder="e.g. 25:45.00">
+
+      <div class="button-container">
+        <a id="emailLink" href="#" onclick="sendEmail()">Send Registration Email</a>
+      </div>
     </div>
   </div>
 
   <footer class="footer">
     <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art" />
-    <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
-    <p style="margin-top: 10px;">
-        <a href="javascript:void(0)" onclick="accessOrganizer()" style="color: var(--accent); text-decoration: none; font-size: 14px;">Race Organizer Access</a>
-    </p>
-    <script>
-        function accessOrganizer() {
-            const password = prompt("Please enter the organizer password:");
-            if (password === "1stannualBO") {
-                window.location.href = "orgnizer.html";
-            } else {
-                alert("Incorrect password");
-            }
-        }
-    </script>
+    <p>© 2025 Brighton Oaks 5K — All rights reserved.</p>
   </footer>
 
   <script>

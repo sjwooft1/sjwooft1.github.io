@@ -1,198 +1,264 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
-<link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
-<meta name="apple-mobile-web-app-title" content="BO 5k" />
-<link rel="manifest" href="/Favicon Generator/site.webmanifest" />
-  <!-- Include in <head> (once per page) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-<style>
-  @font-face{
-  font-family: 'Oakhill';
-  src: url('fonts/Oakhill.ttf') format('truetype');
-  }
-  @font-face{
-  font-family: 'run';
-  src: url('fonts/RUNNING DEMO.otf') format('opentype');
-  }
-  :root {
-    --accent: #3b6e22;
-    --accent2: #ff7f11;
-    --text-dark: #2c3e50;
-    --text-light: #7f8c8d;
-  }
-  .navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 24px;
-    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    border-bottom: 1px solid rgba(60, 110, 34, 0.1);
-  }
-  .navbar .logo {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-  }
-  .navbar .logo span {
-    font-family: 'Luckiest Guy', cursive;
-    font-size: 1.8rem;
-    color: var(--accent2);
-    letter-spacing: 1px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-  }
-  .navbar .nav-links {
-  font-family: 'run', sans-serif;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .navbar .nav-links a {
-  font-family: 'run', sans-serif;
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 16px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-  .navbar .nav-links a:hover {
-    color: var(--accent2);
-    background: rgba(255, 127, 17, 0.1);
-    transform: translateY(-1px);
-  }
-  .navbar .nav-links a.active {
-    background: var(--accent);
-    color: white;
-  }
-  
-  /* Mobile responsiveness */
-  @media (max-width: 768px) {
-    .navbar {
-      padding: 12px 16px;
-      flex-wrap: wrap;
-    }
-    .navbar .logo span {
-      font-size: 1.4rem;
-    }
-    .navbar .nav-links {
-      gap: 4px;
-      margin-top: 8px;
-      width: 100%;
-      justify-content: center;
-    }
-    .navbar .nav-links a {
-      font-size: 14px;
-      padding: 6px 12px;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .navbar .nav-links {
-      flex-wrap: wrap;
-      gap: 2px;
-    }
-    .navbar .nav-links a {
-      font-size: 13px;
-      padding: 4px 8px;
-    }
-  }
-</style>
-
-<!-- Place inside <body> at the very top -->
-<nav class="navbar">
-  <div class="logo">
-    <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
-  </div>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="registration.html" class="active">Register</a>
-    <a href="results.html">Results</a>
-    <a href="bibprinter.html">Bib Printer</a>
-  </div>
-</nav>
-
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Race Registration</title>
+  <title>Brighton Oaks 5K — Registration</title>
+  <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
+  <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="BO 5k" />
+  <link rel="manifest" href="/Favicon Generator/site.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    :root{--accent:#ff7f11;--bg:#f7f7f7;--hero-overlay: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.5) 100%)}
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; margin:0; background:var(--bg); color:#111}
-    .container{max-width:600px; margin:0 auto; padding:20px}
-    .header{background:linear-gradient(90deg,#fff 0,#fff); padding:20px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.08); margin-bottom:20px; text-align:center}
-    h1{margin:0; font-size:28px; color:var(--accent)}
-    .subtitle{color:#666; margin-top:8px}
-    .form-container{background:#fff; padding:30px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-    /* Hero section */
-    .hero{min-height:40vh; background:url('images/road.jpeg') center/cover no-repeat fixed; position:relative; display:flex; align-items:center; justify-content:center; text-align:center}
-    .hero::before{content:''; position:absolute; inset:0; background:var(--hero-overlay);}
-    .hero-content{position:relative; z-index:1; color:#fff; padding:40px 16px}
-    .hero-content h1{margin:0; font-size:36px; color:#fff; text-shadow:0 4px 12px rgba(0,0,0,0.4)}
-   
-    a {
-  text-decoration: none; /* Removes the underline from the link */
-  color: inherit; /* Inherits text color from the parent element */
-   }
-   
-    /* Mobile responsiveness */
+    @font-face {
+      font-family: 'Oakhill';
+      src: url('fonts/Oakhill.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'run';
+      src: url('fonts/RUNNING DEMO.otf') format('opentype');
+    }
+    :root {
+      --accent: #3b6e22;
+      --accent2: #ff7f11;
+      --bg: #0f1724;
+      --card: #131f33;
+      --text: #e6eef8;
+      --muted: #9ca3af;
+      --shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100vh;
+      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+    }
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, #131f33 0%, #0f1724 100%);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid rgba(60, 110, 34, 0.1);
+    }
+    .navbar .logo {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .navbar .logo span {
+      font-family: 'Luckiest Guy', cursive;
+      font-size: 1.8rem;
+      color: var(--accent2);
+      letter-spacing: 1px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    .navbar .nav-links {
+      font-family: 'run', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .navbar .nav-links a {
+      font-family: 'run', sans-serif;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .navbar .nav-links a:hover {
+      color: var(--accent2);
+      background: rgba(255, 127, 17, 0.1);
+      transform: translateY(-1px);
+    }
+    .navbar .nav-links a.active {
+      background: var(--accent);
+      color: white;
+    }
+    .hero {
+      height: 40vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url('images/road.jpeg') center/cover no-repeat;
+      position: relative;
+      color: white;
+      text-align: center;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+    .hero-content h1 {
+      font-size: 2.5rem;
+      margin: 0;
+      text-shadow: 0 4px 14px rgba(0,0,0,0.6);
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      background: var(--card);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      color: var(--accent2);
+    }
+    .subtitle {
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .form-container {
+      background: var(--card);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      font-size: 16px;
+      color: var(--text);
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent2);
+    }
+    .btn {
+      background: var(--accent2);
+      color: #fff;
+      border: 0;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255,127,17,0.3);
+    }
+    .btn:disabled {
+      background: var(--muted);
+      transform: none;
+      cursor: not-allowed;
+    }
+    .success {
+      background: rgba(59,110,34,0.2);
+      color: #4ade80;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      display: none;
+      border: 1px solid rgba(74,222,128,0.2);
+    }
+    .error {
+      background: rgba(239,68,68,0.2);
+      color: #f87171;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      display: none;
+      border: 1px solid rgba(248,113,113,0.2);
+    }
+    .registered-runners {
+      margin-top: 30px;
+      padding: 24px;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+    .registered-runners h3 {
+      color: var(--accent2);
+      margin-top: 0;
+    }
+    .runner-item {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .runner-item:last-child {
+      border-bottom: none;
+    }
+    .runner-name {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .runner-details {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+    .footer {
+      background: #101b2f;
+      color: #aaa;
+      text-align: center;
+      padding: 30px 12px;
+      margin-top: 60px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .footer-art {
+      height: 60px;
+      margin-bottom: 10px;
+    }
     @media (max-width: 768px) {
-      .container{padding:10px; max-width:100%}
-      .header{padding:15px; margin-bottom:15px}
-      h1{font-size:24px}
-      .form-container{padding:20px}
-      .time-inputs{grid-template-columns:1fr 1fr 1fr; gap:8px}
-      .registered-runners{padding:15px}
-      .runner-item{flex-direction:column; align-items:flex-start; gap:4px}
-      .runner-details{font-size:11px}
+      .container { padding: 20px; }
+      .header, .form-container { padding: 20px; }
+      .hero-content h1 { font-size: 2rem; }
     }
-    
-    @media (max-width: 480px) {
-      .container{padding:8px}
-      .header{padding:12px; margin-bottom:12px}
-      h1{font-size:20px}
-      .form-container{padding:15px}
-      .time-inputs{grid-template-columns:1fr 1fr 1fr; gap:6px}
-      .time-inputs input{font-size:14px; padding:8px}
-      .btn{font-size:14px; padding:10px 16px}
-      .registered-runners{padding:12px}
-      .runner-item{padding:8px 0}
-    }
-    .form-group{margin-bottom:20px}
-    label{display:block; font-size:14px; font-weight:600; margin-bottom:8px; color:#333}
-    input, select{width:100%; padding:12px; border:2px solid #ddd; border-radius:8px; font-size:16px; box-sizing:border-box}
-    input:focus, select:focus{outline:none; border-color:var(--accent)}
-    .btn{background:var(--accent); color:#fff; border:0; padding:12px 24px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:600; width:100%}
-    .btn:hover{background:#e66f0a}
-    .btn:disabled{background:#ccc; cursor:not-allowed}
-    .success{background:#d4edda; color:#155724; padding:12px; border-radius:8px; margin-top:15px; display:none}
-    .error{background:#f8d7da; color:#721c24; padding:12px; border-radius:8px; margin-top:15px; display:none}
-    .time-inputs{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
-    .time-inputs input{text-align:center}
-    .help-text{font-size:12px; color:#666; margin-top:5px}
-    .registered-runners{margin-top:30px; padding:20px; background:#f8f9fa; border-radius:8px}
-    .runner-item{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #ddd}
-    .runner-item:last-child{border-bottom:none}
-    .runner-info{flex:1}
-    .runner-name{font-weight:600}
-    .runner-details{font-size:12px; color:#666; margin-top:2px}
-    .admin-link{text-align:center; margin-top:20px}
-    .admin-link a{color:var(--accent); text-decoration:none; font-weight:600}
-    .admin-link a:hover{text-decoration:underline}
   </style>
 </head>
 <body>
+  <nav class="navbar">
+    <div class="logo">
+      <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="registration.html" class="active">Register</a>
+      <a href="results.html">Results</a>
+      <a href="bibprinter.html">Bib Printer</a>
+    </div>
+  </nav>
   <section class="hero">
     <div class="hero-content">
       <h1>Register for the Brighton Oaks 5k</h1>
@@ -206,14 +272,12 @@
         <div id="countdownText">Countdown will appear here</div>
       </div>
     </div>
-
     <div class="form-container">
       <form id="registrationForm">
         <div class="form-group">
           <label for="runnerName">Full Name *</label>
           <input type="text" id="runnerName" name="name" required placeholder="Enter your full name">
         </div>
-    
         <div class="form-group">
           <label for="runnerSize">Shirt Size *</label>
           <select id="runnerSize" name="size" required>
@@ -226,7 +290,6 @@
             <option value="XXL">Double Extra Large</option>
           </select>
         </div>
-    
         <div class="form-group">
           <label for="estimatedTime">Estimated Finish Time *</label>
           <div class="time-inputs">
@@ -236,35 +299,27 @@
           </div>
           <div class="help-text">Enter your estimated finish time in MM:SS.MS format</div>
         </div>
-    
-
         <button type="submit" class="btn" id="submitBtn">Register for Race</button>
       </form>
-
       <div class="success" id="successMessage">
         Registration successful! Your bib number will be assigned based on your estimated time.
       </div>
-
       <div class="error" id="errorMessage">
         Registration failed. Please try again.
       </div>
     </div>
-
     <div class="registered-runners" id="registeredRunners" style="display:none">
       <h3>Recently Registered Runners</h3>
       <div id="runnersList"></div>
     </div>
-
     <div class="admin-link">
       <a href="index.html">Go back home</a>
     </div>
   </div>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyDUnAV-DL-Saw2ByPY6GF8aDaZbVCXDIH4",
       authDomain: "the-race-organizer.firebaseapp.com",
@@ -276,11 +331,9 @@
       measurementId: "G-PKGPD78DYM"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Form elements
     const form = document.getElementById('registrationForm');
     const submitBtn = document.getElementById('submitBtn');
     const successMessage = document.getElementById('successMessage');
@@ -288,7 +341,6 @@
     const registeredRunners = document.getElementById('registeredRunners');
     const runnersList = document.getElementById('runnersList');
 
-    // Convert time inputs to milliseconds
     function getTimeInMs() {
       const minutes = parseInt(document.getElementById('minutes').value) || 0;
       const seconds = parseInt(document.getElementById('seconds').value) || 0;
@@ -296,7 +348,6 @@
       return (minutes * 60 + seconds) * 1000 + milliseconds;
     }
 
-    // Format time for display
     function formatTime(ms) {
       const totalMs = Math.max(0, Math.floor(ms));
       const minutes = Math.floor(totalMs / 60000);
@@ -305,7 +356,6 @@
       return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(msPart).padStart(3,'0')}`;
     }
 
-    // Show success message
     function showSuccess() {
       successMessage.style.display = 'block';
       errorMessage.style.display = 'none';
@@ -315,7 +365,6 @@
       }, 5000);
     }
 
-    // Show error message
     function showError(message) {
       errorMessage.textContent = message;
       errorMessage.style.display = 'block';
@@ -325,7 +374,6 @@
       }, 5000);
     }
 
-    // Load and display registered runners
     function loadRegisteredRunners() {
       const runnersRef = ref(db, 'registrations');
       onValue(runnersRef, (snapshot) => {
@@ -360,7 +408,6 @@
       });
     }
 
-    // Handle form submission
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -394,12 +441,11 @@
           registeredAt: Date.now()
         };
 
-        // Save to Firebase
         const newRegistrationRef = push(ref(db, 'registrations'));
         await set(newRegistrationRef, registrationData);
 
         showSuccess();
-        loadRegisteredRunners(); // Refresh the list
+        loadRegisteredRunners();
       } catch (error) {
         console.error('Registration error:', error);
         showError('Registration failed. Please try again.');
@@ -409,10 +455,8 @@
       }
     });
 
-    // Load registered runners on page load
     loadRegisteredRunners();
 
-    /* ---------- countdown timer ---------- */
     let countdownInterval = null;
     let raceStartTime = null;
 
@@ -450,22 +494,18 @@
     }
 
     function loadRaceStartTime() {
-      // Load from Firebase
       const raceStartRef = ref(db, 'raceStartTime');
       onValue(raceStartRef, (snapshot) => {
         if (snapshot.exists()) {
           raceStartTime = snapshot.val();
           
-          // Clear existing interval
           if (countdownInterval) {
             clearInterval(countdownInterval);
           }
           
-          // Start countdown
           updateCountdown();
           countdownInterval = setInterval(updateCountdown, 1000);
         } else {
-          // No race time set
           if (countdownInterval) {
             clearInterval(countdownInterval);
             countdownInterval = null;
@@ -475,37 +515,9 @@
       });
     }
 
-    // Load race start time on page load
     loadRaceStartTime();
   </script>
-  <style>
-  .footer {
-    background: #222 url('images/road.jpeg') center/cover no-repeat fixed;
-    color: #fff;
-    text-align: center;
-    padding: 36px 12px 18px 12px;
-    position: relative;
-  }
-  .footer .footer-art {
-    width: 220px;
-    max-width: 80vw;
-    margin: 0 auto 18px auto;
-    display: block;
-    filter: drop-shadow(0 2px 8px #000a);
-  }
-  .footer p {
-    margin: 0;
-    font-size: 1rem;
-    color: #fff;
-    opacity: 0.8;
-  }
-  @media (max-width: 700px) {
-    .footer .footer-art { width: 120px; }
-  }
-</style>
-
-<!-- Place inside <body> at the very bottom -->
-<footer class="footer">
+  <footer class="footer">
     <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art" />
     <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
     <p style="margin-top: 10px;">

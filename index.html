@@ -1,20 +1,19 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
-<link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
-<meta name="apple-mobile-web-app-title" content="BO 5k" />
-<link rel="manifest" href="/Favicon Generator/site.webmanifest" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Brighton Oaks 5k</title>
+  <title>Brighton Oaks 5K — Home</title>
+  <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
+  <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="BO 5k" />
+  <link rel="manifest" href="/Favicon Generator/site.webmanifest" />
+  <!-- Include in <head> (once per page) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://db.onlinewebfonts.com/c/0b6b29a102eca0f2da5601e44fd8fa54?family=TC+Milo" rel="stylesheet">
-  <link href="https://fonts.cdnfonts.com/css/dirt-road" rel="stylesheet">
   <style>
     @font-face{
       font-family: 'Oakhill';
@@ -24,203 +23,73 @@
       font-family: 'run';
       src: url('fonts/RUNNING DEMO.otf') format('opentype');
     }
-  :root {
-    --accent: #3b6e22;
-    --accent2: #ff7f11;
-    --text-dark: #2c3e50;
-    --text-light: #7f8c8d;
-    --hero-overlay: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.5) 100%);
-  }
-  .navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 24px;
-    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    border-bottom: 1px solid rgba(60, 110, 34, 0.1);
-  }
-  .navbar .logo {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-  }
-  .navbar .logo span {
-    font-family: 'TC MILO', cursive;
-    font-size: 1.8rem;
-    color: var(--accent2);
-    letter-spacing: 1px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-  }
-  .navbar .nav-links {
-    font-family: 'run', truetype;;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .navbar .nav-links a {
-    font-family: 'run', truetype; 
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 16px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-  .navbar .nav-links a:hover {
-    color: var(--accent2);
-    background: rgba(255, 127, 17, 0.1);
-    transform: translateY(-1px);
-  }
-  .navbar .nav-links a.active {
-    background: var(--accent);
-    color: white;
-  }
-  
-  /* Mobile responsiveness */
-  @media (max-width: 768px) {
+    :root {
+      --accent: #3b6e22;
+      --accent2: #ff7f11;
+      --bg: #0f1724;
+      --card: #131f33;
+      --text: #e6eef8;
+      --muted: #9ca3af;
+      --shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+    }
     .navbar {
-      padding: 12px 16px;
-      flex-wrap: wrap;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 28px; background: #101b2f; box-shadow: var(--shadow);
+      position: sticky; top: 0; z-index: 100;
     }
-    .navbar .logo span {
-      font-size: 1.4rem;
+    .navbar .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent2);
+      font-family: 'Luckiest Guy', cursive;
     }
-    .navbar .nav-links {
-      font-family: 'run', truetype;
-      gap: 4px;
-      margin-top: 8px;
-      width: 100%;
-      justify-content: center;
-    }
-    .navbar .nav-links a {
-      font-family: 'run', truetype;
-      font-size: 14px;
-      padding: 6px 12px;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .navbar .nav-links {
-      font-family: 'run', truetype;
-      flex-wrap: wrap;
-      gap: 2px;
-    }
-    .navbar .nav-links a {
+    .navbar .nav-links { 
       font-family: 'run', sans-serif;
-      font-size: 13px;
-      padding: 4px 8px;
+      display: flex; 
+      gap: 14px; 
     }
-  }
-    .hero {
-      min-height: 60vh;
-      background: url('images/trail.jpeg') center/cover no-repeat;
-      background-attachment: fixed;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-
-    }
-    .hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--hero-overlay);
-      z-index: 1;
-    }
-    
-
-    /* Gallery */
-    .gallery {
-      padding: 48px 16px;
-      background: linear-gradient(180deg, #0d0f10 0%, #111 100%);
-      color: #fff;
-    }
-    .gallery .gallery-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-    .gallery h2 {
-      font-family: 'TC MILO', cursive;
-      font-size: 2rem;
-      letter-spacing: 1px;
-      margin: 0 0 18px 0;
-      text-align: center;
-      color: #fff;
-    }
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-    }
-    .gallery-item {
+    .navbar a {
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 600;
+      transition: all 0.3s ease;
+      padding: 8px 16px;
+      border-radius: 8px;
       position: relative;
       overflow: hidden;
-      border-radius: 12px;
-      background: #000;
-      aspect-ratio: 4 / 3;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.35);
     }
-    .gallery-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.5s ease, opacity 0.3s ease;
+    .navbar a:hover {
+      color: var(--accent2);
+      background: rgba(255, 127, 17, 0.1);
+      transform: translateY(-1px);
     }
-    .gallery-item:hover img {
-      transform: scale(1.06);
-      opacity: 0.95;
+    .navbar a.active {
+      background: var(--accent);
+      color: white;
     }
-    .hero-content {
-      position: relative;
-      z-index: 2;
-      color: #fff;
-      padding: 40px 16px 32px 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+
+    .hero {
+      height: 60vh;
+      display: flex; align-items: center; justify-content: center;
+      background: url('images/trail.jpeg') center/cover no-repeat;
+      position: relative; text-align: center; color: #fff;
     }
-    .hero-content .hero-logo {
-      width: 180px;
-      max-width: 80vw;
-      margin-bottom: 18px;
-      filter: drop-shadow(0 4px 16px #0008);
+    .hero::after {
+      content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.55);
     }
-    .hero-content h1 {
-      font-family: 'Luckiest Guy', cursive;
-      font-size: 3.2rem;
-      margin: 0 0 12px 0;
-      letter-spacing: 2px;
-      color: #fff;
-      text-shadow: 2px 4px 12px #000a;
+    .hero-content { position: relative; z-index: 1; }
+    .hero-content h1 { font-size: 3rem; margin: 0; text-shadow: 0 4px 14px rgba(0,0,0,0.6); }
+    .countdown {
+      font-size: 1.5rem; font-weight: 700; margin: 16px 0; color: var(--accent2);
+      text-shadow: 0 0 10px rgba(255,127,17,0.4);
     }
-    .hero-content .countdown {
-      font-size: 2rem;
-      font-weight: 700;
-      margin: 12px 0 24px 0;
-      background: rgba(0,0,0,0.25);
-      padding: 10px 24px;
-      border-radius: 12px;
-      display: inline-block;
-      letter-spacing: 1px;
-    }
-    .hero-content .hero-buttons {
-      display: flex;
-      gap: 18px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .hero-content .hero-buttons a {
+    .hero-buttons { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
+    .hero-buttons a {
       font-family: 'Oakhill', opentype;
       background: var(--accent2);
       color: #fff;
@@ -233,369 +102,178 @@
       transition: background 0.2s, transform 0.15s;
       border: none;
       outline: none;
-      cursor: pointer;
+      cursor: pointer;}
+    .hero-buttons a.secondary { background: var(--accent); }
+    .hero-buttons a:hover { transform: scale(1.05); }
+
+    .section {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: auto;
     }
-    .hero-content .hero-buttons a.secondary {
-      font-family: 'Oakhill', sans-serif;
-      background: var(--accent);
+    .section h2 { text-align: center; color: var(--accent2); margin-bottom: 24px; }
+
+    .gallery {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;
     }
-    .hero-content .hero-buttons a:hover {
-      background: #222;
-      color: #fff;
-      transform: translateY(-2px) scale(1.04);
+    .gallery img {
+      width: 100%; border-radius: 12px; box-shadow: var(--shadow);
+      transition: transform 0.4s ease;
     }
-    .about-section {
-      background: url('images/IMG_0700.jpeg') center/cover no-repeat;
-      padding: 60px 0 60px 0;
-      color: #fff;
-      position: relative;
+    .gallery img:hover { transform: scale(1.05); }
+
+    .about {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 30px;
       text-align: center;
-    }
-    .about-section::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(71, 43, 7, 0.5);
-      z-index: 1;
-    }
-    .about-content {
-      font-family: 'dirt road', truetype;
-      position: relative;
-      z-index: 2;
-      max-width: 700px;
-      margin: 0 auto;
-      background: rgba(0,0,0,0.18);
-      border-radius: 18px;
-      padding: 32px 18px;
-      box-shadow: 0 2px 16px #0002;
-    }
-    .about-content h2 {
-      font-family: 'Luckiest Guy', cursive;
-      font-size: 2.2rem;
-      margin-bottom: 12px;
-      color: #fff;
-      letter-spacing: 1px;
-    }
-    .about-content p {
-      font-size: 1.2rem;
       line-height: 1.6;
-      color: #fff;
+      margin-top: 40px;
     }
+
     .footer {
-      background: #222 url('images/I.png') center/cover no-repeat fixed;
-      color: #ffffff;
+      background: #101b2f;
+      color: #aaa;
       text-align: center;
-      padding: 36px 12px 18px 12px;
-      position: relative;
+      padding: 30px 12px;
+      margin-top: 60px;
+      border-top: 1px solid rgba(255,255,255,0.05);
     }
-    .footer .footer-art {
-      width: 220px;
-      max-width: 80vw;
-      margin: 0 auto 18px auto;
-      display: block;
-      filter: drop-shadow(0 2px 8px #000a);
-    }
-    .footer p {
-      margin: 0;
-      font-size: 1rem;
-      color: hwb(33 8% 45%);
-      opacity: 1.0;
-      background-color:#000000;
-    }
-    @media (max-width: 700px) {
-      .hero-content h1 { font-size: 2.1rem; }
-      .about-content h2 { font-size: 1.3rem; }
-      .hero-content img.hero-logo { width: 120px; }
-      .footer .footer-art { width: 120px; }
-    }
-    a {
-  text-decoration: none; /* Removes the underline from the link */
-   color: inherit; /* Inherits text color from the parent element */
-  }
 
-    html { scroll-behavior: smooth; }
+    #leavesCanvas {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;
+    }
 
+    @media (max-width: 900px) {
+      .section { padding: 30px 16px; }
+      .hero-content h1 { font-size: 2rem; }
+      .hero-buttons { gap: 12px; }
+      .hero-buttons a { 
+        padding: 12px 24px;
+        font-size: 1.1rem;
+      }
+      .gallery { gap: 12px; }
+    }
+
+    @media (max-width: 480px) {
+      .navbar .nav-links {
+        gap: 8px;
+      }
+      .navbar a {
+        font-size: 14px;
+        padding: 6px 12px;
+      }
+    }
   </style>
 </head>
 <body>
+  <canvas id="leavesCanvas"></canvas>
   <nav class="navbar">
-  <a href="index.html">
-  <div class="logo"> 
-    <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
-  </div>
-</a>
-
+    <div class="logo">Brighton Oaks 5K</div>
     <div class="nav-links">
-    <a href="index.html" class="active">Home</a>
-    <a href="registration.html">Register</a>
-    <a href="results.html">Results</a>
-    <a href="bibprinter.html">Bib Printer</a>
-  </div>
+      <a href="index.html" class="active">Home</a>
+      <a href="registration.html">Register</a>
+      <a href="results.html">Results</a>
+      <a href="bibprinter.html">Bib Printer</a>
+    </div>
   </nav>
-  <!-- Falling leaves canvas -->
-  <canvas id="leavesCanvas"
-          style="position:fixed;top:0;left:0;width:100%;height:100%;
-                 pointer-events:none;z-index:5;"></canvas>
-  
+
   <section class="hero">
     <div class="hero-content">
-      <img src="images/bright.png" alt="Brighton Oaks 5k Logo" class="hero-logo" />
-      <h1>Welcome to the Brighton Oaks 5k!</h1>
-      <div class="countdown" id="countdown">Race Day: ...</div>
-      <div class="hero-buttons"> 
+      <h1>Welcome to the Brighton Oaks 5K!</h1>
+      <div id="countdown" class="countdown">Race Day: ...</div>
+      <div class="hero-buttons">
         <a href="results.html" class="secondary">Live Results</a>
-        <a href="registration.html" target="secondary">Register Now</a>
+        <a href="registration.html">Register Now</a>
         <a href="map.html" class="secondary">Course Map</a>
       </div>
     </div>
   </section>
-  <button id="sweepBtn"
-        style="position:fixed;bottom:100px;right:20px;
-               background:#3b6e22;color:#fff;
-               border:none;padding:12px 20px;
-               font-size:16px;border-radius:8px;
-               box-shadow:0 2px 6px #0005;
-               cursor:pointer;z-index:10;">
-  Sweep Leaves
-</button>
-<div id="sweeper"
-     style="position:fixed;bottom:100px;left:-80px;
-            font-size:40px;z-index:9;display:none;">🧹</div>
 
-  
-  <section class="gallery" id="gallery">
-    <div class="gallery-inner">
-      <h2>Scenes from the Course</h2>
-      <div class="gallery-grid">
-        <figure class="gallery-item">
-          <img src="images/trail.jpeg" alt="Forest trail" loading="lazy" />
-        </figure>
-        <figure class="gallery-item">
-          <img src="images/IMG_0700.jpeg" alt="Open fields" loading="lazy" />
-        </figure>
-        <figure class="gallery-item">
-          <img src="images/road.jpeg" alt="Event logo" loading="lazy" />
-        </figure>
-        <figure class="gallery-item">
-          <img src="images/gutpit.jpeg" alt="Course icon" loading="lazy" />
-        </figure>
-        <figure class="gallery-item">
-          <img src="Favicon Generator/web-app-manifest-512x512.png" alt="Runner icon" loading="lazy" />
-        </figure>
-      </div>
+
+  <section class="section">
+    <h2>Scenes from the Course</h2>
+    <div class="gallery">
+      <img src="images/trail.jpeg" alt="Forest Trail">
+      <img src="images/IMG_0700.jpeg" alt="Open Fields">
+      <img src="images/road.jpeg" alt="Race Road">
+      <img src="images/gutpit.jpeg" alt="Course Icon">
     </div>
   </section>
-  <section class="about-section">
-    <div class="about-content">
+
+  <section class="section">
+    <div class="about">
       <h2>Run, Race, and Celebrate!</h2>
       <p>
-        Join us for a fun and fast 5k through the wonderful scenery of Birghton Oaks South Carolina! This is the first annual 5k that is held on thanksgiving day. Whether you're a seasoned runner or just out for a stroll, this event is for everyone. Enjoy the scenic course, friendly competition, and a great community atmosphere. Registration closes November 22, but exception can be made just fill out a email form. <a href="form.html">CLICK HERE FOR FORM</a>
+        Join us for a fun and fast 5K through the wonderful scenery of Brighton Oaks, South Carolina! This first annual Thanksgiving Day run welcomes all — from seasoned runners to first-timers. Enjoy the course, community, and celebration. Registration closes November 22, but exceptions can be made — fill out our <a href="form.html" style="color:var(--accent2)"><b>email form</b></a>.
       </p>
     </div>
   </section>
+
   <footer class="footer">
-    <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art">
-    <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
-    <p style="margin-top: 10px;">
-        <a href="javascript:void(0)" onclick="accessOrganizer()" style="color: var(--accent); text-decoration: none; font-size: 14px;">Race Organizer Access</a>
-    </p>
-    <script>
-        function accessOrganizer() {
-            // First check if already authenticated
-            if (localStorage.getItem('organizerAuthenticated') || sessionStorage.getItem('organizerAuthenticated')) {
-                window.location.href = "organizer.html";
-                return;
-            }
-            
-            const password = prompt("Please enter the organizer password:");
-            if (password === "1stannualBO") {
-                // Save to both storage types for persistence
-                localStorage.setItem('organizerAuthenticated', 'true');
-                sessionStorage.setItem('organizerAuthenticated', 'true');
-                window.location.href = "organizer.html";
-            } else {
-                alert("Incorrect password");
-            }
-        }
-    </script>
+    © 2025 Brighton Oaks 5K — All rights reserved.
   </footer>
+
   <script>
-    // Countdown Timer
-    const raceDate = new Date('2025-11-27T08:30:00'); 
+    const raceDate = new Date('2025-11-27T08:30:00');
     function updateCountdown() {
       const now = new Date();
       const diff = raceDate - now;
-      if (diff <= 0) {
-        document.getElementById('countdown').textContent = 'The race is on!';
-        return;
-      }
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const mins = Math.floor((diff / (1000 * 60)) % 60);
+      const el = document.getElementById('countdown');
+      if (diff <= 0) { el.textContent = 'The race is on!'; return; }
+      const days = Math.floor(diff / (1000*60*60*24));
+      const hrs = Math.floor((diff / (1000*60*60)) % 24);
+      const mins = Math.floor((diff / (1000*60)) % 60);
       const secs = Math.floor((diff / 1000) % 60);
-      document.getElementById('countdown').textContent = `Race Day: ${days}d ${hours}h ${mins}m ${secs}s`;
+      el.textContent = `Race Day: ${days}d ${hrs}h ${mins}m ${secs}s`;
     }
     setInterval(updateCountdown, 1000);
     updateCountdown();
-  </script>
-</body>
-<script>
-  const canvas = document.getElementById("leavesCanvas");
-  const ctx = canvas.getContext("2d");
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-   // Element reference
- const footer = document.querySelector(".footer");
 
-// Find where footer starts on the screen (relative to the canvas)
-function getFooterTop() {
-  const rect = footer.getBoundingClientRect();
-  return rect.top; // relative to viewport, same as canvas coordinate space
-}
+    // Falling Leaves
+    const canvas = document.getElementById("leavesCanvas");
+    const ctx = canvas.getContext("2d");
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener("resize", resize);
+    resize();
 
-  window.addEventListener("resize", resize);
-  resize();
-  
+    const leafPaths = ["images/leaf1.png", "images/leaf2.png", "images/leaf3.png"];
+    const leafImages = [];
+    leafPaths.forEach(path => { const img = new Image(); img.src = path; leafImages.push(img); });
 
-  // Compute where the footer starts on screen
-  function getFooterTop() {
-  const rect = footer.getBoundingClientRect();
-  // rect.top gives position relative to viewport
-  return rect.top + window.scrollY;
-  }
-
-  
-  // local image paths
-  const leafPaths = [
-    "images/leaf1.png",
-    "images/leaf2.png",
-    "images/leaf3.png"
-  ];
-  
-  const leafImages = [];
-  let loaded = 0;
-  leafPaths.forEach((path) => {
-    const img = new Image();
-    img.src = path;
-    img.onload = () => {
-      leafImages.push(img);
-      if (++loaded === leafPaths.length) startLeaves();
-    };
-  });
-
-  const pileHeights = new Array(Math.ceil(canvas.width / 4)).fill(0);
-  
-  function startLeaves() {
     const leaves = [];
-    const resting = [];
-    const pile = new Array(Math.ceil(canvas.width / 4)).fill(0);
-  
-    function pileHeightAt(x) {
-      const i = Math.floor(x / 4);
-      return pile[i] || 0;
-    }
-    function addPile(x, w, h) {
-      const s = Math.floor((x - w / 2) / 4);
-      const e = Math.floor((x + w / 2) / 4);
-      for (let i = s; i <= e; i++) {
-        if (i >= 0 && i < pile.length) pile[i] += h * 0.25;
-      }
-    }
-  
     function makeLeaf() {
       const img = leafImages[Math.floor(Math.random() * leafImages.length)];
-      return {
-        img,
-        x: Math.random() * canvas.width,
-        y: Math.random() * -canvas.height,
-        size: 25 + Math.random() * 35,
-        speedY: 0.8 + Math.random() * 1.8,
-        speedX: Math.random() * 1 - 0.5,
-        rotation: Math.random() * Math.PI * 2,
-        rotationSpeed: Math.random() * 0.04 - 0.02,
-        resting: false
-      };
+      return { img, x: Math.random() * canvas.width, y: Math.random() * -canvas.height, size: 25 + Math.random() * 35, speedY: 0.8 + Math.random() * 1.8, speedX: Math.random() - 0.5, rotation: Math.random() * Math.PI * 2, rotationSpeed: Math.random() * 0.04 - 0.02 };
     }
-  
+
     for (let i = 0; i < 80; i++) leaves.push(makeLeaf());
-  
+
     function drawLeaf(l) {
       ctx.save();
       ctx.translate(l.x, l.y);
       ctx.rotate(l.rotation);
-      const scale = l.size / Math.max(l.img.width, l.img.height);
-      ctx.drawImage(
-        l.img,
-        -l.img.width / 2 * scale,
-        -l.img.height / 2 * scale,
-        l.img.width * scale,
-        l.img.height * scale
-      );
+      const scale = l.size / 40;
+      ctx.drawImage(l.img, -20 * scale, -20 * scale, 40 * scale, 40 * scale);
       ctx.restore();
     }
-  
+
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = leaves.length - 1; i >= 0; i--) {
-        const l = leaves[i];
-        if (l.resting) continue;
+      leaves.forEach(l => {
         l.x += l.speedX;
         l.y += l.speedY;
         l.rotation += l.rotationSpeed;
-  
-        const groundY = getFooterTop() - pileHeightAt(l.x) - l.size * 0.5;
-        if (l.y >= groundY) {
-          l.resting = true;
-          l.y = groundY;
-          resting.push({ ...l });
-          addPile(l.x, l.size, l.size);
-          leaves.splice(i, 1);
-          if (Math.random() < 0.8) leaves.push(makeLeaf());
-        }
-  
-        if (l.x < -100) l.x = canvas.width + 100;
-        if (l.x > canvas.width + 100) l.x = -100;
-      }
-  
-      resting.forEach(drawLeaf);
-      leaves.forEach(drawLeaf);
+        if (l.y > canvas.height + 40) { l.y = -40; l.x = Math.random() * canvas.width; }
+        if (l.x < -50) l.x = canvas.width + 50;
+        if (l.x > canvas.width + 50) l.x = -50;
+        drawLeaf(l);
+      });
       requestAnimationFrame(animate);
     }
-  
     animate();
-  }
-  const sweepBtn = document.getElementById("sweepBtn");
-const sweeper = document.getElementById("sweeper");
-
-sweepBtn.addEventListener("click", () => {
-  sweeper.style.display = "block";
-  let x = -80;
-  const sweepInterval = setInterval(() => {
-    x += 10;
-    sweeper.style.left = x + "px";
-    if (x > window.innerWidth + 80) {
-      clearInterval(sweepInterval);
-      sweeper.style.display = "none";
-    }
-  }, 30);
-
-  // Animate leaves fading out
-  let fade = 1;
-  const fadeOut = setInterval(() => {
-    fade -= 0.05;
-    canvas.style.opacity = fade;
-    if (fade <= 0) {
-      clearInterval(fadeOut);
-      canvas.style.opacity = 1;
-      // Clear leaves
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Restart fresh
-      startLeaves();
-    }
-  }, 50);
-});
 
   </script>
+</body>
 </html>
