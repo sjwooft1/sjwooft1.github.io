@@ -277,6 +277,24 @@
         transform: none;
       }
     }
+    .announcement {
+  background: var(--accent2);
+  color: white;
+  text-align: center;
+  padding: 12px 18px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: 'Roboto', sans-serif;
+  box-shadow: var(--shadow);
+  z-index: 90;
+}
+
+@media (max-width: 600px) {
+  .announcement {
+    font-size: 0.95rem;
+    padding: 10px;
+  }
+}
   </style>
 </head>
 <body>
@@ -290,6 +308,9 @@
       <a href="bibprinter.html">Bib Printer</a>
     </div>
   </nav>
+  <div class="announcement">
+  🚨 <b>Race Tour Meeting:</b> Wednesday, Nov 26 at 1:00 PM — Meet at the start line by the Patterson fire pit!
+</div>
 
   <section class="hero">
     <div class="hero-content">
