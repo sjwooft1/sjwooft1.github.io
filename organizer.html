@@ -386,26 +386,43 @@
   }
 
   // ---------- Loading from Firebase ----------
-  // Load registrations (preserve the Firebase IDs)
-  async function loadRegistrationsIntoRunners(){
-    try {
-      const registrationsRef = ref(db, 'registrations');
-      const snap = await get(registrationsRef);
-      if (!snap.exists()){
-        showNotification('No registrations found','warning');
-        return;
-      }
-      const regsObj = snap.val(); // { id1: {name,...}, id2: {...} }
-      // clear local runners and load fresh
-      state.runners = [];
-      Object.entries(regsObj).forEach(([id, reg])=>{
-        addRunnerObj({
-          id: id,                              // preserve firebase id
-          name: reg.name || 'Unknown',
-          estimatedTime: reg.estimatedTime || null,
-          size: reg.size || null
-        });
+  // Load registrations (preserve the 
+async function loadRegistrationsIntoRunners(){
+  try {
+    // Always clear runners completely to prevent duplicates
+    state.runners = [];
+    saveLocal();  // overwrite local copy so duplicates never reappear
+
+    const registrationsRef = ref(db, 'registrations');
+    const snap = await get(registrationsRef);
+
+    if (!snap.exists()){
+      showNotification('No registrations found','warning');
+      return;
+    }
+
+    const regsObj = snap.val();
+
+    // Load all runners fresh from Firebase
+    Object.entries(regsObj).forEach(([id, reg]) => {
+      addRunnerObj({
+        id: id,
+        name: reg.name || 'Unknown',
+        estimatedTime: reg.estimatedTime || null,
+        size: reg.size || null
       });
+    });
+
+    // Now merge results
+    await loadResultsIntoRunners();
+
+    showNotification(`Loaded ${Object.keys(regsObj).length} registrations`);
+
+  } catch (e){
+    console.error('loadRegs error', e);
+    showNotification('Failed to load registrations','error');
+  }
+}
       // merge any existing results
       await loadResultsIntoRunners();
       showNotification(`Loaded ${Object.keys(regsObj).length} registrations`);
