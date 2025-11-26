@@ -1641,9 +1641,13 @@
         const runner = state.runners.find(r => r.id === runnerId);
         
         if (runner && !runner.finishTime && state.raceStart != null) {
-          const finishBtn = card.querySelector('.finish-btn');
-          finishRunnerWithFeedback(finishBtn, card, runnerId);
-        }
+    const finishBtn = card.querySelector('.finish-btn');
+
+    // Force enable finish button when clicking the card
+    finishBtn.disabled = false;
+
+    finishRunnerWithFeedback(finishBtn, card, runnerId);
+}
       }
     }
 
