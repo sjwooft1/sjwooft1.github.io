@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woofter Weather | Advanced Radar System</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --panel-bg: rgba(15, 15, 15, 0.85);
+            --accent: #00f3ff;
+            --glass: blur(12px);
+        }
+
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: #000; color: white; overflow: hidden; }
+        #map { height: 100vh; width: 100vw; z-index: 1; }
+        
+        /* SIDEBAR */
+        #sidebar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 300px;
+            max-height: calc(100vh - 40px);
+            background: var(--panel-bg);
+            backdrop-filter: var(--glass);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h1 { margin: 0; font-size: 1.2rem; font-weight: 600; letter-spacing: 1px; color: var(--accent); }
+
+        #location-list {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: 10px;
+        }
+
+        .loc-card {
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 8px;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .loc-card:hover { background: rgba(255,255,255,0.1); }
+
+        .loc-info { flex-grow: 1; }
+        .loc-name { font-size: 0.9rem; font-weight: 600; display: block; }
+        .loc-data { font-size: 0.75rem; color: #aaa; font-family: monospace; }
+
+        .cam-btn {
+            background: var(--accent);
+            border: none;
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+        }
+
+        /* FULLSCREEN OVERLAY */
+        #fs-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 2000;
+            display: none;
+        }
+
+        .fs-close {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none; color: white;
+            padding: 10px 20px; border-radius: 5px; cursor: pointer; z-index: 2001;
+        }
+
+        .fs-weather-overlay {
+            position: absolute;
+            bottom: 40px; left: 40px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            padding: 20px; border-radius: 10px;
+            border-left: 4px solid var(--accent);
+            z-index: 2001;
+        }
+
+        /* MAP POPUP CUSTOMIZATION */
+        .custom-popup .leaflet-popup-content-wrapper { background: #1a1a1a; color: #fff; border-radius: 8px; padding: 0; }
+        .video-wrapper { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; }
+        video, iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h1>WOOFTER WEATHER</h1>
+        </div>
+        <div id="location-list">
+            </div>
+    </div>
+
+    <div id="fs-overlay">
+        <button class="fs-close" onclick="closeFS()">✕ CLOSE</button>
+        <div class="fs-weather-overlay" id="fs-weather"></div>
+        <div id="fs-video-container" style="width:100%; height:100%;"></div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <script>
+        const cameras = [
+            { id: 'c1', title: 'US-50 @ MM 16.5', url: 'https://vtc3.roadsummary.com/rtplive/CAM004/playlist.m3u8', lat: 39.245052, lon: -81.391205 },
+            { id: 'c2', title: 'I-77 @ 176 US 50 I/C', url: 'https://vtc3.roadsummary.com/rtplive/CAM078/playlist.m3u8', lat: 39.267584, lon: -81.499343 },
+            { id: 'c3', title: 'Downtown Parkersburg', url: 'https://s125.ipcamlive.com/streams_storage/5canzyseqiihu5b6t/stream.m3u8', lat: 39.263304, lon: -81.564240 },
+            { id: 'c4', title: 'Division/5th St S', url: 'https://vtc3.roadsummary.com/rtplive/CAM129/playlist.m3u8', lat: 39.258281, lon: -81.556618 },
+            { id: 'c5', title: 'I-77 Williamstown', url: 'https://vtc3.roadsummary.com/rtplive/CAM103/playlist.m3u8', lat: 39.399095, lon: -81.434647 },
+            { id: 'c6', title: 'I-64/I-77 Charleston WV', url: 'https://vtc2.roadsummary.com/rtplive/CAM042/playlist.m3u8', lat: 38.3498, lon: -81.6326 },
+            { id: 'c7', title: 'I-79 Clarksburg', url: 'https://vtc1.roadsummary.com/rtplive/CAM028/playlist.m3u8', lat: 39.274573, lon: -80.285608 },
+            { id: 'c8', title: 'Wheeling I-70', url: 'https://vtc3.roadsummary.com/rtplive/CAM070/playlist.m3u8', lat: 40.0684, lon: -80.7183 },
+            { id: 'c9', title: 'Greenville SC', url: 'https://s157.ipcamlive.com/streams/9dobjkhr6dtcfqvzg/stream.m3u8', lat: 34.8485, lon: -82.4000 },
+            { id: 'c10', title: 'Aiken SC', url: 'https://api.wetmet.net/widgets/stream/frame.php?uid=05ba9d5621e5a7aac75a9c91f94a7c83', lat: 33.5505, lon: -81.7164 },
+            { id: 'c11', title: 'I-95 Exit 22', url: 'https://s20.us-east-1.skyvdn.com/rtplive/60303/chunklist_w977767992.m3u8', lat: 32.502583, lon: -80.971254 },
+            { id: 'c12', title: 'Charleston SC (Ravenel)', url: 'https://6218ad7d8018a.streamlock.net/live/camera_battery.stream/chunklist_w1162778809.m3u8', lat: 32.77, lon: -79.93 },
+            { id: 'c13', title: 'Keowee Marina SC', url: 'https://s165.ipcamlive.com/streams/a53jlsg9qwuizxpvh/stream.m3u8', lat: 34.711982, lon: -82.949066 }
+        ];
+
+        // Initialize Map
+        const map = L.map('map', { zoomControl: false }).setView([36.5, -81], 6);
+
+        // Dark Tiles (Zoom Earth Style)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { subdomains: 'abcd' }).addTo(map);
+
+        // Add Radar Layer (RainViewer)
+        L.tileLayer('https://tile.rainviewer.com/img/radar_nowcast_10min/256/{z}/{x}/{y}/2/1_1.png', {
+            opacity: 0.6,
+            zIndex: 100
+        }).addTo(map);
+
+        // UI Building & Logic
+        async function init() {
+            const list = document.getElementById('location-list');
+            
+            for(let cam of cameras) {
+                // Fetch initial weather for sidebar
+                let weather = "Loading...";
+                try {
+                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${cam.lat}&longitude=${cam.lon}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph`);
+                    const data = await res.json();
+                    weather = `${Math.round(data.current_weather.temperature)}°F | ${Math.round(data.current_weather.windspeed)}mph`;
+                    cam.lastWeather = weather; // Store for FS mode
+                } catch(e) { weather = "N/A"; }
+
+                // Create Sidebar Card
+                const card = document.createElement('div');
+                card.className = 'loc-card';
+                card.innerHTML = `
+                    <div class="loc-info" onclick="map.flyTo([${cam.lat}, ${cam.lon}], 12)">
+                        <span class="loc-name">${cam.title}</span>
+                        <span class="loc-data">${weather}</span>
+                    </div>
+                    <button class="cam-btn" onclick="openFS('${cam.id}')">📹</button>
+                `;
+                list.appendChild(card);
+
+                // Add Map Marker
+                L.marker([cam.lat, cam.lon]).addTo(map).on('click', () => openFS(cam.id));
+            }
+        }
+
+        function openFS(camId) {
+            const cam = cameras.find(c => c.id === camId);
+            const overlay = document.getElementById('fs-overlay');
+            const container = document.getElementById('fs-video-container');
+            const weatherDiv = document.getElementById('fs-weather');
+
+            overlay.style.display = 'block';
+            weatherDiv.innerHTML = `<h2 style="margin:0">${cam.title}</h2><p style="color:var(--accent); font-size:1.5rem; margin:10px 0 0 0;">${cam.lastWeather || 'Updating...'}</p>`;
+
+            if (cam.url.includes('.m3u8')) {
+                container.innerHTML = `<video id="fs-video" controls autoplay muted playsinline style="width:100%; height:100%; object-fit: cover;"></video>`;
+                const video = document.getElementById('fs-video');
+                if (Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.loadSource(cam.url);
+                    hls.attachMedia(video);
+                } else {
+                    video.src = cam.url;
+                }
+            } else {
+                container.innerHTML = `<iframe src="${cam.url}" style="width:100%; height:100%;"></iframe>`;
+            }
+        }
+
+        function closeFS() {
+            document.getElementById('fs-overlay').style.display = 'none';
+            document.getElementById('fs-video-container').innerHTML = '';
+        }
+
+        init();
+    </script>
+</body>
+</html>
