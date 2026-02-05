@@ -212,8 +212,8 @@
             { id: 'c6', title: 'I-64/I-77 Charleston', url: 'https://vtc2.roadsummary.com/rtplive/CAM042/playlist.m3u8', lat: 38.3498, lon: -81.6326 },
             { id: 'c7', title: 'I-79 Clarksburg', url: 'https://vtc1.roadsummary.com/rtplive/CAM028/playlist.m3u8', lat: 39.274573, lon: -80.285608 },
             { id: 'c8', title: 'Wheeling I-70', url: 'https://vtc3.roadsummary.com/rtplive/CAM070/playlist.m3u8', lat: 40.0684, lon: -80.7183 },
-            { id: 'c9', title: 'Greenville SC', url: 'https://s53.ipcamlive.com/streams/353btftmcvh5iexku/stream.m3u8', lat: 34.8485, lon: -82.4000 },
-            { id: 'c10', title: 'Aiken SC', url: 'https://wmso-us-ea1.wetmet.net/live/191-08-01/l_14345_13166734_1580.ts?nimblesessionid=86339549&wmsAuthSign=c2VydmVyX3RpbWU9Mi81LzIwMjYgMTA6NDE6MjkgUE0maGFzaF92YWx1ZT1UVDJOVjZVc0M1bzA3cDcvem9oRjNnPT0mdmFsaWRtaW51dGVzPTMw', lat: 33.5505, lon: -81.7164 },
+            { id: 'c9', title: 'Greenville SC', url: 'https://s53.ipcamlive.com/streams/35ja3cfpmvobtxev6/stream.m3u8', lat: 34.8485, lon: -82.4000 },
+            { id: 'c10', title: 'Aiken SC', url: 'https://api.wetmet.net/widgets/stream/frame.php?uid=05ba9d5621e5a7aac75a9c91f94a7c83', lat: 33.5505, lon: -81.7164 },
             { id: 'c11', title: 'I-95 Exit 22', url: 'https://s20.us-east-1.skyvdn.com/rtplive/60303/chunklist_w977767992.m3u8', lat: 32.502583, lon: -80.971254 },
             { id: 'c12', title: 'Lake Keowee Marina', url: 'https://s165.ipcamlive.com/streams/a53jlsg9qwuizxpvh/stream.m3u8', lat: 34.711982, lon: -82.949066 },
             // NEW CAMERA ADDED HERE
@@ -334,6 +334,7 @@
                 }
             }
         }
+        
 
         // === WEATHER FETCH ===
         async function fetchWeather() {
@@ -406,27 +407,7 @@
                 container.innerHTML = `<iframe src="${cam.url}" style="width:100%;height:100%;border:none;"></iframe>`;
             }
         }
-        else if (cam.url.includes('https://wmso-us-ea1.wetmet.net/live/191-08-01/l_14345_13166734_1580.ts?nimblesessionid=86339549&wmsAuthSign=c2VydmVyX3RpbWU9Mi81LzIwMjYgMTA6NDE6MjkgUE0maGFzaF92YWx1ZT1UVDJOVjZVc0M1bzA3cDcvem9oRjNnPT0mdmFsaWRtaW51dGVzPTMw')) {
-                const video = document.createElement('video');
-                video.controls = true;
-                video.autoplay = true;
-                video.style.width = '100%';
-                video.style.height = '100%';
-                container.appendChild(video);
-                
-                if (Hls.isSupported()) {
-                    const hls = new Hls();
-                    hls.loadSource(cam.url);
-                    hls.attachMedia(video);
-                } else {
-                    video.src = cam.url;
-                }
-            }
-            // === IFRAME FALLBACK ===
-            else {
-                container.innerHTML = `<iframe src="${cam.url}" style="width:100%;height:100%;border:none;"></iframe>`;
-            }
-        }
+        
 
         function closeFS() {
             document.getElementById('fs-overlay').style.display = 'none';
@@ -453,3 +434,4 @@
     </script>
 </body>
 </html>
+
