@@ -78,6 +78,20 @@
             justify-content: center;
             color: #555;
             font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cam-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cam-preview.loading::after {
+            content: "⏳";
+            position: absolute;
+            font-size: 2rem;
         }
 
         .cam-meta { padding: 15px; }
@@ -193,14 +207,15 @@
         const cameras = [
             { id: 'c1', title: 'US-50 @ MM 16.5', url: 'https://vtc3.roadsummary.com/rtplive/CAM004/playlist.m3u8', lat: 39.245052, lon: -81.391205 },
             { id: 'c2', title: 'I-77 @ 176 US 50 I/C', url: 'https://vtc3.roadsummary.com/rtplive/CAM078/playlist.m3u8', lat: 39.267584, lon: -81.499343 },
-            { id: 'c3', title: 'Downtown Parkersburg', url: 'https://s125.ipcamlive.com/streams_storage/5canzyseqiihu5b6t/stream.m3u8', lat: 39.263304, lon: -81.564240 },
+            { id: 'c3', title: 'Downtown Parkersburg', url: 'https://s117.ipcamlive.com/streams_storage/5ciuewkaxydc4tzjp/stream.m3u8', lat: 39.263304, lon: -81.564240 },
             { id: 'c5', title: 'I-77 Williamstown', url: 'https://vtc3.roadsummary.com/rtplive/CAM103/playlist.m3u8', lat: 39.399095, lon: -81.434647 },
             { id: 'c6', title: 'I-64/I-77 Charleston', url: 'https://vtc2.roadsummary.com/rtplive/CAM042/playlist.m3u8', lat: 38.3498, lon: -81.6326 },
             { id: 'c7', title: 'I-79 Clarksburg', url: 'https://vtc1.roadsummary.com/rtplive/CAM028/playlist.m3u8', lat: 39.274573, lon: -80.285608 },
             { id: 'c8', title: 'Wheeling I-70', url: 'https://vtc3.roadsummary.com/rtplive/CAM070/playlist.m3u8', lat: 40.0684, lon: -80.7183 },
-            { id: 'c9', title: 'Greenville SC', url: 'https://s93.ipcamlive.com/streams/5dkmlk6yqoejogt8z/stream.m3u8', lat: 34.8485, lon: -82.4000 },
-            { id: 'c10', title: 'Aiken SC', url: 'https://api.wetmet.net/widgets/stream/frame.php?uid=05ba9d5621e5a7aac75a9c91f94a7c83', lat: 33.5505, lon: -81.7164 },
+            { id: 'c9', title: 'Greenville SC', url: 'https://s53.ipcamlive.com/streams/353btftmcvh5iexku/stream.m3u8', lat: 34.8485, lon: -82.4000 },
+            { id: 'c10', title: 'Aiken SC', url: 'https://wmso-us-ea1.wetmet.net/live/191-08-01/chunks.m3u8?nimblesessionid=86186540&wmsAuthSign=c2VydmVyX3RpbWU9Mi80LzIwMjYgMTE6NTE6MjkgUE0maGFzaF92YWx1ZT11VkluTnJzdzFzRGxWRE93RVpPbEZnPT0mdmFsaWRtaW51dGVzPTMw', lat: 33.5505, lon: -81.7164 },
             { id: 'c11', title: 'I-95 Exit 22', url: 'https://s20.us-east-1.skyvdn.com/rtplive/60303/chunklist_w977767992.m3u8', lat: 32.502583, lon: -80.971254 },
+            { id: 'c12', title: 'Lake Keowee Marina', url: 'https://s165.ipcamlive.com/streams/a53jlsg9qwuizxpvh/stream.m3u8', lat: 34.711982, lon: -82.949066 },
             // NEW CAMERA ADDED HERE
             { 
                 id: 'tus1', 
@@ -255,15 +270,69 @@
                 const div = document.createElement('div');
                 div.className = 'cam-card';
                 div.onclick = () => openFS(cam.id);
-                div.innerHTML = `
-                    <div class="cam-preview">📹</div>
-                    <div class="cam-meta">
-                        <div class="cam-title">${cam.title}</div>
-                        <div class="cam-weather" id="w-${cam.id}">Loading...</div>
-                    </div>
+                
+                const preview = document.createElement('div');
+                preview.className = 'cam-preview loading';
+                preview.id = `preview-${cam.id}`;
+                
+                const meta = document.createElement('div');
+                meta.className = 'cam-meta';
+                meta.innerHTML = `
+                    <div class="cam-title">${cam.title}</div>
+                    <div class="cam-weather" id="w-${cam.id}">Loading...</div>
                 `;
+                
+                div.appendChild(preview);
+                div.appendChild(meta);
                 grid.appendChild(div);
+                
+                // Initialize preview player
+                initPreviewPlayer(cam, preview);
             });
+        }
+
+        // === PREVIEW PLAYER INIT ===
+        function initPreviewPlayer(cam, previewDiv) {
+            if (cam.type === 'dash' || cam.url.endsWith('.mpd')) {
+                const video = document.createElement('video');
+                video.autoplay = true;
+                video.muted = true;
+                video.style.width = '100%';
+                video.style.height = '100%';
+                previewDiv.appendChild(video);
+                
+                try {
+                    const dashPlayer = dashjs.MediaPlayer().create();
+                    dashPlayer.initialize(video, cam.url, true);
+                    dashPlayer.on('streamInitialized', () => {
+                        previewDiv.classList.remove('loading');
+                    });
+                } catch(e) {
+                    previewDiv.innerHTML = '<span style="color:#888;">⚠️</span>';
+                }
+            } else if (cam.url.includes('.m3u8')) {
+                const video = document.createElement('video');
+                video.autoplay = true;
+                video.muted = true;
+                video.style.width = '100%';
+                video.style.height = '100%';
+                previewDiv.appendChild(video);
+                
+                if (Hls.isSupported()) {
+                    const hls = new Hls({ debug: false });
+                    hls.loadSource(cam.url);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        previewDiv.classList.remove('loading');
+                    });
+                    hls.on(Hls.Events.ERROR, () => {
+                        previewDiv.innerHTML = '<span style="color:#888;">⚠️</span>';
+                    });
+                } else {
+                    video.src = cam.url;
+                    previewDiv.classList.remove('loading');
+                }
+            }
         }
 
         // === WEATHER FETCH ===
