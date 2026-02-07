@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Woofter Weather | Command Center</title>
-    
+    <title>Weather & Traffic Command | Radar & Live Cameras</title>
+    <meta name="description" content="Live weather radar and traffic camera feeds across the region.">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
@@ -16,7 +16,17 @@
             --nav-height: 70px;
         }
 
-        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: white; overflow: hidden; height: 100vh; width: 100vw; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: #e5e5e5;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            -webkit-font-smoothing: antialiased;
+        }
 
         /* === VIEW MANAGEMENT === */
         .view-section {
@@ -30,7 +40,7 @@
         .view-section.active { display: block; }
 
         /* === MAP VIEW === */
-        #map { height: 100%; width: 100%; background: #222; }
+        #map { height: 100%; width: 100%; background: #0d0d0d; }
 
         /* === CAMERA GRID VIEW === */
         #cam-grid-container {
@@ -50,7 +60,8 @@
             background: #111;
             z-index: 20;
         }
-        .grid-header h1 { margin: 0; font-size: 1.5rem; color: var(--accent); letter-spacing: 1px; }
+        .grid-header h1 { margin: 0; font-size: 1.35rem; font-weight: 600; color: #fff; letter-spacing: 0.02em; }
+        .grid-subtitle { font-size: 0.8rem; color: #888; display: block; margin-top: 4px; }
 
         .cam-grid {
             display: grid;
@@ -89,9 +100,10 @@
         }
 
         .cam-preview.loading::after {
-            content: "⏳";
+            content: "Loading…";
             position: absolute;
-            font-size: 2rem;
+            font-size: 0.85rem;
+            color: #666;
         }
 
         .cam-meta { padding: 15px; }
@@ -122,9 +134,9 @@
             border: none;
             cursor: pointer;
         }
-        .nav-item.active { color: var(--accent); background: rgba(0, 243, 255, 0.05); }
-        .nav-icon { font-size: 1.4rem; margin-bottom: 4px; }
-        .nav-label { font-size: 0.75rem; font-weight: 600; }
+        .nav-item.active { color: var(--accent); background: rgba(0, 243, 255, 0.08); }
+        .nav-icon { font-size: 1.1rem; margin-bottom: 4px; opacity: 0.9; }
+        .nav-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em; }
 
         /* === FULLSCREEN OVERLAY === */
         #fs-overlay {
@@ -137,16 +149,22 @@
 
         .fs-close {
             position: absolute;
-            top: 20px; right: 20px;
-            background: rgba(255,255,255,0.2);
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
             color: white;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 10px 20px;
-            border-radius: 20px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 0.9rem;
             z-index: 10001;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
+            transition: background 0.2s;
+        }
+        .fs-close:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .fs-info {
@@ -159,7 +177,42 @@
         .fs-weather { color: var(--accent); font-family: monospace; font-size: 1rem; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; }
 
         #fs-video-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: contain; }
+        #fs-video-container video { width: 100%; height: 100%; object-fit: contain; }
+
+        .fs-next {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0, 243, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(0, 243, 255, 0.4);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 10001;
+            backdrop-filter: blur(8px);
+            transition: background 0.2s;
+        }
+        .fs-next:hover {
+            background: rgba(0, 243, 255, 0.35);
+        }
+
+        /* Map camera markers */
+        .cam-marker { background: none; border: none; }
+        .cam-marker-dot {
+            display: block;
+            width: 12px; height: 12px;
+            background: var(--accent);
+            border: 2px solid rgba(0,0,0,0.6);
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+        }
+        .cam-marker:hover .cam-marker-dot { transform: scale(1.2); }
+        .leaflet-popup-content { margin: 10px 14px; min-width: 120px; }
+        .map-popup-link { color: var(--accent); text-decoration: none; font-size: 0.85rem; }
+        .map-popup-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -171,29 +224,30 @@
     <div id="view-cams" class="view-section">
         <div id="cam-grid-container">
             <div class="grid-header">
-                <h1>TRAFFIC COMMAND</h1>
-                <span style="font-size:0.8rem; color:#888;">Live Feeds & Doppler Radar</span>
+                <h1>Live Cameras</h1>
+                <span class="grid-subtitle">Traffic feeds with current conditions</span>
             </div>
             <div id="cam-grid" class="cam-grid"></div>
         </div>
     </div>
 
-    <div id="nav-bar">
-        <button class="nav-item active" onclick="switchTab('map')">
-            <span class="nav-icon">🗺️</span>
-            <span class="nav-label">RADAR MAP</span>
+    <nav id="nav-bar" role="navigation" aria-label="Main">
+        <button type="button" class="nav-item active" onclick="switchTab('map')" aria-current="page">
+            <span class="nav-icon" aria-hidden="true">◇</span>
+            <span class="nav-label">Radar</span>
         </button>
-        <button class="nav-item" onclick="switchTab('cams')">
-            <span class="nav-icon">📹</span>
-            <span class="nav-label">LIVE CAMS</span>
+        <button type="button" class="nav-item" onclick="switchTab('cams')">
+            <span class="nav-icon" aria-hidden="true">▣</span>
+            <span class="nav-label">Cameras</span>
         </button>
-    </div>
+    </nav>
 
-    <div id="fs-overlay">
-        <button class="fs-close" onclick="closeFS()">✕ CLOSE</button>
+    <div id="fs-overlay" role="dialog" aria-modal="true" aria-label="Camera fullscreen">
+        <button type="button" class="fs-close" onclick="closeFS()" aria-label="Close">Close</button>
+        <button type="button" class="fs-next" onclick="nextCamera()" aria-label="Next camera">Next</button>
         <div class="fs-info">
             <div class="fs-title" id="fs-title-text">Camera</div>
-            <div class="fs-weather" id="fs-weather-text">Loading...</div>
+            <div class="fs-weather" id="fs-weather-text">—</div>
         </div>
         <div id="fs-video-container"></div>
     </div>
@@ -209,23 +263,18 @@
             { id: 'c2', title: 'I-77 @ 176 US 50 I/C', url: 'https://vtc3.roadsummary.com/rtplive/CAM078/playlist.m3u8', lat: 39.267584, lon: -81.499343 },
             { id: 'c3', title: 'Downtown Parkersburg', url: 'https://s117.ipcamlive.com/streams_storage/5ciuewkaxydc4tzjp/stream.m3u8', lat: 39.263304, lon: -81.564240 },
             { id: 'c5', title: 'I-77 Williamstown', url: 'https://vtc3.roadsummary.com/rtplive/CAM103/playlist.m3u8', lat: 39.399095, lon: -81.434647 },
-            { id: 'c6', title: 'I-64/I-77 Charleston', url: 'https://vtc2.roadsummary.com/rtplive/CAM042/playlist.m3u8', lat: 38.3498, lon: -81.6326 },
+            { id: 'c6', title: 'Charleston WV', url: 'https://wmse-us-ea1.wetmet.net/live/157-06-01/chunks.m3u8?nimblesessionid=28884802&wmsAuthSign=c2VydmVyX3RpbWU9Mi83LzIwMjYgMzoyMjo1OCBQTSZoYXNoX3ZhbHVlPTgyeWVZazkvVDVMQkZwNTdiV2tYeXc9PSZ2YWxpZG1pbnV0ZXM9MzA=', lat: 38.3498, lon: -81.6326 },
             { id: 'c7', title: 'I-79 Clarksburg', url: 'https://vtc1.roadsummary.com/rtplive/CAM028/playlist.m3u8', lat: 39.274573, lon: -80.285608 },
             { id: 'c8', title: 'Wheeling I-70', url: 'https://vtc3.roadsummary.com/rtplive/CAM070/playlist.m3u8', lat: 40.0684, lon: -80.7183 },
-            { id: 'c9', title: 'Greenville SC', url: 'https://s53.ipcamlive.com/streams/353btftmcvh5iexku/stream.m3u8', lat: 34.8485, lon: -82.4000 },
-            { id: 'c10', title: 'Aiken SC', url: 'https://wmso-us-ea1.wetmet.net/live/191-08-01/chunks.m3u8?nimblesessionid=86186540&wmsAuthSign=c2VydmVyX3RpbWU9Mi80LzIwMjYgMTE6NTE6MjkgUE0maGFzaF92YWx1ZT11VkluTnJzdzFzRGxWRE93RVpPbEZnPT0mdmFsaWRtaW51dGVzPTMw', lat: 33.5505, lon: -81.7164 },
+            { id: 'c9', title: 'Greenville SC', url: 'https://s53.ipcamlive.com/streams/35ja3cfpmvobtxev6/stream.m3u8', lat: 34.8485, lon: -82.4000 },
+            // Aiken SC: m3u8 URL expires periodically – get fresh one from Network tab on embed page, then paste here
+            { id: 'c10', title: 'Aiken SC', url: 'https://wmso-us-ea1.wetmet.net/live/191-08-01/chunks.m3u8?nimblesessionid=86645202&wmsAuthSign=c2VydmVyX3RpbWU9Mi83LzIwMjYgMzo1Mjo1MiBQTSZoYXNoX3ZhbHVlPWhaaWFSSFh5QmorbG0ybERSNWkyenc9PSZ2YWxpZG1pbnV0ZXM9MzA=', lat: 33.5505, lon: -81.7164 },
             { id: 'c11', title: 'I-95 Exit 22', url: 'https://s20.us-east-1.skyvdn.com/rtplive/60303/chunklist_w977767992.m3u8', lat: 32.502583, lon: -80.971254 },
             { id: 'c12', title: 'Lake Keowee Marina', url: 'https://s165.ipcamlive.com/streams/a53jlsg9qwuizxpvh/stream.m3u8', lat: 34.711982, lon: -82.949066 },
-            // NEW CAMERA ADDED HERE
-            { 
-                id: 'tus1', 
-                title: 'University Blvd / Greensboro (Tuscaloosa)', 
-                url: 'https://cdn3.wowza.com/5/TEt0L1NoOHluSXc5/tuscaloosa-fastly/tus-cam-university-greensboro.stream/manifest.mpd', 
-                lat: 33.2098, 
-                lon: -87.5692,
-                type: 'dash' 
-            }
+            { id: 'c13', title: 'Tuscaloosa', url: 'https://video.hazcams.com/tuscaloosa-al-us-001/main_stream.m3u8', lat: 33.208856, lon: -87.550406 },
+            { id: 'c14', title: 'Marietta OH', url: 'https://s161.ipcamlive.com/streams_storage/a1yonn8gzqcvwrje7/stream.m3u8', lat: 39.416016, lon: -81.456336 }
         ];
+        let currentCamIndex = 0;
 
         let map, dashPlayer = null;
 
@@ -255,12 +304,56 @@
                 opacity: 0.60
             }).addTo(map);
 
-            // Add Markers
-            cameras.forEach(cam => {
-                L.marker([cam.lat, cam.lon]).addTo(map)
-                    .bindTooltip(cam.title)
-                    .on('click', () => openFS(cam.id));
+            // Camera location markers
+            const camIcon = L.divIcon({
+                className: 'cam-marker',
+                html: '<span class="cam-marker-dot"></span>',
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
             });
+            cameras.forEach(function (cam) {
+                const marker = L.marker([cam.lat, cam.lon], { icon: camIcon }).addTo(map);
+                marker.bindPopup(
+                    '<div class="map-popup">' +
+                    '<strong>' + escapeHtml(cam.title) + '</strong>' +
+                    '<br><a href="#" class="map-popup-link" data-cam-id="' + cam.id + '">View camera</a></div>'
+                );
+            });
+            document.body.addEventListener('click', function (e) {
+                const link = e.target.closest('.map-popup-link');
+                if (link && link.dataset.camId) {
+                    e.preventDefault();
+                    switchTab('cams');
+                    openFS(link.dataset.camId);
+                }
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Resolve m3u8 from embed page (e.g. Aiken SC – stream URL changes periodically)
+        async function getStreamUrl(cam) {
+            if (cam.resolvedUrl) return cam.resolvedUrl;
+            if (!cam.resolveM3u8 || cam.url.includes('.m3u8')) return cam.url;
+            try {
+                const res = await fetch(cam.url, { mode: 'cors' });
+                const html = await res.text();
+                const m = html.match(/https?:\/\/[^\s'"<>]+\.m3u8[^\s'"<>]*/);
+                if (m && m[0]) {
+                    cam.resolvedUrl = m[0].replace(/\\\//g, '/');
+                    return cam.resolvedUrl;
+                }
+            } catch (e) { /* CORS or network – fall back to iframe */ }
+            return cam.url;
+        }
+
+        function openFS(id) {
+            const idx = cameras.findIndex(c => c.id === id);
+            if (idx >= 0) showCameraFullscreen(idx);
         }
 
         // === GRID RENDER ===
@@ -293,45 +386,52 @@
 
         // === PREVIEW PLAYER INIT ===
         function initPreviewPlayer(cam, previewDiv) {
-            if (cam.type === 'dash' || cam.url.endsWith('.mpd')) {
-                const video = document.createElement('video');
-                video.autoplay = true;
-                video.muted = true;
-                video.style.width = '100%';
-                video.style.height = '100%';
-                previewDiv.appendChild(video);
-                
-                try {
-                    const dashPlayer = dashjs.MediaPlayer().create();
-                    dashPlayer.initialize(video, cam.url, true);
-                    dashPlayer.on('streamInitialized', () => {
+            function playWithUrl(streamUrl) {
+                const url = streamUrl || cam.url;
+                if (cam.type === 'dash' || (url && url.endsWith('.mpd'))) {
+                    const video = document.createElement('video');
+                    video.autoplay = true;
+                    video.muted = true;
+                    video.style.width = '100%';
+                    video.style.height = '100%';
+                    previewDiv.appendChild(video);
+                    try {
+                        const dp = dashjs.MediaPlayer().create();
+                        dp.initialize(video, url, true);
+                        dp.on('streamInitialized', () => previewDiv.classList.remove('loading'));
+                    } catch (e) {
                         previewDiv.classList.remove('loading');
-                    });
-                } catch(e) {
-                    previewDiv.innerHTML = '<span style="color:#888;">⚠️</span>';
-                }
-            } else if (cam.url.includes('.m3u8')) {
-                const video = document.createElement('video');
-                video.autoplay = true;
-                video.muted = true;
-                video.style.width = '100%';
-                video.style.height = '100%';
-                previewDiv.appendChild(video);
-                
-                if (Hls.isSupported()) {
-                    const hls = new Hls({ debug: false });
-                    hls.loadSource(cam.url);
-                    hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        previewDiv.innerHTML = '<span style="color:#666;">Unavailable</span>';
+                    }
+                } else if (url && url.includes('.m3u8')) {
+                    const video = document.createElement('video');
+                    video.autoplay = true;
+                    video.muted = true;
+                    video.style.width = '100%';
+                    video.style.height = '100%';
+                    previewDiv.appendChild(video);
+                    if (Hls.isSupported()) {
+                        const hls = new Hls({ debug: false });
+                        hls.loadSource(url);
+                        hls.attachMedia(video);
+                        hls.on(Hls.Events.MANIFEST_PARSED, () => previewDiv.classList.remove('loading'));
+                        hls.on(Hls.Events.ERROR, () => {
+                            previewDiv.classList.remove('loading');
+                            previewDiv.innerHTML = '<span style="color:#666;">Unavailable</span>';
+                        });
+                    } else {
+                        video.src = url;
                         previewDiv.classList.remove('loading');
-                    });
-                    hls.on(Hls.Events.ERROR, () => {
-                        previewDiv.innerHTML = '<span style="color:#888;">⚠️</span>';
-                    });
+                    }
                 } else {
-                    video.src = cam.url;
                     previewDiv.classList.remove('loading');
+                    previewDiv.innerHTML = '<span style="color:#666;">Embed only</span>';
                 }
+            }
+            if (cam.resolveM3u8 && !cam.url.includes('.m3u8')) {
+                getStreamUrl(cam).then(playWithUrl);
+            } else {
+                playWithUrl(cam.url);
             }
         }
 
@@ -345,66 +445,71 @@
                     cam.weatherData = info;
                     const el = document.getElementById(`w-${cam.id}`);
                     if(el) el.innerText = info;
-                } catch(e) {}
+                } catch (e) {
+                    if (document.getElementById(`w-${cam.id}`)) document.getElementById(`w-${cam.id}`).innerText = '—';
+                }
             }
         }
 
-        // === PLAYER LOGIC (FIXED ALABAMA) ===
-        function openFS(id) {
-            const cam = cameras.find(c => c.id === id);
+        // === FULLSCREEN PLAYER ===
+        async function showCameraFullscreen(index) {
+            currentCamIndex = index;
+            const cam = cameras[index];
             const overlay = document.getElementById('fs-overlay');
             const container = document.getElementById('fs-video-container');
-            
-            // Update Text
+
             document.getElementById('fs-title-text').innerText = cam.title;
-            document.getElementById('fs-weather-text').innerText = cam.weatherData || '--';
+            document.getElementById('fs-weather-text').innerText = cam.weatherData || '—';
             overlay.style.display = 'block';
 
-            // Clean previous
-            container.innerHTML = '';
-            if(dashPlayer) { dashPlayer.reset(); dashPlayer = null; }
+            container.innerHTML = '<p style="color:#888; padding: 20px;">Loading stream…</p>';
+            if (dashPlayer) { dashPlayer.reset(); dashPlayer = null; }
 
-            // === MPEG-DASH HANDLER (For Tuscaloosa) ===
-            if (cam.type === 'dash' || cam.url.endsWith('.mpd')) {
+            const streamUrl = await getStreamUrl(cam);
+
+            container.innerHTML = '';
+            if (cam.type === 'dash' || (streamUrl && streamUrl.endsWith('.mpd'))) {
                 const video = document.createElement('video');
                 video.controls = true;
                 video.autoplay = true;
                 video.style.width = '100%';
                 video.style.height = '100%';
                 container.appendChild(video);
-
                 try {
                     dashPlayer = dashjs.MediaPlayer().create();
-                    dashPlayer.initialize(video, cam.url, true);
-                    dashPlayer.on('error', function(e) {
-                        console.error(e);
-                        alert("Stream Error: The station may be offline or blocking external players.");
+                    dashPlayer.initialize(video, streamUrl, true);
+                    dashPlayer.on('error', function () {
+                        container.innerHTML = '<p style="color:#888; padding: 20px;">Stream unavailable.</p>';
                     });
-                } catch(e) {
-                    container.innerHTML = '<p style="color:white">Error loading DASH player</p>';
+                } catch (e) {
+                    container.innerHTML = '<p style="color:#888; padding: 20px;">Error loading stream.</p>';
                 }
-            } 
-            // === HLS HANDLER (For Others) ===
-            else if (cam.url.includes('.m3u8')) {
+            } else if (streamUrl && streamUrl.includes('.m3u8')) {
                 const video = document.createElement('video');
                 video.controls = true;
                 video.autoplay = true;
                 video.style.width = '100%';
                 video.style.height = '100%';
                 container.appendChild(video);
-                
                 if (Hls.isSupported()) {
                     const hls = new Hls();
-                    hls.loadSource(cam.url);
+                    hls.loadSource(streamUrl);
                     hls.attachMedia(video);
                 } else {
-                    video.src = cam.url;
+                    video.src = streamUrl;
                 }
+            } else {
+                container.innerHTML = '<iframe src="' + cam.url.replace(/"/g, '&quot;') + '" style="width:100%;height:100%;border:none;"></iframe>';
             }
-            // === IFRAME FALLBACK ===
-            else {
-                container.innerHTML = `<iframe src="${cam.url}" style="width:100%;height:100%;border:none;"></iframe>`;
-            }
+        }
+
+        function loadCameraByIndex(index) {
+            showCameraFullscreen(index);
+        }
+
+        function nextCamera() {
+            currentCamIndex = (currentCamIndex + 1) % cameras.length;
+            loadCameraByIndex(currentCamIndex);
         }
 
         function closeFS() {
@@ -414,20 +519,20 @@
         }
 
         // === TAB SWITCHING ===
-        window.switchTab = function(tab) {
+        window.switchTab = function (tab) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            
-            if(tab === 'map') {
+            document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('active'); el.removeAttribute('aria-current'); });
+            if (tab === 'map') {
                 document.getElementById('view-map').classList.add('active');
-                document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+                document.querySelector('#nav-bar .nav-item:first-child').classList.add('active');
+                document.querySelector('#nav-bar .nav-item:first-child').setAttribute('aria-current', 'page');
                 map.invalidateSize();
             } else {
                 document.getElementById('view-cams').classList.add('active');
-                document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+                document.querySelector('#nav-bar .nav-item:last-child').classList.add('active');
+                document.querySelector('#nav-bar .nav-item:last-child').setAttribute('aria-current', 'page');
             }
-        }
-
+        };
         init();
     </script>
 </body>
