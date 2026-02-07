@@ -266,9 +266,8 @@
             { id: 'c6', title: 'Charleston WV', url: 'https://wmse-us-ea1.wetmet.net/live/157-06-01/chunks.m3u8?nimblesessionid=28884802&wmsAuthSign=c2VydmVyX3RpbWU9Mi83LzIwMjYgMzoyMjo1OCBQTSZoYXNoX3ZhbHVlPTgyeWVZazkvVDVMQkZwNTdiV2tYeXc9PSZ2YWxpZG1pbnV0ZXM9MzA=', lat: 38.3498, lon: -81.6326 },
             { id: 'c7', title: 'I-79 Clarksburg', url: 'https://vtc1.roadsummary.com/rtplive/CAM028/playlist.m3u8', lat: 39.274573, lon: -80.285608 },
             { id: 'c8', title: 'Wheeling I-70', url: 'https://vtc3.roadsummary.com/rtplive/CAM070/playlist.m3u8', lat: 40.0684, lon: -80.7183 },
-            { id: 'c9', title: 'Greenville SC', url: 'https://s53.ipcamlive.com/streams/35ja3cfpmvobtxev6/stream.m3u8', lat: 34.8485, lon: -82.4000 },
-            // Aiken SC: m3u8 URL expires periodically – get fresh one from Network tab on embed page, then paste here
-            { id: 'c10', title: 'Aiken SC', url: 'https://wmso-us-ea1.wetmet.net/live/191-08-01/chunks.m3u8?nimblesessionid=86645202&wmsAuthSign=c2VydmVyX3RpbWU9Mi83LzIwMjYgMzo1Mjo1MiBQTSZoYXNoX3ZhbHVlPWhaaWFSSFh5QmorbG0ybERSNWkyenc9PSZ2YWxpZG1pbnV0ZXM9MzA=', lat: 33.5505, lon: -81.7164 },
+            { id: 'c9', title: 'Greenville SC', url: 'https://s53.ipcamlive.com/streams/353btftmcvh5iexku/stream.m3u8', lat: 34.8485, lon: -82.4000 },
+            { id: 'c10', title: 'Aiken SC', url: 'https://wmso-us-ea1.wetmet.net/live/191-08-01/chunks.m3u8?nimblesessionid=86186540&wmsAuthSign=c2VydmVyX3RpbWU9Mi80LzIwMjYgMTE6NTE6MjkgUE0maGFzaF92YWx1ZT11VkluTnJzdzFzRGxWRE93RVpPbEZnPT0mdmFsaWRtaW51dGVzPTMw', lat: 33.5505, lon: -81.7164 },
             { id: 'c11', title: 'I-95 Exit 22', url: 'https://s20.us-east-1.skyvdn.com/rtplive/60303/chunklist_w977767992.m3u8', lat: 32.502583, lon: -80.971254 },
             { id: 'c12', title: 'Lake Keowee Marina', url: 'https://s165.ipcamlive.com/streams/a53jlsg9qwuizxpvh/stream.m3u8', lat: 34.711982, lon: -82.949066 },
             { id: 'c13', title: 'Tuscaloosa', url: 'https://video.hazcams.com/tuscaloosa-al-us-001/main_stream.m3u8', lat: 33.208856, lon: -87.550406 },
@@ -434,6 +433,7 @@
                 playWithUrl(cam.url);
             }
         }
+        
 
         // === WEATHER FETCH ===
         async function fetchWeather() {
@@ -511,6 +511,7 @@
             currentCamIndex = (currentCamIndex + 1) % cameras.length;
             loadCameraByIndex(currentCamIndex);
         }
+        
 
         function closeFS() {
             document.getElementById('fs-overlay').style.display = 'none';
@@ -537,3 +538,4 @@
     </script>
 </body>
 </html>
+
