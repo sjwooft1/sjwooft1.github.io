@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio Pro: Broadcast Situations</title>
+  <style>
+    :root {
+      --away-color: #F56600; --home-color: #9E1B32; --accent: #FFD700;
+      --logo-size: 220px; --bg: #050505;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif; background: var(--bg);
+      color: white; margin: 0; overflow-x: hidden; transition: background 0.4s;
+    }
+
+    /* --- NAV & SIDEBARS --- */
+    nav {
+      background: rgba(0,0,0,0.95); padding: 12px 20px;
+      display: flex; gap: 12px; align-items: center;
+      border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 1000;
+    }
+    .clean-mode nav { display: none !important; }
+
+    #settingsSidebar {
+      position: fixed; right: -350px; top: 0; width: 300px; height: 100%;
+      background: #111; z-index: 3000; padding: 25px;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+      transition: right 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+      border-left: 1px solid #333; overflow-y: auto;
+    }
+    #settingsSidebar.open { right: 0; }
+
+    #configModal {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #151515; padding: 30px; border-radius: 15px; z-index: 5000;
+      border: 1px solid var(--accent); width: 420px; box-shadow: 0 0 100px rgba(0,0,0,0.9);
+      display: none; max-height: 80vh; overflow-y: auto;
+    }
+
+    /* --- BROADCAST UI --- */
+    #singleView {
+      min-height: 85vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; position: relative;
+    }
+    .broadcast-container {
+      width: 95%; max-width: 1300px; display: grid;
+      grid-template-columns: 1fr auto 1fr; align-items: center; text-align: center;
+    }
+    .score-text { font-size: 180px; font-weight: 900; line-height: 0.8; letter-spacing: -8px; }
+    .team-logo { width: var(--logo-size); height: var(--logo-size); object-fit: contain; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.7)); }
+    .orb { position: absolute; width: 700px; height: 700px; filter: blur(140px); opacity: 0.25; z-index: -1; }
+    .orb-l { top: -20%; left: -10%; background: var(--away-color); }
+    .orb-r { bottom: -20%; right: -10%; background: var(--home-color); }
+
+    /* --- SPORT SPECIFICS --- */
+    .situation-box { margin-top: 20px; font-weight: 800; font-size: 24px; color: var(--accent); letter-spacing: 1px; }
+    
+    /* Baseball Diamond */
+    .diamond-container { display: flex; flex-direction: column; align-items: center; margin-top: 15px; }
+    .base { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); transform: rotate(45deg); margin: 4px; display: inline-block; transition: 0.3s; }
+    .base.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
+    .count-text { font-size: 14px; color: #888; margin-top: 10px; font-family: monospace; }
+
+    /* --- MULTIVIEW --- */
+    #multiView { display: none; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; padding: 30px; }
+    .slot-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 20px; cursor: pointer; transition: 0.3s; }
+    .slot-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+
+    /* --- UTILS --- */
+    select, input, button { background: #1a1a1a; color: white; border: 1px solid #333; padding: 8px 12px; border-radius: 6px; font-size: 13px; }
+    button { cursor: pointer; font-weight: 600; }
+    .active-view { background: var(--accent) !important; color: black !important; }
+    .hidden { display: none; }
+    .badge { background: var(--accent); color: black; padding: 5px 20px; border-radius: 4px; font-weight: 900; font-size: 24px; }
+    #exitClean { position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 12px; border-radius: 50%; display: none; z-index: 4000; border: 1px solid #444; }
+    .clean-mode #exitClean { display: block; }
+  </style>
+</head>
+<body>
+
+  <div id="configModal">
+    <h3>Multiview Setup</h3>
+    <input type="number" id="numSlots" value="4" min="1" max="12" style="width:94%; margin-bottom:10px;">
+    <div id="slotInputs"></div>
+    <button onclick="generateSlots()" id="btnLaunch" style="width:100%; background:var(--accent); color:black;">Configure Slots</button>
+    <button onclick="closeModal()" style="width:100%; background:transparent; margin-top:10px;">Cancel</button>
+  </div>
+
+  <div id="settingsSidebar">
+    <h2>PREFERENCES</h2>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:11px; color:#888;">REFRESH (SEC)</label>
+      <input type="number" id="prefRefresh" value="1" style="width:100%">
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:11px; color:#888;">LOGO SIZE</label>
+      <input type="range" id="prefLogoSize" min="100" max="500" value="220" oninput="updateLogoSize(this.value)" style="width:100%">
+    </div>
+    <button onclick="toggleCleanMode()" style="width:100%;">Ghost Mode</button>
+    <button onclick="toggleSidebar()" style="width:100%; background:var(--accent); color:black; margin-top:20px;">Save</button>
+  </div>
+
+  <nav>
+    <button id="btnSingle" class="active-view" onclick="changeView('single')">Single</button>
+    <button id="btnMulti" onclick="openModal()">Multi</button>
+    
+    <div style="border-left: 1px solid #333; padding-left:15px; display:flex; gap:10px;">
+        <select id="sportPath" onchange="fetchData()">
+            <option value="baseball/college-baseball">NCAA Baseball</option>
+            <option value="basketball/mens-college-basketball">NCAA Basketball</option>
+            <option value="football/college-football">NCAA Football</option>
+            <option value="baseball/mlb">MLB</option>
+            <option value="football/nfl">NFL</option>
+            <option value="basketball/nba">NBA</option>
+        </select>
+        <select id="teamSelect" onchange="handleTeamSelect()">
+            <option value="Alabama">Alabama</option>
+            <option value="Clemson">Clemson</option>
+            <option value="Georgia">Georgia</option>
+            <option value="custom">-- Custom --</option>
+        </select>
+        <input type="text" id="customInput" class="hidden" placeholder="Team name..." onblur="fetchData()">
+    </div>
+
+    <div style="margin-left:auto; display:flex; gap:10px;">
+      <input type="date" id="globalDate" onchange="fetchData()">
+      <button onclick="toggleSidebar()">⚙</button>
+    </div>
+  </nav>
+
+  <button id="exitClean" onclick="toggleCleanMode()">🛠</button>
+
+  <div id="singleView">
+    <div class="orb orb-l"></div>
+    <div class="orb orb-r"></div>
+    <div class="broadcast-container" id="singleContent"></div>
+  </div>
+
+  <div id="multiView"></div>
+
+<script>
+  let slots = [];
+  let currentView = 'single';
+  let refreshTimer;
+
+  window.onload = () => {
+    document.getElementById('globalDate').value = new Date().toISOString().split('T')[0];
+    loadPrefs();
+    fetchData();
+  };
+
+  function openModal() { document.getElementById('configModal').style.display = 'block'; }
+  function closeModal() { document.getElementById('configModal').style.display = 'none'; }
+  function toggleSidebar() { document.getElementById('settingsSidebar').classList.toggle('open'); }
+  function toggleCleanMode() { document.body.classList.toggle('clean-mode'); }
+  function updateLogoSize(v) { document.documentElement.style.setProperty('--logo-size', v + 'px'); savePrefs(); }
+
+  function handleTeamSelect() {
+    const isCustom = document.getElementById('teamSelect').value === 'custom';
+    document.getElementById('customInput').classList.toggle('hidden', !isCustom);
+    savePrefs(); fetchData();
+  }
+
+  function changeView(m) {
+    currentView = m;
+    document.getElementById('singleView').style.display = m === 'single' ? 'flex' : 'none';
+    document.getElementById('multiView').style.display = m === 'multi' ? 'grid' : 'none';
+    document.getElementById('btnSingle').classList.toggle('active-view', m === 'single');
+    document.getElementById('btnMulti').classList.toggle('active-view', m === 'multi');
+    savePrefs(); fetchData();
+  }
+
+  async function fetchData() {
+    const date = document.getElementById('globalDate').value.replace(/-/g, '');
+    if (currentView === 'single') {
+        const sport = document.getElementById('sportPath').value;
+        const query = (document.getElementById('teamSelect').value === 'custom' ? document.getElementById('customInput').value : document.getElementById('teamSelect').value).toLowerCase();
+        try {
+            const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/scoreboard?dates=${date}`);
+            const data = await res.json();
+            renderSingle(data.events.find(e => e.name.toLowerCase().includes(query)), sport);
+        } catch (e) {}
+    } else {
+        const grid = document.getElementById('multiView'); grid.innerHTML = "";
+        for(let s of slots) {
+            try {
+                const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${s.sport}/scoreboard?dates=${date}`);
+                const data = await res.json();
+                const g = data.events.find(e => e.name.toLowerCase().includes(s.team.toLowerCase()));
+                if(g) renderSlot(g, s.sport);
+            } catch (e) {}
+        }
+    }
+    resetTimer();
+  }
+
+  function renderSingle(game, sportPath) {
+    const container = document.getElementById('singleContent');
+    if (!game) { container.innerHTML = "<h2>NO GAME DATA</h2>"; return; }
+    
+    const comp = game.competitions[0];
+    const home = comp.competitors.find(c => c.homeAway === 'home');
+    const away = comp.competitors.find(c => c.homeAway === 'away');
+    const sit = comp.situation || {};
+
+    // Dynamic Atmosphere
+    if (away.team.color) document.documentElement.style.setProperty('--away-color', '#' + away.team.color);
+    if (home.team.color) document.documentElement.style.setProperty('--home-color', '#' + home.team.color);
+
+    // Build Situation UI
+    let situationHtml = "";
+    if (sportPath.includes('baseball')) {
+        situationHtml = `
+            <div class="diamond-container">
+                <div><div class="base ${sit.onSecond ? 'active' : ''}"></div></div>
+                <div>
+                    <div class="base ${sit.onThird ? 'active' : ''}"></div>
+                    <div class="base ${sit.onFirst ? 'active' : ''}"></div>
+                </div>
+                <div class="count-text">${sit.balls || 0}-${sit.strikes || 0} | ${sit.outs || 0} OUT</div>
+            </div>`;
+    } else {
+        const clock = game.status.displayClock || "0:00";
+        situationHtml = `<div class="situation-box">${clock}</div>`;
+        if (sit.downDistanceText) situationHtml += `<div style="font-size:12px; color:#666; margin-top:5px;">${sit.downDistanceText}</div>`;
+    }
+
+    container.innerHTML = `
+      <div>
+        <img src="${away.team.logo}" class="team-logo">
+        <div style="font-weight:900; opacity:0.5; margin-top:10px;">${away.team.abbreviation}</div>
+        <div class="score-text">${away.score}</div>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <div class="badge">${game.status.type.shortDetail.toUpperCase()}</div>
+        ${situationHtml}
+        <div style="font-size:12px; margin-top:15px; opacity:0.4; font-weight:bold;">${game.status.type.detail}</div>
+      </div>
+      <div>
+        <img src="${home.team.logo}" class="team-logo">
+        <div style="font-weight:900; opacity:0.5; margin-top:10px;">${home.team.abbreviation}</div>
+        <div class="score-text">${home.score}</div>
+      </div>`;
+  }
+
+  function renderSlot(game, sport) {
+    const comp = game.competitions[0];
+    const home = comp.competitors.find(c => c.homeAway === 'home');
+    const away = comp.competitors.find(c => c.homeAway === 'away');
+    const sit = comp.situation || {};
+    
+    let sitTag = sport.includes('baseball') ? `OUT: ${sit.outs || 0}` : (game.status.displayClock || "0:00");
+
+    const div = document.createElement('div');
+    div.className = 'slot-card';
+    div.onclick = () => {
+        document.getElementById('sportPath').value = sport;
+        document.getElementById('teamSelect').value = 'custom';
+        document.getElementById('customInput').value = game.name;
+        document.getElementById('customInput').classList.remove('hidden');
+        changeView('single');
+    };
+    div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:#666; margin-bottom:10px; font-weight:bold;">
+            <span>${game.status.type.shortDetail}</span><span>${sitTag}</span>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; text-align:center;">
+            <div><img src="${away.team.logo}" style="height:45px;"><div style="font-size:28px; font-weight:900;">${away.score}</div></div>
+            <div style="opacity:0.2;">VS</div>
+            <div><img src="${home.team.logo}" style="height:45px;"><div style="font-size:28px; font-weight:900;">${home.score}</div></div>
+        </div>`;
+    document.getElementById('multiView').appendChild(div);
+  }
+
+  function generateSlots() {
+    const count = document.getElementById('numSlots').value;
+    const container = document.getElementById('slotInputs');
+    if(container.innerHTML === "") {
+        let h = "";
+        for(let i=0; i<count; i++) {
+            h += `<div style="background:#222; padding:10px; border-radius:5px; margin-bottom:5px;">
+                <select id="s_sport_${i}" style="width:100%; margin-bottom:5px;">
+                    <option value="baseball/college-baseball">NCAA Baseball</option>
+                    <option value="football/college-football">NCAA Football</option>
+                    <option value="baseball/mlb">MLB</option>
+                </select>
+                <input type="text" id="s_team_${i}" placeholder="Team Name" style="width:87%">
+            </div>`;
+        }
+        container.innerHTML = h;
+        document.getElementById('btnLaunch').textContent = "Launch Multi";
+        return;
+    }
+    slots = [];
+    for(let i=0; i<count; i++) slots.push({ sport: document.getElementById(`s_sport_${i}`).value, team: document.getElementById(`s_team_${i}`).value });
+    container.innerHTML = ""; closeModal(); changeView('multi');
+  }
+
+  function savePrefs() {
+    localStorage.setItem('studio_v11', JSON.stringify({
+      sport: document.getElementById('sportPath').value,
+      team: document.getElementById('teamSelect').value,
+      custom: document.getElementById('customInput').value,
+      logoSize: document.documentElement.style.getPropertyValue('--logo-size'),
+      view: currentView, slots: slots
+    }));
+  }
+
+  function loadPrefs() {
+    const s = JSON.parse(localStorage.getItem('studio_v11') || "{}");
+    if(s.sport) document.getElementById('sportPath').value = s.sport;
+    if(s.team) document.getElementById('teamSelect').value = s.team;
+    if(s.custom) document.getElementById('customInput').value = s.custom;
+    if(s.logoSize) document.documentElement.style.setProperty('--logo-size', s.logoSize);
+    if(s.team === 'custom') document.getElementById('customInput').classList.remove('hidden');
+    slots = s.slots || []; currentView = s.view || 'single'; changeView(currentView);
+  }
+
+  function resetTimer() {
+    clearInterval(refreshTimer);
+    refreshTimer = setInterval(fetchData, (document.getElementById('prefRefresh').value || 30) * 1000);
+  }
+</script>
+</body>
+</html>
