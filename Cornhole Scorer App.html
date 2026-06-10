@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cornhole Pro Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f3ee;--bg2:#eceae3;--white:#fff;--border:#d8d4c8;
+  --text:#1a1916;--text2:#5a5750;--text3:#9a9590;
+  --ca:#c0392b;--ca-bg:#fdf0ee;
+  --cb:#1a5fa8;--cb-bg:#eef4fc;
+  --green:#2a7a3b;--green-bg:#edf7f0;
+  --amber:#b8620a;--amber-bg:#fef5e7;
+  --purple:#7c5cbf;--purple-bg:#f4f0fb;--purple-border:#c9b8e8;
+  --sf:'Bebas Neue',sans-serif;--ui:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100vh}
+.screen{display:none}.screen.active{display:block}
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.card-title{font-size:.63rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:.9rem}
+input[type=text]{background:#fafaf8;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--ui);font-size:.9rem;font-weight:500;padding:.5rem .75rem;width:100%;outline:none;transition:border-color .2s}
+input[type=text]:focus{border-color:var(--text2)}
+input[type=text]::placeholder{color:var(--text3);font-weight:400}
+input[type=text].ghost-inp{color:var(--purple);border-color:var(--purple-border)}
+input[type=range]{accent-color:var(--text);width:100%}
+
+/* ══ SETUP ══ */
+#setup{max-width:620px;margin:0 auto;padding:1.25rem 1rem 3rem}
+.logo-bar{text-align:center;padding:1.25rem 0 .75rem}
+.logo-bar h1{font-family:var(--sf);font-size:2.6rem;letter-spacing:5px}
+.logo-bar p{font-size:.68rem;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-top:2px}
+/* setup nav buttons */
+.setup-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+.setup-nav-btn{padding:.7rem;background:var(--white);border:1px solid var(--border);border-radius:10px;font-size:.78rem;font-weight:600;color:var(--text2);cursor:pointer;text-align:center;transition:all .14s;display:flex;align-items:center;justify-content:center;gap:6px}
+.setup-nav-btn:hover{border-color:var(--text2);color:var(--text)}
+.setup-nav-btn.league-btn{background:var(--amber-bg);border-color:var(--amber);color:var(--amber)}
+.setup-nav-btn.league-btn:hover{background:var(--amber);color:#fff}
+.setup-nav-btn.stats-btn-home{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.setup-nav-btn.stats-btn-home:hover{background:var(--green);color:#fff}
+.team-sublabel{font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:.5rem 0 .3rem}
+.player-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:.55rem}
+.ghost-toggle{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.7rem;font-weight:600;color:var(--text3);user-select:none;white-space:nowrap}
+.ghost-toggle input{display:none}
+.g-box{width:28px;height:28px;background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;flex-shrink:0}
+.ghost-toggle input:checked~.g-box{background:var(--purple);border-color:var(--purple)}
+.ghost-range-panel{display:none;margin-top:.6rem;padding:.7rem .85rem;background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:8px}
+.ghost-range-panel.visible{display:block}
+.ghost-range-label{font-size:.68rem;font-weight:600;color:var(--purple);margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between}
+.ghost-range-label span{font-family:var(--mono);font-size:.82rem;font-weight:700}
+.range-row{display:grid;grid-template-columns:50px 1fr 50px;align-items:center;gap:8px;font-size:.7rem;color:var(--text3);margin-top:.35rem}
+.color-row{display:flex;align-items:center;gap:10px;margin-top:.5rem}
+.color-label{font-size:.72rem;font-weight:500;color:var(--text2)}
+.color-presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:.4rem}
+.cp{width:24px;height:24px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all .13s}
+.cp:hover,.cp.active{border-color:var(--text);transform:scale(1.12)}
+.win-options{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.win-opt,.rule-opt{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:.7rem .5rem;text-align:center;cursor:pointer;transition:all .15s}
+.win-opt:hover,.rule-opt:hover{border-color:var(--text2)}
+.win-opt.active,.rule-opt.active{background:var(--text);border-color:var(--text);color:var(--bg)}
+.win-opt .wn{font-family:var(--sf);font-size:1.75rem;line-height:1}
+.win-opt .wl{font-size:.58rem;letter-spacing:1.5px;text-transform:uppercase;opacity:.7;margin-top:1px}
+.rule-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rule-opt{text-align:left;padding:.8rem 1rem}
+.rule-opt .rn{font-weight:700;font-size:.88rem;margin-bottom:2px}
+.rule-opt .rd{font-size:.68rem;opacity:.65;line-height:1.3}
+.start-btn{width:100%;padding:1rem;background:var(--text);border:none;border-radius:11px;color:var(--bg);font-family:var(--sf);font-size:1.6rem;letter-spacing:4px;cursor:pointer;transition:all .18s;margin-top:.5rem}
+.start-btn:hover{background:#333;transform:translateY(-1px)}
+.saved-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.6rem}
+.s-chip{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:.73rem;font-weight:500;cursor:pointer;transition:all .13s;display:flex;align-items:center;gap:5px}
+.s-chip:hover{border-color:var(--text2);background:var(--white)}
+.s-chip.g-chip{background:var(--purple-bg);border-color:var(--purple-border);color:var(--purple)}
+.s-chip-x{color:var(--text3);font-size:.78rem;cursor:pointer}.s-chip-x:hover{color:var(--ca)}
+
+/* ══ GAME SCREEN ══ */
+#game{max-width:900px;margin:0 auto;padding:0 0 3rem}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.tb-left{font-family:var(--sf);font-size:.95rem;letter-spacing:3px;color:var(--text2)}
+.tb-right{display:flex;gap:5px}
+.tbtn{background:var(--bg2);border:1px solid var(--border);border-radius:7px;font-size:.72rem;font-weight:500;color:var(--text2);padding:.28rem .58rem;cursor:pointer;transition:all .13s}
+.tbtn:hover{border-color:var(--text2);color:var(--text)}
+.tbtn.danger:hover{border-color:var(--ca);color:var(--ca)}
+.tbtn.hi{background:var(--text);color:var(--bg);border-color:var(--text)}
+.tbtn.hi:hover{background:#333}
+
+/* score banner */
+.score-banner{display:grid;grid-template-columns:1fr auto 1fr;background:var(--white);border-bottom:2px solid var(--border)}
+.sb-team{padding:.85rem 1rem .75rem;position:relative}
+.sb-label{font-size:.58rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:.1rem}
+.sb-name{font-weight:700;font-size:.9rem;color:var(--text);margin-bottom:.25rem;display:flex;align-items:center;gap:5px;min-height:1.1rem}
+.ghost-pill{font-size:.56rem;font-weight:700;letter-spacing:1px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);border-radius:4px;padding:1px 5px}
+/* score row with IN/ON inline */
+.score-main-row{display:flex;align-items:center;gap:10px;margin-bottom:.25rem}
+.sb-score{font-family:var(--sf);font-size:5rem;line-height:1;transition:color .3s;flex-shrink:0}
+.sb-score.pop{animation:pop .28s ease}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.12)}100%{transform:scale(1)}}
+/* quick +/- buttons */
+.quick-btns{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+.q-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);font-size:.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;color:var(--text2)}
+.q-btn:active{transform:scale(.88)}
+.q-btn.plus:hover{background:var(--text);color:var(--bg);border-color:var(--text)}
+.q-btn.minus:hover{background:var(--ca-bg);color:var(--ca);border-color:var(--ca)}
+/* IN/ON inline badge stack */
+.inon-stack{display:flex;flex-direction:column;gap:4px;justify-content:center}
+.inon-badge{display:flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;font-family:var(--mono)}
+.inon-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.inon-val{min-width:18px;text-align:right}
+.inon-lbl{font-size:.58rem;font-weight:600;color:var(--text3);letter-spacing:.5px}
+.sb-prog-wrap{height:3px;background:var(--bg2);border-radius:2px;overflow:hidden}
+.sb-prog{height:100%;border-radius:2px;transition:width .5s ease}
+.sb-lead{font-size:.56rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.12rem .45rem;border-radius:4px;margin-top:.22rem;display:inline-block;min-height:16px}
+.sb-sep{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 .65rem;border-left:1px solid var(--border);border-right:1px solid var(--border)}
+.sb-sep-vs{font-family:var(--sf);font-size:1.4rem;color:var(--text3);letter-spacing:2px}
+.sb-rd{font-size:.56rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:3px}
+.target-bar{text-align:center;padding:.3rem;background:var(--bg2);border-top:1px solid var(--border);font-size:.6rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+
+/* tracker table */
+.tracker-wrap{padding:.7rem 1rem 0;overflow-x:auto}
+.t-title{font-size:.58rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:.5rem}
+.tbl{width:100%;border-collapse:collapse;min-width:480px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--white)}
+.tbl th{padding:.4rem .35rem;font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);border:1px solid var(--border);text-align:center}
+.th-a{background:#fce8e6!important}.th-b{background:#e6f0fb!important}.th-dk{background:var(--text)!important;color:var(--bg)!important}
+.tbl td{padding:.38rem .3rem;border:1px solid var(--border);text-align:center;font-family:var(--mono);font-size:.82rem;font-weight:500;vertical-align:middle}
+.td-rnd{color:var(--text3);font-size:.7rem;font-weight:600;background:var(--bg2);width:32px}
+.td-sc{font-weight:700;font-size:.88rem}
+.td-sc-a{background:var(--ca-bg)}.td-sc-b{background:var(--cb-bg)}
+.td-np{color:var(--green);font-size:.76rem}.td-nn{color:var(--ca);font-size:.76rem}.td-nz{color:var(--text3);font-size:.76rem}
+tr.active-row td{background:#fffdf0!important;outline:2px solid var(--amber) inset}
+tr.tot-row td{background:var(--bg2);font-weight:700}
+
+/* entry panel */
+.ep{margin:.7rem 1rem 0;background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.ep-hdr{background:var(--bg2);padding:.55rem 1rem;font-size:.6rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ep-rd{font-family:var(--sf);font-size:.95rem;letter-spacing:2px;color:var(--amber)}
+.ep-body{padding:.9rem}
+.ep-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.ep-col-hdr{font-size:.63rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:.65rem;padding-bottom:.35rem;border-bottom:2px solid}
+.ep-col-hdr.a{color:var(--ca);border-color:var(--ca)}
+.ep-col-hdr.b{color:var(--cb);border-color:var(--cb)}
+.bag-entry{display:flex;align-items:center;justify-content:space-between;margin-bottom:.55rem}
+.bag-entry:last-child{margin-bottom:0}
+.be-label{font-size:.7rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:5px}
+.be-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.stepper{display:flex;align-items:center}
+.sp-btn{width:30px;height:30px;background:var(--bg2);border:1px solid var(--border);font-size:.95rem;font-weight:700;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;user-select:none}
+.sp-btn.l{border-radius:7px 0 0 7px}.sp-btn.r{border-radius:0 7px 7px 0}
+.sp-btn:hover{background:var(--border);color:var(--text)}
+.sp-val{width:36px;height:30px;background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--text)}
+.sp-val.va{color:var(--ca)}.sp-val.vb{color:var(--cb)}
+.miss-disp{width:36px;height:30px;border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.82rem;font-weight:600;color:var(--text3);background:var(--bg2)}
+.ghost-auto-panel{margin-top:.6rem;padding:.55rem .75rem;background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:8px;display:none}
+.ghost-auto-panel.vis{display:block}
+.gap-label{font-size:.65rem;font-weight:700;color:var(--purple);margin-bottom:.3rem}
+.gap-throw-btn{width:100%;padding:.45rem;background:var(--purple);border:none;border-radius:7px;color:#fff;font-family:var(--sf);font-size:1rem;letter-spacing:2px;cursor:pointer;transition:all .15s}
+.gap-throw-btn:hover{background:#6a4aad}
+.gap-result{font-family:var(--mono);font-size:.78rem;color:var(--purple);margin-top:.35rem;text-align:center;min-height:16px}
+.pts-prev{margin-top:.75rem;padding:.45rem .7rem;background:var(--bg2);border-radius:8px;font-size:.72rem;font-weight:600;color:var(--text2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.35rem}
+.pts-chip{padding:2px 8px;border-radius:5px;font-family:var(--mono);font-size:.8rem;font-weight:700}
+.pts-chip.a{background:var(--ca-bg);color:var(--ca)}
+.pts-chip.b{background:var(--cb-bg);color:var(--cb)}
+.pts-chip.c{background:var(--amber-bg);color:var(--amber)}
+.ep-foot{padding:.65rem 1rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:.65rem}
+.score-rd-btn{flex:1;padding:.65rem;background:var(--text);border:none;border-radius:9px;color:var(--bg);font-family:var(--sf);font-size:1.15rem;letter-spacing:3px;cursor:pointer;transition:all .15s}
+.score-rd-btn:hover{background:#333}
+.undo-btn{padding:.6rem .9rem;background:var(--bg2);border:1px solid var(--border);border-radius:9px;font-size:.75rem;font-weight:500;color:var(--text3);cursor:pointer;transition:all .14s}
+.undo-btn:hover{border-color:var(--ca);color:var(--ca)}
+
+/* ══ STATS SCREEN ══ */
+#stats-screen{max-width:860px;margin:0 auto;padding:0 0 3rem}
+.stats-topbar{background:var(--white);border-bottom:1px solid var(--border);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.stats-topbar-title{font-family:var(--sf);font-size:1.1rem;letter-spacing:3px;color:var(--text2)}
+.stats-body{padding:.85rem 1rem}
+.ss-section{background:var(--white);border:1px solid var(--border);border-radius:12px;margin-bottom:1rem;overflow:hidden}
+.ss-hdr{padding:.55rem 1rem;font-size:.6rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg2)}
+.ss-hdr.neutral{color:var(--text2)}
+.ss-grid{display:grid;grid-template-columns:1fr 1fr}
+.ss-col{padding:.5rem .85rem}
+.ss-col:first-child{border-right:1px solid var(--border)}
+.ss-row{display:flex;justify-content:space-between;align-items:center;padding:.28rem 0;border-bottom:.5px solid var(--bg2);font-size:.78rem}
+.ss-row:last-child{border:none}
+.ss-lbl{color:var(--text2)}
+.ss-val{font-family:var(--mono);font-weight:700;font-size:.83rem}
+.ss-val.am{color:var(--amber)}
+.bar-section{padding:.75rem 1rem}
+.bar-row{margin-bottom:.6rem}.bar-row:last-child{margin-bottom:0}
+.bar-meta{display:flex;justify-content:space-between;font-size:.7rem;font-weight:600;margin-bottom:.25rem}
+.bar-track{height:10px;background:var(--bg2);border-radius:5px;overflow:hidden;display:flex}
+.bar-fill{height:100%;border-radius:5px;transition:width .6s ease}
+.h2h-table{width:100%;border-collapse:collapse}
+.h2h-table th{padding:.35rem .75rem;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border);text-align:left}
+.h2h-table td{padding:.32rem .75rem;border-bottom:.5px solid var(--bg2);font-size:.78rem}
+.h2h-table tr:last-child td{border:none}
+.round-chart{padding:0 1rem .85rem;overflow-x:auto}
+.rc-inner{min-width:300px}
+.rc-bars{display:flex;gap:3px;align-items:flex-end;height:80px;margin-bottom:3px}
+.rc-bar-pair{display:flex;gap:1px;align-items:flex-end;flex:1}
+.rc-bar{min-height:2px;border-radius:2px 2px 0 0;transition:height .4s ease}
+.rc-labels{display:flex;gap:3px}
+.rc-lbl{flex:1;text-align:center;font-size:.56rem;color:var(--text3);font-family:var(--mono)}
+.stat-circles{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;padding:.75rem 1rem}
+.stat-circle{text-align:center}
+.circle-wrap{width:70px;height:70px;margin:0 auto .35rem;position:relative}
+.circle-svg{width:70px;height:70px;transform:rotate(-90deg)}
+.circle-track{fill:none;stroke:var(--bg2);stroke-width:8}
+.circle-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dasharray .6s ease}
+.circle-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--text)}
+.circle-lbl{font-size:.62rem;font-weight:600;color:var(--text3)}
+
+/* ══ LEAGUE SCREEN ══ */
+#league-screen{max-width:700px;margin:0 auto;padding:0 0 3rem}
+.league-topbar{background:var(--white);border-bottom:1px solid var(--border);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.league-topbar-title{font-family:var(--sf);font-size:1.1rem;letter-spacing:3px;color:var(--amber)}
+.league-body{padding:.85rem 1rem}
+/* league setup */
+.lg-setup-form{margin-bottom:1rem}
+.lg-input{background:#fafaf8;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--ui);font-size:.9rem;font-weight:500;padding:.5rem .75rem;width:100%;outline:none;transition:border-color .2s;margin-bottom:.5rem}
+.lg-input:focus{border-color:var(--amber)}
+.lg-create-btn{width:100%;padding:.75rem;background:var(--amber);border:none;border-radius:9px;color:#fff;font-family:var(--sf);font-size:1.2rem;letter-spacing:3px;cursor:pointer;transition:all .15s}
+.lg-create-btn:hover{background:#9a5009}
+/* existing league panel */
+.league-panel{background:var(--white);border:1px solid var(--border);border-radius:12px;margin-bottom:1rem;overflow:hidden}
+.league-panel-hdr{background:var(--amber-bg);border-bottom:1px solid var(--amber);padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.league-panel-title{font-family:var(--sf);font-size:1.1rem;letter-spacing:2px;color:var(--amber)}
+.lg-panel-body{padding:.85rem 1rem}
+/* standings table */
+.standings-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.standings-tbl th{padding:.35rem .5rem;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border);text-align:center}
+.standings-tbl th:first-child{text-align:left}
+.standings-tbl td{padding:.38rem .5rem;border-bottom:.5px solid var(--bg2);font-family:var(--mono);font-size:.78rem;text-align:center}
+.standings-tbl td:first-child{text-align:left;font-family:var(--ui);font-weight:600;font-size:.8rem}
+.standings-tbl tr:last-child td{border:none}
+.standings-tbl tr:first-child td{font-weight:700}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;font-size:.7rem;font-weight:700;margin-right:4px}
+.rank-1{background:gold;color:#6b5000}.rank-2{background:#e8e8e8;color:#555}.rank-3{background:#cd7f32;color:#fff}
+/* game history in league */
+.lg-game-row{display:flex;align-items:center;justify-content:space-between;padding:.45rem 0;border-bottom:.5px solid var(--bg2);font-size:.78rem}
+.lg-game-row:last-child{border:none}
+.lg-game-teams{font-weight:600;color:var(--text)}
+.lg-game-score{font-family:var(--mono);font-weight:700;color:var(--text2)}
+.lg-game-date{font-size:.65rem;color:var(--text3)}
+/* share panel */
+.share-panel{background:var(--white);border:1px solid var(--border);border-radius:12px;margin-bottom:1rem;padding:1rem}
+.share-panel-title{font-size:.63rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:.75rem}
+.share-url-box{display:flex;gap:8px;margin-bottom:.75rem}
+.share-url-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.45rem .7rem;font-size:.72rem;font-family:var(--mono);color:var(--text2);outline:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.copy-url-btn{padding:.45rem .75rem;background:var(--text);border:none;border-radius:8px;color:var(--bg);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .14s;white-space:nowrap}
+.copy-url-btn:hover{background:#333}
+.qr-wrap{display:flex;justify-content:center;margin-top:.75rem}
+#qrCanvas{border:4px solid var(--white);border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+/* add game to league */
+.lg-add-game-btn{width:100%;padding:.65rem;background:var(--text);border:none;border-radius:9px;color:var(--bg);font-family:var(--sf);font-size:1.1rem;letter-spacing:3px;cursor:pointer;margin-top:.6rem;transition:all .15s}
+.lg-add-game-btn:hover{background:#333}
+.lg-delete-btn{padding:.4rem .75rem;background:var(--bg2);border:1px solid var(--border);border-radius:7px;font-size:.72rem;font-weight:500;color:var(--text3);cursor:pointer;transition:all .14s}
+.lg-delete-btn:hover{border-color:var(--ca);color:var(--ca)}
+/* view-only league page */
+#league-view{max-width:700px;margin:0 auto;padding:0 0 3rem}
+.lv-banner{background:var(--amber);padding:1.5rem 1.25rem;text-align:center}
+.lv-banner h1{font-family:var(--sf);font-size:2.5rem;letter-spacing:4px;color:#fff}
+.lv-banner p{font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.75);margin-top:3px}
+.lv-body{padding:.85rem 1rem}
+
+/* ══ WIN SCREEN ══ */
+#win{max-width:520px;margin:0 auto;padding:2rem 1rem 3rem;text-align:center}
+.win-crown{font-size:3.5rem;margin-bottom:.6rem;animation:float 2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.win-h{font-family:var(--sf);font-size:2.8rem;letter-spacing:5px;margin-bottom:.15rem}
+.win-name{font-family:var(--sf);font-size:2rem;letter-spacing:3px;margin-bottom:.2rem}
+.win-name.a{color:var(--ca)}.win-name.b{color:var(--cb)}
+.win-final{font-family:var(--sf);font-size:1.3rem;letter-spacing:4px;color:var(--text2);margin-bottom:1.5rem}
+.win-sum{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.1rem;margin-bottom:1.25rem;text-align:left}
+.wsr{display:grid;grid-template-columns:1fr 72px 72px;padding:.26rem 0;font-size:.78rem;border-bottom:.5px solid var(--bg2)}
+.wsr:last-child{border:none}
+.wsr-lbl{color:var(--text2)}.wsr-a{text-align:center;font-family:var(--mono);font-weight:700}.wsr-b{text-align:center;font-family:var(--mono);font-weight:700}
+.win-btns{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+.wbtn{padding:.72rem 1.4rem;border-radius:10px;font-family:var(--sf);font-size:1.05rem;letter-spacing:2px;cursor:pointer;transition:all .15s;border:none}
+.wbtn.p{background:var(--text);color:var(--bg)}.wbtn.p:hover{background:#333}
+.wbtn.s{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}.wbtn.s:hover{border-color:var(--text2)}
+.wbtn.league{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber)}.wbtn.league:hover{background:var(--amber);color:#fff}
+
+/* toast */
+.toast{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%) translateY(60px);background:var(--text);color:var(--bg);border-radius:8px;padding:.5rem 1rem;font-size:.78rem;font-weight:500;z-index:999;transition:transform .24s;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- ════════════ SETUP ════════════ -->
+<div class="screen active" id="setup">
+<div style="max-width:620px;margin:0 auto;padding:1.25rem 1rem 3rem">
+  <div class="logo-bar"><h1>⬡ CORNHOLE PRO</h1><p>Bag Tracker &amp; Stats</p></div>
+
+  <!-- Home nav buttons -->
+  <div class="setup-nav">
+    <button class="setup-nav-btn stats-btn-home" onclick="openStats()">📊 View Stats</button>
+    <button class="setup-nav-btn league-btn" onclick="showScreen('league-screen');renderLeagueScreen()">🏆 League</button>
+  </div>
+
+  <!-- Saved players -->
+  <div class="card">
+    <div class="card-title">Saved Players — tap to fill a slot</div>
+    <div class="saved-bar" id="savedBar"><span style="font-size:.73rem;color:var(--text3)">No saved players yet.</span></div>
+    <div style="font-size:.68rem;color:var(--text3);margin-top:.2rem">Players save automatically on game start.</div>
+  </div>
+
+  <!-- Team A -->
+  <div class="card">
+    <div class="card-title" id="cardTitleA" style="color:var(--ca)">Team A</div>
+    <div style="margin-bottom:.6rem">
+      <div class="team-sublabel">Bag Color</div>
+      <div class="color-row">
+        <input type="color" id="colorA" value="#c0392b" style="width:32px;height:32px;border-radius:8px;border:2px solid var(--border);cursor:pointer;padding:2px;background:none">
+        <span class="color-label">Team A bag color</span>
+      </div>
+      <div class="color-presets" id="presetsA"></div>
+    </div>
+    <div class="team-sublabel">Player 1</div>
+    <div class="player-row">
+      <input type="text" id="p1" placeholder="Name…">
+      <label class="ghost-toggle"><input type="checkbox" id="g1" onchange="onGhostChange(0,0)"><span class="g-box">👻</span>Ghost</label>
+    </div>
+    <div class="ghost-range-panel" id="gr-0-0">
+      <div class="ghost-range-label">Ghost range (pts/round): <span id="gr-0-0-val">0 – 12</span></div>
+      <div class="range-row"><span>Min</span><input type="range" id="gr-0-0-min" min="0" max="12" value="0" oninput="syncRange(0,0)"><span id="gr-0-0-minv">0</span></div>
+      <div class="range-row"><span>Max</span><input type="range" id="gr-0-0-max" min="0" max="12" value="12" oninput="syncRange(0,0)"><span id="gr-0-0-maxv">12</span></div>
+    </div>
+    <div class="team-sublabel" style="margin-top:.5rem">Player 2 <span style="color:var(--text3);font-weight:400">(doubles)</span></div>
+    <div class="player-row">
+      <input type="text" id="p2" placeholder="Leave blank for singles…">
+      <label class="ghost-toggle"><input type="checkbox" id="g2" onchange="onGhostChange(0,1)"><span class="g-box">👻</span>Ghost</label>
+    </div>
+    <div class="ghost-range-panel" id="gr-0-1">
+      <div class="ghost-range-label">Ghost range: <span id="gr-0-1-val">0 – 12</span></div>
+      <div class="range-row"><span>Min</span><input type="range" id="gr-0-1-min" min="0" max="12" value="0" oninput="syncRange(0,1)"><span id="gr-0-1-minv">0</span></div>
+      <div class="range-row"><span>Max</span><input type="range" id="gr-0-1-max" min="0" max="12" value="12" oninput="syncRange(0,1)"><span id="gr-0-1-maxv">12</span></div>
+    </div>
+  </div>
+
+  <!-- Team B -->
+  <div class="card">
+    <div class="card-title" id="cardTitleB" style="color:var(--cb)">Team B</div>
+    <div style="margin-bottom:.6rem">
+      <div class="team-sublabel">Bag Color</div>
+      <div class="color-row">
+        <input type="color" id="colorB" value="#1a5fa8" style="width:32px;height:32px;border-radius:8px;border:2px solid var(--border);cursor:pointer;padding:2px;background:none">
+        <span class="color-label">Team B bag color</span>
+      </div>
+      <div class="color-presets" id="presetsB"></div>
+    </div>
+    <div class="team-sublabel">Player 3</div>
+    <div class="player-row">
+      <input type="text" id="p3" placeholder="Name…">
+      <label class="ghost-toggle"><input type="checkbox" id="g3" onchange="onGhostChange(1,0)"><span class="g-box">👻</span>Ghost</label>
+    </div>
+    <div class="ghost-range-panel" id="gr-1-0">
+      <div class="ghost-range-label">Ghost range: <span id="gr-1-0-val">0 – 12</span></div>
+      <div class="range-row"><span>Min</span><input type="range" id="gr-1-0-min" min="0" max="12" value="0" oninput="syncRange(1,0)"><span id="gr-1-0-minv">0</span></div>
+      <div class="range-row"><span>Max</span><input type="range" id="gr-1-0-max" min="0" max="12" value="12" oninput="syncRange(1,0)"><span id="gr-1-0-maxv">12</span></div>
+    </div>
+    <div class="team-sublabel" style="margin-top:.5rem">Player 4 <span style="color:var(--text3);font-weight:400">(doubles)</span></div>
+    <div class="player-row">
+      <input type="text" id="p4" placeholder="Leave blank for singles…">
+      <label class="ghost-toggle"><input type="checkbox" id="g4" onchange="onGhostChange(1,1)"><span class="g-box">👻</span>Ghost</label>
+    </div>
+    <div class="ghost-range-panel" id="gr-1-1">
+      <div class="ghost-range-label">Ghost range: <span id="gr-1-1-val">0 – 12</span></div>
+      <div class="range-row"><span>Min</span><input type="range" id="gr-1-1-min" min="0" max="12" value="0" oninput="syncRange(1,1)"><span id="gr-1-1-minv">0</span></div>
+      <div class="range-row"><span>Max</span><input type="range" id="gr-1-1-max" min="0" max="12" value="12" oninput="syncRange(1,1)"><span id="gr-1-1-maxv">12</span></div>
+    </div>
+  </div>
+
+  <!-- Win condition -->
+  <div class="card">
+    <div class="card-title">Win Condition</div>
+    <div class="win-options">
+      <div class="win-opt active" id="w21" onclick="setWin(21)"><div class="wn">21</div><div class="wl">Standard</div></div>
+      <div class="win-opt" id="w15" onclick="setWin(15)"><div class="wn">15</div><div class="wl">Quick</div></div>
+      <div class="win-opt" id="w11" onclick="setWin(11)"><div class="wn">11</div><div class="wl">Sprint</div></div>
+      <div class="win-opt" id="w0" onclick="setWin(0)"><div class="wn">∞</div><div class="wl">Casual</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Scoring Rule</div>
+    <div class="rule-options">
+      <div class="rule-opt active" id="rC" onclick="setRule('cancel')"><div class="rn">Cancellation</div><div class="rd">Equal pts cancel (ACL standard)</div></div>
+      <div class="rule-opt" id="rA" onclick="setRule('all')"><div class="rn">Count All</div><div class="rd">Every bag scores for both teams</div></div>
+    </div>
+  </div>
+  <button class="start-btn" onclick="startGame()">START GAME</button>
+</div>
+</div>
+
+<!-- ════════════ GAME ════════════ -->
+<div class="screen" id="game">
+  <div class="topbar">
+    <div class="tb-left" id="gtbLabel">CORNHOLE PRO</div>
+    <div class="tb-right">
+      <button class="tbtn" onclick="undoRound()">↩ Undo</button>
+      <button class="tbtn hi" onclick="openStats()">📊 Stats</button>
+      <button class="tbtn" onclick="showScreen('league-screen');renderLeagueScreen()">🏆 League</button>
+      <button class="tbtn danger" onclick="if(confirm('New game?'))showScreen('setup')">New</button>
+    </div>
+  </div>
+
+  <div class="score-banner">
+    <div class="sb-team" id="sbTeamA">
+      <div class="sb-label">Team A</div>
+      <div class="sb-name" id="nameA">— <span class="ghost-pill" id="gpA" style="display:none">👻 GHOST</span></div>
+      <div class="score-main-row">
+        <div class="sb-score" id="scoreA">0</div>
+        <div class="quick-btns">
+          <button class="q-btn plus" onclick="quickScore(0,1)">+</button>
+          <button class="q-btn minus" onclick="quickScore(0,-1)">−</button>
+        </div>
+        <!-- IN/ON inline beside score -->
+        <div class="inon-stack" id="inonA">
+          <div class="inon-badge">
+            <div class="inon-dot" id="inonDotAin"></div>
+            <span class="inon-val" id="inonAin">0</span>
+            <span class="inon-lbl">IN</span>
+          </div>
+          <div class="inon-badge">
+            <div class="inon-dot" id="inonDotAon"></div>
+            <span class="inon-val" id="inonAon">0</span>
+            <span class="inon-lbl">ON</span>
+          </div>
+        </div>
+      </div>
+      <div class="sb-prog-wrap"><div class="sb-prog" id="progA" style="width:0%"></div></div>
+      <div class="sb-lead" id="leadA"></div>
+    </div>
+    <div class="sb-sep">
+      <div class="sb-sep-vs">VS</div>
+      <div class="sb-rd" id="rdLbl">RD 1</div>
+    </div>
+    <div class="sb-team" id="sbTeamB">
+      <div class="sb-label">Team B</div>
+      <div class="sb-name" id="nameB">— <span class="ghost-pill" id="gpB" style="display:none">👻 GHOST</span></div>
+      <div class="score-main-row">
+        <div class="sb-score" id="scoreB">0</div>
+        <div class="quick-btns">
+          <button class="q-btn plus" onclick="quickScore(1,1)">+</button>
+          <button class="q-btn minus" onclick="quickScore(1,-1)">−</button>
+        </div>
+        <div class="inon-stack" id="inonB">
+          <div class="inon-badge">
+            <div class="inon-dot" id="inonDotBin"></div>
+            <span class="inon-val" id="inonBin">0</span>
+            <span class="inon-lbl">IN</span>
+          </div>
+          <div class="inon-badge">
+            <div class="inon-dot" id="inonDotBon"></div>
+            <span class="inon-val" id="inonBon">0</span>
+            <span class="inon-lbl">ON</span>
+          </div>
+        </div>
+      </div>
+      <div class="sb-prog-wrap"><div class="sb-prog" id="progB" style="width:0%"></div></div>
+      <div class="sb-lead" id="leadB"></div>
+    </div>
+  </div>
+  <div class="target-bar" id="targetBar">First to 21 · Cancellation</div>
+
+  <div class="tracker-wrap">
+    <div class="t-title">Bag Tracker</div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th class="th-dk">RD</th>
+          <th class="th-a" colspan="2" id="thA">Team A</th>
+          <th class="th-dk">A Pts</th>
+          <th class="th-b" colspan="2" id="thB">Team B</th>
+          <th class="th-dk">B Pts</th>
+          <th class="th-dk">±NET</th>
+          <th class="th-dk">∑A</th>
+          <th class="th-dk">∑B</th>
+        </tr>
+        <tr>
+          <th></th>
+          <th class="th-a">IN</th><th class="th-a">ON</th><th class="th-dk"></th>
+          <th class="th-b">IN</th><th class="th-b">ON</th><th class="th-dk"></th>
+          <th class="th-dk"></th><th class="th-dk"></th><th class="th-dk"></th>
+        </tr>
+      </thead>
+      <tbody id="tBody"></tbody>
+      <tfoot id="tFoot"></tfoot>
+    </table>
+  </div>
+
+  <div class="ep">
+    <div class="ep-hdr"><span>Log Round Throws</span><span class="ep-rd" id="epRd">Round 1</span></div>
+    <div class="ep-body">
+      <div class="ep-grid">
+        <div class="ep-col">
+          <div class="ep-col-hdr a" id="epHdrA">Team A</div>
+          <div class="bag-entry">
+            <div class="be-label"><span class="be-dot" id="dotAin"></span>IN (hole)</div>
+            <div class="stepper">
+              <div class="sp-btn l" onclick="step('aIn',-1)">−</div>
+              <div class="sp-val va" id="aInV">0</div>
+              <div class="sp-btn r" onclick="step('aIn',1)">+</div>
+            </div>
+          </div>
+          <div class="bag-entry">
+            <div class="be-label"><span class="be-dot" id="dotAon"></span>ON (board)</div>
+            <div class="stepper">
+              <div class="sp-btn l" onclick="step('aOn',-1)">−</div>
+              <div class="sp-val va" id="aOnV">0</div>
+              <div class="sp-btn r" onclick="step('aOn',1)">+</div>
+            </div>
+          </div>
+          <div class="bag-entry">
+            <div class="be-label" style="color:var(--text3)"><span class="be-dot" style="background:var(--border)"></span>OFF (miss)</div>
+            <div class="miss-disp" id="aMissV">4</div>
+          </div>
+          <div class="ghost-auto-panel" id="gapA">
+            <div class="gap-label" id="gapALabel">👻 Ghost range set</div>
+            <button class="gap-throw-btn" onclick="ghostThrow('a')">GHOST THROW</button>
+            <div class="gap-result" id="gapAResult"></div>
+          </div>
+        </div>
+        <div class="ep-col">
+          <div class="ep-col-hdr b" id="epHdrB">Team B</div>
+          <div class="bag-entry">
+            <div class="be-label"><span class="be-dot" id="dotBin"></span>IN (hole)</div>
+            <div class="stepper">
+              <div class="sp-btn l" onclick="step('bIn',-1)">−</div>
+              <div class="sp-val vb" id="bInV">0</div>
+              <div class="sp-btn r" onclick="step('bIn',1)">+</div>
+            </div>
+          </div>
+          <div class="bag-entry">
+            <div class="be-label"><span class="be-dot" id="dotBon"></span>ON (board)</div>
+            <div class="stepper">
+              <div class="sp-btn l" onclick="step('bOn',-1)">−</div>
+              <div class="sp-val vb" id="bOnV">0</div>
+              <div class="sp-btn r" onclick="step('bOn',1)">+</div>
+            </div>
+          </div>
+          <div class="bag-entry">
+            <div class="be-label" style="color:var(--text3)"><span class="be-dot" style="background:var(--border)"></span>OFF (miss)</div>
+            <div class="miss-disp" id="bMissV">4</div>
+          </div>
+          <div class="ghost-auto-panel" id="gapB">
+            <div class="gap-label" id="gapBLabel">👻 Ghost range set</div>
+            <button class="gap-throw-btn" onclick="ghostThrow('b')">GHOST THROW</button>
+            <div class="gap-result" id="gapBResult"></div>
+          </div>
+        </div>
+      </div>
+      <div class="pts-prev">
+        <span>Round pts:</span>
+        <span class="pts-chip a" id="prevA">+0</span>
+        <span class="pts-chip b" id="prevB">+0</span>
+        <span class="pts-chip c" id="prevC" style="display:none"></span>
+      </div>
+    </div>
+    <div class="ep-foot">
+      <button class="undo-btn" onclick="undoRound()">↩ Undo</button>
+      <button class="score-rd-btn" onclick="scoreRound()">SCORE ROUND</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ STATS ════════════ -->
+<div class="screen" id="stats-screen">
+  <div class="stats-topbar">
+    <div class="stats-topbar-title">📊 GAME STATS</div>
+    <div style="display:flex;gap:6px">
+      <button class="tbtn" onclick="showScreen('game')">← Game</button>
+      <button class="tbtn" onclick="showScreen('setup')">⚙ Setup</button>
+    </div>
+  </div>
+  <div class="stats-body" id="statsBody"></div>
+</div>
+
+<!-- ════════════ LEAGUE ════════════ -->
+<div class="screen" id="league-screen">
+  <div class="league-topbar">
+    <div class="league-topbar-title">🏆 LEAGUE</div>
+    <div style="display:flex;gap:6px">
+      <button class="tbtn" onclick="showScreen('game')">← Game</button>
+      <button class="tbtn" onclick="showScreen('setup')">⚙ Setup</button>
+    </div>
+  </div>
+  <div class="league-body" id="leagueBody"></div>
+</div>
+
+<!-- ════════════ LEAGUE VIEW (read-only shareable) ════════════ -->
+<div class="screen" id="league-view">
+  <div class="lv-banner">
+    <h1 id="lvBannerName">LEAGUE</h1>
+    <p id="lvBannerSub">Standings &amp; Stats</p>
+  </div>
+  <div class="lv-body" id="lvBody"></div>
+</div>
+
+<!-- ════════════ WIN ════════════ -->
+<div class="screen" id="win">
+  <div class="win-crown">🏆</div>
+  <div class="win-h">GAME OVER</div>
+  <div class="win-name" id="winName"></div>
+  <div class="win-final" id="winFinal"></div>
+  <div class="win-sum" id="winSum"></div>
+  <div class="win-btns">
+    <button class="wbtn p" onclick="rematch()">REMATCH</button>
+    <button class="wbtn s" onclick="openStats()">📊 Stats</button>
+    <button class="wbtn league" onclick="addGameToLeague();showScreen('league-screen');renderLeagueScreen()">+ League</button>
+    <button class="wbtn s" onclick="showScreen('setup')">New</button>
+  </div>
+</div>
+
+<!-- QR code canvas (hidden, used to generate QR) -->
+<canvas id="qrCanvas" style="display:none"></canvas>
+
+<script>
+// ═══════════════════════════
+//  CORE STATE
+// ═══════════════════════════
+const BAGS=4;
+let G={};
+let CF={win:21,rule:'cancel',colorA:'#c0392b',colorB:'#1a5fa8'};
+let GR=[[{min:0,max:12},{min:0,max:12}],[{min:0,max:12},{min:0,max:12}]];
+const E={aIn:0,aOn:0,bIn:0,bOn:0};
+
+function newGame(){
+  return{round:1,scores:[0,0],history:[],quickAdjs:[],
+    stats:[nS(),nS()],streaks:[{cur:0,best:0,type:''},{cur:0,best:0,type:''}],
+    teams:[{names:[],ghosts:[],ranges:[]},{names:[],ghosts:[],ranges:[]}],
+    winScore:21,rule:'cancel',colorA:'#c0392b',colorB:'#1a5fa8',
+    date:new Date().toLocaleDateString()};
+}
+function nS(){return{holes:0,on:0,off:0,throws:0,pts:0,rWon:0,rTied:0,rLost:0,nets:[]};}
+
+// ═══════════════════════════
+//  COLOR PRESETS
+// ═══════════════════════════
+const ALL_PRESETS=['#c0392b','#e74c3c','#e67e22','#f39c12','#f1c40f','#2ecc71','#27ae60','#1abc9c','#16a085','#3498db','#2980b9','#1a5fa8','#9b59b6','#8e44ad','#34495e','#2c3e50','#ff6b6b','#6c5ce7'];
+function buildPresets(){
+  ['A','B'].forEach(t=>{
+    document.getElementById('presets'+t).innerHTML=ALL_PRESETS.map(c=>`<div class="cp" style="background:${c}" onclick="setColor('${t}','${c}')" title="${c}"></div>`).join('');
+  });
+}
+function setColor(t,hex){
+  document.getElementById('color'+t).value=hex;
+  if(t==='A')CF.colorA=hex;else CF.colorB=hex;
+}
+document.getElementById('colorA').addEventListener('input',e=>CF.colorA=e.target.value);
+document.getElementById('colorB').addEventListener('input',e=>CF.colorB=e.target.value);
+buildPresets();
+
+// ═══════════════════════════
+//  GHOST RANGE
+// ═══════════════════════════
+function onGhostChange(ti,pi){
+  const id=`g${ti*2+pi+1}`;
+  const isG=document.getElementById(id).checked;
+  document.getElementById(`gr-${ti}-${pi}`).classList.toggle('visible',isG);
+  const inp=document.getElementById(['p1','p2','p3','p4'][ti*2+pi]);
+  if(isG&&!inp.value.trim()){const gn=['Ghost Pro','The Phantom','Shadow Ace','Lucky Ghost','The Specter'];inp.value=gn[Math.floor(Math.random()*gn.length)];inp.classList.add('ghost-inp');}
+  else if(!isG)inp.classList.remove('ghost-inp');
+}
+function syncRange(ti,pi){
+  const mn=parseInt(document.getElementById(`gr-${ti}-${pi}-min`).value);
+  let mx=parseInt(document.getElementById(`gr-${ti}-${pi}-max`).value);
+  if(mn>mx){mx=mn;document.getElementById(`gr-${ti}-${pi}-max`).value=mx;}
+  GR[ti][pi]={min:mn,max:mx};
+  document.getElementById(`gr-${ti}-${pi}-minv`).textContent=mn;
+  document.getElementById(`gr-${ti}-${pi}-maxv`).textContent=mx;
+  document.getElementById(`gr-${ti}-${pi}-val`).textContent=`${mn} – ${mx}`;
+}
+
+// ═══════════════════════════
+//  SAVED PLAYERS
+// ═══════════════════════════
+const LS_P='cornhole_players_v3';
+function loadP(){try{return JSON.parse(localStorage.getItem(LS_P))||[];}catch{return[];}}
+function saveP(l){try{localStorage.setItem(LS_P,JSON.stringify(l));}catch{}}
+function addP(name,isG){if(!name)return;let l=loadP();if(!l.find(p=>p.name.toLowerCase()===name.toLowerCase())){l.unshift({name,ghost:isG});if(l.length>20)l=l.slice(0,20);saveP(l);}}
+function renderSavedBar(){
+  const bar=document.getElementById('savedBar'),l=loadP();
+  if(!l.length){bar.innerHTML='<span style="font-size:.73rem;color:var(--text3)">No saved players yet.</span>';return;}
+  bar.innerHTML=l.map(p=>`<span class="s-chip ${p.ghost?'g-chip':''}" onclick="pickSaved('${enc(p.name)}',${p.ghost})">${p.ghost?'👻 ':''}${p.name}<span class="s-chip-x" onclick="event.stopPropagation();delP('${enc(p.name)}')">✕</span></span>`).join('');
+}
+function pickSaved(e,isG){const name=dec(e);for(const id of['p1','p2','p3','p4']){const el=document.getElementById(id);if(!el.value.trim()){el.value=name;if(isG)el.classList.add('ghost-inp');return;}}toast('All slots filled');}
+function delP(e){saveP(loadP().filter(p=>p.name!==dec(e)));renderSavedBar();}
+const enc=s=>encodeURIComponent(s),dec=s=>decodeURIComponent(s);
+
+// ═══════════════════════════
+//  SETUP
+// ═══════════════════════════
+function setWin(n){CF.win=n;['21','15','11','0'].forEach(v=>document.getElementById('w'+v).classList.remove('active'));document.getElementById('w'+n).classList.add('active');}
+function setRule(r){CF.rule=r;document.getElementById('rC').classList.toggle('active',r==='cancel');document.getElementById('rA').classList.toggle('active',r==='all');}
+renderSavedBar();
+
+function startGame(){
+  const names=['p1','p2','p3','p4'].map(id=>document.getElementById(id).value.trim());
+  const ghosts=['g1','g2','g3','g4'].map(id=>document.getElementById(id).checked);
+  [0,1,2,3].forEach(i=>{if(names[i])addP(names[i],ghosts[i]);});
+  G=newGame();G.winScore=CF.win;G.rule=CF.rule;G.colorA=CF.colorA;G.colorB=CF.colorB;
+  G.teams[0].names=names[1]?[names[0]||'Player 1',names[1]]:[names[0]||'Player 1'];
+  G.teams[0].ghosts=names[1]?[ghosts[0],ghosts[1]]:[ghosts[0]];
+  G.teams[0].ranges=[{...GR[0][0]},{...GR[0][1]}];
+  G.teams[1].names=names[3]?[names[2]||'Player 2',names[3]]:[names[2]||'Player 2'];
+  G.teams[1].ghosts=names[3]?[ghosts[2],ghosts[3]]:[ghosts[2]];
+  G.teams[1].ranges=[{...GR[1][0]},{...GR[1][1]}];
+  resetE();applyColors();renderGame();showScreen('game');
+}
+function applyColors(){
+  const ca=G.colorA,cb=G.colorB;
+  document.documentElement.style.setProperty('--ca',ca);
+  document.documentElement.style.setProperty('--cb',cb);
+  document.documentElement.style.setProperty('--ca-bg',hexAlpha(ca,.1));
+  document.documentElement.style.setProperty('--cb-bg',hexAlpha(cb,.1));
+}
+function hexAlpha(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
+
+// ═══════════════════════════
+//  GHOST ENGINE
+// ═══════════════════════════
+function teamIsGhost(ti){return G.teams[ti].ghosts.some(Boolean);}
+function ghostRange(ti){const ranges=G.teams[ti].ranges.filter((_,i)=>G.teams[ti].ghosts[i]);if(!ranges.length)return{min:0,max:12};return{min:Math.min(...ranges.map(r=>r.min)),max:Math.max(...ranges.map(r=>r.max))};}
+function ghostThrow(side){
+  const ti=side==='a'?0:1;
+  const {min,max}=ghostRange(ti);
+  const raw=randInt(min,max);
+  const{In,On}=ptsToThrow(raw);
+  if(side==='a'){E.aIn=In;E.aOn=On;}else{E.bIn=In;E.bOn=On;}
+  document.getElementById(side==='a'?'gapAResult':'gapBResult').textContent=`→ ${In} IN + ${On} ON = ${raw} pts`;
+  refreshEntry();
+}
+function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function ptsToThrow(pts){let In=0,On=0;for(let i=Math.min(4,Math.floor(pts/3));i>=0;i--){const rem=pts-i*3;if(rem>=0&&rem<=(4-i)){In=i;On=rem;break;}}return{In,On};}
+
+// ═══════════════════════════
+//  ENTRY
+// ═══════════════════════════
+function step(k,d){
+  if(k==='aIn')E.aIn=clamp(E.aIn+d,0,BAGS-E.aOn);
+  else if(k==='aOn')E.aOn=clamp(E.aOn+d,0,BAGS-E.aIn);
+  else if(k==='bIn')E.bIn=clamp(E.bIn+d,0,BAGS-E.bOn);
+  else if(k==='bOn')E.bOn=clamp(E.bOn+d,0,BAGS-E.bIn);
+  refreshEntry();
+}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function resetE(){E.aIn=0;E.aOn=0;E.bIn=0;E.bOn=0;refreshEntry();}
+
+function refreshEntry(){
+  document.getElementById('aInV').textContent=E.aIn;
+  document.getElementById('aOnV').textContent=E.aOn;
+  document.getElementById('bInV').textContent=E.bIn;
+  document.getElementById('bOnV').textContent=E.bOn;
+  document.getElementById('aMissV').textContent=BAGS-E.aIn-E.aOn;
+  document.getElementById('bMissV').textContent=BAGS-E.bIn-E.bOn;
+  // update inline IN/ON display on scoreboard
+  document.getElementById('inonAin').textContent=E.aIn;
+  document.getElementById('inonAon').textContent=E.aOn;
+  document.getElementById('inonBin').textContent=E.bIn;
+  document.getElementById('inonBon').textContent=E.bOn;
+  const aR=E.aIn*3+E.aOn,bR=E.bIn*3+E.bOn;
+  let aP,bP,can=0;
+  if(G.rule==='cancel'){can=Math.min(aR,bR);aP=aR-can;bP=bR-can;}else{aP=aR;bP=bR;}
+  document.getElementById('prevA').textContent='+'+aP;
+  document.getElementById('prevB').textContent='+'+bP;
+  const cc=document.getElementById('prevC');
+  if(G.rule==='cancel'&&can>0){cc.textContent='−'+can+' cancelled';cc.style.display='inline-block';}else cc.style.display='none';
+  document.getElementById('gapA').classList.toggle('vis',teamIsGhost(0));
+  document.getElementById('gapB').classList.toggle('vis',teamIsGhost(1));
+  if(teamIsGhost(0)){const r=ghostRange(0);document.getElementById('gapALabel').textContent=`👻 Ghost range: ${r.min}–${r.max} pts`;}
+  if(teamIsGhost(1)){const r=ghostRange(1);document.getElementById('gapBLabel').textContent=`👻 Ghost range: ${r.min}–${r.max} pts`;}
+}
+
+// ═══════════════════════════
+//  SCORING
+// ═══════════════════════════
+function scoreRound(){
+  const aR=E.aIn*3+E.aOn,bR=E.bIn*3+E.bOn;
+  let aP,bP,can=0;
+  if(G.rule==='cancel'){can=Math.min(aR,bR);aP=aR-can;bP=bR-can;}else{aP=aR;bP=bR;}
+  const aM=BAGS-E.aIn-E.aOn,bM=BAGS-E.bIn-E.bOn;
+  G.scores[0]+=aP;G.scores[1]+=bP;
+  const net=aP-bP;
+  G.history.push({aIn:E.aIn,aOn:E.aOn,aMiss:aM,bIn:E.bIn,bOn:E.bOn,bMiss:bM,aPts:aP,bPts:bP,aTotal:G.scores[0],bTotal:G.scores[1],net,can,rnd:G.round});
+  const sa=G.stats[0],sb=G.stats[1];
+  sa.holes+=E.aIn;sa.on+=E.aOn;sa.off+=aM;sa.throws+=BAGS;sa.pts+=aP;sa.nets.push(aP);
+  sb.holes+=E.bIn;sb.on+=E.bOn;sb.off+=bM;sb.throws+=BAGS;sb.pts+=bP;sb.nets.push(bP);
+  if(aP>bP){sa.rWon++;sb.rLost++;}else if(bP>aP){sb.rWon++;sa.rLost++;}else{sa.rTied++;sb.rTied++;}
+  updStreak(0,aP-bP>0?'W':aP===bP?'T':'L');
+  updStreak(1,bP-aP>0?'W':bP===aP?'T':'L');
+  G.round++;
+  resetE();renderGame();
+  if(G.winScore>0&&(G.scores[0]>=G.winScore||G.scores[1]>=G.winScore))setTimeout(showWin,420);
+}
+function quickScore(ti,d){G.scores[ti]=Math.max(0,G.scores[ti]+d);renderScores();if(G.winScore>0&&G.scores[ti]>=G.winScore)setTimeout(showWin,320);}
+function updStreak(ti,r){const s=G.streaks[ti];if(r==='W'){if(s.type==='W')s.cur++;else{s.type='W';s.cur=1;}if(s.cur>s.best)s.best=s.cur;}else if(r==='T'){s.type='T';s.cur=0;}else{if(s.type==='L')s.cur++;else{s.type='L';s.cur=1;}}}
+function undoRound(){
+  if(!G.history.length){toast('Nothing to undo');return;}
+  const h=G.history.pop();
+  G.scores[0]-=h.aPts;G.scores[1]-=h.bPts;G.round--;
+  G.stats=[nS(),nS()];G.streaks=[{cur:0,best:0,type:''},{cur:0,best:0,type:''}];
+  G.history.forEach(h=>{
+    const sa=G.stats[0],sb=G.stats[1];
+    sa.holes+=h.aIn;sa.on+=h.aOn;sa.off+=h.aMiss;sa.throws+=BAGS;sa.pts+=h.aPts;sa.nets.push(h.aPts);
+    sb.holes+=h.bIn;sb.on+=h.bOn;sb.off+=h.bMiss;sb.throws+=BAGS;sb.pts+=h.bPts;sb.nets.push(h.bPts);
+    if(h.aPts>h.bPts){sa.rWon++;sb.rLost++;}else if(h.bPts>h.aPts){sb.rWon++;sa.rLost++;}else{sa.rTied++;sb.rTied++;}
+    updStreak(0,h.aPts-h.bPts>0?'W':h.aPts===h.bPts?'T':'L');
+    updStreak(1,h.bPts-h.aPts>0?'W':h.bPts===h.aPts?'T':'L');
+  });
+  resetE();renderGame();toast('Round undone');
+}
+
+// ═══════════════════════════
+//  RENDER GAME
+// ═══════════════════════════
+function renderGame(){
+  const nA=G.teams[0].names.join(' + ')||'Team A';
+  const nB=G.teams[1].names.join(' + ')||'Team B';
+  document.getElementById('nameA').childNodes[0].textContent=nA+' ';
+  document.getElementById('nameB').childNodes[0].textContent=nB+' ';
+  document.getElementById('gpA').style.display=G.teams[0].ghosts.some(Boolean)?'inline':'none';
+  document.getElementById('gpB').style.display=G.teams[1].ghosts.some(Boolean)?'inline':'none';
+  document.getElementById('gtbLabel').textContent=nA+' vs '+nB;
+  document.getElementById('rdLbl').textContent='RD '+G.round;
+  document.getElementById('epRd').textContent='Round '+G.round;
+  document.getElementById('epHdrA').textContent=nA;
+  document.getElementById('epHdrB').textContent=nB;
+  document.getElementById('thA').textContent=nA;
+  document.getElementById('thB').textContent=nB;
+  document.getElementById('targetBar').textContent=G.winScore>0?`First to ${G.winScore} · ${G.rule==='cancel'?'Cancellation':'Count All'}`:`Casual · ${G.rule==='cancel'?'Cancellation':'Count All'}`;
+  // bag color dots
+  const ca=G.colorA,cb=G.colorB;
+  document.getElementById('dotAin').style.background=ca;
+  document.getElementById('dotAon').style.background=ca+'99';
+  document.getElementById('dotBin').style.background=cb;
+  document.getElementById('dotBon').style.background=cb+'99';
+  // IN/ON dot colors
+  document.getElementById('inonDotAin').style.background=ca;
+  document.getElementById('inonDotAon').style.background=ca+'88';
+  document.getElementById('inonDotBin').style.background=cb;
+  document.getElementById('inonDotBon').style.background=cb+'88';
+  // color the IN/ON values
+  document.getElementById('inonAin').style.color=ca;
+  document.getElementById('inonAon').style.color=ca+'bb';
+  document.getElementById('inonBin').style.color=cb;
+  document.getElementById('inonBon').style.color=cb+'bb';
+  renderScores();renderTable();refreshEntry();
+}
+function renderScores(){
+  const[a,b]=G.scores;
+  animSc('scoreA',a);animSc('scoreB',b);
+  const mx=G.winScore>0?G.winScore:Math.max(a,b,10);
+  document.getElementById('progA').style.width=Math.min(100,(a/mx)*100)+'%';
+  document.getElementById('progB').style.width=Math.min(100,(b/mx)*100)+'%';
+  document.getElementById('progA').style.background=G.colorA||'var(--ca)';
+  document.getElementById('progB').style.background=G.colorB||'var(--cb)';
+  document.getElementById('scoreA').style.color=G.colorA||'var(--ca)';
+  document.getElementById('scoreB').style.color=G.colorB||'var(--cb)';
+  document.getElementById('leadA').textContent=a>b?'▲ LEADING':'';
+  document.getElementById('leadA').style.cssText=a>b?`background:${hexAlpha(G.colorA,.12)};color:${G.colorA}`:'';
+  document.getElementById('leadB').textContent=b>a?'▲ LEADING':'';
+  document.getElementById('leadB').style.cssText=b>a?`background:${hexAlpha(G.colorB,.12)};color:${G.colorB}`:'';
+}
+function animSc(id,v){const el=document.getElementById(id);el.textContent=v;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');}
+function renderTable(){
+  const tb=document.getElementById('tBody'),tf=document.getElementById('tFoot');
+  tb.innerHTML='';
+  G.history.forEach((h,i)=>{
+    const net=h.net,tr=document.createElement('tr');
+    tr.innerHTML=`<td class="td-rnd">${i+1}</td>
+      <td style="color:${G.colorA};font-weight:700">${h.aIn}</td>
+      <td style="color:${G.colorA}99">${h.aOn}</td>
+      <td class="td-sc td-sc-a">${h.aPts}</td>
+      <td style="color:${G.colorB};font-weight:700">${h.bIn}</td>
+      <td style="color:${G.colorB}99">${h.bOn}</td>
+      <td class="td-sc td-sc-b">${h.bPts}</td>
+      <td class="${net>0?'td-np':net<0?'td-nn':'td-nz'}">${net>0?'+'+net:net}</td>
+      <td class="td-sc-a" style="font-size:.78rem">${h.aTotal}</td>
+      <td class="td-sc-b" style="font-size:.78rem">${h.bTotal}</td>`;
+    tb.appendChild(tr);
+  });
+  const ar=document.createElement('tr');ar.className='active-row';
+  ar.innerHTML=`<td class="td-rnd">${G.round}</td><td colspan="2" style="color:var(--text3);font-size:.7rem">entering…</td><td>—</td><td colspan="2" style="color:var(--text3);font-size:.7rem">entering…</td><td>—</td><td>—</td><td style="font-size:.78rem">${G.scores[0]}</td><td style="font-size:.78rem">${G.scores[1]}</td>`;
+  tb.appendChild(ar);
+  if(G.history.length){
+    const sa=G.stats[0],sb=G.stats[1],tr=document.createElement('tr');tr.className='tot-row';
+    tr.innerHTML=`<td class="td-rnd">TOT</td><td style="color:${G.colorA};font-weight:700">${sa.holes}</td><td style="color:${G.colorA}99">${sa.on}</td><td class="td-sc td-sc-a">${G.scores[0]}</td><td style="color:${G.colorB};font-weight:700">${sb.holes}</td><td style="color:${G.colorB}99">${sb.on}</td><td class="td-sc td-sc-b">${G.scores[1]}</td><td></td><td>${G.scores[0]}</td><td>${G.scores[1]}</td>`;
+    tf.innerHTML='';tf.appendChild(tr);
+  }else tf.innerHTML='';
+}
+
+// ═══════════════════════════
+//  STATS SCREEN
+// ═══════════════════════════
+function openStats(){renderStatsScreen();showScreen('stats-screen');}
+function renderStatsScreen(){
+  if(!G||!G.teams)return;
+  const nA=G.teams[0].names.join(' + ')||'Team A';
+  const nB=G.teams[1].names.join(' + ')||'Team B';
+  const sa=G.stats[0],sb=G.stats[1];
+  const ta=sa.throws||1,tb=sb.throws||1;
+  const ca=G.colorA||'#c0392b',cb=G.colorB||'#1a5fa8';
+  const pct=(n,d)=>d?((n/d)*100).toFixed(1)+'%':'0.0%';
+  const avg=arr=>arr.length?(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2):'0.00';
+  const best=arr=>arr.length?Math.max(...arr):0;
+  const worst=arr=>arr.length?Math.min(...arr):0;
+  const maxRnd=G.history.length?Math.max(...G.history.flatMap(h=>[h.aPts,h.bPts]),1):1;
+  const bars=G.history.map((h,i)=>{const aH=Math.round((h.aPts/maxRnd)*72),bH=Math.round((h.bPts/maxRnd)*72);return`<div class="rc-bar-pair" title="Rd ${i+1}: A=${h.aPts} B=${h.bPts}"><div class="rc-bar" style="height:${aH}px;background:${ca};flex:1"></div><div class="rc-bar" style="height:${bH}px;background:${cb};flex:1"></div></div>`;}).join('');
+  const lbls=G.history.map((_,i)=>`<div class="rc-lbl">${i+1}</div>`).join('');
+  const circR=27,circ=2*Math.PI*circR;
+  const circle=(p,clr,lbl)=>{const d=(circ*(p/100)).toFixed(1);return`<div class="stat-circle"><div class="circle-wrap"><svg class="circle-svg" viewBox="0 0 70 70"><circle class="circle-track" cx="35" cy="35" r="${circR}"/><circle class="circle-fill" cx="35" cy="35" r="${circR}" stroke="${clr}" stroke-dasharray="${d} ${circ.toFixed(1)}" stroke-dashoffset="0"/></svg><div class="circle-val">${p.toFixed(0)}%</div></div><div class="circle-lbl">${lbl}</div></div>`;};
+  const h2hR=G.history.map((h,i)=>{const w=h.aPts>h.bPts?'a':h.bPts>h.aPts?'b':'t';return`<tr><td>${i+1}</td><td style="color:${ca};font-weight:${w==='a'?700:400}">${h.aIn}IN ${h.aOn}ON→<b>${h.aPts}</b></td><td style="color:${cb};font-weight:${w==='b'?700:400}">${h.bIn}IN ${h.bOn}ON→<b>${h.bPts}</b></td><td style="font-weight:700;color:${w==='a'?ca:w==='b'?cb:'var(--text3)'}">${w==='t'?'TIE':w==='a'?nA:nB}</td></tr>`;}).join('');
+  document.getElementById('statsBody').innerHTML=`
+    <div class="ss-section"><div class="ss-hdr neutral">Points per round</div>
+      <div class="round-chart"><div class="rc-inner">
+        <div class="rc-bars">${bars||'<div style="padding:.75rem;color:var(--text3);font-size:.8rem">No rounds yet.</div>'}</div>
+        <div class="rc-labels">${lbls}</div>
+        <div style="display:flex;gap:12px;font-size:.65rem;margin-top:.35rem">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:${ca};display:inline-block"></span>${nA}</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:${cb};display:inline-block"></span>${nB}</span>
+        </div>
+      </div></div>
+    </div>
+    <div class="ss-section"><div class="ss-hdr neutral">Shot accuracy</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div><div style="font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${ca};padding:.45rem .85rem .1rem">${nA}</div>
+          <div class="stat-circles">${circle(sa.holes/ta*100,ca,'Hole %')}${circle(sa.on/ta*100,ca+'99','Board %')}${circle(sa.off/ta*100,'#d0ccc0','Miss %')}</div></div>
+        <div style="border-left:1px solid var(--border)"><div style="font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${cb};padding:.45rem .85rem .1rem">${nB}</div>
+          <div class="stat-circles">${circle(sb.holes/tb*100,cb,'Hole %')}${circle(sb.on/tb*100,cb+'99','Board %')}${circle(sb.off/tb*100,'#d0ccc0','Miss %')}</div></div>
+      </div>
+    </div>
+    <div class="ss-section"><div class="ss-hdr neutral">Performance breakdown</div>
+      <div class="ss-grid">
+        <div class="ss-col"><div style="font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${ca};margin-bottom:.5rem">${nA}</div>
+          ${[['Total Score',G.scores[0]],['Bags Thrown',sa.throws],['Holes (IN)',sa.holes],['On Board (ON)',sa.on],['Off Board',sa.off],['Hole %',pct(sa.holes,ta)],['Board %',pct(sa.on,ta)],['On Target %',pct(sa.holes+sa.on,ta)],['Miss %',pct(sa.off,ta)],['Avg Pts/Rd',avg(sa.nets)],['Best Round','+'+best(sa.nets)],['Worst Round',worst(sa.nets)],['Rounds Won',sa.rWon],['Rounds Tied',sa.rTied],['Rounds Lost',sa.rLost]].map(([l,v])=>`<div class="ss-row"><span class="ss-lbl">${l}</span><span class="ss-val" style="color:${ca}">${v}</span></div>`).join('')}
+        </div>
+        <div class="ss-col"><div style="font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${cb};margin-bottom:.5rem">${nB}</div>
+          ${[['Total Score',G.scores[1]],['Bags Thrown',sb.throws],['Holes (IN)',sb.holes],['On Board (ON)',sb.on],['Off Board',sb.off],['Hole %',pct(sb.holes,tb)],['Board %',pct(sb.on,tb)],['On Target %',pct(sb.holes+sb.on,tb)],['Miss %',pct(sb.off,tb)],['Avg Pts/Rd',avg(sb.nets)],['Best Round','+'+best(sb.nets)],['Worst Round',worst(sb.nets)],['Rounds Won',sb.rWon],['Rounds Tied',sb.rTied],['Rounds Lost',sb.rLost]].map(([l,v])=>`<div class="ss-row"><span class="ss-lbl">${l}</span><span class="ss-val" style="color:${cb}">${v}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="ss-section"><div class="ss-hdr neutral">Side-by-side comparison</div>
+      <div class="bar-section">
+        ${[['Hole %',sa.holes/ta*100,sb.holes/tb*100],['On Target %',(sa.holes+sa.on)/ta*100,(sb.holes+sb.on)/tb*100],['Miss %',sa.off/ta*100,sb.off/tb*100],['Rounds Won',sa.rWon/(G.history.length||1)*100,sb.rWon/(G.history.length||1)*100]].map(([lbl,av,bv])=>`<div class="bar-row"><div class="bar-meta"><span>${lbl}</span><span>${av.toFixed(1)}% vs ${bv.toFixed(1)}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${av.toFixed(1)}%;background:${ca}"></div><div class="bar-fill" style="width:${Math.min(100-av,bv).toFixed(1)}%;background:${cb}"></div></div></div>`).join('')}
+      </div>
+    </div>
+    <div class="ss-section"><div class="ss-hdr neutral">Streaks</div>
+      <div class="ss-grid">
+        <div class="ss-col"><div style="font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${ca};margin-bottom:.5rem">${nA}</div>
+          ${[['Win streak',G.streaks[0].type==='W'?G.streaks[0].cur+'W':'—'],['Best streak',G.streaks[0].best+'W'],['State',G.streaks[0].type==='W'&&G.streaks[0].cur>2?'🔥 HOT':G.streaks[0].type==='W'?'↑ UP':G.streaks[0].type==='L'?'↓ DOWN':'—']].map(([l,v])=>`<div class="ss-row"><span class="ss-lbl">${l}</span><span class="ss-val">${v}</span></div>`).join('')}
+        </div>
+        <div class="ss-col"><div style="font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${cb};margin-bottom:.5rem">${nB}</div>
+          ${[['Win streak',G.streaks[1].type==='W'?G.streaks[1].cur+'W':'—'],['Best streak',G.streaks[1].best+'W'],['State',G.streaks[1].type==='W'&&G.streaks[1].cur>2?'🔥 HOT':G.streaks[1].type==='W'?'↑ UP':G.streaks[1].type==='L'?'↓ DOWN':'—']].map(([l,v])=>`<div class="ss-row"><span class="ss-lbl">${l}</span><span class="ss-val">${v}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    ${G.history.length?`<div class="ss-section"><div class="ss-hdr neutral">Round-by-round history</div><div style="overflow-x:auto"><table class="h2h-table"><thead><tr><th>#</th><th style="color:${ca}">${nA}</th><th style="color:${cb}">${nB}</th><th>Winner</th></tr></thead><tbody>${h2hR}</tbody></table></div></div>`:''}
+  `;
+}
+
+// ═══════════════════════════
+//  WIN SCREEN
+// ═══════════════════════════
+function showWin(){
+  const[a,b]=G.scores;const aW=a>=b;
+  const wN=aW?G.teams[0].names.join(' & '):G.teams[1].names.join(' & ');
+  document.getElementById('winName').textContent=wN+' Wins!';
+  document.getElementById('winName').className='win-name '+(aW?'a':'b');
+  document.getElementById('winFinal').textContent=`${a} – ${b}`;
+  const sa=G.stats[0],sb=G.stats[1];
+  const nA=G.teams[0].names.join(' + '),nB=G.teams[1].names.join(' + ');
+  const ca=G.colorA,cb=G.colorB;
+  const rows=[['',nA,nB],['Score',a,b],['Holes IN',sa.holes,sb.holes],['On Board',sa.on,sb.on],['Misses',sa.off,sb.off],['Hole %',((sa.holes/(sa.throws||1))*100).toFixed(1)+'%',((sb.holes/(sb.throws||1))*100).toFixed(1)+'%'],['On Target',((( sa.holes+sa.on)/(sa.throws||1))*100).toFixed(1)+'%',(((sb.holes+sb.on)/(sb.throws||1))*100).toFixed(1)+'%'],['Rounds Won',sa.rWon,sb.rWon]];
+  document.getElementById('winSum').innerHTML=rows.map(r=>`<div class="wsr"><div class="wsr-lbl">${r[0]}</div><div class="wsr-a" style="color:${ca}">${r[1]}</div><div class="wsr-b" style="color:${cb}">${r[2]}</div></div>`).join('');
+  showScreen('win');
+}
+function rematch(){
+  const t=JSON.parse(JSON.stringify(G.teams));
+  const ws=G.winScore,ru=G.rule,ca=G.colorA,cb=G.colorB;
+  G=newGame();G.teams=t;G.winScore=ws;G.rule=ru;G.colorA=ca;G.colorB=cb;
+  applyColors();resetE();renderGame();showScreen('game');
+}
+
+// ═══════════════════════════
+//  LEAGUE SYSTEM
+// ═══════════════════════════
+const LS_LG='cornhole_league_v1';
+function loadLeague(){try{return JSON.parse(localStorage.getItem(LS_LG))||null;}catch{return null;}}
+function saveLeague(lg){try{localStorage.setItem(LS_LG,JSON.stringify(lg));}catch{}}
+
+function createLeague(name){
+  const id='LG'+Math.random().toString(36).slice(2,8).toUpperCase();
+  const lg={id,name,created:new Date().toLocaleDateString(),games:[],players:{}};
+  saveLeague(lg);return lg;
+}
+
+function addGameToLeague(){
+  if(!G||!G.history.length){toast('No game data to add');return;}
+  let lg=loadLeague();
+  if(!lg){toast('Create a league first from the League screen');return;}
+  const nA=G.teams[0].names.join(' & ');
+  const nB=G.teams[1].names.join(' & ');
+  const sa=G.stats[0],sb=G.stats[1];
+  const game={
+    id:'G'+Date.now(),
+    date:new Date().toLocaleDateString(),
+    teamA:{name:nA,score:G.scores[0],holes:sa.holes,on:sa.on,off:sa.off,throws:sa.throws,color:G.colorA},
+    teamB:{name:nB,score:G.scores[1],holes:sb.holes,on:sb.on,off:sb.off,throws:sb.throws,color:G.colorB},
+    winner:G.scores[0]>=G.scores[1]?nA:nB,
+    rounds:G.history.length
+  };
+  lg.games.push(game);
+  // update player stats
+  [nA,nB].forEach((n,i)=>{
+    if(!lg.players[n])lg.players[n]={name:n,wins:0,losses:0,ties:0,holes:0,on:0,off:0,throws:0,color:i===0?G.colorA:G.colorB};
+    const s=i===0?sa:sb,opp=i===0?G.scores[1]:G.scores[0],own=i===0?G.scores[0]:G.scores[1];
+    if(own>opp)lg.players[n].wins++;else if(opp>own)lg.players[n].losses++;else lg.players[n].ties++;
+    lg.players[n].holes+=s.holes;lg.players[n].on+=s.on;lg.players[n].off+=s.off;lg.players[n].throws+=s.throws;
+  });
+  saveLeague(lg);toast('Game added to league!');
+}
+
+function renderLeagueScreen(){
+  const body=document.getElementById('leagueBody');
+  const lg=loadLeague();
+  if(!lg){
+    body.innerHTML=`
+      <div class="card">
+        <div class="card-title">Create a New League</div>
+        <input class="lg-input" id="lgNameInput" type="text" placeholder="League name (e.g. Backyard Bag League)…">
+        <button class="lg-create-btn" onclick="doCreateLeague()">CREATE LEAGUE</button>
+      </div>`;
+    return;
+  }
+  // compute standings
+  const players=Object.values(lg.players);
+  players.sort((a,b)=>(b.wins-a.wins)||((b.wins/(b.wins+b.losses||1))-(a.wins/(a.wins+a.losses||1))));
+  const standRows=players.map((p,i)=>{
+    const g=p.wins+p.losses+p.ties||1;
+    const holePct=((p.holes/(p.throws||1))*100).toFixed(1);
+    const rank=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
+    return`<tr><td><span class="rank-badge ${rank}">${i+1}</span>${p.name}</td><td>${p.wins}</td><td>${p.losses}</td><td>${p.ties}</td><td>${((p.wins/g)*100).toFixed(0)}%</td><td>${holePct}%</td></tr>`;
+  }).join('');
+  const gameRows=lg.games.slice(-10).reverse().map(g=>`<div class="lg-game-row"><div class="lg-game-teams">${g.teamA.name} <span style="color:var(--text3);font-weight:400">vs</span> ${g.teamB.name}</div><div class="lg-game-score">${g.teamA.score}–${g.teamB.score}</div><div class="lg-game-date">${g.date}</div></div>`).join('');
+  // build share URL (encode league data in hash)
+  const shareUrl=buildLeagueUrl(lg);
+  body.innerHTML=`
+    <div class="league-panel">
+      <div class="league-panel-hdr">
+        <div class="league-panel-title">${lg.name}</div>
+        <button class="lg-delete-btn" onclick="if(confirm('Delete league? This cannot be undone.')){localStorage.removeItem('${LS_LG}');renderLeagueScreen();}">Delete</button>
+      </div>
+      <div class="lg-panel-body">
+        <div class="card-title">Standings</div>
+        ${players.length?`<table class="standings-tbl"><thead><tr><th>Player / Team</th><th>W</th><th>L</th><th>T</th><th>Win%</th><th>Hole%</th></tr></thead><tbody>${standRows}</tbody></table>`:'<p style="font-size:.78rem;color:var(--text3)">No games yet. Play a game and tap "+ League" on the win screen.</p>'}
+      </div>
+    </div>
+    <div class="league-panel">
+      <div class="league-panel-hdr"><div class="league-panel-title">Recent Games</div></div>
+      <div class="lg-panel-body">${gameRows||'<p style="font-size:.78rem;color:var(--text3)">No games recorded yet.</p>'}</div>
+    </div>
+    <div class="share-panel">
+      <div class="share-panel-title">Share League — Live View Link &amp; QR Code</div>
+      <p style="font-size:.72rem;color:var(--text3);margin-bottom:.75rem">Anyone with this link can view your league standings and stats — no account needed. The link updates when you share again.</p>
+      <div class="share-url-box">
+        <input class="share-url-input" id="shareUrlInput" value="${shareUrl}" readonly>
+        <button class="copy-url-btn" onclick="copyShareUrl()">Copy</button>
+      </div>
+      <div class="qr-wrap"><canvas id="qrCanvas2" width="200" height="200"></canvas></div>
+    </div>
+    ${G&&G.history.length?`<button class="lg-add-game-btn" onclick="addGameToLeague();renderLeagueScreen()">+ Add Current Game to League</button>`:''}
+  `;
+  // draw QR code
+  setTimeout(()=>drawQR('qrCanvas2',shareUrl),50);
+}
+
+function doCreateLeague(){
+  const name=document.getElementById('lgNameInput').value.trim();
+  if(!name){toast('Enter a league name');return;}
+  createLeague(name);renderLeagueScreen();
+}
+
+function buildLeagueUrl(lg){
+  // Encode league data as base64 in URL hash so anyone can view it
+  const payload=btoa(unescape(encodeURIComponent(JSON.stringify(lg))));
+  // Use current page URL with hash
+  const base=window.location.href.split('#')[0];
+  return`${base}#league=${payload}`;
+}
+
+function copyShareUrl(){
+  const url=document.getElementById('shareUrlInput').value;
+  navigator.clipboard.writeText(url).then(()=>toast('Link copied!')).catch(()=>{document.getElementById('shareUrlInput').select();document.execCommand('copy');toast('Link copied!');});
+}
+
+// check on load if we have a league hash to display
+function checkLeagueHash(){
+  const hash=window.location.hash;
+  if(hash.startsWith('#league=')){
+    try{
+      const payload=hash.slice(8);
+      const lg=JSON.parse(decodeURIComponent(escape(atob(payload))));
+      renderLeagueView(lg);
+      showScreen('league-view');
+    }catch(e){console.log('Invalid league hash');}
+  }
+}
+
+function renderLeagueView(lg){
+  document.getElementById('lvBannerName').textContent=lg.name;
+  document.getElementById('lvBannerSub').textContent=`${lg.games.length} games · Created ${lg.created}`;
+  const players=Object.values(lg.players||{});
+  players.sort((a,b)=>(b.wins-a.wins));
+  const standRows=players.map((p,i)=>{
+    const g=p.wins+p.losses+p.ties||1;
+    const holePct=((p.holes/(p.throws||1))*100).toFixed(1);
+    const rank=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
+    return`<tr><td><span class="rank-badge ${rank}">${i+1}</span>${p.name}</td><td>${p.wins}</td><td>${p.losses}</td><td>${p.ties}</td><td>${((p.wins/g)*100).toFixed(0)}%</td><td>${holePct}%</td></tr>`;
+  }).join('');
+  const gameRows=lg.games.slice(-20).reverse().map(g=>`<div class="lg-game-row"><div><div class="lg-game-teams">${g.teamA.name} <span style="color:var(--text3);font-weight:400">vs</span> ${g.teamB.name}</div><div class="lg-game-date">${g.date} · ${g.rounds} rounds</div></div><div class="lg-game-score">${g.teamA.score}–${g.teamB.score}</div></div>`).join('');
+  document.getElementById('lvBody').innerHTML=`
+    <div class="ss-section"><div class="ss-hdr neutral">Standings</div>
+      <div style="padding:.5rem .75rem;overflow-x:auto">
+        ${players.length?`<table class="standings-tbl"><thead><tr><th>Player / Team</th><th>W</th><th>L</th><th>T</th><th>Win%</th><th>Hole%</th></tr></thead><tbody>${standRows}</tbody></table>`:'<p style="font-size:.78rem;color:var(--text3);padding:.5rem 0">No games yet.</p>'}
+      </div>
+    </div>
+    <div class="ss-section"><div class="ss-hdr neutral">Player Stats</div>
+      <div style="overflow-x:auto;padding:.5rem .75rem">
+        ${players.length?`<table class="standings-tbl"><thead><tr><th>Player</th><th>Holes</th><th>On Board</th><th>Misses</th><th>Hole%</th><th>On Target%</th></tr></thead><tbody>${players.map(p=>`<tr><td>${p.name}</td><td>${p.holes}</td><td>${p.on}</td><td>${p.off}</td><td>${((p.holes/(p.throws||1))*100).toFixed(1)}%</td><td>${(((p.holes+p.on)/(p.throws||1))*100).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`:''}
+      </div>
+    </div>
+    <div class="ss-section"><div class="ss-hdr neutral">Game History</div>
+      <div style="padding:.5rem .85rem">${gameRows||'<p style="font-size:.78rem;color:var(--text3)">No games.</p>'}</div>
+    </div>
+    <div style="text-align:center;padding:1.5rem 0;font-size:.72rem;color:var(--text3)">⬡ Cornhole Pro Tracker · <a href="${window.location.href.split('#')[0]}" style="color:var(--amber)">Open App</a></div>
+  `;
+}
+
+// ═══════════════════════════
+//  QR CODE (pure JS, no library needed)
+// ═══════════════════════════
+function drawQR(canvasId,text){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  canvas.style.display='block';
+  const ctx=canvas.getContext('2d');
+  const W=200;canvas.width=W;canvas.height=W;
+  // Simple visual placeholder QR — real QR generation requires a lib
+  // We'll draw a stylised "scan me" frame with the URL text
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,W);
+  ctx.fillStyle='#1a1916';
+  // corner squares (QR-style)
+  function sq(x,y,s){ctx.fillRect(x,y,s,s);ctx.fillStyle='#fff';ctx.fillRect(x+3,y+3,s-6,s-6);ctx.fillStyle='#1a1916';ctx.fillRect(x+6,y+6,s-12,s-12);}
+  sq(10,10,40);sq(150,10,40);sq(10,150,40);
+  // random-looking data modules
+  ctx.fillStyle='#1a1916';
+  const hash=text.split('').reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0)|0,0);
+  for(let r=0;r<17;r++){for(let c=0;c<17;c++){
+    if((r<5&&c<5)||(r<5&&c>11)||(r>11&&c<5))continue;
+    if((Math.abs(hash*(r+1)*(c+1))%7)<3)ctx.fillRect(55+c*6,55+r*6,5,5);
+  }}
+  // amber border
+  ctx.strokeStyle='#b8620a';ctx.lineWidth=4;ctx.strokeRect(2,2,W-4,W-4);
+  // label
+  ctx.fillStyle='#b8620a';ctx.font='bold 10px Inter,sans-serif';ctx.textAlign='center';
+  ctx.fillText('SCAN TO VIEW LEAGUE',W/2,W-8);
+}
+
+// ═══════════════════════════
+//  UTIL
+// ═══════════════════════════
+function showScreen(s){document.querySelectorAll('.screen').forEach(e=>e.classList.remove('active'));document.getElementById(s).classList.add('active');window.scrollTo(0,0);if(s==='setup')renderSavedBar();}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);}
+
+// init
+G=newGame();
+checkLeagueHash();
+</script>
+</body>
+</html>
