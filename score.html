@@ -11,11 +11,12 @@
   --bg:#111;--bg2:#1a1a1a;--bg3:#222;--bg4:#2a2a2a;
   --border:#333;--border2:#444;
   --white:#fff;--text:#fff;--text2:#aaa;--text3:#666;
-  --red:#e52222;--red-dark:#b01a1a;--red-banner:#cc1f1f;
-  --blue:#2196d6;--blue-dark:#1574a8;--blue-banner:#1a7fbf;
-  --gold:#f5c518;--green:#2ecc40;
+  --gold:#f5c518;--green:#2ecc40;--red:#e52222;
   --sf:'Bebas Neue',sans-serif;--ui:'Rajdhani',sans-serif;--hdg:'Oswald',sans-serif;
-  --team-a:#e52222;--team-b:#2196d6;
+  
+  /* Dynamic Team Colors */
+  --t1-color: #e52222;
+  --t2-color: #2196d6;
 }
 body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100vh;font-size:16px}
 .screen{display:none}.screen.active{display:block}
@@ -32,15 +33,15 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .nav-btn:hover{background:var(--bg4);border-color:var(--white);color:var(--white)}
 .nav-btn.resume-btn{background:rgba(46,204,64,.12);border-color:var(--green);color:var(--green)}
 .nav-btn.resume-btn:hover{background:var(--green);color:#000}
-.nav-btn.stats-btn{background:rgba(33,150,214,.12);border-color:var(--blue);color:var(--blue)}
-.nav-btn.stats-btn:hover{background:var(--blue);color:#fff}
+.nav-btn.stats-btn{background:rgba(33,150,214,.12);border-color:var(--t2-color);color:var(--t2-color)}
+.nav-btn.stats-btn:hover{background:var(--t2-color);color:#fff}
 .resume-indicator{text-align:center;padding:.45rem;background:rgba(46,204,64,.08);border:1px solid rgba(46,204,64,.3);border-radius:6px;margin-bottom:1rem;font-family:var(--hdg);font-size:.75rem;color:var(--green);font-weight:600;letter-spacing:1px;display:none}
 .resume-indicator.visible{display:block}
 
 .setup-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:1rem;overflow:hidden}
-.setup-card-hdr{padding:.55rem 1rem;font-family:var(--hdg);font-size:.7rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;border-bottom:1px solid var(--border)}
-.setup-card-hdr.a{background:rgba(229,34,34,.15);color:var(--red);border-color:rgba(229,34,34,.3)}
-.setup-card-hdr.b{background:rgba(33,150,214,.15);color:var(--blue);border-color:rgba(33,150,214,.3)}
+.setup-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:.55rem 1rem;font-family:var(--hdg);font-size:.7rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.setup-card-hdr.a{background:color-mix(in srgb, var(--t1-color) 15%, transparent);color:var(--t1-color);border-color:color-mix(in srgb, var(--t1-color) 30%, transparent);}
+.setup-card-hdr.b{background:color-mix(in srgb, var(--t2-color) 15%, transparent);color:var(--t2-color);border-color:color-mix(in srgb, var(--t2-color) 30%, transparent);}
 .setup-card-hdr.neutral{background:var(--bg3);color:var(--text2)}
 .setup-card-body{padding:.85rem 1rem}
 .sub-lbl{font-family:var(--hdg);font-size:.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:.55rem 0 .3rem}
@@ -48,6 +49,10 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .setup-inp:focus{border-color:var(--text2)}
 .setup-inp::placeholder{color:var(--text3);font-weight:400}
 .player-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:.5rem}
+
+.color-picker {width: 22px; height: 22px; padding: 0; border: none; border-radius: 4px; cursor: pointer; background: none;}
+.color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+.color-picker::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
 
 .win-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .win-opt{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:.6rem .4rem;text-align:center;cursor:pointer;transition:all .15s}
@@ -61,8 +66,8 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .rule-opt.active{background:rgba(255,255,255,.08);border-color:var(--white)}
 .rule-opt .rn{font-weight:700;font-size:.85rem;font-family:var(--hdg);letter-spacing:.5px;text-transform:uppercase}
 .rule-opt .rd{font-size:.68rem;opacity:.5;line-height:1.3;margin-top:2px}
-.start-btn{width:100%;padding:1rem;background:var(--red);border:none;border-radius:10px;color:var(--white);font-family:var(--sf);font-size:1.8rem;letter-spacing:5px;cursor:pointer;transition:all .18s;margin-top:.75rem}
-.start-btn:hover{background:var(--red-dark);transform:translateY(-1px)}
+.start-btn{width:100%;padding:1rem;background:var(--t1-color);border:none;border-radius:10px;color:var(--white);font-family:var(--sf);font-size:1.8rem;letter-spacing:5px;cursor:pointer;transition:all .18s;margin-top:.75rem}
+.start-btn:hover{transform:translateY(-1px);filter:brightness(0.85)}
 
 .saved-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.5rem}
 .s-chip{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:.75rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .13s;font-family:var(--hdg);letter-spacing:.5px;text-transform:uppercase}
@@ -72,169 +77,54 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 /* ═══════════ ACL GAME BOARD ═══════════ */
 #game{background:var(--bg);min-height:100vh}
 
-/* TOP TEAM BANNERS */
 .acl-header{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;background:var(--bg2);border-bottom:3px solid var(--border)}
 .team-banner{display:flex;align-items:center;justify-content:center;padding:.55rem .85rem;gap:.6rem;position:relative}
-.team-banner.a{background:var(--red-banner)}
-.team-banner.b{background:var(--blue-banner)}
+.team-banner.a{background:var(--t1-color)}
+.team-banner.b{background:var(--t2-color)}
 .team-banner-name{font-family:var(--sf);font-size:1.4rem;letter-spacing:4px;color:var(--white);text-align:center;text-transform:uppercase;line-height:1}
-.acl-center-logo{background:var(--bg2);display:flex;align-items:center;justify-content:center;padding:.4rem .6rem;gap:4px;flex-direction:column;border-left:2px solid var(--border);border-right:2px solid var(--border)}
+.acl-center-logo{background:var(--bg2);display:flex;align-items:center;justify-content:center;padding:.1rem .6rem;gap:1px;flex-direction:column;border-left:2px solid var(--border);border-right:2px solid var(--border)}
 .acl-logo-mini{font-family:var(--sf);font-size:1.1rem;letter-spacing:2px;color:var(--white)}
 .acl-gear-icon{font-size:1rem;cursor:pointer;color:var(--text2)}
 
-/* MAIN SCORE AREA */
 .acl-scoreboard{display:grid;grid-template-columns:auto 1fr auto auto 1fr auto;align-items:stretch;background:var(--bg2);border-bottom:2px solid var(--border);min-height:180px}
-
-/* Bags IN column */
-.bags-col{display:flex;flex-direction:column;background:var(--bg3);border-right:1px solid var(--border)}
+.bags-col{display:flex;flex-direction:column;background: var(--bg3);border-right:1px solid var(--border); width: 10vw; border-radius: 20px}
 .bags-col.right{border-right:none;border-left:1px solid var(--border)}
 .bags-col-hdr{font-family:var(--hdg);font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-align:center;padding:.25rem .35rem;border-bottom:1px solid var(--border)}
-.bags-col-hdr.in-hdr{color:var(--red);background:rgba(229,34,34,.12)}
+.bags-col-hdr.in-hdr{color:var(--t1-color);background:color-mix(in srgb, var(--t1-color) 12%, transparent)}
 .bags-col-hdr.on-hdr{color:var(--gold);background:rgba(245,197,24,.08)}
-.bags-col-hdr.in-hdr-b{color:var(--blue);background:rgba(33,150,214,.12)}
-.bag-slot{flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--hdg);font-size:1.85rem;font-weight:700;border-bottom:.5px solid var(--border);cursor:pointer;transition:all .15s;padding:0 .5rem;min-height:32px;color:var(--text3); }
+.bags-col-hdr.in-hdr-b{color:var(--t2-color);background:color-mix(in srgb, var(--t2-color) 12%, transparent)}
+.bag-slot{flex:1;display:flex;background:#000000;justify-content:center;font-family:var(--hdg);font-size:1.85rem;font-weight:700;border:5px solid var(--border);cursor:pointer;transition:all .15s;padding:0 .5rem;min-height:32px;color:var(--text3); border-radius: 100px; }
 .bag-slot:last-child{border-bottom:none}
-.bag-slot.active-in{background:rgba(229,34,34,.25);color:var(--red)}
-.bag-slot.active-in-b{background:rgba(33,150,214,.25);color:var(--blue)}
+.bag-slot.active-in{background:color-mix(in srgb, var(--t1-color) 25%, transparent);color:var(--t1-color)}
+.bag-slot.active-in-b{background:color-mix(in srgb, var(--t2-color) 25%, transparent);color:var(--t2-color)}
 .bag-slot.active-on{background:rgba(245,197,24,.2);color:var(--gold)}
 
-/* Big Score Display */
 .big-score-panel{display:flex;align-items:center;justify-content:center;padding:1rem .5rem;position:relative}
 .big-score-num{font-family:var(--sf);font-size:15rem;line-height:1;color:var(--white);text-align:center;text-shadow:0 0 30px rgba(255,255,255,.1)}
 .big-score-num.pop{animation:bigpop .3s ease}
 @keyframes bigpop{0%{transform:scale(1)}45%{transform:scale(1.08)}100%{transform:scale(1)}}
 
-/* Center divider */
-/* --- CENTER ROUND DISPLAY AREA --- */
-.acl-center-div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.4rem 0.6rem;
-  background: var(--bg3);
-  border-left: 2px solid var(--border);
-  border-right: 1px solid var(--border);
-}
+.acl-center-div {display: flex;flex-direction: column;align-items: center;justify-content: center;gap: 0.25rem;padding: 0.4rem 0.6rem;background: var(--bg3);border-left: 2px solid var(--border);border-right: 1px solid var(--border);}
+.round-num-display {font-family: var(--sf);font-size: 0.85rem;letter-spacing: 2px;color: var(--text2);}
+.commit-btn {font-family: var(--hdg);font-size: 0.65rem;font-weight: 700;letter-spacing: 1px;color: var(--white);background: var(--t1-color);border: none;border-radius: 4px;padding: 0.3rem 0.6rem;cursor: pointer;transition: opacity 0.2s ease;}
+.commit-btn:hover {opacity: 0.9;}
 
-.round-num-display {
-  font-family: var(--sf);
-  font-size: 0.85rem;
-  letter-spacing: 2px;
-  color: var(--text2);
-}
+.acl-bottom-row {display: grid;grid-template-columns: 1fr auto 1fr;align-items: center; width: 100%;margin-top: 0.5rem;}
+.player-pts-box {display: flex;align-items: center;justify-content: space-between; padding: 0 2rem; width: 100%; box-sizing: border-box;}
+.player-pts-box > div {display: flex;align-items: center;gap: 0.75rem;}
+.player-pts-box.right {flex-direction: row;}
+.pts-label {font-family: var(--hdg), sans-serif;font-size: 0.55rem;font-weight: 700;line-height: 1.2;letter-spacing: 1px;text-transform: uppercase;color: #555555;}
+.pts-val {font-family: var(--sf), sans-serif;font-size: 3.2rem; font-weight: 700;color: #ffffff;line-height: 1;}
 
-/* Button style added to match your layout click trigger */
-.commit-btn {
-  font-family: var(--hdg);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--white);
-  background: var(--primary, #007bff);
-  border: none;
-  border-radius: 4px;
-  padding: 0.3rem 0.6rem;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
+.round-score-center {display: flex;flex-direction: column;align-items: center;justify-content: center;min-width: 220px; padding: 0 1.5rem;border-left: 1px solid #2a2a2a; border-right: 1px solid #2a2a2a;}
 
-.commit-btn:hover {
-  opacity: 0.9;
-}
-
-/* --- UPDATED BOTTOM ROW LAYOUT --- */
-.acl-bottom-row {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center; 
-  width: 100%;
-  margin-top: 0.5rem;
-}
-
-/* 
-  Left and Right Containers:
-  Stretches to fill the 1fr column space and pushes 
-  the score and points to the absolute outer edges.
-*/
-.player-pts-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* Spreads the two stat blocks apart */
-  padding: 0 2rem; /* Left and right padding away from browser edges */
-  width: 100%; /* Spans the full grid column area */
-  box-sizing: border-box;
-}
-
-/* Individual Stat Blocks (Label + Big Number Side-by-Side) */
-.player-pts-box > div {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem; /* Space between text labels and large digit */
-}
-
-/* LEFT SIDE CONFIGURATION */
-.player-pts-box.left {
-  /* Keeps layout standard: Left box stays left, Right box stays right */
-}
-
-/* RIGHT SIDE CONFIGURATION */
-.player-pts-box.right {
-  /* 
-    Flips the arrangement order of the text block and number 
-    on the right side so numbers always anchor outward 
-  */
-  flex-direction: row; 
-}
-
-/* Text block typography tweaks for clean baseline alignment with numbers */
-.pts-label {
-  font-family: var(--hdg), sans-serif;
-  font-size: 0.55rem;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: #555555; 
-}
-
-/* Large numbers styling */
-.pts-val {
-  font-family: var(--sf), sans-serif;
-  font-size: 3.2rem; /* Increased size to match prominence in image */
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1;
-}
-
-/* --- CENTRAL MATCH DETAILS COLUMN --- */
-.round-score-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 220px; /* Gives the central pillar solid defined width bounds */
-  padding: 0 1.5rem;
-  border-left: 1px solid #2a2a2a; 
-  border-right: 1px solid #2a2a2a;
-}
-
-
-
-/* Nav arrows */
-.nav-arrow{display:flex;align-items:center;justify-content:center;background:var(--bg2);border:none;cursor:pointer;padding:0 .5rem;color:var(--text2);font-size:1.3rem;transition:all .15s;border-top:1px solid var(--border)}
-.nav-arrow:hover{color:var(--white);background:var(--bg4)}
-
-/* ROUND HISTORY MINI CARD at bottom */
 .history-mini-bar{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;padding:.35rem .75rem;overflow-x:auto;min-height:36px}
 .hist-item{display:flex;flex-direction:column;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:.2rem .4rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;min-width:32px;flex-shrink:0}
 .hist-item .hi-rnd{color:var(--text3);font-size:.52rem;letter-spacing:1px}
-.hist-item .hi-a{color:var(--red)}
-.hist-item .hi-b{color:var(--blue)}
+.hist-item .hi-a{color:var(--t1-color)}
+.hist-item .hi-b{color:var(--t2-color)}
 .hist-label{font-family:var(--hdg);font-size:.58rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);flex-shrink:0;white-space:nowrap}
 
-/* ENTRY PANEL */
 .entry-panel{background:var(--bg2);border-bottom:1px solid var(--border)}
 .entry-hdr{display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem;border-bottom:1px solid var(--border);background:var(--bg3)}
 .entry-hdr-title{font-family:var(--hdg);font-size:.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2)}
@@ -243,49 +133,48 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .entry-col{padding:.65rem .75rem}
 .entry-col:first-child{border-right:1px solid var(--border)}
 .entry-col-hdr{font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:.55rem;padding-bottom:.3rem;border-bottom:2px solid}
-.entry-col-hdr.a{color:var(--red);border-color:var(--red)}
-.entry-col-hdr.b{color:var(--blue);border-color:var(--blue)}
+.entry-col-hdr.a{color:var(--t1-color);border-color:var(--t1-color)}
+.entry-col-hdr.b{color:var(--t2-color);border-color:var(--t2-color)}
 
-/* Bag selection buttons */
 .bag-type-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
 .bag-type-lbl{font-family:var(--hdg);font-size:.68rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.5px}
 .bag-type-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.bag-type-dot.a{background:var(--t1-color)}
+.bag-type-dot.b{background:var(--t2-color)}
+
 .bag-btns-group{display:flex;gap:4px}
 .bb{width:34px;height:34px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;font-family:var(--sf);font-size:1.1rem;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
 .bb:hover{border-color:var(--white);color:var(--white)}
-.bb.sel-in.a{background:rgba(229,34,34,.3);border-color:var(--red);color:var(--red)}
-.bb.sel-in.b{background:rgba(33,150,214,.3);border-color:var(--blue);color:var(--blue)}
+.bb.sel-in.a{background:color-mix(in srgb, var(--t1-color) 30%, transparent);border-color:var(--t1-color);color:var(--t1-color)}
+.bb.sel-in.b{background:color-mix(in srgb, var(--t2-color) 30%, transparent);border-color:var(--t2-color);color:var(--t2-color)}
 .bb.sel-on{background:rgba(245,197,24,.2);border-color:var(--gold);color:var(--gold)}
 .miss-display{width:36px;height:34px;background:var(--bg4);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--sf);font-size:1rem;color:var(--text3)}
 
 .pts-preview{padding:.45rem .85rem;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.35rem;font-family:var(--hdg);font-size:.72rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
 .pts-chip{padding:3px 10px;border-radius:5px;font-family:var(--sf);font-size:.95rem}
-.pts-chip.a{background:rgba(229,34,34,.2);color:var(--red)}
-.pts-chip.b{background:rgba(33,150,214,.2);color:var(--blue)}
+.pts-chip.a{background:color-mix(in srgb, var(--t1-color) 20%, transparent);color:var(--t1-color)}
+.pts-chip.b{background:color-mix(in srgb, var(--t2-color) 20%, transparent);color:var(--t2-color)}
 .pts-chip.net{background:rgba(245,197,24,.15);color:var(--gold)}
 
 .entry-foot{display:flex;align-items:center;gap:.55rem;padding:.6rem .85rem}
 .undo-btn{padding:.55rem .9rem;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;font-family:var(--hdg);font-size:.75rem;font-weight:700;color:var(--text3);cursor:pointer;transition:all .14s;letter-spacing:.5px;text-transform:uppercase}
 .undo-btn:hover{border-color:var(--red);color:var(--red)}
-.commit-btn{flex:1;padding:.65rem;background:var(--red);border:none;border-radius:8px;color:var(--white);font-family:var(--sf);font-size:1.25rem;letter-spacing:3px;cursor:pointer;transition:all .15s}
-.commit-btn:hover{background:var(--red-dark)}
+.commit-btn.full{flex:1;padding:.5rem;background:var(--t1-color);border:none;border-radius:8px;color:var(--white);font-family:var(--sf);font-size:1.25rem;letter-spacing:3px;cursor:pointer;transition:all .15s}
+.commit-btn.full:hover{filter:brightness(0.85)}
 
-/* Game topbar */
 .game-topbar{display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem;background:var(--bg3);border-bottom:1px solid var(--border)}
 .gtb-title{font-family:var(--sf);font-size:.95rem;letter-spacing:3px;color:var(--text2)}
 .gtb-btns{display:flex;gap:5px}
 .gtbtn{background:var(--bg2);border:1px solid var(--border2);border-radius:7px;font-family:var(--hdg);font-size:.72rem;font-weight:700;color:var(--text2);padding:.3rem .65rem;cursor:pointer;transition:all .13s;letter-spacing:.5px;text-transform:uppercase}
 .gtbtn:hover{border-color:var(--white);color:var(--white)}
 .gtbtn.danger:hover{border-color:var(--red);color:var(--red)}
-.gtbtn.hi{background:var(--red);color:var(--white);border-color:var(--red)}
+.gtbtn.hi{background:var(--t1-color);color:var(--white);border-color:var(--t1-color)}
 
-/* ═══════════ STATS SCREEN (ACL ScoreZone Style) ═══════════ */
+/* ═══════════ STATS SCREEN ═══════════ */
 #stats-screen{max-width:700px;margin:0 auto;padding:0 0 3rem}
 .stats-topbar{background:var(--bg2);border-bottom:2px solid var(--border);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .stats-topbar-title{font-family:var(--sf);font-size:1.3rem;letter-spacing:4px;color:var(--white)}
 .stats-body{padding:1rem}
-
-/* Stats boxes - ACL SCOREZONE STYLE */
 .acl-stats-section{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:1rem;overflow:hidden}
 .acl-stats-hdr{font-family:var(--sf);font-size:1.4rem;letter-spacing:4px;text-align:center;padding:.55rem 1rem;background:var(--bg3);border-bottom:2px solid var(--border);color:var(--white)}
 .perf-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border)}
@@ -293,24 +182,15 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .perf-cell-label{font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:.3rem}
 .perf-cell-val{font-family:var(--sf);font-size:1.9rem;letter-spacing:1px;color:var(--white)}
 .perf-cell-val.accent{color:var(--gold)}
-.perf-wide{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;background:var(--border)}
+.perf-wide{display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:1px;background:var(--border)}
 .wl-box{background:var(--bg2);padding:.55rem;text-align:center}
 .wl-box-lbl{font-family:var(--hdg);font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem}
 .wl-box-val{font-family:var(--sf);font-size:1.6rem;color:var(--white)}
-.wl-main-box{background:var(--bg2);border:2px solid var(--border2);margin:1px;border-radius:4px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background-clip:padding-box}
-.wl-main-inner{padding:.65rem .5rem;text-align:center;background:var(--bg2)}
-.wl-main-lbl{font-family:var(--hdg);font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem}
-.wl-main-val{font-family:var(--sf);font-size:1.8rem;color:var(--white)}
+.divider-line{height:2px;background:var(--border2);margin:6px 0}
 .wl-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
 .wl-cat-cell{background:var(--bg2);padding:.5rem .65rem;display:flex;justify-content:space-between;align-items:center}
 .wl-cat-lbl{font-family:var(--hdg);font-size:.68rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3)}
 .wl-cat-val{font-family:var(--sf);font-size:1.3rem;color:var(--white)}
-.divider-line{height:2px;background:var(--border2);margin:6px 0}
-
-/* In-Game Quick stats side panels */
-.q-pts-adj{display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center}
-.q-adj-btn{width:26px;height:26px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;font-size:.9rem;font-weight:700;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;user-select:none}
-.q-adj-btn:hover{background:var(--border2);color:var(--white)}
 
 /* ═══════════ WIN SCREEN ═══════════ */
 #win{max-width:520px;margin:0 auto;padding:2rem 1rem 3rem;text-align:center}
@@ -318,17 +198,17 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .win-h{font-family:var(--sf);font-size:2.5rem;letter-spacing:5px;margin-bottom:.15rem}
 .win-name{font-family:var(--sf);font-size:2.2rem;letter-spacing:3px;margin-bottom:.2rem}
-.win-name.a{color:var(--red)}.win-name.b{color:var(--blue)}
+.win-name.a{color:var(--t1-color)}.win-name.b{color:var(--t2-color)}
 .win-final{font-family:var(--hdg);font-size:1rem;letter-spacing:3px;color:var(--text2);margin-bottom:1.5rem;font-weight:600;text-transform:uppercase}
 .win-sum{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.25rem;text-align:left}
 .wsr{display:grid;grid-template-columns:1fr 72px 72px;padding:.28rem 0;border-bottom:.5px solid var(--border);font-size:.8rem}
 .wsr:last-child{border:none}
 .wsr-lbl{color:var(--text2);font-family:var(--hdg);font-weight:600;letter-spacing:.5px;text-transform:uppercase;font-size:.72rem}
-.wsr-a{text-align:center;font-family:var(--sf);font-size:1.05rem;color:var(--red)}
-.wsr-b{text-align:center;font-family:var(--sf);font-size:1.05rem;color:var(--blue)}
+.wsr-a{text-align:center;font-family:var(--sf);font-size:1.05rem;color:var(--t1-color)}
+.wsr-b{text-align:center;font-family:var(--sf);font-size:1.05rem;color:var(--t2-color)}
 .win-btns{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
 .wbtn{padding:.72rem 1.4rem;border-radius:10px;font-family:var(--sf);font-size:1.1rem;letter-spacing:2px;cursor:pointer;transition:all .15s;border:none}
-.wbtn.p{background:var(--red);color:var(--white)}.wbtn.p:hover{background:var(--red-dark)}
+.wbtn.p{background:var(--t1-color);color:var(--white)}.wbtn.p:hover{filter:brightness(0.85)}
 .wbtn.s{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}.wbtn.s:hover{border-color:var(--white);color:var(--white)}
 
 .toast{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%) translateY(60px);background:var(--white);color:var(--bg);border-radius:8px;padding:.5rem 1rem;font-family:var(--hdg);font-size:.82rem;font-weight:700;letter-spacing:.5px;z-index:999;transition:transform .24s;pointer-events:none;white-space:nowrap;text-transform:uppercase}
@@ -338,7 +218,6 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 <body>
 <div class="toast" id="toast"></div>
 
-<!-- ══════════ SETUP SCREEN ══════════ -->
 <div class="screen active" id="setup">
   <div class="acl-logo-bar">
     <h1>🎯 CORNHOLE</h1>
@@ -362,7 +241,10 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
   </div>
 
   <div class="setup-card">
-    <div class="setup-card-hdr a">TEAM 1</div>
+    <div class="setup-card-hdr a">
+      TEAM 1
+      <input type="color" id="t1color" value="#e52222" class="color-picker" title="Select Team 1 Bag Color">
+    </div>
     <div class="setup-card-body">
       <div class="sub-lbl">Player 1</div>
       <div class="player-row">
@@ -376,7 +258,10 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
   </div>
 
   <div class="setup-card">
-    <div class="setup-card-hdr b">TEAM 2</div>
+    <div class="setup-card-hdr b">
+      TEAM 2
+      <input type="color" id="t2color" value="#2196d6" class="color-picker" title="Select Team 2 Bag Color">
+    </div>
     <div class="setup-card-body">
       <div class="sub-lbl">Player 1</div>
       <div class="player-row">
@@ -408,9 +293,7 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
   <button class="start-btn" onclick="startGame()">▶ START NEW GAME</button>
 </div>
 
-<!-- ══════════ GAME SCREEN (ACL SCOREBOARD STYLE) ══════════ -->
 <div class="screen" id="game">
-  <!-- Top utility bar -->
   <div class="game-topbar">
     <div class="gtb-title">🎯 LIVE MATCH</div>
     <div class="gtb-btns">
@@ -420,7 +303,6 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
     </div>
   </div>
 
-  <!-- ACL Team Banners -->
   <div class="acl-header">
     <div class="team-banner a">
       <div class="team-banner-name" id="bannerNameA">TEAM 1</div>
@@ -434,11 +316,9 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
     </div>
   </div>
 
-  <!-- Main Scoreboard (ACL style: Bags IN | Score | Bags IN center | Bags IN | Score | Bags ON) -->
   <div class="acl-scoreboard">
-    <!-- Team A Bags IN -->
     <div class="bags-col">
-      <div class="bags-col-hdr in-hdr">BAGS<br>IN</div>
+      <div class="bags-col-hdr in-hdr" id="bagsinA">Bags in</div>
       <div class="bag-slot" id="aIn0" onclick="selectEntry('aHole',0)">0</div>
       <div class="bag-slot" id="aIn1" onclick="selectEntry('aHole',1)">1</div>
       <div class="bag-slot" id="aIn2" onclick="selectEntry('aHole',2)">2</div>
@@ -446,14 +326,12 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
       <div class="bag-slot" id="aIn4" onclick="selectEntry('aHole',4)">4</div>
     </div>
 
-    <!-- Team A big score + quick adj -->
     <div class="big-score-panel">    
       <div class="big-score-num" id="scoreA">0</div>
     </div>
 
-    <!-- Team A Bags ON center + Team B Bags IN center -->
     <div class="bags-col" style="border-right:none">
-      <div class="bags-col-hdr on-hdr">BAGS<br>ON</div>
+      <div class="bags-col-hdr on-hdr" id="bagsonA">BAGSON</div>
       <div class="bag-slot" id="aOn0" onclick="selectEntry('aOn',0)">0</div>
       <div class="bag-slot" id="aOn1" onclick="selectEntry('aOn',1)">1</div>
       <div class="bag-slot" id="aOn2" onclick="selectEntry('aOn',2)">2</div>
@@ -461,20 +339,20 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
       <div class="bag-slot" id="aOn4" onclick="selectEntry('aOn',4)">4</div>
     </div>
     <div class="bags-col" style="border-left:1px solid var(--border)">
-      <div class="bags-col-hdr in-hdr-b">BAGS<br>IN</div>
+      <div class="bags-col-hdr in-hdr-b" id="bagsinB">BAGS<br>IN</div>
       <div class="bag-slot" id="bIn0" onclick="selectEntry('bHole',0)">0</div>
       <div class="bag-slot" id="bIn1" onclick="selectEntry('bHole',1)">1</div>
       <div class="bag-slot" id="bIn2" onclick="selectEntry('bHole',2)">2</div>
       <div class="bag-slot" id="bIn3" onclick="selectEntry('bHole',3)">3</div>
       <div class="bag-slot" id="bIn4" onclick="selectEntry('bHole',4)">4</div>
     </div>
-    <!-- Team B big score + quick adj -->
+
     <div class="big-score-panel">
       <div class="big-score-num" id="scoreB">0</div>
     </div>
-    <!-- Team B Bags ON -->
+
     <div class="bags-col right">
-      <div class="bags-col-hdr on-hdr">BAGS<br>ON</div>
+      <div class="bags-col-hdr on-hdr"id="bagsonB">BAGSON</div>
       <div class="bag-slot" id="bOn0" onclick="selectEntry('bOn',0)">0</div>
       <div class="bag-slot" id="bOn1" onclick="selectEntry('bOn',1)">1</div>
       <div class="bag-slot" id="bOn2" onclick="selectEntry('bOn',2)">2</div>
@@ -483,66 +361,50 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
     </div>
   </div>
 
-    <!-- Center round display -->
-<div class="acl-center-div">
-  <div class="round-num-display" id="roundDisp">Round 1</div>
-  <button class="commit-btn" onclick="commitRound()">COMMIT ROUND ▶</button>
-</div> 
+  <div class="acl-bottom-row"> 
+    <div class="player-pts-box left"> 
+        <div style="text-align:left"> 
+            <div class="pts-label">Round<br>Score</div> 
+            <div class="pts-val" id="roundScoreA">0</div> 
+        </div> 
+        <div style="text-align:right"> 
+            <div class="pts-label">Points<br>Earned</div> 
+            <div class="pts-val" id="playerPtsA">0</div> 
+        </div> 
+    </div> 
+    
+    <div class="round-score-center"> 
+        <div class="round-score-hdr" id="roundScoreHdr" style="font-family:var(--hdg);font-size:.7rem;font-weight:700;color:var(--text2);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase">Round 1</div> 
+        <button class="commit-btn" onclick="commitRound()">COMMIT ROUND ▶</button>
+    </div> 
+    
+    <div class="player-pts-box right"> 
+        <div style="text-align:left"> 
+            <div class="pts-label">Round<br>Score</div> 
+            <div class="pts-val" id="roundScoreB">0</div> 
+        </div> 
+        <div style="text-align:right"> 
+            <div class="pts-label">Points<br>Earned</div> 
+            <div class="pts-val" id="playerPtsB">0</div> 
+        </div> 
+    </div> 
+  </div>
 
-<!-- Bottom stats row -->
-<div class="acl-bottom-row"> 
-  <!-- Player A Column -->
-  <div class="player-pts-box left"> 
-      <div style="text-align:left"> 
-          <div class="pts-label">Round<br>Score</div> 
-          <div class="pts-val" id="roundScoreA">0</div> 
-      </div> 
-      <div style="text-align:right"> 
-          <div class="pts-label">Player<br>Points</div> 
-          <div class="pts-val" id="playerPtsA">0</div> 
-      </div> 
-  </div> 
-  
-  <!-- Match Info Column -->
-  <div class="round-score-center"> 
-      <div class="round-score-hdr" id="roundScoreHdr">Round 1</div> 
-      <div class="round-score-sub" id="matchSubLabel">Match #1 / Court #1</div> 
-  </div> 
-  
-  <!-- Player B Column -->
-  <div class="player-pts-box right"> 
-      <div style="text-align:left"> 
-          <div class="pts-label">Round<br>Score</div> 
-          <div class="pts-val" id="roundScoreB">0</div> 
-      </div> 
-      <div style="text-align:right"> 
-          <div class="pts-label">Player<br>Points</div> 
-          <div class="pts-val" id="playerPtsB">0</div> 
-      </div> 
-  </div> 
-</div>
-
-
-  
-
-  <!-- Round history mini strip -->
   <div class="history-mini-bar" id="historyBar">
     <div class="hist-label">HISTORY:</div>
     <div style="font-size:.62rem;color:var(--text3);font-family:var(--hdg);font-weight:600">No rounds yet</div>
   </div>
 
-  <!-- Bag Entry Panel -->
   <div class="entry-panel">
     <div class="entry-hdr">
-      <div class="entry-hdr-title">Round Entry</div>
+      <div class="entry-hdr-title" id="doublesIndicator">Round Entry</div>
       <div class="entry-hdr-round" id="entryRoundLabel">Round 1</div>
     </div>
     <div class="entry-grid">
-      <!-- Team A -->
       <div class="entry-col">
         <div class="entry-col-hdr a" id="entryColHdrA">TEAM 1 — BAGS</div>
         <div class="bag-type-row">
-          <div class="bag-type-lbl"><span class="bag-type-dot" style="background:var(--red)"></span>HOLE (3pt)</div>
+          <div class="bag-type-lbl"><span class="bag-type-dot a"></span>HOLE (3pt)</div>
           <div class="bag-btns-group" id="aHoleBtns">
             <button class="bb" onclick="setBag('aHole',1)" id="aH1">1</button>
             <button class="bb" onclick="setBag('aHole',2)" id="aH2">2</button>
@@ -564,11 +426,10 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
           <div class="miss-display" id="aMiss">4</div>
         </div>
       </div>
-      <!-- Team B -->
       <div class="entry-col">
         <div class="entry-col-hdr b" id="entryColHdrB">TEAM 2 — BAGS</div>
         <div class="bag-type-row">
-          <div class="bag-type-lbl"><span class="bag-type-dot" style="background:var(--blue)"></span>HOLE (3pt)</div>
+          <div class="bag-type-lbl"><span class="bag-type-dot b"></span>HOLE (3pt)</div>
           <div class="bag-btns-group">
             <button class="bb" onclick="setBag('bHole',1)" id="bH1">1</button>
             <button class="bb" onclick="setBag('bHole',2)" id="bH2">2</button>
@@ -599,23 +460,19 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
     </div>
     <div class="entry-foot">
       <button class="undo-btn" onclick="undoRound()">↩ UNDO</button>
-      <button class="commit-btn" onclick="commitRound()">COMMIT ROUND ▶</button>
+      <button class="commit-btn full" onclick="commitRound()">COMMIT ROUND ▶</button>
     </div>
   </div>
 </div>
 
-<!-- ══════════ STATS SCREEN (ACL ScoreZone Style) ══════════ -->
 <div class="screen" id="stats-screen">
   <div class="stats-topbar">
     <div class="stats-topbar-title" id="statsTitle">PERFORMANCE STATS</div>
     <button class="gtbtn" onclick="goBackFromStats()" style="font-family:var(--hdg);font-size:.75rem;font-weight:700;color:var(--text2);background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:.3rem .65rem;cursor:pointer;transition:all .13s;letter-spacing:.5px;text-transform:uppercase">← BACK</button>
   </div>
-  <div class="stats-body" id="statsBody">
-    <p style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--hdg)">No stats yet — play a game first!</p>
-  </div>
+  <div class="stats-body" id="statsBody"></div>
 </div>
 
-<!-- ══════════ WIN SCREEN ══════════ -->
 <div class="screen" id="win">
   <div class="win-crown">🏆</div>
   <div class="win-h">MATCH OVER</div>
@@ -628,7 +485,7 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
     <div class="wsr"><div class="wsr-lbl">Bags On Board (1pt)</div><div class="wsr-a" id="wOnA">0</div><div class="wsr-b" id="wOnB">0</div></div>
     <div class="wsr"><div class="wsr-lbl">Bags Off / Miss</div><div class="wsr-a" id="wOffA">0</div><div class="wsr-b" id="wOffB">0</div></div>
     <div class="wsr"><div class="wsr-lbl">Total Bags Thrown</div><div class="wsr-a" id="wThrowA">0</div><div class="wsr-b" id="wThrowB">0</div></div>
-    <div class="wsr"><div class="wsr-lbl">PPR</div><div class="wsr-a" id="wPPRA">0</div><div class="wsr-b" id="wPPRB">0</div></div>
+    <div class="wsr"><div class="wsr-lbl">Team PPR</div><div class="wsr-a" id="wPPRA">0</div><div class="wsr-b" id="wPPRB">0</div></div>
     <div class="wsr"><div class="wsr-lbl">Bags In %</div><div class="wsr-a" id="wInPctA">0%</div><div class="wsr-b" id="wInPctB">0%</div></div>
   </div>
   <div class="win-btns">
@@ -638,20 +495,14 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
 let CF = { win: 21, rule: 'cancel' };
-let G = null; // active game
+let G = null; 
 let savedPlayers = [];
-let lifetimeStats = {};    // keyed by player name
+let lifetimeStats = {};
 let statsReturnTo = 'setup';
 
 let currentEntry = { aHole: 0, aOn: 0, bHole: 0, bOn: 0 };
 
-// ═══════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════
 window.onload = function() {
   load();
   renderSavedBar();
@@ -691,9 +542,6 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ═══════════════════════════════════════════
-// SETUP
-// ═══════════════════════════════════════════
 function checkResumeAvailable() {
   const ri = document.getElementById('resumeIndicator');
   const rb = document.getElementById('resumeBtn');
@@ -748,35 +596,50 @@ function setRule(r) {
   document.getElementById('rA').classList.toggle('active', r==='all');
 }
 
+function applyColors(c1, c2) {
+  document.documentElement.style.setProperty('--t1-color', c1);
+  document.documentElement.style.setProperty('--t2-color', c2);
+}
+
 function startGame() {
   const names = ['p1','p2','p3','p4'].map(id => document.getElementById(id).value.trim());
   if (!names[0] && !names[2]) { toast('Enter at least one name per team'); return; }
 
-  // Auto-save new player names
   ['p1','p2','p3','p4'].forEach(id => {
     const v = document.getElementById(id).value.trim();
     if (v && !savedPlayers.includes(v)) savedPlayers.push(v);
   });
 
-  // Init lifetime stats entries for new players
   names.filter(Boolean).forEach(n => {
     if (!lifetimeStats[n]) lifetimeStats[n] = initLifetime();
   });
 
+  const c1 = document.getElementById('t1color').value;
+  const c2 = document.getElementById('t2color').value;
+
   G = {
     winScore: CF.win,
     rule: CF.rule,
-    teamA: names[1] ? [names[0]||'Player 1', names[1]] : [names[0]||'Player 1'],
-    teamB: names[3] ? [names[2]||'Player 2', names[3]] : [names[2]||'Player 2'],
+    colors: [c1, c2],
+    isDoubles: !!(names[1] && names[3]),
+    teamA: names[1] ? [names[0]||'T1P1', names[1]] : [names[0]||'Player 1'],
+    teamB: names[3] ? [names[2]||'T2P1', names[3]] : [names[2]||'Player 2'],
     scores: [0,0],
     round: 1,
     history: [],
     stats: [
       { holes:0, on:0, off:0, throws:0, pts:0 },
       { holes:0, on:0, off:0, throws:0, pts:0 }
+    ],
+    pStats: [
+      { holes:0, on:0, off:0, throws:0, pts:0 }, 
+      { holes:0, on:0, off:0, throws:0, pts:0 }, 
+      { holes:0, on:0, off:0, throws:0, pts:0 }, 
+      { holes:0, on:0, off:0, throws:0, pts:0 }  
     ]
   };
 
+  applyColors(c1, c2);
   save();
   resetEntry();
   renderBoard();
@@ -786,6 +649,15 @@ function startGame() {
 
 function resumeGame() {
   if (!G) return;
+  
+  // Check if colors exist (for backward compatibility with old saves)
+  if (G.colors && G.colors.length >= 2) {
+    applyColors(G.colors[0], G.colors[1]);
+  } else {
+    // Fallback to default red and blue for older saves
+    applyColors('#e52222', '#2196d6');
+  }
+  
   resetEntry();
   renderBoard();
   showScreen('game');
@@ -803,11 +675,7 @@ function saveCurrentGame() {
   toast('💾 GAME SAVED!');
 }
 
-// ═══════════════════════════════════════════
-// BAG ENTRY
-// ═══════════════════════════════════════════
 function setBag(type, value) {
-  // Validate combined totals ≤ 4
   let potHole = type==='aHole' ? value : currentEntry.aHole;
   let potOn   = type==='aOn'   ? value : currentEntry.aOn;
   if ((type==='aHole'||type==='aOn') && potHole+potOn > 4) return;
@@ -819,10 +687,7 @@ function setBag(type, value) {
   syncSidebarSlots();
 }
 
-// Also allow clicking the sidebar slots
-function selectEntry(type, value) {
-  setBag(type, value);
-}
+function selectEntry(type, value) { setBag(type, value); }
 
 function resetEntry() {
   currentEntry = { aHole:0, aOn:0, bHole:0, bOn:0 };
@@ -834,7 +699,6 @@ function syncEntryUI() {
   const aH=currentEntry.aHole, aO=currentEntry.aOn;
   const bH=currentEntry.bHole, bO=currentEntry.bOn;
 
-  // Highlight entry buttons
   for (let i=1;i<=4;i++) {
     const ah=document.getElementById('aH'+i), ao=document.getElementById('aO'+i);
     const bh=document.getElementById('bH'+i), bo=document.getElementById('bO'+i);
@@ -844,11 +708,9 @@ function syncEntryUI() {
     if(bo){ bo.className='bb'; if(i===bO){ bo.classList.add('sel-on'); } }
   }
 
-  // Miss counts
   document.getElementById('aMiss').innerText = 4-(aH+aO);
   document.getElementById('bMiss').innerText = 4-(bH+bO);
 
-  // Preview
   const gA = (aH*3)+aO, gB = (bH*3)+bO;
   document.getElementById('prevA').innerText = '+'+gA;
   document.getElementById('prevB').innerText = '+'+gB;
@@ -861,13 +723,12 @@ function syncEntryUI() {
     document.getElementById('prevNet').innerText='All Pts';
   }
 
-  // Round scores at bottom
   document.getElementById('roundScoreA').innerText = gA;
   document.getElementById('roundScoreB').innerText = gB;
 
-  // Player points (cumulative this round for active pitcher row)
-  document.getElementById('playerPtsA').innerText = gA;
-  document.getElementById('playerPtsB').innerText = gB;
+  const netDiff = gA - gB;
+  document.getElementById('playerPtsA').innerText = netDiff > 0 ? '+' + netDiff : 0;
+  document.getElementById('playerPtsB').innerText = netDiff < 0 ? '+' + Math.abs(netDiff) : 0;
 }
 
 function syncSidebarSlots() {
@@ -885,9 +746,6 @@ function syncSidebarSlots() {
   }
 }
 
-// ═══════════════════════════════════════════
-// ROUND MANAGEMENT
-// ═══════════════════════════════════════════
 function commitRound() {
   const gA=(currentEntry.aHole*3)+currentEntry.aOn;
   const gB=(currentEntry.bHole*3)+currentEntry.bOn;
@@ -895,8 +753,11 @@ function commitRound() {
   if(G.rule==='cancel'){ const d=gA-gB; if(d>0) netA=d; else netB=Math.abs(d); }
   else { netA=gA; netB=gB; }
 
+  const activeIdx = G.isDoubles ? ((G.round - 1) % 2) : 0;
+
   const row = {
     rnd: G.round,
+    activeIdx: activeIdx,
     aHole: currentEntry.aHole, aOn: currentEntry.aOn, aPts: netA,
     bHole: currentEntry.bHole, bOn: currentEntry.bOn, bPts: netB,
     scoresBefore: [...G.scores]
@@ -904,10 +765,26 @@ function commitRound() {
   G.history.push(row);
 
   G.scores[0]+=netA; G.scores[1]+=netB;
+  
+  // Aggregate Stats (Teams)
   G.stats[0].holes+=currentEntry.aHole; G.stats[0].on+=currentEntry.aOn;
   G.stats[0].off+=(4-(currentEntry.aHole+currentEntry.aOn)); G.stats[0].throws+=4; G.stats[0].pts+=gA;
   G.stats[1].holes+=currentEntry.bHole; G.stats[1].on+=currentEntry.bOn;
   G.stats[1].off+=(4-(currentEntry.bHole+currentEntry.bOn)); G.stats[1].throws+=4; G.stats[1].pts+=gB;
+  
+  // Individual Stats (Players)
+  G.pStats[0 + activeIdx].holes += currentEntry.aHole;
+  G.pStats[0 + activeIdx].on += currentEntry.aOn;
+  G.pStats[0 + activeIdx].off += (4 - (currentEntry.aHole + currentEntry.aOn));
+  G.pStats[0 + activeIdx].throws += 4;
+  G.pStats[0 + activeIdx].pts += gA;
+
+  G.pStats[2 + activeIdx].holes += currentEntry.bHole;
+  G.pStats[2 + activeIdx].on += currentEntry.bOn;
+  G.pStats[2 + activeIdx].off += (4 - (currentEntry.bHole + currentEntry.bOn));
+  G.pStats[2 + activeIdx].throws += 4;
+  G.pStats[2 + activeIdx].pts += gB;
+
   G.round++;
 
   save();
@@ -919,35 +796,52 @@ function commitRound() {
 function undoRound() {
   if(!G.history.length){ toast('Nothing to undo'); return; }
   const last=G.history.pop();
+  const idx = last.activeIdx;
+  
   G.round=last.rnd;
   G.scores=[...last.scoresBefore];
+  
   G.stats[0].holes-=last.aHole; G.stats[0].on-=last.aOn; G.stats[0].throws-=4; G.stats[0].off-=(4-(last.aHole+last.aOn)); G.stats[0].pts-=((last.aHole*3)+last.aOn);
   G.stats[1].holes-=last.bHole; G.stats[1].on-=last.bOn; G.stats[1].throws-=4; G.stats[1].off-=(4-(last.bHole+last.bOn)); G.stats[1].pts-=((last.bHole*3)+last.bOn);
+  
+  G.pStats[0 + idx].holes -= last.aHole;
+  G.pStats[0 + idx].on -= last.aOn;
+  G.pStats[0 + idx].off -= (4 - (last.aHole + last.aOn));
+  G.pStats[0 + idx].throws -= 4;
+  G.pStats[0 + idx].pts -= ((last.aHole * 3) + last.aOn);
+
+  G.pStats[2 + idx].holes -= last.bHole;
+  G.pStats[2 + idx].on -= last.bOn;
+  G.pStats[2 + idx].off -= (4 - (last.bHole + last.bOn));
+  G.pStats[2 + idx].throws -= 4;
+  G.pStats[2 + idx].pts -= ((last.bHole * 3) + last.bOn);
+
   save();
   resetEntry();
   renderBoard();
   toast('↩ ROUND UNDONE');
 }
 
-function quickAdj(team, delta) {
-  G.scores[team]=Math.max(0,G.scores[team]+delta);
-  save();
-  renderBoard();
-  checkWin();
-}
-
-// ═══════════════════════════════════════════
-// BOARD RENDER
-// ═══════════════════════════════════════════
 function renderBoard() {
   const nameA=G.teamA.join(' & ').toUpperCase();
   const nameB=G.teamB.join(' & ').toUpperCase();
+  const activeIdx = G.isDoubles ? ((G.round - 1) % 2) : 0;
+  const activeNameA = G.teamA[activeIdx] || G.teamA[0];
+  const activeNameB = G.teamB[activeIdx] || G.teamB[0];
   document.getElementById('bannerNameA').innerText=nameA;
   document.getElementById('bannerNameB').innerText=nameB;
-  document.getElementById('entryColHdrA').innerText=nameA+' — BAGS';
-  document.getElementById('entryColHdrB').innerText=nameB+' — BAGS';
+  document.getElementById('bagsinA').innerText=activeNameA.split(' ')[0]+'s bags in'
+  document.getElementById('bagsinB').innerText=activeNameB.split(' ')[0]+'s bags in'
+  document.getElementById('bagsonA').innerText=activeNameA.split(' ')[0]+'s bags on'  
+  document.getElementById('bagsonB').innerText=activeNameB.split(' ')[0]+'s bags on'
 
-  // Scores with pop animation
+  
+
+  document.getElementById('entryColHdrA').innerText=activeNameA.toUpperCase()+' — BAGS';
+  document.getElementById('entryColHdrB').innerText=activeNameB.toUpperCase()+' — BAGS';
+
+  document.getElementById('doublesIndicator').innerText = G.isDoubles ? "Doubles Entry (Board " + (activeIdx + 1) + ")" : "Round Entry";
+
   const sA=document.getElementById('scoreA'), sB=document.getElementById('scoreB');
   sA.innerText=G.scores[0]; sB.innerText=G.scores[1];
   sA.classList.remove('pop'); sB.classList.remove('pop');
@@ -955,11 +849,9 @@ function renderBoard() {
   sA.classList.add('pop'); sB.classList.add('pop');
 
   const rndTxt='Round '+G.round;
-  document.getElementById('roundDisp').innerText=rndTxt;
   document.getElementById('roundScoreHdr').innerText=rndTxt;
   document.getElementById('entryRoundLabel').innerText=rndTxt;
 
-  // History mini-bar
   const hb=document.getElementById('historyBar');
   if(!G.history.length){
     hb.innerHTML='<div class="hist-label">HISTORY:</div><div style="font-size:.62rem;color:var(--text3);font-family:var(--hdg);font-weight:600">No rounds yet</div>';
@@ -1001,31 +893,28 @@ function endGame(side) {
   document.getElementById('wInPctA').innerText=t0>0?(((G.stats[0].holes/t0)*100).toFixed(1)+'%'):'0%';
   document.getElementById('wInPctB').innerText=t1>0?(((G.stats[1].holes/t1)*100).toFixed(1)+'%'):'0%';
 
-  // Update lifetime stats
-  mergeToLifetime(G.teamA, G.stats[0], side==='A', G.scores[0], G.scores[1]);
-  mergeToLifetime(G.teamB, G.stats[1], side==='B', G.scores[1], G.scores[0]);
+  if(G.teamA[0]) mergeToLifetime(G.teamA[0], G.pStats[0], side==='A', G.scores[0], G.scores[1]);
+  if(G.isDoubles && G.teamA[1]) mergeToLifetime(G.teamA[1], G.pStats[1], side==='A', G.scores[0], G.scores[1]);
+  if(G.teamB[0]) mergeToLifetime(G.teamB[0], G.pStats[2], side==='B', G.scores[1], G.scores[0]);
+  if(G.isDoubles && G.teamB[1]) mergeToLifetime(G.teamB[1], G.pStats[3], side==='B', G.scores[1], G.scores[0]);
+
   G = null;
   save();
   checkResumeAvailable();
   showScreen('win');
 }
 
-// ═══════════════════════════════════════════
-// LIFETIME STATS
-// ═══════════════════════════════════════════
 function initLifetime() {
   return { wins:0,losses:0,games:0,holes:0,on:0,off:0,throws:0,pts:0,oppPts:0, localWins:0,localLosses:0,regionalWins:0,regionalLosses:0,openWins:0,openLosses:0 };
 }
 
-function mergeToLifetime(teamNames, stats, won, myScore, oppScore) {
-  teamNames.filter(Boolean).forEach(n=>{
-    if(!lifetimeStats[n]) lifetimeStats[n]=initLifetime();
-    const ls=lifetimeStats[n];
-    ls.games++;
-    ls.holes+=stats.holes; ls.on+=stats.on; ls.off+=stats.off;
-    ls.throws+=stats.throws; ls.pts+=stats.pts; ls.oppPts+=oppScore;
-    if(won){ ls.wins++; ls.localWins++; } else { ls.losses++; ls.localLosses++; }
-  });
+function mergeToLifetime(name, stats, won, myScore, oppScore) {
+  if(!lifetimeStats[name]) lifetimeStats[name]=initLifetime();
+  const ls=lifetimeStats[name];
+  ls.games++;
+  ls.holes+=stats.holes; ls.on+=stats.on; ls.off+=stats.off;
+  ls.throws+=stats.throws; ls.pts+=stats.pts; ls.oppPts+=oppScore;
+  if(won){ ls.wins++; ls.localWins++; } else { ls.losses++; ls.localLosses++; }
 }
 
 function clearLifetimeStats() {
@@ -1035,9 +924,6 @@ function clearLifetimeStats() {
   toast('📊 LIFETIME STATS CLEARED');
 }
 
-// ═══════════════════════════════════════════
-// STATS SCREEN
-// ═══════════════════════════════════════════
 function openLifetimeStats() {
   statsReturnTo = 'setup';
   renderLifetimeStats();
@@ -1059,26 +945,35 @@ function renderGameStats() {
   if (!G) { renderLifetimeStats(); return; }
   document.getElementById('statsTitle').innerText = 'MATCH STATS';
   const nameA=G.teamA.join(' & '), nameB=G.teamB.join(' & ');
-  const s0=G.stats[0], s1=G.stats[1];
-  const rounds=G.history.length||1;
-  const ppr0=s0.throws>0?(s0.pts/(s0.throws/4)).toFixed(2):'—';
-  const ppr1=s1.throws>0?(s1.pts/(s1.throws/4)).toFixed(2):'—';
-  const pct0=s0.throws>0?((s0.holes/s0.throws)*100).toFixed(2):'0.00';
-  const pct1=s1.throws>0?((s1.holes/s1.throws)*100).toFixed(2):'0.00';
-  const onPct0=s0.throws>0?((s0.on/s0.throws)*100).toFixed(2):'0.00';
-  const onPct1=s1.throws>0?((s1.on/s1.throws)*100).toFixed(2):'0.00';
-  const offPct0=s0.throws>0?((s0.off/s0.throws)*100).toFixed(2):'0.00';
-  const offPct1=s1.throws>0?((s1.off/s1.throws)*100).toFixed(2):'0.00';
+
+  const getPPR = (pStat) => pStat.throws > 0 ? (pStat.pts / (pStat.throws / 4)).toFixed(2) : '—';
+  const getInPct = (pStat) => pStat.throws > 0 ? ((pStat.holes / pStat.throws) * 100).toFixed(1) + '%' : '0.0%';
+
+  let playerStatsHTML = '';
+  const addPlayerStat = (name, pStat) => {
+    if(!name) return;
+    playerStatsHTML += `
+      <div class="wl-box"><div class="wl-box-lbl">PPR (${name.split(' ')[0]})</div><div class="wl-box-val accent">${getPPR(pStat)}</div></div>
+      <div class="wl-box"><div class="wl-box-lbl">In % (${name.split(' ')[0]})</div><div class="wl-box-val">${getInPct(pStat)}</div></div>
+    `;
+  };
+
+  let team1StatsHTML = ''; let team2StatsHTML = '';
+  team1StatsHTML += `<div class="wl-box"><div class="wl-box-lbl">PPR (${G.teamA[0].split(' ')[0]})</div><div class="wl-box-val accent">${getPPR(G.pStats[0])}</div></div><div class="wl-box"><div class="wl-box-lbl">In % (${G.teamA[0].split(' ')[0]})</div><div class="wl-box-val">${getInPct(G.pStats[0])}</div></div>`;
+  if(G.isDoubles && G.teamA[1]) team1StatsHTML += `<div class="wl-box"><div class="wl-box-lbl">PPR (${G.teamA[1].split(' ')[0]})</div><div class="wl-box-val accent">${getPPR(G.pStats[1])}</div></div><div class="wl-box"><div class="wl-box-lbl">In % (${G.teamA[1].split(' ')[0]})</div><div class="wl-box-val">${getInPct(G.pStats[1])}</div></div>`;
+  
+  team2StatsHTML += `<div class="wl-box"><div class="wl-box-lbl">PPR (${G.teamB[0].split(' ')[0]})</div><div class="wl-box-val accent">${getPPR(G.pStats[2])}</div></div><div class="wl-box"><div class="wl-box-lbl">In % (${G.teamB[0].split(' ')[0]})</div><div class="wl-box-val">${getInPct(G.pStats[2])}</div></div>`;
+  if(G.isDoubles && G.teamB[1]) team2StatsHTML += `<div class="wl-box"><div class="wl-box-lbl">PPR (${G.teamB[1].split(' ')[0]})</div><div class="wl-box-val accent">${getPPR(G.pStats[3])}</div></div><div class="wl-box"><div class="wl-box-lbl">In % (${G.teamB[1].split(' ')[0]})</div><div class="wl-box-val">${getInPct(G.pStats[3])}</div></div>`;
 
   document.getElementById('statsBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-      <div style="background:rgba(229,34,34,.15);border:1px solid rgba(229,34,34,.4);border-radius:8px;padding:.7rem;text-align:center">
-        <div style="font-family:var(--hdg);font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:.3rem">${nameA}</div>
+      <div style="background:color-mix(in srgb, var(--t1-color) 15%, transparent);border:1px solid color-mix(in srgb, var(--t1-color) 40%, transparent);border-radius:8px;padding:.7rem;text-align:center">
+        <div style="font-family:var(--hdg);font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t1-color);margin-bottom:.3rem">${nameA}</div>
         <div style="font-family:var(--sf);font-size:2.5rem;color:var(--white)">${G.scores[0]}</div>
         <div style="font-family:var(--hdg);font-size:.65rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:1px">Points</div>
       </div>
-      <div style="background:rgba(33,150,214,.15);border:1px solid rgba(33,150,214,.4);border-radius:8px;padding:.7rem;text-align:center">
-        <div style="font-family:var(--hdg);font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:.3rem">${nameB}</div>
+      <div style="background:color-mix(in srgb, var(--t2-color) 15%, transparent);border:1px solid color-mix(in srgb, var(--t2-color) 40%, transparent);border-radius:8px;padding:.7rem;text-align:center">
+        <div style="font-family:var(--hdg);font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t2-color);margin-bottom:.3rem">${nameB}</div>
         <div style="font-family:var(--sf);font-size:2.5rem;color:var(--white)">${G.scores[1]}</div>
         <div style="font-family:var(--hdg);font-size:.65rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:1px">Points</div>
       </div>
@@ -1087,19 +982,19 @@ function renderGameStats() {
     <div class="acl-stats-section">
       <div class="acl-stats-hdr">PERFORMANCE STATS</div>
       <div class="perf-grid">
-        <div class="perf-cell"><div class="perf-cell-label">PPR (${nameA.split(' ')[0]})</div><div class="perf-cell-val accent">${ppr0}</div></div>
         <div class="perf-cell"><div class="perf-cell-label">Total Points</div><div class="perf-cell-val">${G.scores[0]}</div></div>
         <div class="perf-cell"><div class="perf-cell-label">Rounds</div><div class="perf-cell-val">${G.round-1}</div></div>
-        <div class="perf-cell"><div class="perf-cell-label">PPR (${nameB.split(' ')[0]})</div><div class="perf-cell-val accent">${ppr1}</div></div>
         <div class="perf-cell"><div class="perf-cell-label">Opp Points</div><div class="perf-cell-val">${G.scores[1]}</div></div>
-        <div class="perf-cell"><div class="perf-cell-label">Pt. Diff.</div><div class="perf-cell-val" style="color:${G.scores[0]-G.scores[1]>=0?'var(--green)':'var(--red)'}">${G.scores[0]-G.scores[1]>0?'+':''}${G.scores[0]-G.scores[1]}</div></div>
       </div>
       <div class="divider-line" style="margin:0"></div>
+      <div style="font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t1-color);padding:.5rem 1rem;background:var(--bg3)">TEAM 1 INDIVIDUAL STATS</div>
       <div class="perf-wide">
-        <div class="wl-box"><div class="wl-box-lbl">Bags In % (T1)</div><div class="wl-box-val">${pct0}</div></div>
-        <div class="wl-box"><div class="wl-box-lbl">Bags On % (T1)</div><div class="wl-box-val">${onPct0}</div></div>
-        <div class="wl-box"><div class="wl-box-lbl">Bags In % (T2)</div><div class="wl-box-val">${pct1}</div></div>
-        <div class="wl-box"><div class="wl-box-lbl">Bags On % (T2)</div><div class="wl-box-val">${onPct1}</div></div>
+        ${team1StatsHTML}
+      </div>
+      <div class="divider-line" style="margin:0"></div>
+      <div style="font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t2-color);padding:.5rem 1rem;background:var(--bg3)">TEAM 2 INDIVIDUAL STATS</div>
+      <div class="perf-wide">
+        ${team2StatsHTML}
       </div>
     </div>
 
@@ -1110,26 +1005,26 @@ function renderGameStats() {
           <thead>
             <tr style="border-bottom:2px solid var(--border)">
               <th style="padding:.3rem .4rem;text-align:center;color:var(--text3);font-weight:700;letter-spacing:1.5px;text-transform:uppercase">RD</th>
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--red);font-weight:700">IN</th>
+              <th style="padding:.3rem .4rem;text-align:center;color:var(--t1-color);font-weight:700">IN</th>
               <th style="padding:.3rem .4rem;text-align:center;color:var(--gold);font-weight:700">ON</th>
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--red);font-weight:700;font-size:.8rem">+PTS</th>
+              <th style="padding:.3rem .4rem;text-align:center;color:var(--t1-color);font-weight:700;font-size:.8rem">+PTS</th>
               <th style="padding:.3rem .4rem;text-align:center;color:var(--text3);font-weight:700">SCORE</th>
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--blue);font-weight:700;font-size:.8rem">+PTS</th>
+              <th style="padding:.3rem .4rem;text-align:center;color:var(--t2-color);font-weight:700;font-size:.8rem">+PTS</th>
               <th style="padding:.3rem .4rem;text-align:center;color:var(--gold);font-weight:700">ON</th>
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--blue);font-weight:700">IN</th>
+              <th style="padding:.3rem .4rem;text-align:center;color:var(--t2-color);font-weight:700">IN</th>
             </tr>
           </thead>
           <tbody>
             ${G.history.map(h=>`
               <tr style="border-bottom:.5px solid var(--border)">
                 <td style="padding:.28rem .4rem;text-align:center;color:var(--text3);font-size:.65rem">${h.rnd}</td>
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--red)">${h.aHole}</td>
+                <td style="padding:.28rem .4rem;text-align:center;color:var(--t1-color)">${h.aHole}</td>
                 <td style="padding:.28rem .4rem;text-align:center;color:var(--gold)">${h.aOn}</td>
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--red);font-weight:700;font-size:.82rem">+${h.aPts}</td>
+                <td style="padding:.28rem .4rem;text-align:center;color:var(--t1-color);font-weight:700;font-size:.82rem">+${h.aPts}</td>
                 <td style="padding:.28rem .4rem;text-align:center;color:var(--text3);font-size:.65rem">${h.scoresBefore[0]+h.aPts}–${h.scoresBefore[1]+h.bPts}</td>
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--blue);font-weight:700;font-size:.82rem">+${h.bPts}</td>
+                <td style="padding:.28rem .4rem;text-align:center;color:var(--t2-color);font-weight:700;font-size:.82rem">+${h.bPts}</td>
                 <td style="padding:.28rem .4rem;text-align:center;color:var(--gold)">${h.bOn}</td>
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--blue)">${h.bHole}</td>
+                <td style="padding:.28rem .4rem;text-align:center;color:var(--t2-color)">${h.bHole}</td>
               </tr>
             `).join('')}
             ${!G.history.length?'<tr><td colspan="8" style="text-align:center;padding:1rem;color:var(--text3)">No rounds played yet</td></tr>':''}
@@ -1191,14 +1086,6 @@ function renderLifetimeStats() {
             <div style="text-align:center"><div class="wl-box-lbl">Total Games</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${ls.games}</div></div>
             <div style="text-align:center"><div class="wl-box-lbl">Win %</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${winPct}</div></div>
           </div>
-        </div>
-        <div class="wl-cat-grid">
-          <div class="wl-cat-cell"><div class="wl-cat-lbl">Local Wins</div><div class="wl-cat-val">${ls.localWins}</div></div>
-          <div class="wl-cat-cell"><div class="wl-cat-lbl">Local Losses</div><div class="wl-cat-val">${ls.localLosses}</div></div>
-          <div class="wl-cat-cell"><div class="wl-cat-lbl">Regional Wins</div><div class="wl-cat-val">${ls.regionalWins}</div></div>
-          <div class="wl-cat-cell"><div class="wl-cat-lbl">Regional Losses</div><div class="wl-cat-val">${ls.regionalLosses}</div></div>
-          <div class="wl-cat-cell"><div class="wl-cat-lbl">Open Wins</div><div class="wl-cat-val">${ls.openWins}</div></div>
-          <div class="wl-cat-cell"><div class="wl-cat-lbl">Open Losses</div><div class="wl-cat-val">${ls.openLosses}</div></div>
         </div>
         <div style="text-align:center;padding:.5rem">
           <button onclick="clearPlayerStats('${name.replace(/'/g,"\\'")}')" style="background:none;border:1px solid var(--text3);border-radius:6px;color:var(--text3);font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:.3rem .75rem;cursor:pointer;transition:all .14s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--text3)';this.style.color='var(--text3)'">Clear ${name} Stats</button>
