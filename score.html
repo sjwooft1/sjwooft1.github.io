@@ -1655,7 +1655,7 @@ function renderDekaActive(body) {
   }
 
   body.innerHTML = `
-<div style="border-radius: 10px; overflow: hidden; border: 2px solid var(--border); margin-bottom: 1rem; background: var(--bg2); box-shadow: 0 4px 20px rgba(0,0,0,0.6);">
+<div style="border-radius: 10px; overflow: hidden; border: 2px solid var(--border); margin-bottom: 1rem; background: var(--bg2); box-shadow: 0 4px 20px rgba(0,0,0,0.6); display: flex; flex-direction: column;">
   
   <!-- Header Section -->
   <div style="background: var(--purple); padding: .7rem .85rem; text-align: center; border-bottom: 3px solid var(--border);">
@@ -1667,7 +1667,7 @@ function renderDekaActive(body) {
   <!-- Main Grid Layout (3 Columns) -->
   <div style="display: grid; grid-template-columns: 28vw 1fr 28vw; min-height: 180px; background: var(--bg2);">
     
-    <!-- LEFT PANEL: Hole Settings & Total (Includes 0-4 vertically) -->
+    <!-- LEFT PANEL: Hole Settings & Total -->
     <div style="display: flex; flex-direction: column; background: var(--bg3); border-right: 1px solid var(--border); padding-top: 0.5rem;">
       <div style="padding: 0 0.5rem; flex: 1; display: flex; flex-direction: column;">
         <div class="deka-bag-row">
@@ -1676,7 +1676,6 @@ function renderDekaActive(body) {
             HOLE (3PT)
           </div>
           <div class="deka-btns-vert">
-            <!-- Array updated to include 0 to match your design -->
             ${[0,1,2,3,4].map(n=>`<button class="dbb ${entry.hole===n?'dsel-in':''}" onclick="setDekaBag('hole',${n})" id="dkH${n}">${n}</button>`).join('')}
           </div>
         </div>
@@ -1691,7 +1690,7 @@ function renderDekaActive(body) {
     </div>
 
     <!-- CENTER PANEL: Score Display & PPR -->
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; max-width: 160px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem;">
       <div style="font-family: var(--sf); font-size: 11rem; line-height: 0.85; color: var(--white);">
         ${totHole*3+totOn}
       </div>
@@ -1700,7 +1699,7 @@ function renderDekaActive(body) {
       </div>
     </div>
 
-    <!-- RIGHT PANEL: On Board Settings & Total (Includes 0-4 vertically) -->
+    <!-- RIGHT PANEL: On Board Settings & Total -->
     <div style="display: flex; flex-direction: column; background: var(--bg3); border-left: 1px solid var(--border); padding-top: 0.5rem;">
       <div style="padding: 0 0.5rem; flex: 1; display: flex; flex-direction: column;">
         <div class="deka-bag-row">
@@ -1709,7 +1708,6 @@ function renderDekaActive(body) {
             ON BOARD (1PT)
           </div>
           <div class="deka-btns-vert">
-            <!-- Array updated to include 0 to match your design -->
             ${[0,1,2,3,4].map(n=>`<button class="dbb ${entry.on===n?'dsel-on':''}" onclick="setDekaBag('on',${n})" id="dkO${n}">${n}</button>`).join('')}
           </div>
         </div>
@@ -1724,7 +1722,15 @@ function renderDekaActive(body) {
     </div>
 
   </div>
+
+  <!-- BUTTON ACTIONS FOOTER PANEL -->
+  <div style="padding: 0.8rem; background: var(--bg2); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.5rem;">
+    <button class="deka-commit-btn" onclick="commitDekaRound()">COMMIT ROUND ▶ (${DEKA.currentRound}/${DEKA.totalRounds})</button>
+    ${DEKA.rounds.length > 0 ? `<button onclick="undoDekaRound()" style="width:100%;padding:.5rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .14s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">↩ UNDO LAST ROUND</button>` : ''}
+  </div>
+
 </div>
+
 
 
 
