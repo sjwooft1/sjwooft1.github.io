@@ -347,6 +347,21 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
   .pie-container{grid-template-columns:1fr 1fr 1fr}
   .pie-svg{width:64px;height:64px}
 }
+.deka-commit-center{
+  width:100%;padding:.7rem;
+  background:red;border:none;
+  border-radius:8px;
+  color:var(--white);
+  font-family:var(--sf);
+  font-size:1.2rem;
+  letter-spacing:3px;
+  cursor:pointer;
+  transition:all .15s;
+  margin-top:.5rem;
+  height: 140px;
+}
+
+
 </style>
 </head>
 <body>
@@ -1660,12 +1675,12 @@ function renderDekaActive(body) {
   <!-- Header Section -->
   <div style="background: var(--purple); padding: .7rem .85rem; text-align: center; border-bottom: 3px solid var(--border);">
     <div style="font-family: var(--sf); font-size: 1.6rem; letter-spacing: 4px; color: var(--white); text-transform: uppercase; line-height: 1;">
-      ${DEKA.player} — ROUND ${DEKA.currentRound} / ${DEKA.totalRounds}
+      ${DEKA.player}  ROUND ${DEKA.currentRound} of ${DEKA.totalRounds}
     </div>
   </div>
 
   <!-- Main Grid Layout (3 Columns) -->
-  <div style="display: grid; grid-template-columns: 28vw 1fr 28vw; min-height: 180px; background: var(--bg2);">
+  <div style="display: grid; grid-template-columns: 25% 50% 25%; min-height: 180px; background: var(--bg2);">
     
     <!-- LEFT PANEL: Hole Settings & Total -->
     <div style="display: flex; flex-direction: column; background: var(--bg3); border-right: 1px solid var(--border); padding-top: 0.5rem;">
@@ -1694,9 +1709,10 @@ function renderDekaActive(body) {
       <div style="font-family: var(--sf); font-size: 11rem; line-height: 0.85; color: var(--white);">
         ${totHole*3+totOn}
       </div>
-      <div style="font-family: var(--hdg); font-size: 1.2rem; font-weight: 700; letter-spacing: 3px; color: white; background: rgba(168,85,247,.12); padding: .25rem 1.2rem; border-radius: 8px; margin-top: .75rem; border: 1px solid rgba(168,85,247,.3); text-align: center;">
-        PPR :<br>${ppr}
+      <div style="font-family: var(--hdg); font-size: 1.2rem; font-weight: 700; letter-spacing: 3px; color: white; background: #8a2908; padding: .25rem 1.2rem; border-radius: 8px; margin-top: .75rem; border: 1px solid rgba(168,85,247,.3); text-align: center;">
+        PPR<br>${ppr}
       </div>
+      <button class="deka-commit-center" onclick="commitDekaRound()">COMMIT ROUND ▶ (${DEKA.currentRound}/${DEKA.totalRounds})</button>
     </div>
 
     <!-- RIGHT PANEL: On Board Settings & Total -->
@@ -1705,7 +1721,7 @@ function renderDekaActive(body) {
         <div class="deka-bag-row">
           <div class="deka-bag-label">
             <span style="width:9px;height:9px;border-radius:50%;background:var(--gold);display:inline-block"></span> 
-            ON BOARD (1PT)
+            ON (1PT)
           </div>
           <div class="deka-btns-vert">
             ${[0,1,2,3,4].map(n=>`<button class="dbb ${entry.on===n?'dsel-on':''}" onclick="setDekaBag('on',${n})" id="dkO${n}">${n}</button>`).join('')}
@@ -1725,7 +1741,6 @@ function renderDekaActive(body) {
 
   <!-- BUTTON ACTIONS FOOTER PANEL -->
   <div style="padding: 0.8rem; background: var(--bg2); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.5rem;">
-    <button class="deka-commit-btn" onclick="commitDekaRound()">COMMIT ROUND ▶ (${DEKA.currentRound}/${DEKA.totalRounds})</button>
     ${DEKA.rounds.length > 0 ? `<button onclick="undoDekaRound()" style="width:100%;padding:.5rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .14s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">↩ UNDO LAST ROUND</button>` : ''}
   </div>
 
