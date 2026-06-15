@@ -11,10 +11,8 @@
   --bg:#111;--bg2:#1a1a1a;--bg3:#222;--bg4:#2a2a2a;
   --border:#333;--border2:#444;
   --white:#fff;--text:#fff;--text2:#aaa;--text3:#666;
-  --gold:#f5c518;--green:#2ecc40;--red:#e52222;
+  --gold:#f5c518;--green:#2ecc40;--red:#e52222;--purple:#a855f7;
   --sf:'Bebas Neue',sans-serif;--ui:'Rajdhani',sans-serif;--hdg:'Oswald',sans-serif;
-  
-  /* Dynamic Team Colors */
   --t1-color: #e52222;
   --t2-color: #2196d6;
 }
@@ -28,13 +26,15 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .acl-logo-bar p{font-family:var(--hdg);font-size:.75rem;letter-spacing:4px;text-transform:uppercase;color:var(--text3);margin-top:4px;font-weight:500}
 .acl-badge{display:inline-block;background:var(--red);font-family:var(--sf);font-size:.85rem;letter-spacing:3px;padding:3px 10px;border-radius:4px;margin-top:8px}
 
-.nav-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1.25rem}
-.nav-btn{padding:.6rem .5rem;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;font-family:var(--hdg);font-size:.78rem;font-weight:600;color:var(--text2);cursor:pointer;text-align:center;transition:all .15s;letter-spacing:1px;text-transform:uppercase}
+.nav-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:1.25rem}
+.nav-btn{padding:.6rem .4rem;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;font-family:var(--hdg);font-size:.72rem;font-weight:600;color:var(--text2);cursor:pointer;text-align:center;transition:all .15s;letter-spacing:1px;text-transform:uppercase}
 .nav-btn:hover{background:var(--bg4);border-color:var(--white);color:var(--white)}
 .nav-btn.resume-btn{background:rgba(46,204,64,.12);border-color:var(--green);color:var(--green)}
 .nav-btn.resume-btn:hover{background:var(--green);color:#000}
 .nav-btn.stats-btn{background:rgba(33,150,214,.12);border-color:var(--t2-color);color:var(--t2-color)}
 .nav-btn.stats-btn:hover{background:var(--t2-color);color:#fff}
+.nav-btn.deka-btn{background:rgba(168,85,247,.12);border-color:var(--purple);color:var(--purple)}
+.nav-btn.deka-btn:hover{background:var(--purple);color:#fff}
 .resume-indicator{text-align:center;padding:.45rem;background:rgba(46,204,64,.08);border:1px solid rgba(46,204,64,.3);border-radius:6px;margin-bottom:1rem;font-family:var(--hdg);font-size:.75rem;color:var(--green);font-weight:600;letter-spacing:1px;display:none}
 .resume-indicator.visible{display:block}
 
@@ -50,9 +50,9 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .setup-inp::placeholder{color:var(--text3);font-weight:400}
 .player-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:.5rem}
 
-.color-picker {width: 22px; height: 22px; padding: 0; border: none; border-radius: 4px; cursor: pointer; background: none;}
-.color-picker::-webkit-color-swatch-wrapper { padding: 0; }
-.color-picker::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
+.color-picker{width:22px;height:22px;padding:0;border:none;border-radius:4px;cursor:pointer;background:none}
+.color-picker::-webkit-color-swatch-wrapper{padding:0}
+.color-picker::-webkit-color-swatch{border:1px solid var(--border);border-radius:4px}
 
 .win-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .win-opt{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:.6rem .4rem;text-align:center;cursor:pointer;transition:all .15s}
@@ -74,6 +74,21 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .s-chip:hover{border-color:var(--white)}
 .s-chip-x{color:var(--text3);margin-left:2px}.s-chip-x:hover{color:var(--red)}
 
+/* Series section */
+.series-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.5rem}
+.series-chip{background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.4);border-radius:20px;padding:4px 10px;font-size:.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .13s;font-family:var(--hdg);letter-spacing:.5px;text-transform:uppercase;color:var(--purple)}
+.series-chip:hover{background:rgba(168,85,247,.25);border-color:var(--purple)}
+.series-chip-x{color:rgba(168,85,247,.5);margin-left:2px}.series-chip-x:hover{color:var(--red)}
+
+/* ═══════════ HONORS INDICATOR ═══════════ */
+.honors-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:.4rem .85rem;display:flex;align-items:center;justify-content:center;gap:.75rem;min-height:38px}
+.honors-label{font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+.honors-badge{font-family:var(--hdg);font-size:.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:.2rem .65rem;border-radius:20px;border:1.5px solid}
+.honors-badge.a{color:var(--t1-color);border-color:var(--t1-color);background:color-mix(in srgb,var(--t1-color) 12%,transparent)}
+.honors-badge.b{color:var(--t2-color);border-color:var(--t2-color);background:color-mix(in srgb,var(--t2-color) 12%,transparent)}
+.honors-badge.tie{color:var(--gold);border-color:var(--gold);background:rgba(245,197,24,.1)}
+.honors-arrow{font-size:1rem}
+
 /* ═══════════ ACL GAME BOARD ═══════════ */
 #game{background:var(--bg);min-height:100vh}
 
@@ -87,13 +102,13 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .acl-gear-icon{font-size:1rem;cursor:pointer;color:var(--text2)}
 
 .acl-scoreboard{display:grid;grid-template-columns:auto 1fr auto auto 1fr auto;align-items:stretch;background:var(--bg2);border-bottom:2px solid var(--border);min-height:180px}
-.bags-col{display:flex;flex-direction:column;background: var(--bg3);border-right:1px solid var(--border); width: 10vw; border-radius: 20px}
+.bags-col{display:flex;flex-direction:column;background:var(--bg3);border-right:1px solid var(--border);width:10vw;border-radius:20px}
 .bags-col.right{border-right:none;border-left:1px solid var(--border)}
 .bags-col-hdr{font-family:var(--hdg);font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-align:center;padding:.25rem .35rem;border-bottom:1px solid var(--border)}
 .bags-col-hdr.in-hdr{color:var(--t1-color);background:color-mix(in srgb, var(--t1-color) 12%, transparent)}
 .bags-col-hdr.on-hdr{color:var(--gold);background:rgba(245,197,24,.08)}
 .bags-col-hdr.in-hdr-b{color:var(--t2-color);background:color-mix(in srgb, var(--t2-color) 12%, transparent)}
-.bag-slot{flex:1;display:flex;background:#000000;justify-content:center;font-family:var(--hdg);font-size:1.85rem;font-weight:700;border:5px solid var(--border);cursor:pointer;transition:all .15s;padding:0 .5rem;min-height:32px;color:var(--text3); border-radius: 100px; }
+.bag-slot{flex:1;display:flex;background:#000000;justify-content:center;font-family:var(--hdg);font-size:1.85rem;font-weight:700;border:5px solid var(--border);cursor:pointer;transition:all .15s;padding:0 .5rem;min-height:32px;color:var(--text3);border-radius:100px}
 .bag-slot:last-child{border-bottom:none}
 .bag-slot.active-in{background:color-mix(in srgb, var(--t1-color) 25%, transparent);color:var(--t1-color)}
 .bag-slot.active-in-b{background:color-mix(in srgb, var(--t2-color) 25%, transparent);color:var(--t2-color)}
@@ -104,19 +119,19 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .big-score-num.pop{animation:bigpop .3s ease}
 @keyframes bigpop{0%{transform:scale(1)}45%{transform:scale(1.08)}100%{transform:scale(1)}}
 
-.acl-center-div {display: flex;flex-direction: column;align-items: center;justify-content: center;gap: 0.25rem;padding: 0.4rem 0.6rem;background: var(--bg3);border-left: 2px solid var(--border);border-right: 1px solid var(--border);}
-.round-num-display {font-family: var(--sf);font-size: 0.85rem;letter-spacing: 2px;color: var(--text2);}
-.commit-btn {font-family: var(--hdg);font-size: 0.65rem;font-weight: 700;letter-spacing: 1px;color: var(--white);background: var(--t1-color);border: none;border-radius: 4px;padding: 0.3rem 0.6rem;cursor: pointer;transition: opacity 0.2s ease;}
-.commit-btn:hover {opacity: 0.9;}
+.acl-center-div{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;padding:.4rem .6rem;background:var(--bg3);border-left:2px solid var(--border);border-right:1px solid var(--border)}
+.round-num-display{font-family:var(--sf);font-size:.85rem;letter-spacing:2px;color:var(--text2)}
+.commit-btn{font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:1px;color:var(--white);background:var(--t1-color);border:none;border-radius:4px;padding:.3rem .6rem;cursor:pointer;transition:opacity .2s ease}
+.commit-btn:hover{opacity:.9}
 
-.acl-bottom-row {display: grid;grid-template-columns: 1fr auto 1fr;align-items: center; width: 100%;margin-top: 0.5rem;}
-.player-pts-box {display: flex;align-items: center;justify-content: space-between; padding: 0 2rem; width: 100%; box-sizing: border-box;}
-.player-pts-box > div {display: flex;align-items: center;gap: 0.75rem;}
-.player-pts-box.right {flex-direction: row;}
-.pts-label {font-family: var(--hdg), sans-serif;font-size: 0.55rem;font-weight: 700;line-height: 1.2;letter-spacing: 1px;text-transform: uppercase;color: #555555;}
-.pts-val {font-family: var(--sf), sans-serif;font-size: 3.2rem; font-weight: 700;color: #ffffff;line-height: 1;}
+.acl-bottom-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;width:100vw;margin-top:.5rem}
+.player-pts-box{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;width:100%;box-sizing:border-box}
+.player-pts-box > div{display:flex;align-items:center;gap:.75rem}
+.player-pts-box.right{flex-direction:row}
+.pts-label{font-family:var(--hdg),sans-serif;font-size:.55rem;font-weight:700;line-height:1.2;letter-spacing:1px;text-transform:uppercase;color:#555555}
+.pts-val{font-family:var(--sf),sans-serif;font-size:3.2rem;font-weight:700;color:#ffffff;line-height:1}
 
-.round-score-center {display: flex;flex-direction: column;align-items: center;justify-content: center;min-width: 220px; padding: 0 1.5rem;border-left: 1px solid #2a2a2a; border-right: 1px solid #2a2a2a;}
+.round-score-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:10vw;padding:0 1.5rem;border-left:1px solid #2a2a2a;border-right:1px solid #2a2a2a}
 
 .history-mini-bar{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;padding:.35rem .75rem;overflow-x:auto;min-height:36px}
 .hist-item{display:flex;flex-direction:column;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:.2rem .4rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;min-width:32px;flex-shrink:0}
@@ -174,6 +189,7 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 #stats-screen{max-width:700px;margin:0 auto;padding:0 0 3rem}
 .stats-topbar{background:var(--bg2);border-bottom:2px solid var(--border);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .stats-topbar-title{font-family:var(--sf);font-size:1.3rem;letter-spacing:4px;color:var(--white)}
+.stats-topbar-btns{display:flex;gap:6px;align-items:center}
 .stats-body{padding:1rem}
 .acl-stats-section{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:1rem;overflow:hidden}
 .acl-stats-hdr{font-family:var(--sf);font-size:1.4rem;letter-spacing:4px;text-align:center;padding:.55rem 1rem;background:var(--bg3);border-bottom:2px solid var(--border);color:var(--white)}
@@ -191,6 +207,64 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .wl-cat-cell{background:var(--bg2);padding:.5rem .65rem;display:flex;justify-content:space-between;align-items:center}
 .wl-cat-lbl{font-family:var(--hdg);font-size:.68rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3)}
 .wl-cat-val{font-family:var(--sf);font-size:1.3rem;color:var(--white)}
+
+/* Pie Chart */
+.pie-container{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:.75rem;background:var(--bg2)}
+.pie-wrap{display:flex;flex-direction:column;align-items:center;gap:.35rem}
+.pie-title{font-family:var(--hdg);font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);text-align:center}
+.pie-svg{width:80px;height:80px}
+.pie-legend{display:flex;flex-direction:column;gap:2px;align-items:flex-start}
+.pie-leg-item{display:flex;align-items:center;gap:4px;font-family:var(--hdg);font-size:.58rem;font-weight:600;color:var(--text2)}
+.pie-leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ═══════════ DEKAROUND SCREEN ═══════════ */
+#deka-screen{max-width:600px;margin:0 auto;padding:0 0 3rem}
+.deka-topbar{background:var(--bg2);border-bottom:2px solid var(--border);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.deka-title{font-family:var(--sf);font-size:1.3rem;letter-spacing:4px;color:var(--purple)}
+.deka-body{padding:1rem}
+
+.deka-setup{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1rem}
+.deka-setup h3{font-family:var(--sf);font-size:1.2rem;letter-spacing:3px;color:var(--purple);margin-bottom:.75rem}
+.deka-round-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:.75rem}
+.deka-round-card{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:.65rem .5rem;text-align:center;cursor:pointer;transition:all .15s}
+.deka-round-card:hover{border-color:var(--purple)}
+.deka-round-card.active{background:rgba(168,85,247,.15);border-color:var(--purple)}
+.deka-round-card .drn{font-family:var(--sf);font-size:1.5rem;color:var(--white)}
+.deka-round-card .drl{font-family:var(--hdg);font-size:.6rem;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.deka-round-card.active .drn{color:var(--purple)}
+
+.deka-board{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1rem}
+.deka-board-hdr{font-family:var(--hdg);font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.6rem 1rem;background:rgba(168,85,247,.12);color:var(--purple);border-bottom:1px solid var(--border)}
+.deka-player-row{display:grid;grid-template-columns:1fr auto auto auto;gap:.5rem;align-items:center;padding:.55rem 1rem;border-bottom:1px solid var(--border)}
+.deka-player-row:last-child{border-bottom:none}
+.deka-player-name{font-family:var(--hdg);font-size:.85rem;font-weight:700;color:var(--white)}
+.deka-player-rnd{font-family:var(--hdg);font-size:.65rem;color:var(--text3);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+
+.deka-entry{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1rem}
+.deka-entry-name{font-family:var(--sf);font-size:1.3rem;letter-spacing:3px;color:var(--purple);margin-bottom:.75rem}
+.deka-bag-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem}
+.deka-bag-label{font-family:var(--hdg);font-size:.7rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+.deka-btns{display:flex;gap:4px}
+.dbb{width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;font-family:var(--sf);font-size:1.1rem;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.dbb:hover{border-color:var(--purple)}
+.dbb.dsel-in{background:rgba(168,85,247,.25);border-color:var(--purple);color:var(--purple)}
+.dbb.dsel-on{background:rgba(245,197,24,.2);border-color:var(--gold);color:var(--gold)}
+.deka-commit-btn{width:100%;padding:.7rem;background:var(--purple);border:none;border-radius:8px;color:var(--white);font-family:var(--sf);font-size:1.2rem;letter-spacing:3px;cursor:pointer;transition:all .15s;margin-top:.5rem}
+.deka-commit-btn:hover{filter:brightness(0.85)}
+.deka-score-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:.75rem}
+.deka-score-cell{background:var(--bg3);border-radius:7px;padding:.5rem;text-align:center}
+.deka-score-label{font-family:var(--hdg);font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem}
+.deka-score-val{font-family:var(--sf);font-size:1.5rem;color:var(--white)}
+.deka-score-total{font-family:var(--sf);font-size:10.5rem;color:var(--white)}
+
+/* Dekaround Results Table */
+.deka-results{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1rem}
+.deka-results table{width:100%;border-collapse:collapse;font-family:var(--hdg);font-size:.72rem}
+.deka-results th{padding:.35rem .4rem;text-align:center;color:var(--text3);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border-bottom:2px solid var(--border);background:var(--bg3)}
+.deka-results td{padding:.3rem .4rem;text-align:center;border-bottom:.5px solid var(--border)}
+.deka-results tr:last-child td{border:none}
+.deka-results .rnd-num{color:var(--text3);font-size:.6rem}
+.deka-results .score-val{font-family:var(--sf);font-size:1rem}
 
 /* ═══════════ WIN SCREEN ═══════════ */
 #win{max-width:520px;margin:0 auto;padding:2rem 1rem 3rem;text-align:center}
@@ -210,14 +284,80 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .wbtn{padding:.72rem 1.4rem;border-radius:10px;font-family:var(--sf);font-size:1.1rem;letter-spacing:2px;cursor:pointer;transition:all .15s;border:none}
 .wbtn.p{background:var(--t1-color);color:var(--white)}.wbtn.p:hover{filter:brightness(0.85)}
 .wbtn.s{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}.wbtn.s:hover{border-color:var(--white);color:var(--white)}
+.wbtn.share{background:rgba(46,204,64,.15);color:var(--green);border:1px solid var(--green)}.wbtn.share:hover{background:var(--green);color:#000}
+
+/* Share / Export modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:1.25rem;max-width:440px;width:100%;max-height:85vh;overflow-y:auto}
+.modal-title{font-family:var(--sf);font-size:1.4rem;letter-spacing:4px;color:var(--white);margin-bottom:1rem;text-align:center}
+.modal-btn{display:flex;align-items:center;gap:.75rem;width:100%;padding:.75rem 1rem;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;cursor:pointer;transition:all .14s;margin-bottom:.55rem;text-align:left}
+.modal-btn:hover{border-color:var(--white)}
+.modal-btn-icon{font-size:1.3rem;flex-shrink:0}
+.modal-btn-text{font-family:var(--hdg);font-size:.82rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--white)}
+.modal-btn-sub{font-family:var(--hdg);font-size:.62rem;color:var(--text3);letter-spacing:.5px;margin-top:1px}
+.modal-close{width:100%;padding:.55rem;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:.25rem;transition:all .14s}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+
+/* Series Save Modal */
+.series-input-wrap{margin-bottom:.75rem}
+.series-modal-inp{background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--white);font-family:var(--ui);font-size:1rem;font-weight:600;padding:.55rem .85rem;width:100%;outline:none;transition:border-color .2s;margin-bottom:.5rem}
+.series-modal-inp:focus{border-color:var(--purple)}
+.modal-save-btn{width:100%;padding:.7rem;background:var(--purple);border:none;border-radius:8px;color:var(--white);font-family:var(--sf);font-size:1.1rem;letter-spacing:3px;cursor:pointer;transition:all .15s;margin-bottom:.5rem}
+.modal-save-btn:hover{filter:brightness(0.85)}
 
 .toast{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%) translateY(60px);background:var(--white);color:var(--bg);border-radius:8px;padding:.5rem 1rem;font-family:var(--hdg);font-size:.82rem;font-weight:700;letter-spacing:.5px;z-index:999;transition:transform .24s;pointer-events:none;white-space:nowrap;text-transform:uppercase}
 .toast.show{transform:translateX(-50%) translateY(0)}
+
+/* Responsive small screens */
+@media(max-width:480px){
+  .big-score-num{font-size:10rem}
+  .pie-container{grid-template-columns:1fr 1fr 1fr}
+  .pie-svg{width:64px;height:64px}
+}
 </style>
 </head>
 <body>
 <div class="toast" id="toast"></div>
 
+<!-- ═══════════ SHARE / EXPORT MODAL ═══════════ -->
+<div class="modal-overlay hidden" id="shareModal">
+  <div class="modal-box">
+    <div class="modal-title">📤 EXPORT & SHARE</div>
+    <button class="modal-btn" onclick="exportAsText()">
+      <span class="modal-btn-icon">📋</span>
+      <div><div class="modal-btn-text">Copy Match Summary</div><div class="modal-btn-sub">Plain text — paste into any app</div></div>
+    </button>
+    <button class="modal-btn" onclick="exportAsJSON()">
+      <span class="modal-btn-icon">💾</span>
+      <div><div class="modal-btn-text">Download JSON Data</div><div class="modal-btn-sub">Full stats — import into spreadsheet</div></div>
+    </button>
+    <button class="modal-btn" onclick="exportLifetimeCSV()">
+      <span class="modal-btn-icon">📊</span>
+      <div><div class="modal-btn-text">Download Lifetime CSV</div><div class="modal-btn-sub">All players, all-time records</div></div>
+    </button>
+    <button class="modal-btn" onclick="shareNative()">
+      <span class="modal-btn-icon">🔗</span>
+      <div><div class="modal-btn-text">Share via Device</div><div class="modal-btn-sub">Opens native share sheet</div></div>
+    </button>
+    <button class="modal-close" onclick="closeShareModal()">✕ CLOSE</button>
+  </div>
+</div>
+
+<!-- ═══════════ SERIES SAVE MODAL ═══════════ -->
+<div class="modal-overlay hidden" id="seriesModal">
+  <div class="modal-box">
+    <div class="modal-title">💜 SAVE SERIES</div>
+    <p style="font-family:var(--hdg);font-size:.72rem;color:var(--text3);letter-spacing:.5px;text-align:center;margin-bottom:.85rem">Save current player lineup as a Series so you can reload it fast next game.</p>
+    <div class="series-input-wrap">
+      <input type="text" class="series-modal-inp" id="seriesNameInp" placeholder="Series name (e.g. Tuesday Night, ACL Regionals)…">
+    </div>
+    <button class="modal-save-btn" onclick="confirmSaveSeries()">💾 SAVE SERIES</button>
+    <button class="modal-close" onclick="closeSeriesModal()">✕ CANCEL</button>
+  </div>
+</div>
+
+<!-- ═══════════ SETUP SCREEN ═══════════ -->
 <div class="screen active" id="setup">
   <div class="acl-logo-bar">
     <h1>🎯 CORNHOLE</h1>
@@ -228,11 +368,13 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
   <div class="resume-indicator" id="resumeIndicator">⚡ ACTIVE GAME IN PROGRESS — RESUME BELOW</div>
 
   <div class="nav-row">
-    <button class="nav-btn resume-btn" id="resumeBtn" onclick="resumeGame()">▶ RESUME GAME</button>
-    <button class="nav-btn stats-btn" onclick="openLifetimeStats()">📊 LIFETIME STATS</button>
-    <button class="nav-btn" onclick="clearLifetimeStats()">🗑 RESET STATS</button>
+    <button class="nav-btn resume-btn" id="resumeBtn" onclick="resumeGame()">▶ RESUME</button>
+    <button class="nav-btn stats-btn" onclick="openLifetimeStats()">📊 STATS</button>
+    <button class="nav-btn deka-btn" onclick="openDekaSetup()">🎯 DEKA</button>
+    <button class="nav-btn" onclick="clearLifetimeStats()">🗑 RESET</button>
   </div>
 
+  <!-- Saved Players -->
   <div class="setup-card">
     <div class="setup-card-hdr neutral">Saved Players — tap to fill</div>
     <div class="setup-card-body">
@@ -240,6 +382,15 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
     </div>
   </div>
 
+  <!-- Series -->
+  <div class="setup-card">
+    <div class="setup-card-hdr" style="background:rgba(168,85,247,.12);color:var(--purple);border-color:rgba(168,85,247,.3)">💜 SAVED SERIES — tap to load lineup</div>
+    <div class="setup-card-body">
+      <div class="series-row" id="seriesBar"><span style="font-size:.75rem;color:var(--text3);font-family:var(--hdg)">No series saved yet.</span></div>
+    </div>
+  </div>
+
+  <!-- Team 1 -->
   <div class="setup-card">
     <div class="setup-card-hdr a">
       TEAM 1
@@ -257,6 +408,7 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
     </div>
   </div>
 
+  <!-- Team 2 -->
   <div class="setup-card">
     <div class="setup-card-hdr b">
       TEAM 2
@@ -274,6 +426,7 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
     </div>
   </div>
 
+  <!-- Win settings -->
   <div class="setup-card">
     <div class="setup-card-hdr neutral">Winning Score Target</div>
     <div class="setup-card-body">
@@ -290,17 +443,29 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
     </div>
   </div>
 
-  <button class="start-btn" onclick="startGame()">▶ START NEW GAME</button>
+  <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:.75rem">
+    <button class="start-btn" onclick="startGame()" style="margin-top:0">▶ START NEW GAME</button>
+    <button onclick="openSeriesModal()" style="padding:.75rem 1rem;background:rgba(168,85,247,.12);border:1px solid var(--purple);border-radius:10px;color:var(--purple);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;white-space:nowrap" onmouseover="this.style.background='rgba(168,85,247,.25)'" onmouseout="this.style.background='rgba(168,85,247,.12)'">💾 SAVE SERIES</button>
+  </div>
 </div>
 
+<!-- ═══════════ GAME SCREEN ═══════════ -->
 <div class="screen" id="game">
   <div class="game-topbar">
     <div class="gtb-title">🎯 LIVE MATCH</div>
     <div class="gtb-btns">
       <button class="gtbtn danger" onclick="quitGame()">✕ QUIT</button>
       <button class="gtbtn" onclick="openStats()">📊 STATS</button>
+      <button class="gtbtn" onclick="openShareModal()">📤 SHARE</button>
       <button class="gtbtn hi" onclick="saveCurrentGame()">💾 SAVE</button>
     </div>
+  </div>
+
+  <!-- Honors bar -->
+  <div class="honors-bar" id="honorsBar">
+    <span class="honors-label">HONORS:</span>
+    <span class="honors-badge tie" id="honorsBadge">FLIP FOR FIRST</span>
+    <span class="honors-arrow" id="honorsArrow"></span>
   </div>
 
   <div class="acl-header">
@@ -339,7 +504,7 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
       <div class="bag-slot" id="aOn4" onclick="selectEntry('aOn',4)">4</div>
     </div>
     <div class="bags-col" style="border-left:1px solid var(--border)">
-      <div class="bags-col-hdr in-hdr-b" id="bagsinB">BAGS<br>IN</div>
+      <div class="bags-col-hdr in-hdr-b" id="bagsinB">BAGS IN</div>
       <div class="bag-slot" id="bIn0" onclick="selectEntry('bHole',0)">0</div>
       <div class="bag-slot" id="bIn1" onclick="selectEntry('bHole',1)">1</div>
       <div class="bag-slot" id="bIn2" onclick="selectEntry('bHole',2)">2</div>
@@ -352,7 +517,7 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
     </div>
 
     <div class="bags-col right">
-      <div class="bags-col-hdr on-hdr"id="bagsonB">BAGSON</div>
+      <div class="bags-col-hdr on-hdr" id="bagsonB">BAGSON</div>
       <div class="bag-slot" id="bOn0" onclick="selectEntry('bOn',0)">0</div>
       <div class="bag-slot" id="bOn1" onclick="selectEntry('bOn',1)">1</div>
       <div class="bag-slot" id="bOn2" onclick="selectEntry('bOn',2)">2</div>
@@ -363,30 +528,30 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 
   <div class="acl-bottom-row"> 
     <div class="player-pts-box left"> 
-        <div style="text-align:left"> 
-            <div class="pts-label">Round<br>Score</div> 
-            <div class="pts-val" id="roundScoreA">0</div> 
-        </div> 
-        <div style="text-align:right"> 
-            <div class="pts-label">Points<br>Earned</div> 
-            <div class="pts-val" id="playerPtsA">0</div> 
-        </div> 
+      <div style="text-align:left"> 
+        <div class="pts-label">Round<br>Score</div> 
+        <div class="pts-val" id="roundScoreA">0</div> 
+      </div> 
+      <div style="text-align:right"> 
+        <div class="pts-label">Points<br>Earned</div> 
+        <div class="pts-val" id="playerPtsA">0</div> 
+      </div> 
     </div> 
     
     <div class="round-score-center"> 
-        <div class="round-score-hdr" id="roundScoreHdr" style="font-family:var(--hdg);font-size:.7rem;font-weight:700;color:var(--text2);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase">Round 1</div> 
-        <button class="commit-btn" onclick="commitRound()">COMMIT ROUND ▶</button>
+      <div class="round-score-hdr" id="roundScoreHdr" style="font-family:var(--hdg);font-size:.7rem;font-weight:700;color:var(--text2);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase">Round 1</div> 
+      <button class="commit-btn" onclick="commitRound()">COMMIT ROUND ▶</button>
     </div> 
     
     <div class="player-pts-box right"> 
-        <div style="text-align:left"> 
-            <div class="pts-label">Round<br>Score</div> 
-            <div class="pts-val" id="roundScoreB">0</div> 
-        </div> 
-        <div style="text-align:right"> 
-            <div class="pts-label">Points<br>Earned</div> 
-            <div class="pts-val" id="playerPtsB">0</div> 
-        </div> 
+      <div style="text-align:left"> 
+        <div class="pts-label">Round<br>Score</div> 
+        <div class="pts-val" id="roundScoreB">0</div> 
+      </div> 
+      <div style="text-align:right"> 
+        <div class="pts-label">Points<br>Earned</div> 
+        <div class="pts-val" id="playerPtsB">0</div> 
+      </div> 
     </div> 
   </div>
 
@@ -405,7 +570,7 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
         <div class="entry-col-hdr a" id="entryColHdrA">TEAM 1 — BAGS</div>
         <div class="bag-type-row">
           <div class="bag-type-lbl"><span class="bag-type-dot a"></span>HOLE (3pt)</div>
-          <div class="bag-btns-group" id="aHoleBtns">
+          <div class="bag-btns-group">
             <button class="bb" onclick="setBag('aHole',1)" id="aH1">1</button>
             <button class="bb" onclick="setBag('aHole',2)" id="aH2">2</button>
             <button class="bb" onclick="setBag('aHole',3)" id="aH3">3</button>
@@ -465,14 +630,28 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
   </div>
 </div>
 
+<!-- ═══════════ STATS SCREEN ═══════════ -->
 <div class="screen" id="stats-screen">
   <div class="stats-topbar">
     <div class="stats-topbar-title" id="statsTitle">PERFORMANCE STATS</div>
-    <button class="gtbtn" onclick="goBackFromStats()" style="font-family:var(--hdg);font-size:.75rem;font-weight:700;color:var(--text2);background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:.3rem .65rem;cursor:pointer;transition:all .13s;letter-spacing:.5px;text-transform:uppercase">← BACK</button>
+    <div class="stats-topbar-btns">
+      <button class="gtbtn" onclick="openShareModal()" style="color:var(--green);border-color:rgba(46,204,64,.4);background:rgba(46,204,64,.08)">📤 EXPORT</button>
+      <button class="gtbtn" onclick="goBackFromStats()">← BACK</button>
+    </div>
   </div>
   <div class="stats-body" id="statsBody"></div>
 </div>
 
+<!-- ═══════════ DEKAROUND SCREEN ═══════════ -->
+<div class="screen" id="deka-screen">
+  <div class="deka-topbar">
+    <div class="deka-title">🎯 DEKAROUND</div>
+    <button class="gtbtn" onclick="showScreen('setup')">← BACK</button>
+  </div>
+  <div class="deka-body" id="dekaBody"><!-- rendered by JS --></div>
+</div>
+
+<!-- ═══════════ WIN SCREEN ═══════════ -->
 <div class="screen" id="win">
   <div class="win-crown">🏆</div>
   <div class="win-h">MATCH OVER</div>
@@ -491,44 +670,63 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
   <div class="win-btns">
     <button class="wbtn p" onclick="showScreen('setup')">🔄 NEW GAME</button>
     <button class="wbtn s" onclick="openStats()">📊 STATS</button>
+    <button class="wbtn share" onclick="openShareModal()">📤 SHARE</button>
   </div>
 </div>
-
 <script>
+/* ═══════════ STATE ═══════════ */
 let CF = { win: 21, rule: 'cancel' };
-let G = null; 
+let G = null;
 let savedPlayers = [];
+let savedSeries = [];
 let lifetimeStats = {};
 let statsReturnTo = 'setup';
-
 let currentEntry = { aHole: 0, aOn: 0, bHole: 0, bOn: 0 };
+let lastScoringTeam = null; // for honors: 'A', 'B', or null
 
+/* Dekaround state */
+let DEKA = null;
+
+/* ═══════════ INIT ═══════════ */
 window.onload = function() {
   load();
   renderSavedBar();
+  renderSeriesBar();
   checkResumeAvailable();
+  const c1 = localStorage.getItem('team1Color') || '#e52222';
+  const c2 = localStorage.getItem('team2Color') || '#2196d6';
+  document.getElementById('t1color').value = c1;
+  document.getElementById('t2color').value = c2;
+  document.getElementById('t1color').addEventListener('change', e => localStorage.setItem('team1Color', e.target.value));
+  document.getElementById('t2color').addEventListener('change', e => localStorage.setItem('team2Color', e.target.value));
 };
 
+/* ═══════════ STORAGE ═══════════ */
 function load() {
   try {
-    const p = localStorage.getItem('ch_players');
-    savedPlayers = p ? JSON.parse(p) : [];
-    const l = localStorage.getItem('ch_lifetime');
-    lifetimeStats = l ? JSON.parse(l) : {};
-    const g = localStorage.getItem('ch_active_game');
-    if (g) { G = JSON.parse(g); }
+    const p = localStorage.getItem('ch_players'); savedPlayers = p ? JSON.parse(p) : [];
+    const sr = localStorage.getItem('ch_series'); savedSeries = sr ? JSON.parse(sr) : [];
+    const l = localStorage.getItem('ch_lifetime'); lifetimeStats = l ? JSON.parse(l) : {};
+    const g = localStorage.getItem('ch_active_game'); if (g) G = JSON.parse(g);
+    const lh = localStorage.getItem('ch_last_honors'); if (lh) lastScoringTeam = lh;
+    const dk = localStorage.getItem('ch_deka'); if (dk) DEKA = JSON.parse(dk);
   } catch(e) { console.error(e); }
 }
 
 function save() {
   try {
     localStorage.setItem('ch_players', JSON.stringify(savedPlayers));
+    localStorage.setItem('ch_series', JSON.stringify(savedSeries));
     localStorage.setItem('ch_lifetime', JSON.stringify(lifetimeStats));
     if (G) localStorage.setItem('ch_active_game', JSON.stringify(G));
     else localStorage.removeItem('ch_active_game');
+    if (lastScoringTeam) localStorage.setItem('ch_last_honors', lastScoringTeam);
+    if (DEKA) localStorage.setItem('ch_deka', JSON.stringify(DEKA));
+    else localStorage.removeItem('ch_deka');
   } catch(e) { console.error(e); }
 }
 
+/* ═══════════ UI HELPERS ═══════════ */
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -546,16 +744,13 @@ function checkResumeAvailable() {
   const ri = document.getElementById('resumeIndicator');
   const rb = document.getElementById('resumeBtn');
   if (G) {
-    ri.classList.add('visible');
-    rb.style.opacity = '1';
-    rb.style.pointerEvents = 'all';
+    ri.classList.add('visible'); rb.style.opacity='1'; rb.style.pointerEvents='all';
   } else {
-    ri.classList.remove('visible');
-    rb.style.opacity = '0.35';
-    rb.style.pointerEvents = 'none';
+    ri.classList.remove('visible'); rb.style.opacity='0.35'; rb.style.pointerEvents='none';
   }
 }
 
+/* ═══════════ SAVED PLAYERS BAR ═══════════ */
 function renderSavedBar() {
   const sb = document.getElementById('savedBar');
   if (!savedPlayers.length) {
@@ -584,6 +779,67 @@ function removePlayer(name) {
   save(); renderSavedBar();
 }
 
+/* ═══════════ SERIES ═══════════ */
+function renderSeriesBar() {
+  const sb = document.getElementById('seriesBar');
+  if (!savedSeries.length) {
+    sb.innerHTML = '<span style="font-size:.75rem;color:var(--text3);font-family:var(--hdg)">No series saved yet.</span>';
+    return;
+  }
+  sb.innerHTML = savedSeries.map((s, i) =>
+    `<span class="series-chip" onclick="loadSeries(${i})">
+       ${s.name}
+       <span class="series-chip-x" onclick="event.stopPropagation();removeSeries(${i})">×</span>
+     </span>`
+  ).join('');
+}
+
+function openSeriesModal() {
+  document.getElementById('seriesNameInp').value = '';
+  document.getElementById('seriesModal').classList.remove('hidden');
+}
+
+function closeSeriesModal() {
+  document.getElementById('seriesModal').classList.add('hidden');
+}
+
+function confirmSaveSeries() {
+  const name = document.getElementById('seriesNameInp').value.trim();
+  if (!name) { toast('Enter a series name'); return; }
+  const p1 = document.getElementById('p1').value.trim();
+  const p2 = document.getElementById('p2').value.trim();
+  const p3 = document.getElementById('p3').value.trim();
+  const p4 = document.getElementById('p4').value.trim();
+  if (!p1 && !p3) { toast('Enter at least one player name'); return; }
+  const series = {
+    name,
+    players: [p1, p2, p3, p4],
+    c1: document.getElementById('t1color').value,
+    c2: document.getElementById('t2color').value
+  };
+  savedSeries.push(series);
+  save();
+  renderSeriesBar();
+  closeSeriesModal();
+  toast(`💜 SERIES "${name.toUpperCase()}" SAVED`);
+}
+
+function loadSeries(i) {
+  const s = savedSeries[i];
+  if (!s) return;
+  const ids = ['p1','p2','p3','p4'];
+  ids.forEach((id, j) => document.getElementById(id).value = s.players[j] || '');
+  document.getElementById('t1color').value = s.c1 || '#e52222';
+  document.getElementById('t2color').value = s.c2 || '#2196d6';
+  toast(`💜 SERIES "${s.name.toUpperCase()}" LOADED`);
+}
+
+function removeSeries(i) {
+  savedSeries.splice(i, 1);
+  save(); renderSeriesBar();
+}
+
+/* ═══════════ WIN / RULE SETTINGS ═══════════ */
 function setWin(n) {
   CF.win = n;
   ['21','15','11','0'].forEach(v => document.getElementById('w'+v).classList.remove('active'));
@@ -601,6 +857,7 @@ function applyColors(c1, c2) {
   document.documentElement.style.setProperty('--t2-color', c2);
 }
 
+/* ═══════════ GAME START / RESUME / QUIT ═══════════ */
 function startGame() {
   const names = ['p1','p2','p3','p4'].map(id => document.getElementById(id).value.trim());
   if (!names[0] && !names[2]) { toast('Enter at least one name per team'); return; }
@@ -632,13 +889,14 @@ function startGame() {
       { holes:0, on:0, off:0, throws:0, pts:0 }
     ],
     pStats: [
-      { holes:0, on:0, off:0, throws:0, pts:0 }, 
-      { holes:0, on:0, off:0, throws:0, pts:0 }, 
-      { holes:0, on:0, off:0, throws:0, pts:0 }, 
-      { holes:0, on:0, off:0, throws:0, pts:0 }  
+      { holes:0, on:0, off:0, throws:0, pts:0 },
+      { holes:0, on:0, off:0, throws:0, pts:0 },
+      { holes:0, on:0, off:0, throws:0, pts:0 },
+      { holes:0, on:0, off:0, throws:0, pts:0 }
     ]
   };
 
+  lastScoringTeam = null;
   applyColors(c1, c2);
   save();
   resetEntry();
@@ -649,17 +907,11 @@ function startGame() {
 
 function resumeGame() {
   if (!G) return;
-  
-  // Check if colors exist (for backward compatibility with old saves)
-  if (G.colors && G.colors.length >= 2) {
-    applyColors(G.colors[0], G.colors[1]);
-  } else {
-    // Fallback to default red and blue for older saves
-    applyColors('#e52222', '#2196d6');
-  }
-  
+  if (G.colors && G.colors.length >= 2) applyColors(G.colors[0], G.colors[1]);
+  else applyColors('#e52222', '#2196d6');
   resetEntry();
   renderBoard();
+  updateHonors();
   showScreen('game');
 }
 
@@ -675,6 +927,38 @@ function saveCurrentGame() {
   toast('💾 GAME SAVED!');
 }
 
+/* ═══════════ HONORS (who throws first) ═══════════ */
+function updateHonors() {
+  const badge = document.getElementById('honorsBadge');
+  const arrow = document.getElementById('honorsArrow');
+  if (!G) return;
+
+  if (!lastScoringTeam) {
+    badge.className = 'honors-badge tie';
+    badge.innerText = 'FLIP FOR FIRST';
+    arrow.innerText = '';
+    return;
+  }
+
+  const nameA = G.teamA.join(' & ').toUpperCase();
+  const nameB = G.teamB.join(' & ').toUpperCase();
+
+  if (lastScoringTeam === 'A') {
+    badge.className = 'honors-badge a';
+    badge.innerText = nameA + ' THROWS FIRST';
+    arrow.innerText = '⬅';
+  } else if (lastScoringTeam === 'B') {
+    badge.className = 'honors-badge b';
+    badge.innerText = nameB + ' THROWS FIRST';
+    arrow.innerText = '➡';
+  } else {
+    badge.className = 'honors-badge tie';
+    badge.innerText = 'LAST ROUND TIED';
+    arrow.innerText = '';
+  }
+}
+
+/* ═══════════ BAG ENTRY ═══════════ */
 function setBag(type, value) {
   let potHole = type==='aHole' ? value : currentEntry.aHole;
   let potOn   = type==='aOn'   ? value : currentEntry.aOn;
@@ -714,6 +998,7 @@ function syncEntryUI() {
   const gA = (aH*3)+aO, gB = (bH*3)+bO;
   document.getElementById('prevA').innerText = '+'+gA;
   document.getElementById('prevB').innerText = '+'+gB;
+
   if (G && G.rule==='cancel') {
     const diff = gA-gB;
     if(diff>0) document.getElementById('prevNet').innerText='Net T1 +'+diff;
@@ -746,6 +1031,7 @@ function syncSidebarSlots() {
   }
 }
 
+/* ═══════════ COMMIT / UNDO ═══════════ */
 function commitRound() {
   const gA=(currentEntry.aHole*3)+currentEntry.aOn;
   const gB=(currentEntry.bHole*3)+currentEntry.bOn;
@@ -755,24 +1041,36 @@ function commitRound() {
 
   const activeIdx = G.isDoubles ? ((G.round - 1) % 2) : 0;
 
+  // Update honors based on who scored net points this round
+  if (G.rule === 'cancel') {
+    const diff = gA - gB;
+    if (diff > 0) lastScoringTeam = 'A';
+    else if (diff < 0) lastScoringTeam = 'B';
+    else lastScoringTeam = 'TIE';
+  } else {
+    if (gA > 0 && gB === 0) lastScoringTeam = 'A';
+    else if (gB > 0 && gA === 0) lastScoringTeam = 'B';
+    else if (gA > gB) lastScoringTeam = 'A';
+    else if (gB > gA) lastScoringTeam = 'B';
+    else lastScoringTeam = 'TIE';
+  }
+
   const row = {
-    rnd: G.round,
-    activeIdx: activeIdx,
+    rnd: G.round, activeIdx,
     aHole: currentEntry.aHole, aOn: currentEntry.aOn, aPts: netA,
     bHole: currentEntry.bHole, bOn: currentEntry.bOn, bPts: netB,
-    scoresBefore: [...G.scores]
+    scoresBefore: [...G.scores],
+    honorsAfter: lastScoringTeam
   };
   G.history.push(row);
 
   G.scores[0]+=netA; G.scores[1]+=netB;
-  
-  // Aggregate Stats (Teams)
+
   G.stats[0].holes+=currentEntry.aHole; G.stats[0].on+=currentEntry.aOn;
   G.stats[0].off+=(4-(currentEntry.aHole+currentEntry.aOn)); G.stats[0].throws+=4; G.stats[0].pts+=gA;
   G.stats[1].holes+=currentEntry.bHole; G.stats[1].on+=currentEntry.bOn;
   G.stats[1].off+=(4-(currentEntry.bHole+currentEntry.bOn)); G.stats[1].throws+=4; G.stats[1].pts+=gB;
-  
-  // Individual Stats (Players)
+
   G.pStats[0 + activeIdx].holes += currentEntry.aHole;
   G.pStats[0 + activeIdx].on += currentEntry.aOn;
   G.pStats[0 + activeIdx].off += (4 - (currentEntry.aHole + currentEntry.aOn));
@@ -786,24 +1084,25 @@ function commitRound() {
   G.pStats[2 + activeIdx].pts += gB;
 
   G.round++;
-
   save();
   resetEntry();
   renderBoard();
+  updateHonors();
   checkWin();
+  saveCurrentGame();
 }
 
 function undoRound() {
   if(!G.history.length){ toast('Nothing to undo'); return; }
   const last=G.history.pop();
   const idx = last.activeIdx;
-  
+
   G.round=last.rnd;
   G.scores=[...last.scoresBefore];
-  
+
   G.stats[0].holes-=last.aHole; G.stats[0].on-=last.aOn; G.stats[0].throws-=4; G.stats[0].off-=(4-(last.aHole+last.aOn)); G.stats[0].pts-=((last.aHole*3)+last.aOn);
   G.stats[1].holes-=last.bHole; G.stats[1].on-=last.bOn; G.stats[1].throws-=4; G.stats[1].off-=(4-(last.bHole+last.bOn)); G.stats[1].pts-=((last.bHole*3)+last.bOn);
-  
+
   G.pStats[0 + idx].holes -= last.aHole;
   G.pStats[0 + idx].on -= last.aOn;
   G.pStats[0 + idx].off -= (4 - (last.aHole + last.aOn));
@@ -816,30 +1115,36 @@ function undoRound() {
   G.pStats[2 + idx].throws -= 4;
   G.pStats[2 + idx].pts -= ((last.bHole * 3) + last.bOn);
 
+  // restore honors to previous round's state
+  if (G.history.length > 0) {
+    lastScoringTeam = G.history[G.history.length-1].honorsAfter;
+  } else {
+    lastScoringTeam = null;
+  }
+
   save();
   resetEntry();
   renderBoard();
+  updateHonors();
   toast('↩ ROUND UNDONE');
 }
 
+/* ═══════════ RENDER BOARD ═══════════ */
 function renderBoard() {
   const nameA=G.teamA.join(' & ').toUpperCase();
   const nameB=G.teamB.join(' & ').toUpperCase();
   const activeIdx = G.isDoubles ? ((G.round - 1) % 2) : 0;
   const activeNameA = G.teamA[activeIdx] || G.teamA[0];
   const activeNameB = G.teamB[activeIdx] || G.teamB[0];
+
   document.getElementById('bannerNameA').innerText=nameA;
   document.getElementById('bannerNameB').innerText=nameB;
-  document.getElementById('bagsinA').innerText=activeNameA.split(' ')[0]+'s bags in'
-  document.getElementById('bagsinB').innerText=activeNameB.split(' ')[0]+'s bags in'
-  document.getElementById('bagsonA').innerText=activeNameA.split(' ')[0]+'s bags on'  
-  document.getElementById('bagsonB').innerText=activeNameB.split(' ')[0]+'s bags on'
-
-  
-
+  document.getElementById('bagsinA').innerText=activeNameA.split(' ')[0]+"'s bags in";
+  document.getElementById('bagsinB').innerText=activeNameB.split(' ')[0]+"'s bags in";
+  document.getElementById('bagsonA').innerText=activeNameA.split(' ')[0]+"'s bags on";
+  document.getElementById('bagsonB').innerText=activeNameB.split(' ')[0]+"'s bags on";
   document.getElementById('entryColHdrA').innerText=activeNameA.toUpperCase()+' — BAGS';
   document.getElementById('entryColHdrB').innerText=activeNameB.toUpperCase()+' — BAGS';
-
   document.getElementById('doublesIndicator').innerText = G.isDoubles ? "Doubles Entry (Board " + (activeIdx + 1) + ")" : "Round Entry";
 
   const sA=document.getElementById('scoreA'), sB=document.getElementById('scoreB');
@@ -861,6 +1166,7 @@ function renderBoard() {
   }
 }
 
+/* ═══════════ WIN CHECK ═══════════ */
 function checkWin() {
   if(!G || G.winScore===0) return;
   const wA=G.scores[0]>=G.winScore, wB=G.scores[1]>=G.winScore;
@@ -904,8 +1210,10 @@ function endGame(side) {
   showScreen('win');
 }
 
+/* ═══════════ LIFETIME STATS ═══════════ */
 function initLifetime() {
-  return { wins:0,losses:0,games:0,holes:0,on:0,off:0,throws:0,pts:0,oppPts:0, localWins:0,localLosses:0,regionalWins:0,regionalLosses:0,openWins:0,openLosses:0 };
+  return { wins:0,losses:0,games:0,holes:0,on:0,off:0,throws:0,pts:0,oppPts:0,
+           localWins:0,localLosses:0,regionalWins:0,regionalLosses:0,openWins:0,openLosses:0 };
 }
 
 function mergeToLifetime(name, stats, won, myScore, oppScore) {
@@ -924,6 +1232,45 @@ function clearLifetimeStats() {
   toast('📊 LIFETIME STATS CLEARED');
 }
 
+/* ═══════════ PIE CHART SVG ═══════════ */
+function makePieSVG(holes, on, off, colorIn, colorOn, colorOff) {
+  const total = holes + on + off;
+  if (total === 0) {
+    return `<svg class="pie-svg" viewBox="0 0 80 80">
+      <circle cx="40" cy="40" r="35" fill="none" stroke="#333" stroke-width="1"/>
+      <text x="40" y="44" text-anchor="middle" fill="#555" font-size="10" font-family="Rajdhani">N/A</text>
+    </svg>`;
+  }
+  const slices = [
+    { val: holes, color: colorIn },
+    { val: on, color: colorOn },
+    { val: off, color: colorOff }
+  ].filter(s => s.val > 0);
+
+  let paths = '';
+  let startAngle = -Math.PI / 2;
+  const cx = 40, cy = 40, r = 35;
+
+  slices.forEach(sl => {
+    const angle = (sl.val / total) * 2 * Math.PI;
+    const endAngle = startAngle + angle;
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(endAngle);
+    const y2 = cy + r * Math.sin(endAngle);
+    const large = angle > Math.PI ? 1 : 0;
+    if (slices.length === 1) {
+      paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${sl.color}"/>`;
+    } else {
+      paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z" fill="${sl.color}" stroke="#111" stroke-width="1.5"/>`;
+    }
+    startAngle = endAngle;
+  });
+
+  return `<svg class="pie-svg" viewBox="0 0 80 80">${paths}</svg>`;
+}
+
+/* ═══════════ STATS RENDER ═══════════ */
 function openLifetimeStats() {
   statsReturnTo = 'setup';
   renderLifetimeStats();
@@ -932,13 +1279,119 @@ function openLifetimeStats() {
 
 function openStats() {
   statsReturnTo = G ? 'game' : 'setup';
-  if (G) { renderGameStats(); }
-  else { renderLifetimeStats(); }
+  if (G) renderGameStats();
+  else renderLifetimeStats();
   showScreen('stats-screen');
 }
 
-function goBackFromStats() {
-  showScreen(statsReturnTo);
+function goBackFromStats() { showScreen(statsReturnTo); }
+
+function renderLifetimeStats() {
+  document.getElementById('statsTitle').innerText = 'LIFETIME STATS';
+  const players = Object.keys(lifetimeStats);
+  if (!players.length) {
+    document.getElementById('statsBody').innerHTML = '<p style="text-align:center;padding:2.5rem;color:var(--text3);font-family:var(--hdg);font-size:1rem;letter-spacing:2px;text-transform:uppercase">No lifetime stats yet.<br>Play a game to build your record!</p>';
+    return;
+  }
+
+  let html = '';
+  players.forEach(name => {
+    const ls = lifetimeStats[name];
+    const rounds = ls.throws > 0 ? ls.throws / 4 : 1;
+    const ppr = ls.throws > 0 ? (ls.pts / rounds).toFixed(2) : '0.00';
+    const oppr = ls.games > 0 ? (ls.oppPts / rounds).toFixed(2) : '0.00';
+    const ptDiff = ls.pts - ls.oppPts;
+    const inPct = ls.throws > 0 ? ((ls.holes/ls.throws)*100).toFixed(2) : '0.00';
+    const onPct = ls.throws > 0 ? ((ls.on/ls.throws)*100).toFixed(2) : '0.00';
+    const offPct = ls.throws > 0 ? ((ls.off/ls.throws)*100).toFixed(2) : '0.00';
+    const winPct = ls.games > 0 ? ((ls.wins/ls.games)*100).toFixed(2) : '0.00';
+
+    // Get color for this player's team if in active game
+    let playerColor = 'var(--gold)';
+    if (G) {
+      if (G.teamA.includes(name)) playerColor = 'var(--t1-color)';
+      else if (G.teamB.includes(name)) playerColor = 'var(--t2-color)';
+    }
+
+    const pieSVG_in = makePieSVG(ls.holes, 0, 0, playerColor, 'var(--gold)', '#333');
+    const pieSVG = makePieSVG(ls.holes, ls.on, ls.off, playerColor, 'var(--gold)', '#444');
+
+    html += `
+      <div class="acl-stats-section">
+        <div class="acl-stats-hdr">${name.toUpperCase()}</div>
+
+        <!-- Pie Charts -->
+        <div style="background:var(--bg3);padding:.4rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)">BAG DISTRIBUTION</div>
+        <div class="pie-container">
+          <div class="pie-wrap">
+            <div class="pie-title">OVERALL</div>
+            ${makePieSVG(ls.holes, ls.on, ls.off, playerColor, 'var(--gold)', '#555')}
+            <div class="pie-legend">
+              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:${playerColor}"></span>IN ${inPct}%</div>
+              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:var(--gold)"></span>ON ${onPct}%</div>
+              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:#555"></span>OFF ${offPct}%</div>
+            </div>
+          </div>
+          <div class="pie-wrap">
+            <div class="pie-title">IN vs REST</div>
+            ${makePieSVG(ls.holes, ls.on + ls.off, 0, playerColor, '#333', '#333')}
+            <div class="pie-legend">
+              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:${playerColor}"></span>IN ${inPct}%</div>
+              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:#333"></span>OTHER</div>
+            </div>
+          </div>
+          <div class="pie-wrap">
+            <div class="pie-title">ON vs OFF</div>
+            ${makePieSVG(0, ls.on, ls.off, playerColor, 'var(--gold)', '#555')}
+            <div class="pie-legend">
+              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:var(--gold)"></span>ON ${onPct}%</div>
+              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:#555"></span>OFF ${offPct}%</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg3);padding:.4rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);border-top:1px solid var(--border)">PERFORMANCE STATS</div>
+        <div class="perf-grid">
+          <div class="perf-cell"><div class="perf-cell-label">PPR</div><div class="perf-cell-val accent">${ppr}</div></div>
+          <div class="perf-cell"><div class="perf-cell-label">Total Points</div><div class="perf-cell-val">${ls.pts}</div></div>
+          <div class="perf-cell"><div class="perf-cell-label">Rounds</div><div class="perf-cell-val">${Math.round(rounds)}</div></div>
+          <div class="perf-cell"><div class="perf-cell-label">OPPR</div><div class="perf-cell-val accent">${oppr}</div></div>
+          <div class="perf-cell"><div class="perf-cell-label">Opp Points</div><div class="perf-cell-val">${ls.oppPts}</div></div>
+          <div class="perf-cell"><div class="perf-cell-label">Pt. Diff.</div><div class="perf-cell-val" style="color:${ptDiff>=0?'var(--green)':'var(--red)'}">${ptDiff>0?'+':''}${ptDiff}</div></div>
+        </div>
+        <div class="divider-line" style="margin:0"></div>
+        <div class="perf-wide">
+          <div class="wl-box"><div class="wl-box-lbl">Bags In %</div><div class="wl-box-val">${inPct}</div></div>
+          <div class="wl-box"><div class="wl-box-lbl">Bags On %</div><div class="wl-box-val">${onPct}</div></div>
+          <div class="wl-box"><div class="wl-box-lbl">Bags Off %</div><div class="wl-box-val">${offPct}</div></div>
+        </div>
+        <div class="divider-line" style="margin:0"></div>
+
+        <div style="background:var(--bg3);padding:.4rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)">WIN / LOSS STATS</div>
+        <div style="padding:.6rem 1rem;background:var(--bg2);border:1px solid var(--border2);margin:.75rem;border-radius:6px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+            <div style="text-align:center"><div class="wl-box-lbl">Total Wins</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${ls.wins}</div></div>
+            <div style="text-align:center"><div class="wl-box-lbl">Total Losses</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${ls.losses}</div></div>
+            <div style="text-align:center"><div class="wl-box-lbl">Total Games</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${ls.games}</div></div>
+            <div style="text-align:center"><div class="wl-box-lbl">Win %</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${winPct}</div></div>
+          </div>
+        </div>
+        <div style="text-align:center;padding:.5rem">
+          <button onclick="clearPlayerStats('${name.replace(/'/g,"\\'")}')}" style="background:none;border:1px solid var(--text3);border-radius:6px;color:var(--text3);font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:.3rem .75rem;cursor:pointer;transition:all .14s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--text3)';this.style.color='var(--text3)'">Clear ${name} Stats</button>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('statsBody').innerHTML = html;
+}
+
+function clearPlayerStats(name) {
+  if (!confirm(`Clear all stats for ${name}?`)) return;
+  delete lifetimeStats[name];
+  save();
+  renderLifetimeStats();
+  toast(`STATS CLEARED FOR ${name.toUpperCase()}`);
 }
 
 function renderGameStats() {
@@ -949,21 +1402,30 @@ function renderGameStats() {
   const getPPR = (pStat) => pStat.throws > 0 ? (pStat.pts / (pStat.throws / 4)).toFixed(2) : '—';
   const getInPct = (pStat) => pStat.throws > 0 ? ((pStat.holes / pStat.throws) * 100).toFixed(1) + '%' : '0.0%';
 
-  let playerStatsHTML = '';
-  const addPlayerStat = (name, pStat) => {
-    if(!name) return;
-    playerStatsHTML += `
-      <div class="wl-box"><div class="wl-box-lbl">PPR (${name.split(' ')[0]})</div><div class="wl-box-val accent">${getPPR(pStat)}</div></div>
-      <div class="wl-box"><div class="wl-box-lbl">In % (${name.split(' ')[0]})</div><div class="wl-box-val">${getInPct(pStat)}</div></div>
-    `;
-  };
+  let team1StatsHTML = '';
+  let team2StatsHTML = '';
 
-  let team1StatsHTML = ''; let team2StatsHTML = '';
-  team1StatsHTML += `<div class="wl-box"><div class="wl-box-lbl">PPR (${G.teamA[0].split(' ')[0]})</div><div class="wl-box-val accent">${getPPR(G.pStats[0])}</div></div><div class="wl-box"><div class="wl-box-lbl">In % (${G.teamA[0].split(' ')[0]})</div><div class="wl-box-val">${getInPct(G.pStats[0])}</div></div>`;
-  if(G.isDoubles && G.teamA[1]) team1StatsHTML += `<div class="wl-box"><div class="wl-box-lbl">PPR (${G.teamA[1].split(' ')[0]})</div><div class="wl-box-val accent">${getPPR(G.pStats[1])}</div></div><div class="wl-box"><div class="wl-box-lbl">In % (${G.teamA[1].split(' ')[0]})</div><div class="wl-box-val">${getInPct(G.pStats[1])}</div></div>`;
-  
-  team2StatsHTML += `<div class="wl-box"><div class="wl-box-lbl">PPR (${G.teamB[0].split(' ')[0]})</div><div class="wl-box-val accent">${getPPR(G.pStats[2])}</div></div><div class="wl-box"><div class="wl-box-lbl">In % (${G.teamB[0].split(' ')[0]})</div><div class="wl-box-val">${getInPct(G.pStats[2])}</div></div>`;
-  if(G.isDoubles && G.teamB[1]) team2StatsHTML += `<div class="wl-box"><div class="wl-box-lbl">PPR (${G.teamB[1].split(' ')[0]})</div><div class="wl-box-val accent">${getPPR(G.pStats[3])}</div></div><div class="wl-box"><div class="wl-box-lbl">In % (${G.teamB[1].split(' ')[0]})</div><div class="wl-box-val">${getInPct(G.pStats[3])}</div></div>`;
+  // Player pie charts for team A
+  const buildPlayerRow = (name, pStat, colorVar) => {
+    if (!name) return '';
+    const tot = pStat.throws;
+    const iP = tot>0?((pStat.holes/tot)*100).toFixed(1):'0.0';
+    const oP = tot>0?((pStat.on/tot)*100).toFixed(1):'0.0';
+    const offP = tot>0?((pStat.off/tot)*100).toFixed(1):'0.0';
+    return `
+      <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border)">
+        <div style="font-family:var(--hdg);font-size:.7rem;font-weight:700;letter-spacing:1.5px;color:${colorVar};text-transform:uppercase;margin-bottom:.5rem">${name}</div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:.75rem;align-items:center">
+          ${makePieSVG(pStat.holes, pStat.on, pStat.off, colorVar, 'var(--gold)', '#555')}
+          <div>
+            <div class="pie-leg-item" style="font-family:var(--hdg);font-size:.7rem;font-weight:700;color:var(--text2);margin-bottom:3px;display:flex;gap:6px"><span style="display:inline-block;width:8px;height:8px;background:${colorVar};border-radius:50%;margin-top:3px"></span>IN: ${pStat.holes} (${iP}%)</div>
+            <div class="pie-leg-item" style="font-family:var(--hdg);font-size:.7rem;font-weight:700;color:var(--text2);margin-bottom:3px;display:flex;gap:6px"><span style="display:inline-block;width:8px;height:8px;background:var(--gold);border-radius:50%;margin-top:3px"></span>ON: ${pStat.on} (${oP}%)</div>
+            <div class="pie-leg-item" style="font-family:var(--hdg);font-size:.7rem;font-weight:700;color:var(--text2);display:flex;gap:6px"><span style="display:inline-block;width:8px;height:8px;background:#555;border-radius:50%;margin-top:3px"></span>OFF: ${pStat.off} (${offP}%)</div>
+            <div style="font-family:var(--hdg);font-size:.65rem;color:var(--text3);margin-top:5px;letter-spacing:.5px">PPR: ${getPPR(pStat)}</div>
+          </div>
+        </div>
+      </div>`;
+  };
 
   document.getElementById('statsBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
@@ -980,22 +1442,13 @@ function renderGameStats() {
     </div>
 
     <div class="acl-stats-section">
-      <div class="acl-stats-hdr">PERFORMANCE STATS</div>
-      <div class="perf-grid">
-        <div class="perf-cell"><div class="perf-cell-label">Total Points</div><div class="perf-cell-val">${G.scores[0]}</div></div>
-        <div class="perf-cell"><div class="perf-cell-label">Rounds</div><div class="perf-cell-val">${G.round-1}</div></div>
-        <div class="perf-cell"><div class="perf-cell-label">Opp Points</div><div class="perf-cell-val">${G.scores[1]}</div></div>
-      </div>
-      <div class="divider-line" style="margin:0"></div>
-      <div style="font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t1-color);padding:.5rem 1rem;background:var(--bg3)">TEAM 1 INDIVIDUAL STATS</div>
-      <div class="perf-wide">
-        ${team1StatsHTML}
-      </div>
-      <div class="divider-line" style="margin:0"></div>
-      <div style="font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t2-color);padding:.5rem 1rem;background:var(--bg3)">TEAM 2 INDIVIDUAL STATS</div>
-      <div class="perf-wide">
-        ${team2StatsHTML}
-      </div>
+      <div class="acl-stats-hdr">PLAYER BAG CHARTS</div>
+      <div style="background:var(--bg3);padding:.35rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t1-color);border-bottom:1px solid var(--border)">TEAM 1</div>
+      ${buildPlayerRow(G.teamA[0], G.pStats[0], 'var(--t1-color)')}
+      ${G.isDoubles && G.teamA[1] ? buildPlayerRow(G.teamA[1], G.pStats[1], 'var(--t1-color)') : ''}
+      <div style="background:var(--bg3);padding:.35rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t2-color);border-bottom:1px solid var(--border);border-top:1px solid var(--border)">TEAM 2</div>
+      ${buildPlayerRow(G.teamB[0], G.pStats[2], 'var(--t2-color)')}
+      ${G.isDoubles && G.teamB[1] ? buildPlayerRow(G.teamB[1], G.pStats[3], 'var(--t2-color)') : ''}
     </div>
 
     <div class="acl-stats-section">
@@ -1035,75 +1488,411 @@ function renderGameStats() {
   `;
 }
 
-function renderLifetimeStats() {
-  document.getElementById('statsTitle').innerText = 'LIFETIME STATS';
+/* ═══════════ DEKAROUND ═══════════ */
+function openDekaSetup() {
+  renderDekaScreen();
+  showScreen('deka-screen');
+}
+
+function renderDekaScreen() {
+  const body = document.getElementById('dekaBody');
+  if (!DEKA) {
+    renderDekaSetup(body);
+  } else {
+    renderDekaActive(body);
+  }
+}
+
+function renderDekaSetup(body) {
   const players = Object.keys(lifetimeStats);
-  if (!players.length) {
-    document.getElementById('statsBody').innerHTML = '<p style="text-align:center;padding:2.5rem;color:var(--text3);font-family:var(--hdg);font-size:1rem;letter-spacing:2px;text-transform:uppercase">No lifetime stats yet.<br>Play a game to build your record!</p>';
+  const quickPicks = savedPlayers.slice(0,8);
+  body.innerHTML = `
+    <div class="deka-setup">
+      <h3>🎯 DEKAROUND</h3>
+      <p style="font-family:var(--hdg);font-size:.7rem;color:var(--text3);letter-spacing:.5px;margin-bottom:.85rem">Solo practice — track your own bags In/On/Off over multiple rounds.</p>
+      <div class="sub-lbl">Your Name</div>
+      <input type="text" class="setup-inp" id="dekaPlayerName" placeholder="Your name…" style="margin-bottom:.75rem">
+      ${quickPicks.length ? `
+        <div class="sub-lbl">Saved Players</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem">
+          ${quickPicks.map(p=>`<span class="s-chip" onclick="document.getElementById('dekaPlayerName').value='${p.replace(/'/g,"\\'")}'">${p}</span>`).join('')}
+        </div>` : ''}
+      <div class="sub-lbl">Number of Rounds</div>
+      <div class="deka-round-grid">
+        <div class="deka-round-card" id="drnd10" onclick="setDekaRounds(10)"><div class="drn">10</div><div class="drl">Classic</div></div>
+        <div class="deka-round-card active" id="drnd15" onclick="setDekaRounds(15)"><div class="drn">15</div><div class="drl">Extended</div></div>
+        <div class="deka-round-card" id="drnd20" onclick="setDekaRounds(20)"><div class="drn">20</div><div class="drl">Marathon</div></div>
+      </div>
+      <button class="deka-commit-btn" onclick="startDeka()">▶ START DEKAROUND</button>
+    </div>
+    ${Object.keys(lifetimeStats).length ? `
+      <div class="deka-setup">
+        <h3 style="color:var(--text2)">PREVIOUS RECORDS</h3>
+        ${Object.keys(lifetimeStats).map(name => {
+          const ls = lifetimeStats[name];
+          if (!ls.throws) return '';
+          const pct = ((ls.holes/ls.throws)*100).toFixed(1);
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border);font-family:var(--hdg);font-size:.8rem">
+            <span style="color:var(--white);font-weight:700">${name}</span>
+            <span style="color:var(--text3)">${ls.holes} IN / ${ls.throws} throws / <span style="color:var(--gold)">${pct}% in</span></span>
+          </div>`;
+        }).join('')}
+      </div>` : ''}
+  `;
+  // default selection
+  if (!window._dekaRounds) window._dekaRounds = 15;
+}
+
+let _dekaRounds = 15;
+function setDekaRounds(n) {
+  _dekaRounds = n;
+  [10,15,20].forEach(r => document.getElementById('drnd'+r).classList.remove('active'));
+  document.getElementById('drnd'+n).classList.add('active');
+}
+
+function startDeka() {
+  const name = document.getElementById('dekaPlayerName').value.trim();
+  if (!name) { toast('Enter your name'); return; }
+  const rounds = _dekaRounds || 15;
+  DEKA = {
+    player: name,
+    totalRounds: rounds,
+    currentRound: 1,
+    rounds: [], // [{hole, on, off}]
+    entry: { hole: 0, on: 0 }
+  };
+  if (!savedPlayers.includes(name)) { savedPlayers.push(name); }
+  if (!lifetimeStats[name]) lifetimeStats[name] = initLifetime();
+  save();
+  renderDekaActive(document.getElementById('dekaBody'));
+}
+
+function renderDekaActive(body) {
+  if (!DEKA) { renderDekaSetup(body); return; }
+  const done = DEKA.currentRound > DEKA.totalRounds;
+  const entry = DEKA.entry || {hole:0,on:0};
+  const off = 4 - (entry.hole + entry.on);
+
+  // Totals so far
+  let totHole=0, totOn=0, totOff=0;
+  DEKA.rounds.forEach(r => { totHole+=r.hole; totOn+=r.on; totOff+=r.off; });
+  const totThrows = DEKA.rounds.length * 4;
+  const ppr = totThrows > 0 ? ((totHole*3+totOn) / DEKA.rounds.length).toFixed(2) : '0.00';
+  const inPct = totThrows > 0 ? ((totHole/totThrows)*100).toFixed(1) : '0.0';
+
+  if (done) {
+    // Finished screen
+    const totalPts = totHole*3 + totOn;
+    body.innerHTML = `
+      <div class="deka-setup" style="text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:.5rem">🎯</div>
+        <h3 style="font-size:1.6rem;letter-spacing:4px">SESSION COMPLETE!</h3>
+        <p style="font-family:var(--hdg);font-size:.75rem;color:var(--text3);letter-spacing:.5px;margin:0.5rem 0">${DEKA.player.toUpperCase()} — ${DEKA.totalRounds} ROUNDS</p>
+        <div class="deka-score-grid" style="margin:1rem 0">
+          <div class="deka-score-cell"><div class="deka-score-label">Total Pts</div><div class="deka-score-val" style="color:var(--gold)">${totalPts}</div></div>
+          <div class="deka-score-cell"><div class="deka-score-label">Bags In</div><div class="deka-score-val" style="color:var(--purple)">${totHole}</div></div>
+          <div class="deka-score-cell"><div class="deka-score-label">In %</div><div class="deka-score-val">${inPct}%</div></div>
+          <div class="deka-score-cell"><div class="deka-score-label">Bags On</div><div class="deka-score-val">${totOn}</div></div>
+          <div class="deka-score-cell"><div class="deka-score-label">Bags Off</div><div class="deka-score-val">${totOff}</div></div>
+          <div class="deka-score-cell"><div class="deka-score-label">PPR</div><div class="deka-score-val" style="color:var(--gold)">${ppr}</div></div>
+        </div>
+        <div style="margin:1rem 0">
+          ${makePieSVG(totHole, totOn, totOff, 'var(--purple)', 'var(--gold)', '#555')}
+        </div>
+      </div>
+      <div class="deka-results">
+        <div class="deka-board-hdr">ROUND BY ROUND</div>
+        <table><thead><tr>
+          <th>RD</th><th style="color:var(--purple)">IN</th><th style="color:var(--gold)">ON</th><th style="color:var(--text3)">OFF</th><th style="color:var(--gold)">PTS</th>
+        </tr></thead><tbody>
+          ${DEKA.rounds.map((r,i)=>`<tr>
+            <td class="rnd-num">${i+1}</td>
+            <td style="color:var(--text3)">${r.hole}</td>
+            <td style="color:var(--text3)">${r.on}</td>
+            <td style="color:var(--text3)">${r.off}</td>
+            <td class="score-val" style="color:var(--white)">${r.hole*3+r.on}</td>
+          </tr>`).join('')}
+        </tbody></table>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 0 1rem">
+        <button class="deka-commit-btn" onclick="saveDekaThenNew()" style="background:var(--green)">✔ SAVE & NEW</button>
+        <button class="deka-commit-btn" onclick="discardDeka()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text3)">DISCARD</button>
+      </div>
+    `;
     return;
   }
 
-  let html = '';
-  players.forEach(name => {
-    const ls = lifetimeStats[name];
-    const rounds = ls.throws > 0 ? ls.throws / 4 : 1;
-    const ppr = ls.throws > 0 ? (ls.pts / rounds).toFixed(2) : '0.00';
-    const oppr = ls.games > 0 ? (ls.oppPts / rounds).toFixed(2) : '0.00';
-    const ptDiff = ls.pts - ls.oppPts;
-    const inPct = ls.throws > 0 ? ((ls.holes/ls.throws)*100).toFixed(2) : '0.00';
-    const onPct = ls.throws > 0 ? ((ls.on/ls.throws)*100).toFixed(2) : '0.00';
-    const offPct = ls.throws > 0 ? ((ls.off/ls.throws)*100).toFixed(2) : '0.00';
-    const winPct = ls.games > 0 ? ((ls.wins/ls.games)*100).toFixed(2) : '0.00';
-    const fourBaggerPct = ls.throws > 0 ? (((ls.holes===4?1:0)/Math.max(1,ls.games))*100).toFixed(2) : '0.00';
-
-    html += `
-      <div class="acl-stats-section">
-        <div class="acl-stats-hdr">${name.toUpperCase()}</div>
-
-        <div style="background:var(--bg3);padding:.4rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)">PERFORMANCE STATS</div>
-        <div class="perf-grid">
-          <div class="perf-cell"><div class="perf-cell-label">PPR</div><div class="perf-cell-val accent">${ppr}</div></div>
-          <div class="perf-cell"><div class="perf-cell-label">Total Points</div><div class="perf-cell-val">${ls.pts}</div></div>
-          <div class="perf-cell"><div class="perf-cell-label">Rounds</div><div class="perf-cell-val">${Math.round(rounds)}</div></div>
-          <div class="perf-cell"><div class="perf-cell-label">OPPR</div><div class="perf-cell-val accent">${oppr}</div></div>
-          <div class="perf-cell"><div class="perf-cell-label">Opp Points</div><div class="perf-cell-val">${ls.oppPts}</div></div>
-          <div class="perf-cell"><div class="perf-cell-label">Pt. Diff.</div><div class="perf-cell-val" style="color:${ptDiff>=0?'var(--green)':'var(--red)'}">${ptDiff>0?'+':''}${ptDiff}</div></div>
-        </div>
-        <div class="divider-line" style="margin:0"></div>
-        <div class="perf-wide">
-          <div class="wl-box"><div class="wl-box-lbl">Bags In %</div><div class="wl-box-val">${inPct}</div></div>
-          <div class="wl-box"><div class="wl-box-lbl">Bags On %</div><div class="wl-box-val">${onPct}</div></div>
-          <div class="wl-box"><div class="wl-box-lbl">Bags Off %</div><div class="wl-box-val">${offPct}</div></div>
-          <div class="wl-box"><div class="wl-box-lbl">4 Bagger %</div><div class="wl-box-val">${fourBaggerPct}</div></div>
-        </div>
-        <div class="divider-line" style="margin:0"></div>
-
-        <div style="background:var(--bg3);padding:.4rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)">WIN / LOSS STATS</div>
-        <div style="padding:.6rem 1rem;background:var(--bg2);border:1px solid var(--border2);margin:.75rem;border-radius:6px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-            <div style="text-align:center"><div class="wl-box-lbl">Total Wins</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${ls.wins}</div></div>
-            <div style="text-align:center"><div class="wl-box-lbl">Total Losses</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${ls.losses}</div></div>
-            <div style="text-align:center"><div class="wl-box-lbl">Total Games</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${ls.games}</div></div>
-            <div style="text-align:center"><div class="wl-box-lbl">Win %</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${winPct}</div></div>
-          </div>
-        </div>
-        <div style="text-align:center;padding:.5rem">
-          <button onclick="clearPlayerStats('${name.replace(/'/g,"\\'")}')" style="background:none;border:1px solid var(--text3);border-radius:6px;color:var(--text3);font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:.3rem .75rem;cursor:pointer;transition:all .14s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--text3)';this.style.color='var(--text3)'">Clear ${name} Stats</button>
+  body.innerHTML = `
+    <div style="border-radius: 10px; overflow: hidden; border: 2px solid var(--border); margin-bottom: 1rem; background: var(--bg2); box-shadow: 0 4px 20px rgba(0,0,0,0.6);">
+      
+      <div style="background: var(--purple); padding: .7rem .85rem; text-align: center; border-bottom: 3px solid var(--border);">
+        <div style="font-family: var(--sf); font-size: 1.6rem; letter-spacing: 4px; color: var(--white); text-transform: uppercase; line-height: 1;">
+          ${DEKA.player} — ROUND ${DEKA.currentRound} / ${DEKA.totalRounds}
         </div>
       </div>
-    `;
-  });
 
-  document.getElementById('statsBody').innerHTML = html;
+      <div style="display: grid; grid-template-columns: auto 1fr auto; min-height: 180px; background: var(--bg2);">
+        
+        <div style="display: flex; flex-direction: column; background: var(--bg3); border-right: 1px solid var(--border); width: 22vw; max-width: 90px;">
+          <div style="font-family: var(--hdg); font-size: .65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-align: center; padding: .5rem .2rem; border-bottom: 1px solid var(--border); color: var(--purple); background: rgba(168,85,247,.15);">
+            BAGS IN
+          </div>
+          <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: var(--sf); font-size: 4.5rem; color: var(--purple); background: #000;">
+            ${totHole}
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem .5rem;">
+          <div style="font-family: var(--sf); font-size: 11rem; line-height: 0.85; color: var(--white); text-shadow: 0 0 30px rgba(168,85,247,.2);">
+            ${totHole*3+totOn}
+          </div>
+          <div style="font-family: var(--hdg); font-size: 1.2rem; font-weight: 700; letter-spacing: 3px; color: var(--purple); background: rgba(168,85,247,.12); padding: .25rem 1.2rem; border-radius: 8px; margin-top: .75rem; border: 1px solid rgba(168,85,247,.3);">
+            PPR : ${ppr}
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; background: var(--bg3); border-left: 1px solid var(--border); width: 22vw; max-width: 90px;">
+          <div style="font-family: var(--hdg); font-size: .65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-align: center; padding: .5rem .2rem; border-bottom: 1px solid var(--border); color: var(--gold); background: rgba(245,197,24,.1);">
+            BAGS ON
+          </div>
+          <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: var(--sf); font-size: 4.5rem; color: var(--gold); background: #000;">
+            ${totOn}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="deka-entry">
+      <div class="deka-entry-name">ROUND ${DEKA.currentRound} ENTRY</div>
+
+      <div class="deka-bag-row">
+        <div class="deka-bag-label"><span style="width:9px;height:9px;border-radius:50%;background:var(--purple);display:inline-block"></span> HOLE (3pt)</div>
+        <div class="deka-btns">
+          ${[1,2,3,4].map(n=>`<button class="dbb ${entry.hole===n?'dsel-in':''}" onclick="setDekaBag('hole',${n})" id="dkH${n}">${n}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="deka-bag-row">
+        <div class="deka-bag-label"><span style="width:9px;height:9px;border-radius:50%;background:var(--gold);display:inline-block"></span> ON BOARD (1pt)</div>
+        <div class="deka-btns">
+          ${[1,2,3,4].map(n=>`<button class="dbb ${entry.on===n?'dsel-on':''}" onclick="setDekaBag('on',${n})" id="dkO${n}">${n}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="deka-bag-row">
+        <div class="deka-bag-label" style="color:var(--text3)"><span style="width:9px;height:9px;border-radius:50%;background:#555;display:inline-block"></span> OFF / MISS</div>
+        <div style="width:40px;height:36px;background:var(--bg4);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--sf);font-size:1.1rem;color:var(--text3)">${off}</div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+        <span style="font-family:var(--hdg);font-size:.72rem;color:var(--text3);letter-spacing:.5px;text-transform:uppercase">Round Points Preview:</span>
+        <span style="font-family:var(--sf);font-size:1.1rem;color:var(--gold)">+${entry.hole*3+entry.on}</span>
+      </div>
+
+      <button class="deka-commit-btn" onclick="commitDekaRound()">COMMIT ROUND ▶ (${DEKA.currentRound}/${DEKA.totalRounds})</button>
+      ${DEKA.rounds.length > 0 ? `<button onclick="undoDekaRound()" style="width:100%;padding:.5rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:.5rem;transition:all .14s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">↩ UNDO LAST ROUND</button>` : ''}
+    </div>
+
+    ${DEKA.rounds.length > 0 ? `
+    <div class="deka-results">
+      <div class="deka-board-hdr">RESULTS SO FAR</div>
+      <table><thead><tr>
+        <th>RD</th><th style="color:var(--purple)">IN</th><th style="color:var(--gold)">ON</th><th style="color:var(--text3)">OFF</th><th style="color:var(--gold)">PTS</th>
+      </tr></thead><tbody>
+        ${DEKA.rounds.map((r,i)=>`<tr>
+          <td class="rnd-num">${i+1}</td>
+          <td style="color:var(--purple)">${r.hole}</td>
+          <td style="color:var(--gold)">${r.on}</td>
+          <td style="color:var(--text3)">${r.off}</td>
+          <td class="score-val">${r.hole*3+r.on}</td>
+        </tr>`).join('')}
+      </tbody></table>
+    </div>` : ''}
+
+    <div style="padding:0 0 1rem">
+      <button onclick="discardDeka()" style="width:100%;padding:.55rem;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .14s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕ DISCARD SESSION</button>
+    </div>
+  `;
 }
 
-function clearPlayerStats(name) {
-  if (!confirm(`Clear all stats for ${name}?`)) return;
-  delete lifetimeStats[name];
+function setDekaBag(type, val) {
+  if (!DEKA) return;
+  const entry = DEKA.entry || {hole:0,on:0};
+  const newEntry = {...entry, [type]: val};
+  if (newEntry.hole + newEntry.on > 4) return;
+  DEKA.entry = newEntry;
   save();
-  renderLifetimeStats();
-  toast(`STATS CLEARED FOR ${name.toUpperCase()}`);
+  renderDekaActive(document.getElementById('dekaBody'));
 }
+
+function commitDekaRound() {
+  if (!DEKA) return;
+  const entry = DEKA.entry || {hole:0,on:0};
+  const off = 4 - (entry.hole + entry.on);
+  DEKA.rounds.push({ hole: entry.hole, on: entry.on, off });
+  DEKA.entry = {hole:0,on:0};
+  DEKA.currentRound++;
+  save();
+  renderDekaActive(document.getElementById('dekaBody'));
+}
+
+function undoDekaRound() {
+  if (!DEKA || !DEKA.rounds.length) return;
+  DEKA.rounds.pop();
+  DEKA.currentRound--;
+  DEKA.entry = {hole:0,on:0};
+  save();
+  renderDekaActive(document.getElementById('dekaBody'));
+  toast('↩ ROUND UNDONE');
+}
+
+function saveDekaThenNew() {
+  if (!DEKA) return;
+  // Merge into lifetime stats
+  const name = DEKA.player;
+  if (!lifetimeStats[name]) lifetimeStats[name] = initLifetime();
+  const ls = lifetimeStats[name];
+  DEKA.rounds.forEach(r => {
+    ls.holes += r.hole; ls.on += r.on; ls.off += r.off;
+    ls.throws += 4; ls.pts += (r.hole*3+r.on);
+  });
+  DEKA = null;
+  save();
+  toast('✔ DEKAROUND SAVED TO STATS');
+  renderDekaSetup(document.getElementById('dekaBody'));
+}
+
+function discardDeka() {
+  if (!confirm('Discard this Dekaround session?')) return;
+  DEKA = null;
+  save();
+  renderDekaSetup(document.getElementById('dekaBody'));
+}
+
+/* ═══════════ EXPORT & SHARE ═══════════ */
+function openShareModal() {
+  document.getElementById('shareModal').classList.remove('hidden');
+}
+
+function closeShareModal() {
+  document.getElementById('shareModal').classList.add('hidden');
+}
+
+function buildMatchSummaryText() {
+  const date = new Date().toLocaleDateString('en-US', {weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  let lines = [`🎯 CORNHOLE MATCH SUMMARY`, `📅 ${date}`, ``];
+
+  if (G) {
+    lines.push(`LIVE MATCH (In Progress):`);
+    lines.push(`${G.teamA.join(' & ')} vs ${G.teamB.join(' & ')}`);
+    lines.push(`Score: ${G.scores[0]} – ${G.scores[1]}`);
+    lines.push(`Round: ${G.round}`);
+    lines.push(`Rules: Win at ${G.winScore || '∞'}, ${G.rule === 'cancel' ? 'Cancellation' : 'All Points'}`);
+    lines.push(``);
+    lines.push(`TEAM 1 (${G.teamA.join(' & ')}):`);
+    lines.push(`  Bags In: ${G.stats[0].holes} | Bags On: ${G.stats[0].on} | Bags Off: ${G.stats[0].off}`);
+    lines.push(`  In %: ${G.stats[0].throws>0?((G.stats[0].holes/G.stats[0].throws*100).toFixed(1)+'%'):'—'}`);
+    lines.push(`TEAM 2 (${G.teamB.join(' & ')}):`);
+    lines.push(`  Bags In: ${G.stats[1].holes} | Bags On: ${G.stats[1].on} | Bags Off: ${G.stats[1].off}`);
+    lines.push(`  In %: ${G.stats[1].throws>0?((G.stats[1].holes/G.stats[1].throws*100).toFixed(1)+'%'):'—'}`);
+  } else {
+    lines.push(`No active game.`);
+  }
+
+  if (Object.keys(lifetimeStats).length) {
+    lines.push(``);
+    lines.push(`LIFETIME STATS:`);
+    Object.entries(lifetimeStats).forEach(([name, ls]) => {
+      const ppr = ls.throws>0?(ls.pts/(ls.throws/4)).toFixed(2):'—';
+      const inPct = ls.throws>0?((ls.holes/ls.throws*100).toFixed(1)+'%'):'—';
+      lines.push(`  ${name}: ${ls.wins}W-${ls.losses}L | PPR ${ppr} | In% ${inPct}`);
+    });
+  }
+
+  return lines.join('\n');
+}
+
+function exportAsText() {
+  const text = buildMatchSummaryText();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      toast('📋 COPIED TO CLIPBOARD');
+      closeShareModal();
+    }).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); toast('📋 COPIED'); } catch(e) { toast('Could not copy'); }
+  document.body.removeChild(ta);
+  closeShareModal();
+}
+
+function exportAsJSON() {
+  const data = {
+    exportedAt: new Date().toISOString(),
+    activeGame: G,
+    lifetimeStats,
+    savedSeries
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cornhole_stats_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('💾 JSON DOWNLOADED');
+  closeShareModal();
+}
+
+function exportLifetimeCSV() {
+  const players = Object.entries(lifetimeStats);
+  if (!players.length) { toast('No stats to export'); return; }
+  const headers = ['Player','Games','Wins','Losses','Win%','PPR','OPPR','Bags In','Bags On','Bags Off','Total Throws','In%','On%','Off%','Total Pts','Opp Pts','Pt Diff'];
+  const rows = players.map(([name, ls]) => {
+    const rounds = ls.throws/4 || 1;
+    const ppr = ls.throws>0?(ls.pts/rounds).toFixed(2):0;
+    const oppr = ls.games>0?(ls.oppPts/rounds).toFixed(2):0;
+    const winPct = ls.games>0?((ls.wins/ls.games)*100).toFixed(1):0;
+    const inPct = ls.throws>0?((ls.holes/ls.throws)*100).toFixed(1):0;
+    const onPct = ls.throws>0?((ls.on/ls.throws)*100).toFixed(1):0;
+    const offPct = ls.throws>0?((ls.off/ls.throws)*100).toFixed(1):0;
+    const ptDiff = ls.pts - ls.oppPts;
+    return [name,ls.games,ls.wins,ls.losses,winPct,ppr,oppr,ls.holes,ls.on,ls.off,ls.throws,inPct,onPct,offPct,ls.pts,ls.oppPts,ptDiff].join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cornhole_lifetime_stats_${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📊 CSV DOWNLOADED');
+  closeShareModal();
+}
+
+function shareNative() {
+  const text = buildMatchSummaryText();
+  if (navigator.share) {
+    navigator.share({ title: '🎯 Cornhole Match Stats', text })
+      .then(() => closeShareModal())
+      .catch(() => exportAsText());
+  } else {
+    exportAsText();
+  }
+}
+
 </script>
 </body>
 </html>
