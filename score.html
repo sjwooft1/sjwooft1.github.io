@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="shortcut icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="ACL Scorer" />
+<link rel="manifest" href="/site.webmanifest" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>ACL Cornhole Scorer</title>
+<title>Ultimate ACL Cornhole Scorer</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* ═══════════ CSS RESET & VARIABLES ═══════════ */
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#111;--bg2:#1a1a1a;--bg3:#222;--bg4:#2a2a2a;
   --border:#333;--border2:#444;
   --white:#fff;--text:#fff;--text2:#aaa;--text3:#666;
-  --gold:#f5c518;--green:#2ecc40;--red:#e52222;--purple:#a855f7;
+  --gold:#f5c518;--green:#2ecc40;--red:#e52222;--purple:#bc110b;
   --sf:'Bebas Neue',sans-serif;--ui:'Rajdhani',sans-serif;--hdg:'Oswald',sans-serif;
   --t1-color: #e52222;
   --t2-color: #2196d6;
@@ -74,7 +81,6 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 .s-chip:hover{border-color:var(--white)}
 .s-chip-x{color:var(--text3);margin-left:2px}.s-chip-x:hover{color:var(--red)}
 
-/* Series section */
 .series-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.5rem}
 .series-chip{background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.4);border-radius:20px;padding:4px 10px;font-size:.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .13s;font-family:var(--hdg);letter-spacing:.5px;text-transform:uppercase;color:var(--purple)}
 .series-chip:hover{background:rgba(168,85,247,.25);border-color:var(--purple)}
@@ -92,1032 +98,237 @@ body{font-family:var(--ui);background:var(--bg);color:var(--text);min-height:100
 /* ═══════════ ACL GAME BOARD ═══════════ */
 #game{background:var(--bg);min-height:100vh}
 
-.acl-header {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: stretch;
-  background: linear-gradient(deg, var(--t1-color), var(--bg2), var(--t2-color));
-  border-bottom: 3px solid var(--border);
-}
+.acl-header {display: grid;grid-template-columns: 1fr auto 1fr;align-items: stretch;background: linear-gradient(deg, var(--t1-color), var(--bg2), var(--t2-color));border-bottom: 3px solid var(--border);}
+.team-banner {display: flex;align-items: center;justify-content: center;padding: .55rem .85rem;gap: .6rem;position: relative;}
+.team-banner.a {background: linear-gradient(90deg, var(--t1-color) 0%, transparent 100%);}
+.team-banner.b {background: linear-gradient(270deg, var(--t2-color) 0%, transparent 100%);}
+.team-banner-name {font-family: var(--sf);font-size: 1.4rem;letter-spacing: 4px;color: var(--white);text-align: center;text-transform: uppercase;line-height: 1;}
 
-.team-banner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: .55rem .85rem;
-  gap: .6rem;
-  position: relative;
-}
-
-.team-banner.a {
-  background: linear-gradient(90deg, var(--t1-color) 0%, transparent 100%);
-}
-
-.team-banner.b {
-  background: linear-gradient(270deg, var(--t2-color) 0%, transparent 100%);
-}
-
-.team-banner-name {
-  font-family: var(--sf);
-  font-size: 1.4rem;
-  letter-spacing: 4px;
-  color: var(--white);
-  text-align: center;
-  text-transform: uppercase;
-  line-height: 1;
-}
-
-/* --- Center Logo: Sleek Glassmorphism with Neon Top Border --- */
 .acl-center-logo {
   background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: .2rem .8rem;
-  gap: 4px;
-  flex-direction: column;
-  border-left: 2px solid var(--border);
-  border-right: 2px solid var(--border);
-  border-top: 2px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);-webkit-backdrop-filter: blur(10px);
+  display: flex;align-items: center;justify-content: center;padding: .2rem .8rem;gap: 4px;flex-direction: column;
+  border-left: 2px solid var(--border);border-right: 2px solid var(--border);border-top: 2px solid rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
 }
+.acl-gear-icon {font-size: 1.1rem;cursor: pointer;color: var(--text2);transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);}
+.acl-gear-icon:hover {color: var(--white);transform: rotate(45deg) scale(1.15);filter: drop-shadow(0 0 8px rgba(255,255,255,0.5));}
 
-/* --- Gear Icon: Pulsing Cyber-Glow on Hover --- */
-.acl-gear-icon {
-  font-size: 1.1rem;
-  cursor: pointer;
-  color: var(--text2);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.acl-gear-icon:hover {
-  color: var(--white);
-  transform: rotate(45deg) scale(1.15);
-  filter: drop-shadow(0 0 8px rgba(255,255,255,0.5));
-}
-
-/* --- Main Scoreboard Area --- */
 .acl-scoreboard {
-  display: grid;
-  grid-template-columns: auto 1fr auto auto 1fr auto;
-  align-items: stretch;
+  display: grid;grid-template-columns: auto 1fr auto auto 1fr auto;align-items: stretch;
   background: linear-gradient(180deg, var(--bg2) 0%, rgba(10,10,10,0.95) 100%);
-  border-bottom: 3px solid var(--border);
-  min-height: 200px;
-  height: 40%;
+  border-bottom: 3px solid var(--border);min-height: 200px;height: 40%;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
-/* --- Bag Columns: Pill Capsule Floating Effect --- */
 .bags-col {
-  display: flex;
-  flex-direction: column;
-  background: rgba(255, 255, 255, 0.02);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  width: 10vw;
-  border-radius: 16px;
-  margin: 0.5rem;
-  padding: 0.25rem;
-  box-shadow: inset 0 0 15px rgba(0,0,0,0.6);
+  display: flex;flex-direction: column;background: rgba(255, 255, 255, 0.02);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);width: 10vw;border-radius: 16px;
+  margin: 0.5rem;padding: 0.25rem;box-shadow: inset 0 0 15px rgba(0,0,0,0.6);
 }
-.bags-col.right {
-  border-right: none;
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
-}
+.bags-col.right {border-right: none;border-left: 1px solid rgba(255, 255, 255, 0.05);}
 
-/* --- Column Headers: Sci-Fi Dynamic Badges --- */
 .bags-col-hdr {
-  font-family: var(--hdg);
-  font-size: .55rem;
-  font-weight: 800;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  text-align: center;
-  padding: .4rem .35rem;
-  border-radius: 12px;
-  margin-bottom: 0.4rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  font-family: var(--hdg);font-size: .55rem;font-weight: 800;letter-spacing: 2.5px;
+  text-transform: uppercase;text-align: center;padding: .4rem .35rem;border-radius: 12px;
+  margin-bottom: 0.4rem;box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
-.bags-col-hdr.in-hdr {
-  color: var(--white);
-  background: linear-gradient(90deg, var(--t1-color) 0%, color-mix(in srgb, var(--t1-color) 40%, black) 100%);
-}
-.bags-col-hdr.on-hdr {
-  color: #000000;
-  font-weight: 900;
-  background: linear-gradient(90deg, var(--gold) 0%, #ffe066 100%);
-}
-.bags-col-hdr.in-hdr-b {
-  color: var(--white);
-  background: linear-gradient(90deg, var(--t2-color) 0%, color-mix(in srgb, var(--t2-color) 40%, black) 100%);
-}
+.bags-col-hdr.in-hdr {color: var(--white);background: linear-gradient(90deg, var(--t1-color) 0%, color-mix(in srgb, var(--t1-color) 40%, black) 100%);}
+.bags-col-hdr.on-hdr {color: #000000;font-weight: 900;background: linear-gradient(90deg, var(--gold) 0%, #ffe066 100%);}
+.bags-col-hdr.in-hdr-b {color: var(--white);background: linear-gradient(90deg, var(--t2-color) 0%, color-mix(in srgb, var(--t2-color) 40%, black) 100%);}
 
-/* --- Bag Slots: Tactile Retro-Arcade Buttons --- */
 .bag-slot {
-  flex: 1;
-  display: flex;
-  background: linear-gradient(180deg, #141414 0%, #080808 100%);
-  justify-content: center;
-  align-items: center;
-  font-family: var(--hdg);
-  font-size: 1.85rem;
-  font-weight: 800;
-  border: 2px solid rgba(255,255,255,0.05);
-  cursor: pointer;
-  padding: 0 .5rem;
-  min-height: 36px;
-  margin: 2px 0;
-  color: rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 4px 8px rgba(0,0,0,0.4);
+  flex: 1;display: flex;background: linear-gradient(180deg, #141414 0%, #080808 100%);
+  justify-content: center;align-items: center;font-family: var(--hdg);font-size: 1.85rem;
+  font-weight: 800;border: 2px solid rgba(255,255,255,0.05);cursor: pointer;
+  padding: 0 .5rem;min-height: 36px;margin: 2px 0;color: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 4px 8px rgba(0,0,0,0.4);
   transition: all .2s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-.bag-slot:hover {
-  color: rgba(255, 255, 255, 0.6);
-  border-color: rgba(255,255,255,0.2);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.6);
-}
-
-/* --- Active Slots: Vibrant Cyber Neon States --- */
+.bag-slot:hover {color: rgba(255, 255, 255, 0.6);border-color: rgba(255,255,255,0.2);transform: translateY(-1px);box-shadow: 0 6px 12px rgba(0,0,0,0.6);}
 .bag-slot.active-in {
   background: linear-gradient(180deg, var(--t1-color) 0%, color-mix(in srgb, var(--t1-color) 60%, black) 100%);
-  color: var(--white);
-  border-color: var(--t1-color);
-  box-shadow: 0 0 15px color-mix(in srgb, var(--t1-color) 60%, transparent);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  color: var(--white);border-color: var(--t1-color);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--t1-color) 60%, transparent);text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 .bag-slot.active-in-b {
   background: linear-gradient(180deg, var(--t2-color) 0%, color-mix(in srgb, var(--t2-color) 60%, black) 100%);
-  color: var(--white);
-  border-color: var(--t2-color);
-  box-shadow: 0 0 15px color-mix(in srgb, var(--t2-color) 60%, transparent);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  color: var(--white);border-color: var(--t2-color);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--t2-color) 60%, transparent);text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 .bag-slot.active-on {
   background: linear-gradient(180deg, var(--gold) 0%, #cc9900 100%);
-  color: #000000;
-  border-color: var(--gold);
-  box-shadow: 0 0 15px rgba(245,197,24,.4);
+  color: #000000;border-color: var(--gold);box-shadow: 0 0 15px rgba(245,197,24,.4);
 }
 
-/* --- Massive Center Scores: Immersive Stadium Look --- */
-.big-score-panel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem .5rem;
-  position: relative;
-  overflow: hidden;
-}
+.big-score-panel {display: flex;align-items: center;justify-content: center;padding: 1rem .5rem;position: relative;overflow: hidden;}
 .big-score-num {
-  font-family: var(--sf);
-  font-size: 16rem;
-  font-weight: 900;
-  line-height: 1;
-  color: var(--white);
-  text-align: center;
-  letter-spacing: -5px;
-  /* Deep layered drop shadows for an intense 3D giant stadium screen look */
-  text-shadow: 0 0 20px rgba(255,255,255,0.1), 
-               0 10px 30px rgba(0,0,0,0.7),
-               0 20px 50px rgba(0,0,0,0.9);
+  font-family: var(--sf);font-size: 16rem;font-weight: 900;line-height: 1;
+  color: var(--white);text-align: center;letter-spacing: -5px;
+  text-shadow: 0 0 20px rgba(255,255,255,0.1), 0 10px 30px rgba(0,0,0,0.7), 0 20px 50px rgba(0,0,0,0.9);
 }
-.big-score-num.pop {
-  animation: bigpop .35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-@keyframes bigpop {
-  0% { transform: scale(1); filter: brightness(1); }
-  35% { transform: scale(1.12); filter: brightness(1.5); }
-  100% { transform: scale(1); filter: brightness(1); }
-}
+.big-score-num.pop {animation: bigpop .35s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+@keyframes bigpop {0% { transform: scale(1); filter: brightness(1); } 35% { transform: scale(1.12); filter: brightness(1.5); } 100% { transform: scale(1); filter: brightness(1); }}
 
-/* --- Control Tower Center Divider --- */
-.acl-center-div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-  padding: .4rem 1rem;
-  background: linear-gradient(180deg, var(--bg3) 0%, #0d0d0d 100%);
-  border-left: 2px solid var(--border);
-  border-right: 2px solid var(--border);
-}
-.round-num-display {
-  font-family: var(--sf);
-  font-size: .9rem;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: var(--text2);
-  text-transform: uppercase;
-}
-
-/* --- Commit Button: Glowing Animated Action Element --- */
 .commit-btn {
-  font-family: var(--hdg);
-  font-size: .7rem;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  color: var(--white);
-  background: linear-gradient(135deg, var(--t1-color) 0%, color-mix(in srgb, var(--t1-color) 70%, #000) 100%);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 6px;
-  padding: .4rem .9rem;
-  cursor: pointer;
-  text-transform: uppercase;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  font-family: var(--hdg);font-size: .7rem;font-weight: 800;letter-spacing: 1.5px;
+  color: var(--white);background: linear-gradient(135deg, var(--t1-color) 0%, color-mix(in srgb, var(--t1-color) 70%, #000) 100%);
+  border: 1px solid rgba(255,255,255,0.1);border-radius: 6px;padding: .4rem .9rem;cursor: pointer;
+  text-transform: uppercase;box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
   transition: all .25s ease;
 }
-.commit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px color-mix(in srgb, var(--t1-color) 50%, transparent);
-  filter: brightness(1.15);
-}
-.commit-btn:active {
-  transform: translateY(1px);
+.commit-btn:hover {transform: translateY(-2px);box-shadow: 0 6px 20px color-mix(in srgb, var(--t1-color) 50%, transparent);filter: brightness(1.15);}
+.commit-btn.full {
+  flex: 1;padding: .75rem;background: linear-gradient(135deg, var(--t1-color) 0%, color-mix(in srgb, var(--t1-color) 70%, #000) 100%);
+  font-size: 1.25rem;letter-spacing: 4px;border-radius: 8px;
 }
 
-/* --- Bottom Row Layout --- */
-.acl-bottom-row {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  width: 100vw;
-  max-width: 100vw;
-  margin-top: .75rem;
-}
-.player-pts-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-.player-pts-box > div {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
+.acl-bottom-row {display: grid;grid-template-columns: 1fr auto 1fr;align-items: center;width: 100vw;max-width: 100%;margin-top: .75rem;}
+.player-pts-box {display: flex;align-items: center;justify-content: space-between;padding: 0 1.5rem;width: 100%;box-sizing: border-box;}
+.player-pts-box > div {display: flex;align-items: center;gap: .1rem;}
+.pts-label {font-family: var(--hdg), sans-serif;font-size: .35rem;font-weight: 800;line-height: 1.2;letter-spacing: 2px;text-transform: uppercase;color: rgba(255,255,255,0.4);}
+.pts-val {font-family: var(--sf), sans-serif;font-size: 3.6rem;font-weight: 900;color: #ffffff;line-height: 1;padding: 2px;text-shadow: 0 4px 12px rgba(0,0,0,0.5);}
+.round-score-center {display: flex;flex-direction: column;align-items: center;justify-content: center;min-width: 10vw;padding: 0 2rem;border-left: 2px solid rgba(255,255,255,0.03);border-right: 2px solid rgba(255,255,255,0.03);background: rgba(0,0,0,0.1);}
 
-/* --- Labels & Point Displays: Clean Premium Typography --- */
-.pts-label {
-  font-family: var(--hdg), sans-serif;
-  font-size: .6rem;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
-}
-.pts-val {
-  font-family: var(--sf), sans-serif;
-  font-size: 3.6rem;
-  font-weight: 900;
-  color: #ffffff;
-  line-height: 1;
-  padding: 2px;
-  text-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}
-
-/* --- Inner Center Border Accents --- */
-.round-score-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 10vw;
-  padding: 0 2rem;
-  border-left: 2px solid rgba(255,255,255,0.03);
-  border-right: 2px solid rgba(255,255,255,0.03);
-  background: rgba(0,0,0,0.1);
-}
-
-
-/* =═══════════ HISTORY MINI BAR ═══════════ */
 .history-mini-bar {
-  background: linear-gradient(180deg, var(--bg2) 0%, rgba(10,10,10,0.95) 100%);
-  border-bottom: 2px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: .45rem .85rem;
-  overflow-x: auto;
-  min-height: 40px;
-  box-shadow: inset 0 -5px 15px rgba(0,0,0,0.4);
+  background: linear-gradient(180deg, var(--bg2) 0%, rgba(10,10,10,0.95) 100%);border-bottom: 2px solid var(--border);
+  display: flex;align-items: center;gap: 8px;padding: .45rem .85rem;overflow-x: auto;min-height: 40px;box-shadow: inset 0 -5px 15px rgba(0,0,0,0.4);
 }
-.hist-label {
-  font-family: var(--hdg);
-  font-size: .62rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
-  flex-shrink: 0;
-  white-space: nowrap;
-}
+.hist-label {font-family: var(--hdg);font-size: .62rem;font-weight: 800;letter-spacing: 2px;text-transform: uppercase;color: rgba(255,255,255,0.4);flex-shrink: 0;white-space: nowrap;}
 .hist-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: linear-gradient(180deg, #161616 0%, #0c0c0c 100%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  padding: .3rem .5rem;
-  font-family: var(--hdg);
-  font-size: .7rem;
-  font-weight: 800;
-  min-width: 36px;
-  flex-shrink: 0;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  display: flex;flex-direction: column;align-items: center;background: linear-gradient(180deg, #161616 0%, #0c0c0c 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);border-radius: 6px;padding: .3rem .5rem;font-family: var(--hdg);
+  font-size: .7rem;font-weight: 800;min-width: 36px;flex-shrink: 0;box-shadow: 0 3px 6px rgba(0,0,0,0.3);
 }
-.hist-item .hi-rnd {
-  color: var(--text3);
-  font-size: .52rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  margin-bottom: 1px;
-}
-.hist-item .hi-a {
-  color: var(--white);
-  text-shadow: 0 0 8px var(--t1-color);
-}
-.hist-item .hi-b {
-  color: var(--white);
-  text-shadow: 0 0 8px var(--t2-color);
-}
+.hist-item .hi-rnd {color: var(--text3);font-size: .52rem;font-weight: 600;letter-spacing: 1px;margin-bottom: 1px;}
+.hist-item .hi-a {color: var(--white);text-shadow: 0 0 8px var(--t1-color);}
+.hist-item .hi-b {color: var(--white);text-shadow: 0 0 8px var(--t2-color);}
 
-/* =═══════════ GAME ENTRY PANEL ═══════════ */
-.entry-panel {
-  background: var(--bg2);
-  border-bottom: 2px solid var(--border);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-.entry-hdr {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: .65rem 1rem;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, transparent 100%), var(--bg3);
-}
-.entry-hdr-title {
-  font-family: var(--hdg);
-  font-size: .8rem;
-  font-weight: 800;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  color: var(--text2);
-}
-.entry-hdr-round {
-  font-family: var(--sf);
-  font-size: 1rem;
-  font-weight: 900;
-  letter-spacing: 2px;
-  color: var(--gold);
-  text-shadow: 0 0 10px rgba(245,197,24,.3);
-}
-.entry-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border-bottom: 1px solid var(--border);
-  background: rgba(0,0,0,0.1);
-}
-.entry-col {
-  padding: .4rem .6rem;
-}
-.entry-col:first-child {
-  border-right: 1px solid var(--border);
-  max-width: 100vw;
-}
-.entry-col-hdr {
-  font-family: var(--hdg);
-  font-size: .6rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: .65rem;
-  padding-bottom: .4rem;
-  border-bottom: 2px solid;
-}
-.entry-col-hdr.a {
-  color: var(--t1-color);
-  border-color: var(--t1-color);
-  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--t1-color) 40%, transparent));
-}
-.entry-col-hdr.b {
-  color: var(--t2-color);
-  border-color: var(--t2-color);
-  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--t2-color) 40%, transparent));
-}
-.bag-type-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: .65rem;
-}
-.bag-type-lbl {
-  font-family: var(--hdg);
-  font-size: .58rem;
-  font-weight: 700;
-  color: rgba(255,255,255,0.5);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.bag-type-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.bag-type-dot.a {
-  background: var(--t1-color);
-  box-shadow: 0 0 8px var(--t1-color);
-}
-.bag-type-dot.b {
-  background: var(--t2-color);
-  box-shadow: 0 0 8px var(--t2-color);
-}
+.entry-panel {background: var(--bg2);border-bottom: 2px solid var(--border);box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
+.entry-hdr {display: flex;align-items: center;justify-content: space-between;padding: .65rem 1rem;border-bottom: 1px solid var(--border);background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, transparent 100%), var(--bg3);}
+.entry-hdr-title {font-family: var(--hdg);font-size: .8rem;font-weight: 800;letter-spacing: 2.5px;text-transform: uppercase;color: var(--text2);}
+.entry-hdr-round {font-family: var(--sf);font-size: 1rem;font-weight: 900;letter-spacing: 2px;color: var(--gold);text-shadow: 0 0 10px rgba(245,197,24,.3);}
+.entry-grid {display: grid;grid-template-columns: 1fr 1fr;border-bottom: 1px solid var(--border);background: rgba(0,0,0,0.1);}
+.entry-col {padding: .4rem .6rem; max-width:100%}
+.entry-col:first-child {border-right: 1px solid var(--border);max-width: 50vw;}
+.entry-col-hdr {font-family: var(--hdg);font-size: .6rem;font-weight: 800;letter-spacing: 2px;text-transform: uppercase;margin-bottom: .65rem;padding-bottom: .1rem;border-bottom: 2px solid;}
+.entry-col-hdr.a {color: var(--t1-color);border-color: var(--t1-color);filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--t1-color) 40%, transparent));}
+.entry-col-hdr.b {color: var(--t2-color);border-color: var(--t2-color);filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--t2-color) 40%, transparent));}
+.bag-type-row {display: flex;align-items: center;justify-content: space-between;margin-bottom: .65rem;}
+.bag-type-lbl {font-family: var(--hdg);font-size: .35rem;font-weight: 700;color: rgba(255,255,255,0.5);display: flex;align-items: center;gap: 6px;text-transform: uppercase;letter-spacing: 1px;}
+.bag-type-dot {width:2 8px;height: 8px;border-radius: 50%;flex-shrink: 0;}
+.bag-type-dot.a {background: var(--t1-color);box-shadow: 0 0 8px var(--t1-color);}
+.bag-type-dot.b {background: var(--t2-color);box-shadow: 0 0 8px var(--t2-color);}
 
-/* --- Entry Buttons Stack (BB) --- */
-.bag-btns-group {
-  display: flex;
-  gap: 5px;
-}
+.bag-btns-group {display: flex;gap: 5px;}
 .bb {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 6px;
-  font-family: var(--sf);
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: rgba(255,255,255,0.3);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 36px;height: 36px;background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+  border: 1px solid rgba(255,255,255,0.06);border-radius: 6px;font-family: var(--sf);
+  font-size: 1.rem;font-weight: 800;color: rgba(255,255,255,0.3);cursor: pointer;
+  display: flex;align-items: center;justify-content: center;
   box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
   transition: all .15s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-.bb:hover {
-  border-color: rgba(255,255,255,0.3);
-  color: var(--white);
-  transform: translateY(-1px);
-}
-.bb.sel-in.a {
-  background: linear-gradient(180deg, var(--t1-color) 0%, color-mix(in srgb, var(--t1-color) 60%, black) 100%);
-  border-color: var(--t1-color);
-  color: var(--white);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--t1-color) 50%, transparent);
-}
-.bb.sel-in.b {
-  background: linear-gradient(180deg, var(--t2-color) 0%, color-mix(in srgb, var(--t2-color) 60%, black) 100%);
-  border-color: var(--t2-color);
-  color: var(--white);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--t2-color) 50%, transparent);
-}
-.bb.sel-on {
-  background: linear-gradient(180deg, var(--gold) 0%, #cc9900 100%);
-  border-color: var(--gold);
-  color: #000000;
-  box-shadow: 0 0 12px rgba(245,197,24,.4);
-}
-.miss-display {
-  width: 38px;
-  height: 36px;
-  background: #080808;
-  border: 1px solid rgba(255,255,255,0.02);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--sf);
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text3);
-  box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
-}
+.bb:hover {border-color: rgba(255,255,255,0.3);color: var(--white);transform: translateY(-1px);}
+.bb.sel-in.a {background: linear-gradient(180deg, var(--t1-color) 0%, color-mix(in srgb, var(--t1-color) 60%, black) 100%);border-color: var(--t1-color);color: var(--white);box-shadow: 0 0 12px color-mix(in srgb, var(--t1-color) 50%, transparent);}
+.bb.sel-in.b {background: linear-gradient(180deg, var(--t2-color) 0%, color-mix(in srgb, var(--t2-color) 60%, black) 100%);border-color: var(--t2-color);color: var(--white);box-shadow: 0 0 12px color-mix(in srgb, var(--t2-color) 50%, transparent);}
+.bb.sel-on {background: linear-gradient(180deg, var(--gold) 0%, #cc9900 100%);border-color: var(--gold);color: #000000;box-shadow: 0 0 12px rgba(245,197,24,.4);}
 
-/* --- Live Preview Badges --- */
-.pts-preview {
-  padding: .6rem 1rem;
-  background: linear-gradient(180deg, var(--bg3) 0%, #0d0d0d 100%);
-  border-bottom: 2px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: .5rem;
-  font-family: var(--hdg);
-  font-size: .72rem;
-  font-weight: 700;
-  color: rgba(255,255,255,0.4);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-}
-.pts-chip {
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-family: var(--sf);
-  font-size: 1rem;
-  font-weight: 800;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-.pts-chip.a {
-  background: color-mix(in srgb, var(--t1-color) 15%, transparent);
-  color: var(--t1-color);
-  border: 1px solid color-mix(in srgb, var(--t1-color) 30%, transparent);
-}
-.pts-chip.b {
-  background: color-mix(in srgb, var(--t2-color) 15%, transparent);
-  color: var(--t2-color);
-  border: 1px solid color-mix(in srgb, var(--t2-color) 30%, transparent);
-}
-.pts-chip.net {
-  background: rgba(245,197,24,.1);
-  color: var(--gold);
-  border: 1px solid rgba(245,197,24,.25);
-  text-shadow: 0 0 8px rgba(245,197,24,0.3);
-}
+.miss-display {width: 38px;height: 36px;background: #080808;border: 1px solid rgba(255,255,255,0.02);border-radius: 6px;display: flex;align-items: center;justify-content: center;font-family: var(--sf);font-size: 1rem;font-weight: 700;color: var(--text3);box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);}
+.pts-preview {padding: .6rem 1rem;background: linear-gradient(180deg, var(--bg3) 0%, #0d0d0d 100%);border-bottom: 2px solid var(--border);display: flex;align-items: center;justify-content: space-between;flex-wrap: wrap;gap: .5rem;font-family: var(--hdg);font-size: .72rem;font-weight: 700;color: rgba(255,255,255,0.4);text-transform: uppercase;letter-spacing: 1.5px;}
+.pts-chip {padding: 4px 12px;border-radius: 6px;font-family: var(--sf);font-size: 1rem;font-weight: 800;box-shadow: 0 2px 8px rgba(0,0,0,0.3);}
+.pts-chip.a {background: color-mix(in srgb, var(--t1-color) 15%, transparent);color: var(--t1-color);border: 1px solid color-mix(in srgb, var(--t1-color) 30%, transparent);}
+.pts-chip.b {background: color-mix(in srgb, var(--t2-color) 15%, transparent);color: var(--t2-color);border: 1px solid color-mix(in srgb, var(--t2-color) 30%, transparent);}
+.pts-chip.net {background: rgba(245,197,24,.1);color: var(--gold);border: 1px solid rgba(245,197,24,.25);text-shadow: 0 0 8px rgba(245,197,24,0.3);}
 
-/* --- Footer Submenus --- */
-.entry-foot {
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-  padding: .85rem 1rem;
-  background: var(--bg2);
-}
-.undo-btn {
-  padding: .65rem 1.1rem;
-  background: linear-gradient(180deg, #222 0%, #141414 100%);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 8px;
-  font-family: var(--hdg);
-  font-size: .75rem;
-  font-weight: 800;
-  color: var(--text3);
-  cursor: pointer;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  transition: all .2s ease;
-}
-.undo-btn:hover {
-  border-color: var(--red);
-  color: var(--red);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--red) 30%, transparent);
-  transform: translateY(-1px);
-}
-.commit-btn.full {
-  flex: 1;
-  padding: .75rem;
-  background: linear-gradient(135deg, var(--t1-color) 0%, color-mix(in srgb, var(--t1-color) 70%, #000) 100%);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  color: var(--white);
-  font-family: var(--sf);
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
-  transition: all .2s ease;
-}
-.commit-btn.full:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--t1-color) 40%, transparent);
-  filter: brightness(1.15);
-}
+.entry-foot {display: flex;align-items: center;gap: .75rem;padding: .85rem 1rem;background: var(--bg2);}
+.undo-btn {padding: .65rem 1.1rem;background: linear-gradient(180deg, #222 0%, #141414 100%);border: 1px solid rgba(255,255,255,0.05);border-radius: 8px;font-family: var(--hdg);font-size: .75rem;font-weight: 800;color: var(--text3);cursor: pointer;letter-spacing: 1px;text-transform: uppercase;box-shadow: 0 4px 10px rgba(0,0,0,0.3);transition: all .2s ease;}
+.undo-btn:hover {border-color: var(--red);color: var(--red);box-shadow: 0 0 12px color-mix(in srgb, var(--red) 30%, transparent);transform: translateY(-1px);}
 
-/* --- Topbar Modals --- */
-.game-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: .65rem 1rem;
-  background: linear-gradient(180deg, var(--bg3) 0%, #0d0d0d 100%);
-  border-bottom: 2px solid var(--border);
-}
-.gtb-title {
-  font-family: var(--sf);
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 3px;
-  color: var(--text2);
-  text-transform: uppercase;
-}
-.gtb-btns {
-  display: flex;
-  gap: 6px;
-}
-.gtbtn {
-  background: linear-gradient(180deg, #1c1c1c 0%, #101010 100%);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 6px;
-  font-family: var(--hdg);
-  font-size: .72rem;
-  font-weight: 800;
-  color: var(--text2);
-  padding: .4rem .8rem;
-  cursor: pointer;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  transition: all .15s ease;
-}
-.gtbtn:hover {
-  border-color: rgba(255,255,255,0.3);
-  color: var(--white);
-}
-.gtbtn.danger:hover {
-  border-color: var(--red);
-  color: var(--red);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--red) 30%, transparent);
-}
-.gtbtn.hi {
-  background: linear-gradient(135deg, var(--t1-color) 0%, color-mix(in srgb, var(--t1-color) 70%, #000) 100%);
-  color: var(--white);
-  border-color: rgba(255,255,255,0.1);
-  box-shadow: 0 4px 10px color-mix(in srgb, var(--t1-color) 30%, transparent);
-}
-.gtbtn.hi:hover {
-  filter: brightness(1.15);
-}
+.game-topbar {display: flex;align-items: center;justify-content: space-between;padding: .65rem 1rem;background: linear-gradient(180deg, var(--bg3) 0%, #0d0d0d 100%);border-bottom: 2px solid var(--border);}
+.gtb-title {font-family: var(--sf);font-size: 1rem;font-weight: 800;letter-spacing: 3px;color: var(--text2);text-transform: uppercase;}
+.gtb-btns {display: flex;gap: 6px;}
+.gtbtn {background: linear-gradient(180deg, #1c1c1c 0%, #101010 100%);border: 1px solid rgba(255,255,255,0.05);border-radius: 6px;font-family: var(--hdg);font-size: .72rem;font-weight: 800;color: var(--text2);padding: .4rem .8rem;cursor: pointer;letter-spacing: 1px;text-transform: uppercase;transition: all .15s ease;}
+.gtbtn:hover {border-color: rgba(255,255,255,0.3);color: var(--white);}
+.gtbtn.danger:hover {border-color: var(--red);color: var(--red);box-shadow: 0 0 10px color-mix(in srgb, var(--red) 30%, transparent);}
+.gtbtn.hi {background: linear-gradient(135deg, var(--t1-color) 0%, color-mix(in srgb, var(--t1-color) 70%, #000) 100%);color: var(--white);border-color: rgba(255,255,255,0.1);box-shadow: 0 4px 10px color-mix(in srgb, var(--t1-color) 30%, transparent);}
 
-/* =═══════════ STATS SCREEN ═══════════ */
-#stats-screen {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 0 0 3rem;
-}
-.stats-topbar {
-  background: linear-gradient(180deg, var(--bg2) 0%, rgba(15,15,15,0.95) 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 2px solid var(--border);
-  padding: .75rem 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-.stats-topbar-title {
-  font-family: var(--sf);
-  font-size: 1.3rem;
-  font-weight: 900;
-  letter-spacing: 4px;
-  color: var(--white);
-  text-transform: uppercase;
-  text-shadow: 0 0 15px rgba(255,255,255,0.1);
-}
-.stats-topbar-btns {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-.stats-body {
-  padding: 1rem;
-}
+/* ═══════════ STATS SCREEN ═══════════ */
+#stats-screen {max-width: 700px;margin: 0 auto;padding: 0 0 3rem;}
+.stats-topbar {background: linear-gradient(180deg, var(--bg2) 0%, rgba(15,15,15,0.95) 100%);backdrop-filter: blur(12px);-webkit-backdrop-filter: blur(12px);border-bottom: 2px solid var(--border);padding: .75rem 1.2rem;display: flex;align-items: center;justify-content: space-between;position: sticky;top: 0;z-index: 100;box-shadow: 0 10px 30px rgba(0,0,0,0.5);}
+.stats-topbar-title {font-family: var(--sf);font-size: 1.3rem;font-weight: 900;letter-spacing: 4px;color: var(--white);text-transform: uppercase;text-shadow: 0 0 15px rgba(255,255,255,0.1);}
+.stats-topbar-btns {display: flex;gap: 6px;align-items: center;}
 
-/* --- Container Blocks --- */
-.acl-stats-section {
-background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 100%), var(--bg2);border: 1px solid var(--border);border-radius: 12px;margin-bottom: 1.2rem;overflow: hidden;box-shadow: 0 15px 35px rgba(0,0,0,0.3);}.acl-stats-hdr {font-family: var(--sf);font-size: 1.3rem;font-weight: 900;letter-spacing: 4px;text-align: center;padding: .7rem 1rem;background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%), var(--bg3);border-bottom: 2px solid var(--border);color: var(--white);text-transform: uppercase;}/* --- Performance Modular Grids --- */.perf-grid, .perf-wide, .wl-cat-grid {display: grid;gap: 1px;background: var(--border);}.perf-grid {grid-template-columns: 1fr 1fr 1fr;}.perf-wide {grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));}.wl-cat-grid {grid-template-columns: 1fr 1fr;}.perf-cell, .wl-box {background: linear-gradient(180deg, var(--bg2) 0%, rgba(15,15,15,0.2) 100%);padding: .9rem .6rem;text-align: center;}.perf-cell-label, .wl-box-lbl {font-family: var(--hdg);font-size: .6rem;font-weight: 800;letter-spacing: 2px;text-transform: uppercase;color: var(--text3);margin-bottom: .4rem;}.perf-cell-val {font-family: var(--sf);font-size: 2rem;font-weight: 900;letter-spacing: 1px;color: var(--white);text-shadow: 0 2px 6px rgba(0,0,0,0.4);}.perf-cell-val.accent {color: var(--gold);text-shadow: 0 0 10px rgba(245,197,24,.3);}.wl-box {padding: .75rem .6rem;}.wl-box-val {font-family: var(--sf);font-size: 1.7rem;font-weight: 900;color: var(--white);}.divider-line {height: 1px;background: linear-gradient(90deg, transparent, var(--border2), transparent);margin: 8px 0;}.wl-cat-cell {background: var(--bg2);padding: .7rem .9rem;display: flex;justify-content: space-between;align-items: center;}.wl-cat-lbl {font-family: var(--hdg);font-size: .68rem;font-weight: 700;letter-spacing: 1.5px;text-transform: uppercase;color: rgba(255,255,255,0.4);}.wl-cat-val {font-family: var(--sf);font-size: 1.35rem;font-weight: 800;color: var(--white);}/* --- Charts Layout --- */.pie-container {display: grid;grid-template-columns: 1fr 1fr 1fr;gap: 10px;padding: 1rem .75rem;background: var(--bg2);}.pie-wrap {display: flex;flex-direction: column;align-items: center;gap: .5rem;}.pie-title {font-family: var(--hdg);font-size: .6rem;font-weight: 800;letter-spacing: 1.5px;text-transform: uppercase;color: var(--text3);text-align: center;}.pie-svg {width: 80px;height: 80px;filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4));}.pie-legend {display: flex;flex-direction: column;gap: 4px;align-items: flex-start;}.pie-leg-item {display: flex;align-items: center;gap: 6px;font-family: var(--hdg);font-size: .58rem;font-weight: 700;color: var(--text2);}.pie-leg-dot {width: 7px;height: 7px;border-radius: 50%;flex-shrink: 0;box-shadow: 0 0 6px currentColor;}
+/* Filters and Tabs */
+.stats-filters {display:flex;gap:10px;padding:1rem;background:var(--bg3);border-bottom:1px solid var(--border);}
+.stat-sel {background:var(--bg2);color:var(--white);border:1px solid var(--border2);padding:.5rem;border-radius:6px;font-family:var(--ui);font-weight:600;outline:none;}
+.stats-tabs {display:flex;border-bottom:1px solid var(--border);background:var(--bg2);}
+.stat-tab {flex:1;padding:.75rem;text-align:center;font-family:var(--hdg);font-size:.8rem;font-weight:700;color:var(--text2);cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s;}
+.stat-tab.active {background:var(--bg3);color:var(--white);border-bottom:2px solid var(--purple);}
+
+.stats-body {padding: 1rem;}
+
+.acl-stats-section {background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 100%), var(--bg2);border: 1px solid var(--border);border-radius: 12px;margin-bottom: 1.2rem;overflow: hidden;box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
+.acl-stats-hdr {font-family: var(--sf);font-size: 1.3rem;font-weight: 900;letter-spacing: 4px;text-align: center;padding: .7rem 1rem;background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%), var(--bg3);border-bottom: 2px solid var(--border);color: var(--white);text-transform: uppercase;}
+
+.perf-grid, .perf-wide {display: grid;gap: 1px;background: var(--border);}
+.perf-grid {grid-template-columns: 1fr 1fr 1fr;}
+.perf-wide {grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));}
+.perf-cell, .wl-box {background: linear-gradient(180deg, var(--bg2) 0%, rgba(15,15,15,0.2) 100%);padding: .9rem .6rem;text-align: center;}
+.perf-cell-label, .wl-box-lbl {font-family: var(--hdg);font-size: .6rem;font-weight: 800;letter-spacing: 2px;text-transform: uppercase;color: var(--text3);margin-bottom: .4rem;}
+.perf-cell-val {font-family: var(--sf);font-size: 2rem;font-weight: 900;letter-spacing: 1px;color: var(--white);text-shadow: 0 2px 6px rgba(0,0,0,0.4);}
+.perf-cell-val.accent {color: var(--gold);text-shadow: 0 0 10px rgba(245,197,24,.3);}
+.wl-box {padding: .75rem .6rem;}
+.wl-box-val {font-family: var(--sf);font-size: 1.7rem;font-weight: 900;color: var(--white);}
+.divider-line {height: 1px;background: linear-gradient(90deg, transparent, var(--border2), transparent);margin: 8px 0;}
+
+.pie-container {display: grid;grid-template-columns: 1fr 1fr 1fr;gap: 10px;padding: 1rem .75rem;background: var(--bg2);}
+.pie-wrap {display: flex;flex-direction: column;align-items: center;gap: .5rem;}
+.pie-title {font-family: var(--hdg);font-size: .6rem;font-weight: 800;letter-spacing: 1.5px;text-transform: uppercase;color: var(--text3);text-align: center;}
+.pie-svg {width: 80px;height: 80px;filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4));}
+.pie-legend {display: flex;flex-direction: column;gap: 4px;align-items: flex-start;}
+.pie-leg-item {display: flex;align-items: center;gap: 6px;font-family: var(--hdg);font-size: .58rem;font-weight: 700;color: var(--text2);}
+.pie-leg-dot {width: 7px;height: 7px;border-radius: 50%;flex-shrink: 0;box-shadow: 0 0 6px currentColor;}
+
+/* Match History Items */
+.match-hist-item {display:flex;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid var(--border);cursor:pointer;background:linear-gradient(180deg, var(--bg2) 0%, rgba(15,15,15,0.2) 100%);transition:all .15s;}
+.match-hist-item:hover {background:var(--bg3);border-color:var(--text3);}
+.match-hist-date {font-family:var(--hdg);font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
+.match-hist-title {font-family:var(--ui);font-weight:700;font-size:1rem;color:var(--white);}
+.match-hist-score {font-family:var(--sf);font-size:1.5rem;color:var(--gold);}
+.match-detail-view {background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem;box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
 
 /* ═══════════ DEKAROUND SCREEN ═══════════ */
-/* --- Screen Container & Sticky Topbar --- */
-#deka-screen {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 0 0 3rem;
-}
-.deka-topbar {
-  background: linear-gradient(180deg, var(--bg2) 0%, rgba(15,15,15,0.95) 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 2px solid var(--border);
-  padding: .75rem 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-.deka-title {
-  font-family: var(--sf);
-  font-size: 1.4rem;
-  font-weight: 900;
-  letter-spacing: 5px;
-  color: var(--purple);
-  text-transform: uppercase;
-  text-shadow: 0 0 15px color-mix(in srgb, var(--purple) 50%, transparent);
-}
-.deka-body {
-  padding: 1rem;
-}
+#deka-screen {max-width: 600px;margin: 0 auto;padding: 0 0 3rem;}
+.deka-topbar {background: linear-gradient(180deg, var(--bg2) 0%, rgba(15,15,15,0.95) 100%);backdrop-filter: blur(12px);-webkit-backdrop-filter: blur(12px);border-bottom: 2px solid var(--border);padding: .75rem 1.2rem;display: flex;align-items: center;justify-content: space-between;position: sticky;top: 0;z-index: 100;box-shadow: 0 10px 30px rgba(0,0,0,0.5);}
+.deka-title {font-family: var(--sf);font-size: 1.4rem;font-weight: 900;letter-spacing: 5px;color: var(--purple);text-transform: uppercase;text-shadow: 0 0 15px color-mix(in srgb, var(--purple) 50%, transparent);}
+.deka-body {padding: 1rem;}
+.deka-setup, .deka-board, .deka-entry, .deka-results {background: linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.2) 100%), var(--bg2);border: 1px solid var(--border);border-radius: 12px;padding: 1.2rem;margin-bottom: 1.2rem;box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
+.deka-setup h3, .deka-entry-name {font-family: var(--sf);font-size: 1.25rem;font-weight: 800;letter-spacing: 3px;color: var(--purple);margin-bottom: .85rem;text-transform: uppercase;text-shadow: 0 0 12px color-mix(in srgb, var(--purple) 30%, transparent);}
+.deka-round-grid {display: grid;grid-template-columns: 1fr 1fr 1fr;gap: 10px;margin-bottom: .75rem;}
+.deka-round-card {background: linear-gradient(180deg, #181818 0%, #0d0d0d 100%);border: 1px solid rgba(255, 255, 255, 0.05);border-radius: 8px;padding: .75rem .5rem;text-align: center;cursor: pointer;box-shadow: 0 4px 10px rgba(0,0,0,0.4);transition: all .2s;}
+.deka-round-card:hover {border-color: var(--purple);transform: translateY(-2px);box-shadow: 0 6px 15px rgba(0,0,0,0.6);}
+.deka-round-card.active {background: linear-gradient(180deg, color-mix(in srgb, var(--purple) 20%, transparent) 0%, rgba(0,0,0,0.4) 100%);border-color: var(--purple);box-shadow: 0 0 15px color-mix(in srgb, var(--purple) 40%, transparent);}
+.deka-round-card .drn {font-family: var(--sf);font-size: 1.6rem;font-weight: 900;color: rgba(255,255,255,0.4);transition: color 0.2s ease;}
+.deka-round-card.active .drn {color: var(--white);text-shadow: 0 0 10px var(--purple);}
+.deka-round-card .drl {font-family: var(--hdg);font-size: .55rem;font-weight: 700;color: var(--text3);letter-spacing: 1.5px;text-transform: uppercase;margin-top: 4px;}
+.deka-bag-row {display: flex;flex-direction: column;gap: 0.75rem;width: 100%;}
+.deka-bag-label {font-family: var(--hdg);font-size: .65rem;font-weight: 800;color: rgba(255,255,255,0.4);text-transform: uppercase;letter-spacing: 1.5px;display: flex;align-items: center;gap: 8px;}
+.deka-btns, .deka-btns-vert {display: flex;gap: 6px;width: 100%;}
+.deka-btns-vert {flex-direction: column;}
+.dbb {flex: 1;max-width: 100px;display: flex;align-items: center;justify-content: center;background: linear-gradient(180deg, #141414 0%, #080808 100%);font-family: var(--hdg);font-size: 1.85rem;font-weight: 800;border: 2px solid rgba(255,255,255,0.05);cursor: pointer;padding: 0 .5rem;min-height: 42px;color: rgba(255, 255, 255, 0.15);border-radius: 8px;box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 4px 8px rgba(0,0,0,0.4);transition: all .2s;}
+.dbb:hover {color: rgba(255, 255, 255, 0.6);border-color: rgba(255,255,255,0.2);transform: translateY(-1px);}
+.dbb.dsel-in {background: linear-gradient(180deg, var(--purple) 0%, color-mix(in srgb, var(--purple) 60%, black) 100%);color: var(--white);border-color: var(--purple);box-shadow: 0 0 15px color-mix(in srgb, var(--purple) 60%, transparent);text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
+.dbb.dsel-on {background: linear-gradient(180deg, var(--gold) 0%, #cc9900 100%);color: #000000;border-color: var(--gold);box-shadow: 0 0 15px rgba(245,197,24,.4);}
+.deka-commit-btn {width: 100%;padding: .9rem;background: linear-gradient(135deg, var(--purple) 0%, color-mix(in srgb, var(--purple) 70%, #000) 100%);border: 1px solid rgba(255,255,255,0.1);border-radius: 8px;color: var(--white);font-family: var(--sf);font-size: 1.25rem;font-weight: 800;letter-spacing: 4px;text-transform: uppercase;cursor: pointer;margin-top: 1rem;box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);transition: all .25s ease;}
+.deka-commit-btn:hover {transform: translateY(-2px);box-shadow: 0 8px 25px color-mix(in srgb, var(--purple) 50%, transparent);filter: brightness(1.15);}
+.deka-commit-center{width:100%;padding:.3rem;background:linear-gradient(135deg, var(--purple) 0%, color-mix(in srgb, var(--purple) 70%, #000) 100%);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--white);font-family:var(--sf);font-size:1rem;letter-spacing:3px;font-weight:800;cursor:pointer;transition:all .15s;margin-top:1.5rem;height: 20%;}
 
-/* --- Setup & Entry Cards: Glass Containers --- */
-.deka-setup, .deka-board, .deka-entry, .deka-results {
-  background: linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.2) 100%), var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.2rem;
-  margin-bottom: 1.2rem;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-}
-
-/* --- Typography Upgrades --- */
-.deka-setup h3, .deka-entry-name {
-  font-family: var(--sf);
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: 3px;
-  color: var(--purple);
-  margin-bottom: .85rem;
-  text-transform: uppercase;
-  text-shadow: 0 0 12px color-mix(in srgb, var(--purple) 30%, transparent);
-}
-
-/* --- Round Selection Cards --- */
-.deka-round-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  margin-bottom: .75rem;
-}
-.deka-round-card {
-  background: linear-gradient(180deg, #181818 0%, #0d0d0d 100%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: .75rem .5rem;
-  text-align: center;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-  transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.deka-round-card:hover {
-  border-color: var(--purple);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.6);
-}
-.deka-round-card.active {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--purple) 20%, transparent) 0%, rgba(0,0,0,0.4) 100%);
-  border-color: var(--purple);
-  box-shadow: 0 0 15px color-mix(in srgb, var(--purple) 40%, transparent);
-}
-.deka-round-card .drn {
-  font-family: var(--sf);
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: rgba(255,255,255,0.4);
-  transition: color 0.2s ease;
-}
-.deka-round-card.active .drn {
-  color: var(--white);
-  text-shadow: 0 0 10px var(--purple);
-}
-.deka-round-card .drl {
-  font-family: var(--hdg);
-  font-size: .55rem;
-  font-weight: 700;
-  color: var(--text3);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-
-/* --- Leaderboard & Rows --- */
-.deka-board {
-  overflow: hidden;
-  padding: 0;
-}
-.deka-board-hdr {
-  font-family: var(--hdg);
-  font-size: .75rem;
-  font-weight: 800;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  padding: .75rem 1.2rem;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--purple) 15%, transparent) 0%, transparent 100%);
-  color: var(--purple);
-  border-bottom: 2px solid var(--border);
-}
-.deka-player-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  gap: .75rem;
-  align-items: center;
-  padding: .7rem 1.2rem;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-}
-.deka-player-row:last-child {
-  border-bottom: none;
-}
-.deka-player-name {
-  font-family: var(--hdg);
-  font-size: .9rem;
-  font-weight: 700;
-  color: var(--white);
-}
-.deka-player-rnd {
-  font-family: var(--hdg);
-  font-size: .65rem;
-  color: var(--text3);
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-/* --- Entry Section Controls --- */
-.deka-bag-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  width: 100%;
-}
-.deka-bag-label {
-  font-family: var(--hdg);
-  font-size: .65rem;
-  font-weight: 800;
-  color: rgba(255,255,255,0.4);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.deka-btns, .deka-btns-vert {
-  display: flex;
-  gap: 6px;
-  width: 100%;
-}
-.deka-btns-vert {
-  flex-direction: column;
-}
-
-/* --- Tactile Score Entry Buttons (DBB) --- */
-.dbb {
-  flex: 1;
-  max-width: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(180deg, #141414 0%, #080808 100%);
-  font-family: var(--hdg);
-  font-size: 1.85rem;
-  font-weight: 800;
-  border: 2px solid rgba(255,255,255,0.05);
-  cursor: pointer;
-  padding: 0 .5rem;
-  min-height: 42px;
-  color: rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  box-shadow: inset 0 2px 4px rgba(255,255,255,0.05), 0 4px 8px rgba(0,0,0,0.4);
-  transition: all .2s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-.dbb:hover {
-  color: rgba(255, 255, 255, 0.6);
-  border-color: rgba(255,255,255,0.2);
-  transform: translateY(-1px);
-}
-.dbb.dsel-in {
-  background: linear-gradient(180deg, var(--purple) 0%, color-mix(in srgb, var(--purple) 60%, black) 100%);
-  color: var(--white);
-  border-color: var(--purple);
-  box-shadow: 0 0 15px color-mix(in srgb, var(--purple) 60%, transparent);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-}
-.dbb.dsel-on {
-  background: linear-gradient(180deg, var(--gold) 0%, #cc9900 100%);
-  color: #000000;
-  border-color: var(--gold);
-  box-shadow: 0 0 15px rgba(245,197,24,.4);
-}
-
-/* --- Glowing Giant Commit Button --- */
-.deka-commit-btn {
-  width: 100%;
-  padding: .9rem;
-  background: linear-gradient(135deg, var(--purple) 0%, color-mix(in srgb, var(--purple) 70%, #000) 100%);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  color: var(--white);
-  font-family: var(--sf);
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  cursor: pointer;
-  margin-top: 1rem;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
-  transition: all .25s ease;
-}
-.deka-commit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px color-mix(in srgb, var(--purple) 50%, transparent);
-  filter: brightness(1.15);
-}
-.deka-commit-btn:active {
-  transform: translateY(1px);
-}
-
-/* --- Score Displays --- */
-.deka-score-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 1rem;
-}
-.deka-score-cell {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.03);
-  border-radius: 8px;
-  padding: .65rem;
-  text-align: center;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
-}
-.deka-score-label {
-  font-family: var(--hdg);
-  font-size: .55rem;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text3);
-  margin-bottom: .3rem;
-}
-.deka-score-val {
-  font-family: var(--sf);
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: var(--white);
-}
-
-/* --- Massive 3D Giant Total Display --- */
-.deka-score-total {
-  font-family: var(--sf);
-  font-size: 11rem;
-  font-weight: 900;
-  color: var(--white);
-  text-align: center;
-  letter-spacing: -4px;
-  line-height: 0.95;
-  text-shadow: 0 0 30px rgba(255,255,255,0.08), 
-               0 15px 35px rgba(0,0,0,0.8),
-               0 30px 60px rgba(0,0,0,0.9);
-}
-
-/* --- Retro Cyber Match Results Table --- */
-.deka-results {
-  padding: 0;
-}
-.deka-results table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--hdg);
-  font-size: .75rem;
-}
-.deka-results th {
-  padding: .6rem .5rem;
-  text-align: center;
-  color: rgba(255,255,255,0.4);
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  border-bottom: 2px solid var(--border);
-  background: rgba(255,255,255,0.02);
-}
-.deka-results td {
-  padding: .6rem .5rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-  color: var(--white);
-}
-.deka-results tr:last-child td {
-  border: none;
-}
-.deka-results .rnd-num {
-  color: var(--purple);
-  font-weight: 800;
-  font-size: .65rem;
-}
-.deka-results .score-val {
-  font-family: var(--sf);
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-
+.deka-results table {width: 100%;border-collapse: collapse;font-family: var(--hdg);font-size: .75rem;}
+.deka-results th {padding: .6rem .5rem;text-align: center;color: rgba(255,255,255,0.4);font-weight: 800;letter-spacing: 2px;text-transform: uppercase;border-bottom: 2px solid var(--border);background: rgba(255,255,255,0.02);}
+.deka-results td {padding: .6rem .5rem;text-align: center;border-bottom: 1px solid rgba(255,255,255,0.03);color: var(--white);}
+.deka-results .rnd-num {color: var(--purple);font-weight: 800;font-size: .65rem;}
+.deka-results .score-val {font-family: var(--sf);font-size: 1.1rem;font-weight: 800;}
 
 /* ═══════════ WIN SCREEN ═══════════ */
 #win{max-width:520px;margin:0 auto;padding:2rem 1rem 3rem;text-align:center}
@@ -1137,9 +348,8 @@ background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 1
 .wbtn{padding:.72rem 1.4rem;border-radius:10px;font-family:var(--sf);font-size:1.1rem;letter-spacing:2px;cursor:pointer;transition:all .15s;border:none}
 .wbtn.p{background:var(--t1-color);color:var(--white)}.wbtn.p:hover{filter:brightness(0.85)}
 .wbtn.s{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}.wbtn.s:hover{border-color:var(--white);color:var(--white)}
-.wbtn.share{background:rgba(46,204,64,.15);color:var(--green);border:1px solid var(--green)}.wbtn.share:hover{background:var(--green);color:#000}
 
-/* Share / Export modal */
+/* Modals & Toasts */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
 .modal-overlay.hidden{display:none}
 .modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:1.25rem;max-width:440px;width:100%;max-height:85vh;overflow-y:auto}
@@ -1152,97 +362,68 @@ background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 1
 .modal-close{width:100%;padding:.55rem;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:.25rem;transition:all .14s}
 .modal-close:hover{border-color:var(--red);color:var(--red)}
 
-/* Series Save Modal */
-.series-input-wrap{margin-bottom:.75rem}
 .series-modal-inp{background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--white);font-family:var(--ui);font-size:1rem;font-weight:600;padding:.55rem .85rem;width:100%;outline:none;transition:border-color .2s;margin-bottom:.5rem}
-.series-modal-inp:focus{border-color:var(--purple)}
-.modal-save-btn{width:100%;padding:.7rem;background:var(--purple);border:none;border-radius:8px;color:var(--white);font-family:var(--sf);font-size:1.1rem;letter-spacing:3px;cursor:pointer;transition:all .15s;margin-bottom:.5rem}
-.modal-save-btn:hover{filter:brightness(0.85)}
+.modal-save-btn{width:100%;padding:.7rem;background:var(--purple);border:none;border-radius:8px;color:var(--white);font-family:var(--sf);font-size:1.1rem;letter-spacing:3px;cursor:pointer;margin-bottom:.5rem}
 
 .toast{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%) translateY(60px);background:var(--white);color:var(--bg);border-radius:8px;padding:.5rem 1rem;font-family:var(--hdg);font-size:.82rem;font-weight:700;letter-spacing:.5px;z-index:999;transition:transform .24s;pointer-events:none;white-space:nowrap;text-transform:uppercase}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
-/* Responsive small screens */
 @media(max-width:480px){
   .big-score-num{font-size:10rem}
   .pie-container{grid-template-columns:1fr 1fr 1fr}
   .pie-svg{width:64px;height:64px}
+  .acl-scoreboard{height: auto; min-height: 180px;}
 }
-.deka-commit-center{
-  width:100%;padding:.7rem;
-  background:red;border:none;
-  border-radius:8px;
-  color:var(--white);
-  font-family:var(--sf);
-  font-size:1.2rem;
-  letter-spacing:3px;
-  cursor:pointer;
-  transition:all .15s;
-  margin-top:.5rem;
-  height: 140px;
-}
-
-
 </style>
 </head>
 <body>
 <div class="toast" id="toast"></div>
 
-<!-- ═══════════ SHARE / EXPORT MODAL ═══════════ -->
 <div class="modal-overlay hidden" id="shareModal">
   <div class="modal-box">
     <div class="modal-title">📤 EXPORT & SHARE</div>
     <button class="modal-btn" onclick="exportAsText()">
       <span class="modal-btn-icon">📋</span>
-      <div><div class="modal-btn-text">Copy Match Summary</div><div class="modal-btn-sub">Plain text — paste into any app</div></div>
+      <div><div class="modal-btn-text">Copy Stats Summary</div><div class="modal-btn-sub">Plain text — paste into any app</div></div>
     </button>
     <button class="modal-btn" onclick="exportAsJSON()">
       <span class="modal-btn-icon">💾</span>
-      <div><div class="modal-btn-text">Download JSON Data</div><div class="modal-btn-sub">Full stats — import into spreadsheet</div></div>
+      <div><div class="modal-btn-text">Download JSON Data</div><div class="modal-btn-sub">Full raw stats & matches</div></div>
     </button>
     <button class="modal-btn" onclick="exportLifetimeCSV()">
       <span class="modal-btn-icon">📊</span>
-      <div><div class="modal-btn-text">Download Lifetime CSV</div><div class="modal-btn-sub">All players, all-time records</div></div>
-    </button>
-    <button class="modal-btn" onclick="shareNative()">
-      <span class="modal-btn-icon">🔗</span>
-      <div><div class="modal-btn-text">Share via Device</div><div class="modal-btn-sub">Opens native share sheet</div></div>
+      <div><div class="modal-btn-text">Download Stats CSV</div><div class="modal-btn-sub">Spreadsheet for current filter</div></div>
     </button>
     <button class="modal-close" onclick="closeShareModal()">✕ CLOSE</button>
   </div>
 </div>
 
-<!-- ═══════════ SERIES SAVE MODAL ═══════════ -->
 <div class="modal-overlay hidden" id="seriesModal">
   <div class="modal-box">
     <div class="modal-title">💜 SAVE SERIES</div>
     <p style="font-family:var(--hdg);font-size:.72rem;color:var(--text3);letter-spacing:.5px;text-align:center;margin-bottom:.85rem">Save current player lineup as a Series so you can reload it fast next game.</p>
-    <div class="series-input-wrap">
-      <input type="text" class="series-modal-inp" id="seriesNameInp" placeholder="Series name (e.g. Tuesday Night, ACL Regionals)…">
-    </div>
+    <input type="text" class="series-modal-inp" id="seriesNameInp" placeholder="Series name (e.g. Tuesday Night, Regionals)…">
     <button class="modal-save-btn" onclick="confirmSaveSeries()">💾 SAVE SERIES</button>
     <button class="modal-close" onclick="closeSeriesModal()">✕ CANCEL</button>
   </div>
 </div>
 
-<!-- ═══════════ SETUP SCREEN ═══════════ -->
 <div class="screen active" id="setup">
   <div class="acl-logo-bar">
     <h1>🎯 CORNHOLE</h1>
-    <p>ACL Style Live Scorer &amp; Stats Tracker</p>
-    <span class="acl-badge">ACL PRO</span>
+    <p>Ultimate Live Scorer &amp; Dynamic Stats Tracker</p>
+    <span class="acl-badge">PRO EDITION</span>
   </div>
 
   <div class="resume-indicator" id="resumeIndicator">⚡ ACTIVE GAME IN PROGRESS — RESUME BELOW</div>
 
   <div class="nav-row">
     <button class="nav-btn resume-btn" id="resumeBtn" onclick="resumeGame()">▶ RESUME</button>
-    <button class="nav-btn stats-btn" onclick="openLifetimeStats()">📊 STATS</button>
+    <button class="nav-btn stats-btn" onclick="openFilteredStats()">📊 STATS</button>
     <button class="nav-btn deka-btn" onclick="openDekaSetup()">🎯 DEKA</button>
     <button class="nav-btn" onclick="clearLifetimeStats()">🗑 RESET</button>
   </div>
 
-  <!-- Saved Players -->
   <div class="setup-card">
     <div class="setup-card-hdr neutral">Saved Players — tap to fill</div>
     <div class="setup-card-body">
@@ -1250,53 +431,41 @@ background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 1
     </div>
   </div>
 
-  <!-- Series -->
   <div class="setup-card">
-    <div class="setup-card-hdr" style="background:rgba(168,85,247,.12);color:var(--purple);border-color:rgba(168,85,247,.3)">💜 SAVED SERIES — tap to load lineup</div>
+    <div class="setup-card-hdr" style="background:rgba(168,85,247,.12);color:var(--purple);border-color:rgba(168,85,247,.3)">SAVED SERIES — tap to load lineup</div>
     <div class="setup-card-body">
       <div class="series-row" id="seriesBar"><span style="font-size:.75rem;color:var(--text3);font-family:var(--hdg)">No series saved yet.</span></div>
     </div>
   </div>
 
-  <!-- Team 1 -->
   <div class="setup-card">
     <div class="setup-card-hdr a">
       TEAM 1
-      <input type="color" id="t1color" value="#e52222" class="color-picker" title="Select Team 1 Bag Color">
+      <input type="color" id="t1color" value="#e52222" class="color-picker" title="Select Team 1 Color">
     </div>
     <div class="setup-card-body">
       <div class="sub-lbl">Player 1</div>
-      <div class="player-row">
-        <input type="text" class="setup-inp" id="p1" placeholder="Player name…">
-      </div>
+      <div class="player-row"><input type="text" class="setup-inp" id="p1" placeholder="Player name…"></div>
       <div class="sub-lbl">Player 2 (Optional – Doubles)</div>
-      <div class="player-row">
-        <input type="text" class="setup-inp" id="p2" placeholder="Player name…">
-      </div>
+      <div class="player-row"><input type="text" class="setup-inp" id="p2" placeholder="Player name…"></div>
     </div>
   </div>
 
-  <!-- Team 2 -->
   <div class="setup-card">
     <div class="setup-card-hdr b">
       TEAM 2
-      <input type="color" id="t2color" value="#2196d6" class="color-picker" title="Select Team 2 Bag Color">
+      <input type="color" id="t2color" value="#2196d6" class="color-picker" title="Select Team 2 Color">
     </div>
     <div class="setup-card-body">
       <div class="sub-lbl">Player 1</div>
-      <div class="player-row">
-        <input type="text" class="setup-inp" id="p3" placeholder="Player name…">
-      </div>
+      <div class="player-row"><input type="text" class="setup-inp" id="p3" placeholder="Player name…"></div>
       <div class="sub-lbl">Player 2 (Optional – Doubles)</div>
-      <div class="player-row">
-        <input type="text" class="setup-inp" id="p4" placeholder="Player name…">
-      </div>
+      <div class="player-row"><input type="text" class="setup-inp" id="p4" placeholder="Player name…"></div>
     </div>
   </div>
 
-  <!-- Win settings -->
   <div class="setup-card">
-    <div class="setup-card-hdr neutral">Winning Score Target</div>
+    <div class="setup-card-hdr neutral">Winning Score & Rules</div>
     <div class="setup-card-body">
       <div class="win-opts">
         <div class="win-opt active" id="w21" onclick="setWin(21)"><div class="wn">21</div><div class="wl">Standard</div></div>
@@ -1305,31 +474,28 @@ background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 1
         <div class="win-opt" id="w0" onclick="setWin(0)"><div class="wn">∞</div><div class="wl">No Limit</div></div>
       </div>
       <div class="rule-opts">
-        <div class="rule-opt active" id="rC" onclick="setRule('cancel')"><div class="rn">Cancellation</div><div class="rd">Net difference adds to leader each round.</div></div>
-        <div class="rule-opt" id="rA" onclick="setRule('all')"><div class="rn">All Points</div><div class="rd">Both teams accumulate all raw points.</div></div>
+        <div class="rule-opt active" id="rC" onclick="setRule('cancel')"><div class="rn">Cancellation</div><div class="rd">Net difference adds to leader</div></div>
+        <div class="rule-opt" id="rA" onclick="setRule('all')"><div class="rn">All Points</div><div class="rd">Both teams accumulate all pts</div></div>
       </div>
     </div>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:.75rem">
     <button class="start-btn" onclick="startGame()" style="margin-top:0">▶ START NEW GAME</button>
-    <button onclick="openSeriesModal()" style="padding:.75rem 1rem;background:rgba(168,85,247,.12);border:1px solid var(--purple);border-radius:10px;color:var(--purple);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;white-space:nowrap" onmouseover="this.style.background='rgba(168,85,247,.25)'" onmouseout="this.style.background='rgba(168,85,247,.12)'">💾 SAVE SERIES</button>
+    <button onclick="openSeriesModal()" style="padding:.75rem 1rem;background:rgba(168,85,247,.12);border:1px solid var(--purple);border-radius:10px;color:var(--purple);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;white-space:nowrap">💾 SAVE SERIES</button>
   </div>
 </div>
 
-<!-- ═══════════ GAME SCREEN ═══════════ -->
 <div class="screen" id="game">
   <div class="game-topbar">
     <div class="gtb-title">🎯 LIVE MATCH</div>
     <div class="gtb-btns">
       <button class="gtbtn danger" onclick="quitGame()">✕ QUIT</button>
-      <button class="gtbtn" onclick="openStats()">📊 STATS</button>
-      <button class="gtbtn" onclick="openShareModal()">📤 SHARE</button>
+      <button class="gtbtn" onclick="openGameStats()">📊 STATS</button>
       <button class="gtbtn hi" onclick="saveCurrentGame()">💾 SAVE</button>
     </div>
   </div>
 
-  <!-- Honors bar -->
   <div class="honors-bar" id="honorsBar">
     <span class="honors-label">HONORS:</span>
     <span class="honors-badge tie" id="honorsBadge">FLIP FOR FIRST</span>
@@ -1337,96 +503,64 @@ background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 1
   </div>
 
   <div class="acl-header">
-    <div class="team-banner a">
-      <div class="team-banner-name" id="bannerNameA">TEAM 1</div>
-    </div>
-    <div class="acl-center-logo">
-      <img src="https://app.iplayacl.com/assets/icons/icon-512x512.png" alt="ACL logo" style="width:20px;height:20px;">
-      <span class="acl-gear-icon" onclick="openStats()">⚙</span>
-    </div>
-    <div class="team-banner b">
-      <div class="team-banner-name" id="bannerNameB">TEAM 2</div>
-    </div>
+    <div class="team-banner a"><div class="team-banner-name" id="bannerNameA">T1</div></div>
+    <div class="acl-center-logo"><span class="acl-gear-icon" onclick="openGameStats()">⚙</span></div>
+    <div class="team-banner b"><div class="team-banner-name" id="bannerNameB">T2</div></div>
   </div>
 
   <div class="acl-scoreboard">
     <div class="bags-col">
-      <div class="bags-col-hdr in-hdr" id="bagsinA">Bags in</div>
-      <div class="bag-slot" id="aIn0" onclick="selectEntry('aHole',0)">0</div>
-      <div class="bag-slot" id="aIn1" onclick="selectEntry('aHole',1)">1</div>
-      <div class="bag-slot" id="aIn2" onclick="selectEntry('aHole',2)">2</div>
-      <div class="bag-slot" id="aIn3" onclick="selectEntry('aHole',3)">3</div>
-      <div class="bag-slot" id="aIn4" onclick="selectEntry('aHole',4)">4</div>
+      <div class="bags-col-hdr in-hdr" id="bagsinA">IN</div>
+      <div class="bag-slot" id="aIn0" onclick="setBag('aHole',0)">0</div>
+      <div class="bag-slot" id="aIn1" onclick="setBag('aHole',1)">1</div>
+      <div class="bag-slot" id="aIn2" onclick="setBag('aHole',2)">2</div>
+      <div class="bag-slot" id="aIn3" onclick="setBag('aHole',3)">3</div>
+      <div class="bag-slot" id="aIn4" onclick="setBag('aHole',4)">4</div>
     </div>
-
-    <div class="big-score-panel">    
-      <div class="big-score-num" id="scoreA">0</div>
-    </div>
-
+    <div class="big-score-panel"><div class="big-score-num" id="scoreA">0</div></div>
     <div class="bags-col" style="border-right:none">
-      <div class="bags-col-hdr on-hdr" id="bagsonA">BAGSON</div>
-      <div class="bag-slot" id="aOn0" onclick="selectEntry('aOn',0)">0</div>
-      <div class="bag-slot" id="aOn1" onclick="selectEntry('aOn',1)">1</div>
-      <div class="bag-slot" id="aOn2" onclick="selectEntry('aOn',2)">2</div>
-      <div class="bag-slot" id="aOn3" onclick="selectEntry('aOn',3)">3</div>
-      <div class="bag-slot" id="aOn4" onclick="selectEntry('aOn',4)">4</div>
+      <div class="bags-col-hdr on-hdr" id="bagsonA">ON</div>
+      <div class="bag-slot" id="aOn0" onclick="setBag('aOn',0)">0</div>
+      <div class="bag-slot" id="aOn1" onclick="setBag('aOn',1)">1</div>
+      <div class="bag-slot" id="aOn2" onclick="setBag('aOn',2)">2</div>
+      <div class="bag-slot" id="aOn3" onclick="setBag('aOn',3)">3</div>
+      <div class="bag-slot" id="aOn4" onclick="setBag('aOn',4)">4</div>
     </div>
     <div class="bags-col" style="border-left:1px solid var(--border)">
-      <div class="bags-col-hdr in-hdr-b" id="bagsinB">BAGS IN</div>
-      <div class="bag-slot" id="bIn0" onclick="selectEntry('bHole',0)">0</div>
-      <div class="bag-slot" id="bIn1" onclick="selectEntry('bHole',1)">1</div>
-      <div class="bag-slot" id="bIn2" onclick="selectEntry('bHole',2)">2</div>
-      <div class="bag-slot" id="bIn3" onclick="selectEntry('bHole',3)">3</div>
-      <div class="bag-slot" id="bIn4" onclick="selectEntry('bHole',4)">4</div>
+      <div class="bags-col-hdr in-hdr-b" id="bagsinB">IN</div>
+      <div class="bag-slot" id="bIn0" onclick="setBag('bHole',0)">0</div>
+      <div class="bag-slot" id="bIn1" onclick="setBag('bHole',1)">1</div>
+      <div class="bag-slot" id="bIn2" onclick="setBag('bHole',2)">2</div>
+      <div class="bag-slot" id="bIn3" onclick="setBag('bHole',3)">3</div>
+      <div class="bag-slot" id="bIn4" onclick="setBag('bHole',4)">4</div>
     </div>
-
-    <div class="big-score-panel">
-      <div class="big-score-num" id="scoreB">0</div>
-    </div>
-
+    <div class="big-score-panel"><div class="big-score-num" id="scoreB">0</div></div>
     <div class="bags-col right">
-      <div class="bags-col-hdr on-hdr" id="bagsonB">BAGSON</div>
-      <div class="bag-slot" id="bOn0" onclick="selectEntry('bOn',0)">0</div>
-      <div class="bag-slot" id="bOn1" onclick="selectEntry('bOn',1)">1</div>
-      <div class="bag-slot" id="bOn2" onclick="selectEntry('bOn',2)">2</div>
-      <div class="bag-slot" id="bOn3" onclick="selectEntry('bOn',3)">3</div>
-      <div class="bag-slot" id="bOn4" onclick="selectEntry('bOn',4)">4</div>
+      <div class="bags-col-hdr on-hdr" id="bagsonB">ON</div>
+      <div class="bag-slot" id="bOn0" onclick="setBag('bOn',0)">0</div>
+      <div class="bag-slot" id="bOn1" onclick="setBag('bOn',1)">1</div>
+      <div class="bag-slot" id="bOn2" onclick="setBag('bOn',2)">2</div>
+      <div class="bag-slot" id="bOn3" onclick="setBag('bOn',3)">3</div>
+      <div class="bag-slot" id="bOn4" onclick="setBag('bOn',4)">4</div>
     </div>
   </div>
 
   <div class="acl-bottom-row"> 
     <div class="player-pts-box left"> 
-      <div style="text-align:left"> 
-        <div class="pts-label">Round<br>Score</div> 
-        <div class="pts-val" id="roundScoreA">0</div> 
-      </div> 
-      <div style="text-align:right"> 
-        <div class="pts-label">Points<br>Earned</div> 
-        <div class="pts-val" id="playerPtsA">0</div> 
-      </div> 
+      <div style="text-align:left"><div class="pts-label">Round<br>Score</div><div class="pts-val" id="roundScoreA">0</div></div> 
+      <div style="text-align:right"><div class="pts-label">Points<br>Earned</div><div class="pts-val" id="playerPtsA">0</div></div> 
     </div> 
-    
     <div class="round-score-center"> 
       <div class="round-score-hdr" id="roundScoreHdr" style="font-family:var(--hdg);font-size:.7rem;font-weight:700;color:var(--text2);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase">Round 1</div> 
       <button class="commit-btn" onclick="commitRound()">COMMIT ROUND ▶</button>
     </div> 
-    
     <div class="player-pts-box right"> 
-      <div style="text-align:left"> 
-        <div class="pts-label">Round<br>Score</div> 
-        <div class="pts-val" id="roundScoreB">0</div> 
-      </div> 
-      <div style="text-align:right"> 
-        <div class="pts-label">Points<br>Earned</div> 
-        <div class="pts-val" id="playerPtsB">0</div> 
-      </div> 
+      <div style="text-align:left"><div class="pts-label">Round<br>Score</div><div class="pts-val" id="roundScoreB">0</div></div> 
+      <div style="text-align:right"><div class="pts-label">Points<br>Earned</div><div class="pts-val" id="playerPtsB">0</div></div> 
     </div> 
   </div>
 
-  <div class="history-mini-bar" id="historyBar">
-    <div class="hist-label">HISTORY:</div>
-    <div style="font-size:.62rem;color:var(--text3);font-family:var(--hdg);font-weight:600">No rounds yet</div>
-  </div>
+  <div class="history-mini-bar" id="historyBar"></div>
 
   <div class="entry-panel">
     <div class="entry-hdr">
@@ -1435,9 +569,9 @@ background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 1
     </div>
     <div class="entry-grid">
       <div class="entry-col">
-        <div class="entry-col-hdr a" id="entryColHdrA">TEAM 1 — BAGS</div>
+        <div class="entry-col-hdr a" id="entryColHdrA">TEAM 1</div>
         <div class="bag-type-row">
-          <div class="bag-type-lbl"><span class="bag-type-dot a"></span>HOLE (3pt)</div>
+          <div class="bag-type-lbl"><span class="bag-type-dot a"></span>HOLE</div>
           <div class="bag-btns-group">
             <button class="bb" onclick="setBag('aHole',1)" id="aH1">1</button>
             <button class="bb" onclick="setBag('aHole',2)" id="aH2">2</button>
@@ -1446,7 +580,7 @@ background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 1
           </div>
         </div>
         <div class="bag-type-row">
-          <div class="bag-type-lbl"><span class="bag-type-dot" style="background:var(--gold)"></span>ON BOARD (1pt)</div>
+          <div class="bag-type-lbl"><span class="bag-type-dot" style="background:var(--gold)"></span>ON BOARD</div>
           <div class="bag-btns-group">
             <button class="bb" onclick="setBag('aOn',1)" id="aO1">1</button>
             <button class="bb" onclick="setBag('aOn',2)" id="aO2">2</button>
@@ -1460,9 +594,9 @@ background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 1
         </div>
       </div>
       <div class="entry-col">
-        <div class="entry-col-hdr b" id="entryColHdrB">TEAM 2 — BAGS</div>
+        <div class="entry-col-hdr b" id="entryColHdrB">TEAM 2</div>
         <div class="bag-type-row">
-          <div class="bag-type-lbl"><span class="bag-type-dot b"></span>HOLE (3pt)</div>
+          <div class="bag-type-lbl"><span class="bag-type-dot b"></span>HOLE</div>
           <div class="bag-btns-group">
             <button class="bb" onclick="setBag('bHole',1)" id="bH1">1</button>
             <button class="bb" onclick="setBag('bHole',2)" id="bH2">2</button>
@@ -1471,7 +605,7 @@ background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 1
           </div>
         </div>
         <div class="bag-type-row">
-          <div class="bag-type-lbl"><span class="bag-type-dot" style="background:var(--gold)"></span>ON BOARD (1pt)</div>
+          <div class="bag-type-lbl"><span class="bag-type-dot" style="background:var(--gold)"></span>ON BOARD</div>
           <div class="bag-btns-group">
             <button class="bb" onclick="setBag('bOn',1)" id="bO1">1</button>
             <button class="bb" onclick="setBag('bOn',2)" id="bO2">2</button>
@@ -1498,28 +632,45 @@ background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 1
   </div>
 </div>
 
-<!-- ═══════════ STATS SCREEN ═══════════ -->
 <div class="screen" id="stats-screen">
   <div class="stats-topbar">
-    <div class="stats-topbar-title" id="statsTitle">PERFORMANCE STATS</div>
+    <div class="stats-topbar-title" id="statsTitle">STATISTICS</div>
     <div class="stats-topbar-btns">
       <button class="gtbtn" onclick="openShareModal()" style="color:var(--green);border-color:rgba(46,204,64,.4);background:rgba(46,204,64,.08)">📤 EXPORT</button>
       <button class="gtbtn" onclick="goBackFromStats()">← BACK</button>
     </div>
   </div>
+  
+  <div class="stats-filters">
+    <select class="stat-sel" id="timeFilter" onchange="renderStatsTabs()">
+      <option value="all">All Time</option>
+      <option value="year">This Year</option>
+      <option value="week">This Week</option>
+      <option value="day">Today</option>
+    </select>
+    <select class="stat-sel" id="typeFilter" onchange="renderStatsTabs()">
+      <option value="all">All Modes</option>
+      <option value="match">Matches Only</option>
+      <option value="deka">Dekarounds Only</option>
+    </select>
+  </div>
+  
+  <div class="stats-tabs">
+    <div class="stat-tab active" id="tabPlayers" onclick="setStatTab('players')">Player Stats</div>
+    <div class="stat-tab" id="tabHistory" onclick="setStatTab('history')">Match History</div>
+  </div>
+
   <div class="stats-body" id="statsBody"></div>
 </div>
 
-<!-- ═══════════ DEKAROUND SCREEN ═══════════ -->
 <div class="screen" id="deka-screen">
   <div class="deka-topbar">
     <div class="deka-title">🎯 DEKAROUND</div>
     <button class="gtbtn" onclick="showScreen('setup')">← BACK</button>
   </div>
-  <div class="deka-body" id="dekaBody"><!-- rendered by JS --></div>
+  <div class="deka-body" id="dekaBody"></div>
 </div>
 
-<!-- ═══════════ WIN SCREEN ═══════════ -->
 <div class="screen" id="win">
   <div class="win-crown">🏆</div>
   <div class="win-h">MATCH OVER</div>
@@ -1537,25 +688,26 @@ background: linear-gradient(145deg, rgba(255,255,255,0.01) 0%, rgba(0,0,0,0.1) 1
   </div>
   <div class="win-btns">
     <button class="wbtn p" onclick="showScreen('setup')">🔄 NEW GAME</button>
-    <button class="wbtn s" onclick="openStats()">📊 STATS</button>
-    <button class="wbtn share" onclick="openShareModal()">📤 SHARE</button>
+    <button class="wbtn s" onclick="openFilteredStats()">📊 STATS</button>
   </div>
 </div>
+
 <script>
 /* ═══════════ STATE ═══════════ */
 let CF = { win: 21, rule: 'cancel' };
 let G = null;
 let savedPlayers = [];
+let savedMatches = []; 
 let savedSeries = [];
-let lifetimeStats = {};
 let statsReturnTo = 'setup';
 let currentEntry = { aHole: 0, aOn: 0, bHole: 0, bOn: 0 };
-let lastScoringTeam = null; // for honors: 'A', 'B', or null
-
-/* Dekaround state */
+let currentHonorsTeam = null;
+let lastScoringTeam = null; 
 let DEKA = null;
+let currentStatTab = 'players';
+let _dekaRounds = 15;
 
-/* ═══════════ INIT ═══════════ */
+/* ═══════════ INIT & STORAGE ═══════════ */
 window.onload = function() {
   load();
   renderSavedBar();
@@ -1569,15 +721,14 @@ window.onload = function() {
   document.getElementById('t2color').addEventListener('change', e => localStorage.setItem('team2Color', e.target.value));
 };
 
-/* ═══════════ STORAGE ═══════════ */
 function load() {
   try {
     const p = localStorage.getItem('ch_players'); savedPlayers = p ? JSON.parse(p) : [];
     const sr = localStorage.getItem('ch_series'); savedSeries = sr ? JSON.parse(sr) : [];
-    const l = localStorage.getItem('ch_lifetime'); lifetimeStats = l ? JSON.parse(l) : {};
     const g = localStorage.getItem('ch_active_game'); if (g) G = JSON.parse(g);
-    const lh = localStorage.getItem('ch_last_honors'); if (lh) lastScoringTeam = lh;
+    const lh = localStorage.getItem('ch_last_honors'); if (lh) currentHonorsTeam = lh;
     const dk = localStorage.getItem('ch_deka'); if (dk) DEKA = JSON.parse(dk);
+    const m = localStorage.getItem('ch_matches'); savedMatches = m ? JSON.parse(m) : [];
   } catch(e) { console.error(e); }
 }
 
@@ -1585,12 +736,10 @@ function save() {
   try {
     localStorage.setItem('ch_players', JSON.stringify(savedPlayers));
     localStorage.setItem('ch_series', JSON.stringify(savedSeries));
-    localStorage.setItem('ch_lifetime', JSON.stringify(lifetimeStats));
-    if (G) localStorage.setItem('ch_active_game', JSON.stringify(G));
-    else localStorage.removeItem('ch_active_game');
-    if (lastScoringTeam) localStorage.setItem('ch_last_honors', lastScoringTeam);
-    if (DEKA) localStorage.setItem('ch_deka', JSON.stringify(DEKA));
-    else localStorage.removeItem('ch_deka');
+    localStorage.setItem('ch_matches', JSON.stringify(savedMatches));
+    if (G) localStorage.setItem('ch_active_game', JSON.stringify(G)); else localStorage.removeItem('ch_active_game');
+    if (currentHonorsTeam) localStorage.setItem('ch_last_honors', currentHonorsTeam);
+    if (DEKA) localStorage.setItem('ch_deka', JSON.stringify(DEKA)); else localStorage.removeItem('ch_deka');
   } catch(e) { console.error(e); }
 }
 
@@ -1611,295 +760,122 @@ function toast(msg) {
 function checkResumeAvailable() {
   const ri = document.getElementById('resumeIndicator');
   const rb = document.getElementById('resumeBtn');
-  if (G) {
-    ri.classList.add('visible'); rb.style.opacity='1'; rb.style.pointerEvents='all';
-  } else {
-    ri.classList.remove('visible'); rb.style.opacity='0.35'; rb.style.pointerEvents='none';
-  }
+  if (G) { ri.classList.add('visible'); rb.style.opacity='1'; rb.style.pointerEvents='all'; } 
+  else { ri.classList.remove('visible'); rb.style.opacity='0.35'; rb.style.pointerEvents='none'; }
 }
 
-/* ═══════════ SAVED PLAYERS BAR ═══════════ */
+/* ═══════════ SETUP COMPONENTS ═══════════ */
 function renderSavedBar() {
   const sb = document.getElementById('savedBar');
-  if (!savedPlayers.length) {
-    sb.innerHTML = '<span style="font-size:.75rem;color:var(--text3);font-family:var(--hdg)">No saved players yet.</span>';
-    return;
-  }
-  sb.innerHTML = savedPlayers.map(p =>
-    `<span class="s-chip" onclick="fillSlot('${p.replace(/'/g,"\\'")}')">
-       ${p}
-       <span class="s-chip-x" onclick="event.stopPropagation();removePlayer('${p.replace(/'/g,"\\'")}')">×</span>
-     </span>`
-  ).join('');
+  if (!savedPlayers.length) { sb.innerHTML = '<span style="font-size:.75rem;color:var(--text3);font-family:var(--hdg)">No saved players yet.</span>'; return; }
+  sb.innerHTML = savedPlayers.map(p => `<span class="s-chip" onclick="fillSlot('${p.replace(/'/g,"\\'")}')">${p} <span class="s-chip-x" onclick="event.stopPropagation();removePlayer('${p.replace(/'/g,"\\'")}')">×</span></span>`).join('');
 }
-
 function fillSlot(name) {
   const ids = ['p1','p2','p3','p4'];
-  for (const id of ids) {
-    const el = document.getElementById(id);
-    if (!el.value.trim()) { el.value = name; return; }
-  }
-  toast('All slots full — clear one first');
+  for (const id of ids) { const el = document.getElementById(id); if (!el.value.trim()) { el.value = name; return; } }
+  toast('All slots full');
 }
+function removePlayer(name) { savedPlayers = savedPlayers.filter(x => x !== name); save(); renderSavedBar(); }
 
-function removePlayer(name) {
-  savedPlayers = savedPlayers.filter(x => x !== name);
-  save(); renderSavedBar();
-}
-
-/* ═══════════ SERIES ═══════════ */
 function renderSeriesBar() {
   const sb = document.getElementById('seriesBar');
-  if (!savedSeries.length) {
-    sb.innerHTML = '<span style="font-size:.75rem;color:var(--text3);font-family:var(--hdg)">No series saved yet.</span>';
-    return;
-  }
-  sb.innerHTML = savedSeries.map((s, i) =>
-    `<span class="series-chip" onclick="loadSeries(${i})">
-       ${s.name}
-       <span class="series-chip-x" onclick="event.stopPropagation();removeSeries(${i})">×</span>
-     </span>`
-  ).join('');
+  if (!savedSeries.length) { sb.innerHTML = '<span style="font-size:.75rem;color:var(--text3);font-family:var(--hdg)">No series saved yet.</span>'; return; }
+  sb.innerHTML = savedSeries.map((s, i) => `<span class="series-chip" onclick="loadSeries(${i})">${s.name} <span class="series-chip-x" onclick="event.stopPropagation();removeSeries(${i})">×</span></span>`).join('');
 }
-
-function openSeriesModal() {
-  document.getElementById('seriesNameInp').value = '';
-  document.getElementById('seriesModal').classList.remove('hidden');
-}
-
-function closeSeriesModal() {
-  document.getElementById('seriesModal').classList.add('hidden');
-}
-
+function openSeriesModal() { document.getElementById('seriesNameInp').value = ''; document.getElementById('seriesModal').classList.remove('hidden'); }
+function closeSeriesModal() { document.getElementById('seriesModal').classList.add('hidden'); }
 function confirmSaveSeries() {
   const name = document.getElementById('seriesNameInp').value.trim();
   if (!name) { toast('Enter a series name'); return; }
-  const p1 = document.getElementById('p1').value.trim();
-  const p2 = document.getElementById('p2').value.trim();
-  const p3 = document.getElementById('p3').value.trim();
-  const p4 = document.getElementById('p4').value.trim();
+  const p1 = document.getElementById('p1').value.trim(), p2 = document.getElementById('p2').value.trim();
+  const p3 = document.getElementById('p3').value.trim(), p4 = document.getElementById('p4').value.trim();
   if (!p1 && !p3) { toast('Enter at least one player name'); return; }
-  const series = {
-    name,
-    players: [p1, p2, p3, p4],
-    c1: document.getElementById('t1color').value,
-    c2: document.getElementById('t2color').value
-  };
-  savedSeries.push(series);
-  save();
-  renderSeriesBar();
-  closeSeriesModal();
-  toast(`💜 SERIES "${name.toUpperCase()}" SAVED`);
+  savedSeries.push({ name, players: [p1, p2, p3, p4], c1: document.getElementById('t1color').value, c2: document.getElementById('t2color').value });
+  save(); renderSeriesBar(); closeSeriesModal(); toast(`💜 SERIES SAVED`);
 }
-
 function loadSeries(i) {
-  const s = savedSeries[i];
-  if (!s) return;
-  const ids = ['p1','p2','p3','p4'];
-  ids.forEach((id, j) => document.getElementById(id).value = s.players[j] || '');
-  document.getElementById('t1color').value = s.c1 || '#e52222';
-  document.getElementById('t2color').value = s.c2 || '#2196d6';
-  toast(`💜 SERIES "${s.name.toUpperCase()}" LOADED`);
+  const s = savedSeries[i]; if (!s) return;
+  ['p1','p2','p3','p4'].forEach((id, j) => document.getElementById(id).value = s.players[j] || '');
+  document.getElementById('t1color').value = s.c1 || '#e52222'; document.getElementById('t2color').value = s.c2 || '#2196d6';
+  toast(`💜 SERIES LOADED`);
 }
+function removeSeries(i) { savedSeries.splice(i, 1); save(); renderSeriesBar(); }
 
-function removeSeries(i) {
-  savedSeries.splice(i, 1);
-  save(); renderSeriesBar();
-}
+function setWin(n) { CF.win = n; ['21','15','11','0'].forEach(v => document.getElementById('w'+v).classList.remove('active')); document.getElementById('w'+(n===0?'0':n)).classList.add('active'); }
+function setRule(r) { CF.rule = r; document.getElementById('rC').classList.toggle('active', r==='cancel'); document.getElementById('rA').classList.toggle('active', r==='all'); }
+function applyColors(c1, c2) { document.documentElement.style.setProperty('--t1-color', c1); document.documentElement.style.setProperty('--t2-color', c2); }
 
-/* ═══════════ WIN / RULE SETTINGS ═══════════ */
-function setWin(n) {
-  CF.win = n;
-  ['21','15','11','0'].forEach(v => document.getElementById('w'+v).classList.remove('active'));
-  document.getElementById('w'+(n===0?'0':n)).classList.add('active');
-}
-
-function setRule(r) {
-  CF.rule = r;
-  document.getElementById('rC').classList.toggle('active', r==='cancel');
-  document.getElementById('rA').classList.toggle('active', r==='all');
-}
-
-function applyColors(c1, c2) {
-  document.documentElement.style.setProperty('--t1-color', c1);
-  document.documentElement.style.setProperty('--t2-color', c2);
-}
-
-/* ═══════════ GAME START / RESUME / QUIT ═══════════ */
+/* ═══════════ GAME LOGIC ═══════════ */
 function startGame() {
   const names = ['p1','p2','p3','p4'].map(id => document.getElementById(id).value.trim());
   if (!names[0] && !names[2]) { toast('Enter at least one name per team'); return; }
-
-  ['p1','p2','p3','p4'].forEach(id => {
-    const v = document.getElementById(id).value.trim();
-    if (v && !savedPlayers.includes(v)) savedPlayers.push(v);
-  });
-
-  names.filter(Boolean).forEach(n => {
-    if (!lifetimeStats[n]) lifetimeStats[n] = initLifetime();
-  });
-
-  const c1 = document.getElementById('t1color').value;
-  const c2 = document.getElementById('t2color').value;
-
+  names.filter(Boolean).forEach(n => { if (!savedPlayers.includes(n)) savedPlayers.push(n); });
+  
+  const c1 = document.getElementById('t1color').value, c2 = document.getElementById('t2color').value;
   G = {
-    winScore: CF.win,
-    rule: CF.rule,
-    colors: [c1, c2],
-    isDoubles: !!(names[1] && names[3]),
+    winScore: CF.win, rule: CF.rule, colors: [c1, c2], isDoubles: !!(names[1] && names[3]),
     teamA: names[1] ? [names[0]||'T1P1', names[1]] : [names[0]||'Player 1'],
     teamB: names[3] ? [names[2]||'T2P1', names[3]] : [names[2]||'Player 2'],
-    scores: [0,0],
-    round: 1,
-    history: [],
-    stats: [
-      { holes:0, on:0, off:0, throws:0, pts:0 },
-      { holes:0, on:0, off:0, throws:0, pts:0 }
-    ],
-    pStats: [
-      { holes:0, on:0, off:0, throws:0, pts:0 },
-      { holes:0, on:0, off:0, throws:0, pts:0 },
-      { holes:0, on:0, off:0, throws:0, pts:0 },
-      { holes:0, on:0, off:0, throws:0, pts:0 }
-    ]
+    scores: [0,0], round: 1, history: [],
+    stats: [{ holes:0, on:0, off:0, throws:0, pts:0 }, { holes:0, on:0, off:0, throws:0, pts:0 }],
+    pStats: [{ holes:0, on:0, off:0, throws:0, pts:0 }, { holes:0, on:0, off:0, throws:0, pts:0 }, { holes:0, on:0, off:0, throws:0, pts:0 }, { holes:0, on:0, off:0, throws:0, pts:0 }]
   };
-
-  lastScoringTeam = null;
-  applyColors(c1, c2);
-  save();
-  resetEntry();
-  renderBoard();
-  showScreen('game');
-  toast('🎯 MATCH STARTED!');
+  currentHonorsTeam = null; lastScoringTeam = null;
+  applyColors(c1, c2); save(); resetEntry(); renderBoard(); showScreen('game'); toast('🎯 MATCH STARTED!');
 }
 
-function resumeGame() {
-  if (!G) return;
-  if (G.colors && G.colors.length >= 2) applyColors(G.colors[0], G.colors[1]);
-  else applyColors('#e52222', '#2196d6');
-  resetEntry();
-  renderBoard();
-  updateHonors();
-  showScreen('game');
-}
-
-function quitGame() {
-  if (!confirm('Quit this match? Progress is saved — you can resume later.')) return;
-  save();
-  checkResumeAvailable();
-  showScreen('setup');
-}
-
-function saveCurrentGame() {
-  save();
-  toast('💾 GAME SAVED!');
-}
-
-// Initialize this globally or in your game state object
-let currentHonorsTeam = null; 
+function resumeGame() { if(!G)return; applyColors(G.colors[0]||'#e52222', G.colors[1]||'#2196d6'); resetEntry(); renderBoard(); updateHonors(); showScreen('game'); }
+function quitGame() { if(confirm('Quit match? Progress saved.')){ save(); showScreen('setup'); } }
+function saveCurrentGame() { save(); toast('💾 GAME SAVED!'); }
 
 function updateHonors() {
-  const badge = document.getElementById('honorsBadge');
-  const arrow = document.getElementById('honorsArrow');
-  
+  const badge = document.getElementById('honorsBadge'), arrow = document.getElementById('honorsArrow');
   if (!G) return;
-  
-  // Update state tracking if there is a clear round winner
-  if (lastScoringTeam === 'A' || lastScoringTeam === 'B') {
-    currentHonorsTeam = lastScoringTeam;
-  }
-  
-  // First round setup with no history or scoring yet
-  if (!lastScoringTeam && !currentHonorsTeam) {
-    badge.className = 'honors-badge tie';
-    badge.innerText = 'FLIP FOR FIRST';
-    arrow.innerText = '';
-    return;
-  }
-
-  const nameA = G.teamA.join(' & ').toUpperCase();
-  const nameB = G.teamB.join(' & ').toUpperCase();
-
-  // Check currentHonorsTeam instead of lastScoringTeam to handle ties
-  if (currentHonorsTeam === 'A') {
-    badge.className = 'honors-badge a';
-    badge.innerText = nameA + ' THROWS FIRST';
-    arrow.innerText = '⬅';
-  } else if (currentHonorsTeam === 'B') {
-    badge.className = 'honors-badge b';
-    badge.innerText = nameB + ' THROWS FIRST';
-    arrow.innerText = '➡';
-  }
+  if (lastScoringTeam === 'A' || lastScoringTeam === 'B') currentHonorsTeam = lastScoringTeam;
+  if (!lastScoringTeam && !currentHonorsTeam) { badge.className = 'honors-badge tie'; badge.innerText = 'FLIP FOR FIRST'; arrow.innerText = ''; return; }
+  const nameA = G.teamA.join(' & ').toUpperCase(), nameB = G.teamB.join(' & ').toUpperCase();
+  if (currentHonorsTeam === 'A') { badge.className = 'honors-badge a'; badge.innerText = nameA + ' THROWS FIRST'; arrow.innerText = '⬅'; } 
+  else if (currentHonorsTeam === 'B') { badge.className = 'honors-badge b'; badge.innerText = nameB + ' THROWS FIRST'; arrow.innerText = '➡'; }
 }
 
-
-
-/* ═══════════ BAG ENTRY ═══════════ */
 function setBag(type, value) {
-  let potHole = type==='aHole' ? value : currentEntry.aHole;
-  let potOn   = type==='aOn'   ? value : currentEntry.aOn;
+  let potHole = type==='aHole' ? value : currentEntry.aHole, potOn = type==='aOn' ? value : currentEntry.aOn;
   if ((type==='aHole'||type==='aOn') && potHole+potOn > 4) return;
-  let potHoleB = type==='bHole' ? value : currentEntry.bHole;
-  let potOnB   = type==='bOn'   ? value : currentEntry.bOn;
+  let potHoleB = type==='bHole' ? value : currentEntry.bHole, potOnB = type==='bOn' ? value : currentEntry.bOn;
   if ((type==='bHole'||type==='bOn') && potHoleB+potOnB > 4) return;
-  currentEntry[type] = value;
-  syncEntryUI();
-  syncSidebarSlots();
+  currentEntry[type] = value; syncEntryUI(); syncSidebarSlots();
 }
 
-function selectEntry(type, value) { setBag(type, value); }
-
-function resetEntry() {
-  currentEntry = { aHole:0, aOn:0, bHole:0, bOn:0 };
-  syncEntryUI();
-  syncSidebarSlots();
-}
+function resetEntry() { currentEntry = { aHole:0, aOn:0, bHole:0, bOn:0 }; syncEntryUI(); syncSidebarSlots(); }
 
 function syncEntryUI() {
-  const aH=currentEntry.aHole, aO=currentEntry.aOn;
-  const bH=currentEntry.bHole, bO=currentEntry.bOn;
-
+  const aH=currentEntry.aHole, aO=currentEntry.aOn, bH=currentEntry.bHole, bO=currentEntry.bOn;
   for (let i=1;i<=4;i++) {
-    const ah=document.getElementById('aH'+i), ao=document.getElementById('aO'+i);
-    const bh=document.getElementById('bH'+i), bo=document.getElementById('bO'+i);
-    if(ah){ ah.className='bb'; if(i===aH){ ah.classList.add('sel-in','a'); } }
-    if(ao){ ao.className='bb'; if(i===aO){ ao.classList.add('sel-on'); } }
-    if(bh){ bh.className='bb'; if(i===bH){ bh.classList.add('sel-in','b'); } }
-    if(bo){ bo.className='bb'; if(i===bO){ bo.classList.add('sel-on'); } }
+    const ah=document.getElementById('aH'+i), ao=document.getElementById('aO'+i), bh=document.getElementById('bH'+i), bo=document.getElementById('bO'+i);
+    if(ah){ ah.className='bb'; if(i===aH) ah.classList.add('sel-in','a'); }
+    if(ao){ ao.className='bb'; if(i===aO) ao.classList.add('sel-on'); }
+    if(bh){ bh.className='bb'; if(i===bH) bh.classList.add('sel-in','b'); }
+    if(bo){ bo.className='bb'; if(i===bO) bo.classList.add('sel-on'); }
   }
-
-  document.getElementById('aMiss').innerText = 4-(aH+aO);
-  document.getElementById('bMiss').innerText = 4-(bH+bO);
-
+  document.getElementById('aMiss').innerText = 4-(aH+aO); document.getElementById('bMiss').innerText = 4-(bH+bO);
   const gA = (aH*3)+aO, gB = (bH*3)+bO;
-  document.getElementById('prevA').innerText = '+'+gA;
-  document.getElementById('prevB').innerText = '+'+gB;
-
+  document.getElementById('prevA').innerText = '+'+gA; document.getElementById('prevB').innerText = '+'+gB;
   if (G && G.rule==='cancel') {
     const diff = gA-gB;
     if(diff>0) document.getElementById('prevNet').innerText='Net T1 +'+diff;
     else if(diff<0) document.getElementById('prevNet').innerText='Net T2 +'+Math.abs(diff);
     else document.getElementById('prevNet').innerText='Net: TIE';
-  } else {
-    document.getElementById('prevNet').innerText='All Pts';
-  }
-
-  document.getElementById('roundScoreA').innerText = gA;
-  document.getElementById('roundScoreB').innerText = gB;
-
+  } else { document.getElementById('prevNet').innerText='All Pts'; }
+  document.getElementById('roundScoreA').innerText = gA; document.getElementById('roundScoreB').innerText = gB;
   const netDiff = gA - gB;
   document.getElementById('playerPtsA').innerText = netDiff > 0 ? '+' + netDiff : 0;
   document.getElementById('playerPtsB').innerText = netDiff < 0 ? '+' + Math.abs(netDiff) : 0;
 }
 
 function syncSidebarSlots() {
-  const aH=currentEntry.aHole, aO=currentEntry.aOn;
-  const bH=currentEntry.bHole, bO=currentEntry.bOn;
+  const aH=currentEntry.aHole, aO=currentEntry.aOn, bH=currentEntry.bHole, bO=currentEntry.bOn;
   for(let i=1;i<=4;i++){
-    const aInEl=document.getElementById('aIn'+i);
-    const aOnEl=document.getElementById('aOn'+i);
-    const bInEl=document.getElementById('bIn'+i);
-    const bOnEl=document.getElementById('bOn'+i);
+    const aInEl=document.getElementById('aIn'+i), aOnEl=document.getElementById('aOn'+i), bInEl=document.getElementById('bIn'+i), bOnEl=document.getElementById('bOn'+i);
     if(aInEl){ aInEl.className='bag-slot'; if(i<=aH) aInEl.classList.add('active-in'); }
     if(aOnEl){ aOnEl.className='bag-slot'; if(i<=aO) aOnEl.classList.add('active-on'); }
     if(bInEl){ bInEl.className='bag-slot'; if(i<=bH) bInEl.classList.add('active-in-b'); }
@@ -1907,492 +883,235 @@ function syncSidebarSlots() {
   }
 }
 
-/* ═══════════ COMMIT / UNDO ═══════════ */
 function commitRound() {
-  const gA=(currentEntry.aHole*3)+currentEntry.aOn;
-  const gB=(currentEntry.bHole*3)+currentEntry.bOn;
+  const gA=(currentEntry.aHole*3)+currentEntry.aOn, gB=(currentEntry.bHole*3)+currentEntry.bOn;
   let netA=0, netB=0;
-  if(G.rule==='cancel'){ const d=gA-gB; if(d>0) netA=d; else netB=Math.abs(d); }
-  else { netA=gA; netB=gB; }
-
+  if(G.rule==='cancel'){ const d=gA-gB; if(d>0) netA=d; else netB=Math.abs(d); } else { netA=gA; netB=gB; }
   const activeIdx = G.isDoubles ? ((G.round - 1) % 2) : 0;
 
-  // Update honors based on who scored net points this round
   if (G.rule === 'cancel') {
-    const diff = gA - gB;
-    if (diff > 0) lastScoringTeam = 'A';
-    else if (diff < 0) lastScoringTeam = 'B';
-    else lastScoringTeam = 'TIE';
+    const diff = gA - gB; if (diff > 0) lastScoringTeam = 'A'; else if (diff < 0) lastScoringTeam = 'B'; else lastScoringTeam = 'TIE';
   } else {
-    if (gA > 0 && gB === 0) lastScoringTeam = 'A';
-    else if (gB > 0 && gA === 0) lastScoringTeam = 'B';
-    else if (gA > gB) lastScoringTeam = 'A';
-    else if (gB > gA) lastScoringTeam = 'B';
-    else lastScoringTeam = 'TIE';
+    if (gA > 0 && gB === 0) lastScoringTeam = 'A'; else if (gB > 0 && gA === 0) lastScoringTeam = 'B'; else if (gA > gB) lastScoringTeam = 'A'; else if (gB > gA) lastScoringTeam = 'B'; else lastScoringTeam = 'TIE';
   }
 
-  const row = {
-    rnd: G.round, activeIdx,
-    aHole: currentEntry.aHole, aOn: currentEntry.aOn, aPts: netA,
-    bHole: currentEntry.bHole, bOn: currentEntry.bOn, bPts: netB,
-    scoresBefore: [...G.scores],
-    honorsAfter: lastScoringTeam
-  };
-  G.history.push(row);
-
+  G.history.push({ rnd: G.round, activeIdx, aHole: currentEntry.aHole, aOn: currentEntry.aOn, aPts: netA, bHole: currentEntry.bHole, bOn: currentEntry.bOn, bPts: netB, scoresBefore: [...G.scores], honorsAfter: lastScoringTeam });
   G.scores[0]+=netA; G.scores[1]+=netB;
 
-  G.stats[0].holes+=currentEntry.aHole; G.stats[0].on+=currentEntry.aOn;
-  G.stats[0].off+=(4-(currentEntry.aHole+currentEntry.aOn)); G.stats[0].throws+=4; G.stats[0].pts+=gA;
-  G.stats[1].holes+=currentEntry.bHole; G.stats[1].on+=currentEntry.bOn;
-  G.stats[1].off+=(4-(currentEntry.bHole+currentEntry.bOn)); G.stats[1].throws+=4; G.stats[1].pts+=gB;
+  G.stats[0].holes+=currentEntry.aHole; G.stats[0].on+=currentEntry.aOn; G.stats[0].off+=(4-(currentEntry.aHole+currentEntry.aOn)); G.stats[0].throws+=4; G.stats[0].pts+=gA;
+  G.stats[1].holes+=currentEntry.bHole; G.stats[1].on+=currentEntry.bOn; G.stats[1].off+=(4-(currentEntry.bHole+currentEntry.bOn)); G.stats[1].throws+=4; G.stats[1].pts+=gB;
 
-  G.pStats[0 + activeIdx].holes += currentEntry.aHole;
-  G.pStats[0 + activeIdx].on += currentEntry.aOn;
-  G.pStats[0 + activeIdx].off += (4 - (currentEntry.aHole + currentEntry.aOn));
-  G.pStats[0 + activeIdx].throws += 4;
-  G.pStats[0 + activeIdx].pts += gA;
+  G.pStats[0 + activeIdx].holes += currentEntry.aHole; G.pStats[0 + activeIdx].on += currentEntry.aOn; G.pStats[0 + activeIdx].off += (4 - (currentEntry.aHole + currentEntry.aOn)); G.pStats[0 + activeIdx].throws += 4; G.pStats[0 + activeIdx].pts += gA;
+  G.pStats[2 + activeIdx].holes += currentEntry.bHole; G.pStats[2 + activeIdx].on += currentEntry.bOn; G.pStats[2 + activeIdx].off += (4 - (currentEntry.bHole + currentEntry.bOn)); G.pStats[2 + activeIdx].throws += 4; G.pStats[2 + activeIdx].pts += gB;
 
-  G.pStats[2 + activeIdx].holes += currentEntry.bHole;
-  G.pStats[2 + activeIdx].on += currentEntry.bOn;
-  G.pStats[2 + activeIdx].off += (4 - (currentEntry.bHole + currentEntry.bOn));
-  G.pStats[2 + activeIdx].throws += 4;
-  G.pStats[2 + activeIdx].pts += gB;
-
-  G.round++;
-  save();
-  resetEntry();
-  renderBoard();
-  updateHonors();
-  checkWin();
-  saveCurrentGame();
+  G.round++; save(); resetEntry(); renderBoard(); updateHonors(); checkWin(); saveCurrentGame();
 }
 
 function undoRound() {
   if(!G.history.length){ toast('Nothing to undo'); return; }
-  const last=G.history.pop();
-  const idx = last.activeIdx;
-
-  G.round=last.rnd;
-  G.scores=[...last.scoresBefore];
+  const last=G.history.pop(), idx = last.activeIdx;
+  G.round=last.rnd; G.scores=[...last.scoresBefore];
 
   G.stats[0].holes-=last.aHole; G.stats[0].on-=last.aOn; G.stats[0].throws-=4; G.stats[0].off-=(4-(last.aHole+last.aOn)); G.stats[0].pts-=((last.aHole*3)+last.aOn);
   G.stats[1].holes-=last.bHole; G.stats[1].on-=last.bOn; G.stats[1].throws-=4; G.stats[1].off-=(4-(last.bHole+last.bOn)); G.stats[1].pts-=((last.bHole*3)+last.bOn);
+  G.pStats[0 + idx].holes -= last.aHole; G.pStats[0 + idx].on -= last.aOn; G.pStats[0 + idx].off -= (4 - (last.aHole + last.aOn)); G.pStats[0 + idx].throws -= 4; G.pStats[0 + idx].pts -= ((last.aHole * 3) + last.aOn);
+  G.pStats[2 + idx].holes -= last.bHole; G.pStats[2 + idx].on -= last.bOn; G.pStats[2 + idx].off -= (4 - (last.bHole + last.bOn)); G.pStats[2 + idx].throws -= 4; G.pStats[2 + idx].pts -= ((last.bHole * 3) + last.bOn);
 
-  G.pStats[0 + idx].holes -= last.aHole;
-  G.pStats[0 + idx].on -= last.aOn;
-  G.pStats[0 + idx].off -= (4 - (last.aHole + last.aOn));
-  G.pStats[0 + idx].throws -= 4;
-  G.pStats[0 + idx].pts -= ((last.aHole * 3) + last.aOn);
-
-  G.pStats[2 + idx].holes -= last.bHole;
-  G.pStats[2 + idx].on -= last.bOn;
-  G.pStats[2 + idx].off -= (4 - (last.bHole + last.bOn));
-  G.pStats[2 + idx].throws -= 4;
-  G.pStats[2 + idx].pts -= ((last.bHole * 3) + last.bOn);
-
-  // restore honors to previous round's state
-  if (G.history.length > 0) {
-    lastScoringTeam = G.history[G.history.length-1].honorsAfter;
-  } else {
-    lastScoringTeam = null;
-  }
-
-  save();
-  resetEntry();
-  renderBoard();
-  updateHonors();
-  toast('↩ ROUND UNDONE');
+  lastScoringTeam = G.history.length > 0 ? G.history[G.history.length-1].honorsAfter : null;
+  save(); resetEntry(); renderBoard(); updateHonors(); toast('↩ ROUND UNDONE');
 }
 
-/* ═══════════ RENDER BOARD ═══════════ */
 function renderBoard() {
-  const nameA=G.teamA.join(' & ').toUpperCase();
-  const nameB=G.teamB.join(' & ').toUpperCase();
   const activeIdx = G.isDoubles ? ((G.round - 1) % 2) : 0;
-  const activeNameA = G.teamA[activeIdx] || G.teamA[0];
-  const activeNameB = G.teamB[activeIdx] || G.teamB[0];
-
-  document.getElementById('bannerNameA').innerText=nameA;
-  document.getElementById('bannerNameB').innerText=nameB;
-  document.getElementById('bagsinA').innerText=activeNameA.split(' ')[0]+"'s bags in";
-  document.getElementById('bagsinB').innerText=activeNameB.split(' ')[0]+"'s bags in";
-  document.getElementById('bagsonA').innerText=activeNameA.split(' ')[0]+"'s bags on";
-  document.getElementById('bagsonB').innerText=activeNameB.split(' ')[0]+"'s bags on";
-  document.getElementById('entryColHdrA').innerText=activeNameA.toUpperCase()+' — BAGS';
-  document.getElementById('entryColHdrB').innerText=activeNameB.toUpperCase()+' — BAGS';
+  document.getElementById('bannerNameA').innerText=G.teamA.join(' & ').toUpperCase(); document.getElementById('bannerNameB').innerText=G.teamB.join(' & ').toUpperCase();
+  document.getElementById('bagsinA').innerText=(G.teamA[activeIdx]||G.teamA[0]).split(' ')[0].toUpperCase() + "'S BAGS IN";
+  document.getElementById('bagsinB').innerText=(G.teamB[activeIdx]||G.teamB[0]).split(' ')[0].toUpperCase() + "'S BAGS IN";
+  document.getElementById('bagsonA').innerText=(G.teamA[activeIdx]||G.teamA[0]).split(' ')[0].toUpperCase() + "'S BAGS ON";
+  document.getElementById('bagsonB').innerText=(G.teamB[activeIdx]||G.teamB[0]).split(' ')[0].toUpperCase() + "'S BAGS ON";
+  document.getElementById('entryColHdrA').innerText=(G.teamA[activeIdx]||G.teamA[0]).toUpperCase()+' — BAGS';
+  document.getElementById('entryColHdrB').innerText=(G.teamB[activeIdx]||G.teamB[0]).toUpperCase()+' — BAGS';
   document.getElementById('doublesIndicator').innerText = G.isDoubles ? "Doubles Entry (Board " + (activeIdx + 1) + ")" : "Round Entry";
 
   const sA=document.getElementById('scoreA'), sB=document.getElementById('scoreB');
   sA.innerText=G.scores[0]; sB.innerText=G.scores[1];
-  sA.classList.remove('pop'); sB.classList.remove('pop');
-  void sA.offsetWidth; void sB.offsetWidth;
-  sA.classList.add('pop'); sB.classList.add('pop');
+  sA.classList.remove('pop'); sB.classList.remove('pop'); void sA.offsetWidth; void sB.offsetWidth; sA.classList.add('pop'); sB.classList.add('pop');
 
-  const rndTxt='Round '+G.round;
-  document.getElementById('roundScoreHdr').innerText=rndTxt;
-  document.getElementById('entryRoundLabel').innerText=rndTxt;
-
+  const rndTxt='Round '+G.round; document.getElementById('roundScoreHdr').innerText=rndTxt; document.getElementById('entryRoundLabel').innerText=rndTxt;
   const hb=document.getElementById('historyBar');
-  if(!G.history.length){
-    hb.innerHTML='<div class="hist-label">HISTORY:</div><div style="font-size:.62rem;color:var(--text3);font-family:var(--hdg);font-weight:600">No rounds yet</div>';
-  } else {
-    hb.innerHTML='<div class="hist-label">HISTORY:</div>'+
-      G.history.slice(-12).map(h=>`<div class="hist-item"><div class="hi-rnd">R${h.rnd}</div><div class="hi-a">+${h.aPts}</div><div class="hi-b">+${h.bPts}</div></div>`).join('');
-  }
+  if(!G.history.length){ hb.innerHTML='<div class="hist-label">HISTORY:</div><div style="font-size:.62rem;color:var(--text3);font-family:var(--hdg);font-weight:600">No rounds yet</div>'; } 
+  else { hb.innerHTML='<div class="hist-label">HISTORY:</div>'+G.history.slice(-12).map(h=>`<div class="hist-item"><div class="hi-rnd">R${h.rnd}</div><div class="hi-a">+${h.aPts}</div><div class="hi-b">+${h.bPts}</div></div>`).join(''); }
 }
 
-/* ═══════════ WIN CHECK ═══════════ */
 function checkWin() {
   if(!G || G.winScore===0) return;
   const wA=G.scores[0]>=G.winScore, wB=G.scores[1]>=G.winScore;
-  if(!wA&&!wB) return;
-  let winner=(wA&&(!wB||G.scores[0]>G.scores[1]))?'A':'B';
-  endGame(winner);
+  if(!wA&&!wB) return; endGame((wA&&(!wB||G.scores[0]>G.scores[1]))?'A':'B');
 }
 
 function endGame(side) {
-  const nameA=G.teamA.join(' & '), nameB=G.teamB.join(' & ');
-  const winner=side==='A'?nameA:nameB;
+  const record = { id: Date.now(), date: new Date().toISOString(), type: 'match', winner: side, teamA: G.teamA, teamB: G.teamB, scores: G.scores, stats: G.stats, pStats: G.pStats, history: G.history, rule: G.rule, winScore: G.winScore };
+  savedMatches.push(record);
+  
+  const winner=side==='A'?G.teamA.join(' & '):G.teamB.join(' & ');
   document.getElementById('winTeamLabel').innerText=winner.toUpperCase()+' WINS!';
   document.getElementById('winTeamLabel').className='win-name '+(side==='A'?'a':'b');
   document.getElementById('winScoreSummary').innerText=`Final Score: ${G.scores[0]} – ${G.scores[1]}`;
   document.getElementById('winHdrA').innerText=G.teamA[0].substring(0,5).toUpperCase();
   document.getElementById('winHdrB').innerText=G.teamB[0].substring(0,5).toUpperCase();
-  document.getElementById('wHoleA').innerText=G.stats[0].holes;
-  document.getElementById('wHoleB').innerText=G.stats[1].holes;
-  document.getElementById('wOnA').innerText=G.stats[0].on;
-  document.getElementById('wOnB').innerText=G.stats[1].on;
-  document.getElementById('wOffA').innerText=G.stats[0].off;
-  document.getElementById('wOffB').innerText=G.stats[1].off;
-  document.getElementById('wThrowA').innerText=G.stats[0].throws;
-  document.getElementById('wThrowB').innerText=G.stats[1].throws;
-  const pprA=G.stats[0].throws>0?(G.stats[0].pts/(G.stats[0].throws/4)).toFixed(2):0;
-  const pprB=G.stats[1].throws>0?(G.stats[1].pts/(G.stats[1].throws/4)).toFixed(2):0;
-  document.getElementById('wPPRA').innerText=pprA;
-  document.getElementById('wPPRB').innerText=pprB;
-  const t0=G.stats[0].throws, t1=G.stats[1].throws;
-  document.getElementById('wInPctA').innerText=t0>0?(((G.stats[0].holes/t0)*100).toFixed(1)+'%'):'0%';
-  document.getElementById('wInPctB').innerText=t1>0?(((G.stats[1].holes/t1)*100).toFixed(1)+'%'):'0%';
-
-  if(G.teamA[0]) mergeToLifetime(G.teamA[0], G.pStats[0], side==='A', G.scores[0], G.scores[1]);
-  if(G.isDoubles && G.teamA[1]) mergeToLifetime(G.teamA[1], G.pStats[1], side==='A', G.scores[0], G.scores[1]);
-  if(G.teamB[0]) mergeToLifetime(G.teamB[0], G.pStats[2], side==='B', G.scores[1], G.scores[0]);
-  if(G.isDoubles && G.teamB[1]) mergeToLifetime(G.teamB[1], G.pStats[3], side==='B', G.scores[1], G.scores[0]);
-
-  G = null;
-  save();
-  checkResumeAvailable();
-  showScreen('win');
+  document.getElementById('wHoleA').innerText=G.stats[0].holes; document.getElementById('wHoleB').innerText=G.stats[1].holes;
+  document.getElementById('wOnA').innerText=G.stats[0].on; document.getElementById('wOnB').innerText=G.stats[1].on;
+  document.getElementById('wOffA').innerText=G.stats[0].off; document.getElementById('wOffB').innerText=G.stats[1].off;
+  document.getElementById('wThrowA').innerText=G.stats[0].throws; document.getElementById('wThrowB').innerText=G.stats[1].throws;
+  document.getElementById('wPPRA').innerText=G.stats[0].throws>0?(G.stats[0].pts/(G.stats[0].throws/4)).toFixed(2):0;
+  document.getElementById('wPPRB').innerText=G.stats[1].throws>0?(G.stats[1].pts/(G.stats[1].throws/4)).toFixed(2):0;
+  document.getElementById('wInPctA').innerText=G.stats[0].throws>0?(((G.stats[0].holes/G.stats[0].throws)*100).toFixed(1)+'%'):'0%';
+  document.getElementById('wInPctB').innerText=G.stats[1].throws>0?(((G.stats[1].holes/G.stats[1].throws)*100).toFixed(1)+'%'):'0%';
+  
+  G = null; save(); checkResumeAvailable(); showScreen('win');
 }
 
-/* ═══════════ LIFETIME STATS ═══════════ */
-function initLifetime() {
-  return { wins:0,losses:0,games:0,holes:0,on:0,off:0,throws:0,pts:0,oppPts:0,
-           localWins:0,localLosses:0,regionalWins:0,regionalLosses:0,openWins:0,openLosses:0 };
+/* ═══════════ STATS & FILTERS (DYNAMIC) ═══════════ */
+function openFilteredStats() { statsReturnTo = 'setup'; renderStatsTabs(); showScreen('stats-screen'); }
+function openGameStats() { statsReturnTo = 'game'; setStatTab('history'); showScreen('stats-screen'); }
+function goBackFromStats() { showScreen(statsReturnTo); }
+function setStatTab(tab) { currentStatTab = tab; document.querySelectorAll('.stat-tab').forEach(el=>el.classList.remove('active')); document.getElementById(tab==='players'?'tabPlayers':'tabHistory').classList.add('active'); renderStatsTabs(); }
+
+function filterMatches() {
+  const timeF = document.getElementById('timeFilter').value, typeF = document.getElementById('typeFilter').value, now = new Date();
+  return savedMatches.filter(m => {
+    if(typeF !== 'all' && m.type !== typeF) return false;
+    const mDate = new Date(m.date);
+    if(timeF === 'day') return mDate.toDateString() === now.toDateString();
+    if(timeF === 'year') return mDate.getFullYear() === now.getFullYear();
+    if(timeF === 'week') return mDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    return true;
+  }).sort((a,b) => b.id - a.id);
 }
 
-function mergeToLifetime(name, stats, won, myScore, oppScore) {
-  if(!lifetimeStats[name]) lifetimeStats[name]=initLifetime();
-  const ls=lifetimeStats[name];
-  ls.games++;
-  ls.holes+=stats.holes; ls.on+=stats.on; ls.off+=stats.off;
-  ls.throws+=stats.throws; ls.pts+=stats.pts; ls.oppPts+=oppScore;
-  if(won){ ls.wins++; ls.localWins++; } else { ls.losses++; ls.localLosses++; }
+function buildDynamicPlayerStats(filteredRecords) {
+  let pStats = {};
+  filteredRecords.forEach(m => {
+    if(m.type === 'match') {
+      [...m.teamA, ...m.teamB].forEach(name => {
+        if(!pStats[name]) pStats[name] = { games:0, wins:0, losses:0, holes:0, on:0, off:0, throws:0, pts:0, oppPts:0 };
+        pStats[name].games++;
+        const isTeamA = m.teamA.includes(name);
+        if((m.winner === 'A' && isTeamA) || (m.winner === 'B' && !isTeamA)) pStats[name].wins++; else pStats[name].losses++;
+        const idx = isTeamA ? m.teamA.indexOf(name) : m.teamB.indexOf(name) + 2;
+        pStats[name].holes += m.pStats[idx].holes; pStats[name].on += m.pStats[idx].on; pStats[name].off += m.pStats[idx].off;
+        pStats[name].throws += m.pStats[idx].throws; pStats[name].pts += m.pStats[idx].pts;
+        pStats[name].oppPts += isTeamA ? m.scores[1] : m.scores[0];
+      });
+    } else if(m.type === 'deka') {
+      const name = m.player;
+      if(!pStats[name]) pStats[name] = { games:0, wins:0, losses:0, holes:0, on:0, off:0, throws:0, pts:0, oppPts:0 };
+      pStats[name].games++;
+      m.rounds.forEach(r => { pStats[name].holes+=r.hole; pStats[name].on+=r.on; pStats[name].off+=r.off; pStats[name].throws+=4; pStats[name].pts+=(r.hole*3+r.on); });
+    }
+  });
+  return pStats;
 }
 
-function clearLifetimeStats() {
-  if(!confirm('Reset ALL lifetime stats for ALL players? This cannot be undone.')) return;
-  lifetimeStats = {};
-  save();
-  toast('📊 LIFETIME STATS CLEARED');
-}
-
-/* ═══════════ PIE CHART SVG ═══════════ */
 function makePieSVG(holes, on, off, colorIn, colorOn, colorOff) {
   const total = holes + on + off;
-  if (total === 0) {
-    return `<svg class="pie-svg" viewBox="0 0 80 80">
-      <circle cx="40" cy="40" r="35" fill="none" stroke="#333" stroke-width="1"/>
-      <text x="40" y="44" text-anchor="middle" fill="#555" font-size="10" font-family="Rajdhani">N/A</text>
-    </svg>`;
-  }
-  const slices = [
-    { val: holes, color: colorIn },
-    { val: on, color: colorOn },
-    { val: off, color: colorOff }
-  ].filter(s => s.val > 0);
-
-  let paths = '';
-  let startAngle = -Math.PI / 2;
-  const cx = 40, cy = 40, r = 35;
-
+  if (total === 0) return `<svg class="pie-svg" viewBox="0 0 80 80"><circle cx="40" cy="40" r="35" fill="none" stroke="#333" stroke-width="1"/><text x="40" y="44" text-anchor="middle" fill="#555" font-size="10" font-family="Rajdhani">N/A</text></svg>`;
+  const slices = [{ val: holes, color: colorIn }, { val: on, color: colorOn }, { val: off, color: colorOff }].filter(s => s.val > 0);
+  let paths = '', startAngle = -Math.PI / 2;
   slices.forEach(sl => {
-    const angle = (sl.val / total) * 2 * Math.PI;
-    const endAngle = startAngle + angle;
-    const x1 = cx + r * Math.cos(startAngle);
-    const y1 = cy + r * Math.sin(startAngle);
-    const x2 = cx + r * Math.cos(endAngle);
-    const y2 = cy + r * Math.sin(endAngle);
-    const large = angle > Math.PI ? 1 : 0;
-    if (slices.length === 1) {
-      paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${sl.color}"/>`;
-    } else {
-      paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z" fill="${sl.color}" stroke="#111" stroke-width="1.5"/>`;
-    }
+    const angle = (sl.val / total) * 2 * Math.PI, endAngle = startAngle + angle;
+    const x1 = 40 + 35 * Math.cos(startAngle), y1 = 40 + 35 * Math.sin(startAngle), x2 = 40 + 35 * Math.cos(endAngle), y2 = 40 + 35 * Math.sin(endAngle);
+    if (slices.length === 1) paths += `<circle cx="40" cy="40" r="35" fill="${sl.color}"/>`;
+    else paths += `<path d="M40,40 L${x1},${y1} A35,35 0 ${angle > Math.PI ? 1 : 0} 1 ${x2},${y2} Z" fill="${sl.color}" stroke="#111" stroke-width="1.5"/>`;
     startAngle = endAngle;
   });
-
   return `<svg class="pie-svg" viewBox="0 0 80 80">${paths}</svg>`;
 }
 
-/* ═══════════ STATS RENDER ═══════════ */
-function openLifetimeStats() {
-  statsReturnTo = 'setup';
-  renderLifetimeStats();
-  showScreen('stats-screen');
-}
+function renderStatsTabs() {
+  const records = filterMatches();
+  const body = document.getElementById('statsBody');
 
-function openStats() {
-  statsReturnTo = G ? 'game' : 'setup';
-  if (G) renderGameStats();
-  else renderLifetimeStats();
-  showScreen('stats-screen');
-}
+  if(currentStatTab === 'players') {
+    const pStats = buildDynamicPlayerStats(records);
+    if(!Object.keys(pStats).length) { body.innerHTML = '<p style="text-align:center;padding:2.5rem;color:var(--text3);font-family:var(--hdg);font-size:1rem;letter-spacing:2px;text-transform:uppercase">No stats found for this filter.</p>'; return; }
+    
+    let html = '';
+    for(const [name, s] of Object.entries(pStats)) {
+      const rounds = s.throws/4 || 1;
+      const ppr = s.throws>0 ? (s.pts/rounds).toFixed(2) : '0.00', oppr = s.games>0 ? (s.oppPts/rounds).toFixed(2) : '0.00';
+      const inPct = s.throws>0 ? ((s.holes/s.throws)*100).toFixed(1) : '0.0', onPct = s.throws>0 ? ((s.on/s.throws)*100).toFixed(1) : '0.0', offPct = s.throws>0 ? ((s.off/s.throws)*100).toFixed(1) : '0.0';
+      const winPct = s.games>0 ? ((s.wins/s.games)*100).toFixed(1) : '0.0', ptDiff = s.pts - s.oppPts;
+      let pColor = 'var(--purple)'; if(G){ if(G.teamA.includes(name)) pColor='var(--t1-color)'; else if(G.teamB.includes(name)) pColor='var(--t2-color)'; }
 
-function goBackFromStats() { showScreen(statsReturnTo); }
-
-function renderLifetimeStats() {
-  document.getElementById('statsTitle').innerText = 'LIFETIME STATS';
-  const players = Object.keys(lifetimeStats);
-  if (!players.length) {
-    document.getElementById('statsBody').innerHTML = '<p style="text-align:center;padding:2.5rem;color:var(--text3);font-family:var(--hdg);font-size:1rem;letter-spacing:2px;text-transform:uppercase">No lifetime stats yet.<br>Play a game to build your record!</p>';
-    return;
-  }
-
-  let html = '';
-  players.forEach(name => {
-    const ls = lifetimeStats[name];
-    const rounds = ls.throws > 0 ? ls.throws / 4 : 1;
-    const ppr = ls.throws > 0 ? (ls.pts / rounds).toFixed(2) : '0.00';
-    const oppr = ls.games > 0 ? (ls.oppPts / rounds).toFixed(2) : '0.00';
-    const ptDiff = ls.pts - ls.oppPts;
-    const inPct = ls.throws > 0 ? ((ls.holes/ls.throws)*100).toFixed(2) : '0.00';
-    const onPct = ls.throws > 0 ? ((ls.on/ls.throws)*100).toFixed(2) : '0.00';
-    const offPct = ls.throws > 0 ? ((ls.off/ls.throws)*100).toFixed(2) : '0.00';
-    const winPct = ls.games > 0 ? ((ls.wins/ls.games)*100).toFixed(2) : '0.00';
-
-    // Get color for this player's team if in active game
-    let playerColor = 'var(--gold)';
-    if (G) {
-      if (G.teamA.includes(name)) playerColor = 'var(--t1-color)';
-      else if (G.teamB.includes(name)) playerColor = 'var(--t2-color)';
+      html += `
+        <div class="acl-stats-section">
+          <div class="acl-stats-hdr">${name.toUpperCase()}</div>
+          <div style="background:var(--bg3);padding:.4rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)">BAG DISTRIBUTION</div>
+          <div class="pie-container">
+            <div class="pie-wrap"><div class="pie-title">OVERALL</div>${makePieSVG(s.holes, s.on, s.off, pColor, 'var(--gold)', '#555')}<div class="pie-legend"><div class="pie-leg-item"><span class="pie-leg-dot" style="background:${pColor}"></span>IN ${inPct}%</div><div class="pie-leg-item"><span class="pie-leg-dot" style="background:var(--gold)"></span>ON ${onPct}%</div><div class="pie-leg-item"><span class="pie-leg-dot" style="background:#555"></span>OFF ${offPct}%</div></div></div>
+            <div class="pie-wrap"><div class="pie-title">IN vs REST</div>${makePieSVG(s.holes, s.on+s.off, 0, pColor, '#333', '#333')}<div class="pie-legend"><div class="pie-leg-item"><span class="pie-leg-dot" style="background:${pColor}"></span>IN ${inPct}%</div><div class="pie-leg-item"><span class="pie-leg-dot" style="background:#333"></span>OTHER</div></div></div>
+            <div class="pie-wrap"><div class="pie-title">ON vs OFF</div>${makePieSVG(0, s.on, s.off, pColor, 'var(--gold)', '#555')}<div class="pie-legend"><div class="pie-leg-item"><span class="pie-leg-dot" style="background:var(--gold)"></span>ON ${onPct}%</div><div class="pie-leg-item"><span class="pie-leg-dot" style="background:#555"></span>OFF ${offPct}%</div></div></div>
+          </div>
+          <div style="background:var(--bg3);padding:.4rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);border-top:1px solid var(--border)">PERFORMANCE</div>
+          <div class="perf-grid">
+            <div class="perf-cell"><div class="perf-cell-label">PPR</div><div class="perf-cell-val accent">${ppr}</div></div>
+            <div class="perf-cell"><div class="perf-cell-label">Total Points</div><div class="perf-cell-val">${s.pts}</div></div>
+            <div class="perf-cell"><div class="perf-cell-label">Rounds</div><div class="perf-cell-val">${Math.round(rounds)}</div></div>
+            <div class="perf-cell"><div class="perf-cell-label">OPPR</div><div class="perf-cell-val accent">${oppr}</div></div>
+            <div class="perf-cell"><div class="perf-cell-label">Opp Points</div><div class="perf-cell-val">${s.oppPts}</div></div>
+            <div class="perf-cell"><div class="perf-cell-label">Pt. Diff.</div><div class="perf-cell-val" style="color:${ptDiff>=0?'var(--green)':'var(--red)'}">${ptDiff>0?'+':''}${ptDiff}</div></div>
+          </div>
+          <div class="divider-line" style="margin:0"></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);padding:.75rem">
+            <div style="text-align:center"><div class="wl-box-lbl">Games</div><div style="font-family:var(--sf);font-size:1.8rem;color:var(--white)">${s.games}</div></div>
+            <div style="text-align:center"><div class="wl-box-lbl">Wins</div><div style="font-family:var(--sf);font-size:1.8rem;color:var(--green)">${s.wins}</div></div>
+            <div style="text-align:center"><div class="wl-box-lbl">Losses</div><div style="font-family:var(--sf);font-size:1.8rem;color:var(--red)">${s.losses}</div></div>
+            <div style="text-align:center"><div class="wl-box-lbl">Win %</div><div style="font-family:var(--sf);font-size:1.8rem;color:var(--white)">${winPct}%</div></div>
+          </div>
+        </div>`;
     }
-
-    const pieSVG_in = makePieSVG(ls.holes, 0, 0, playerColor, 'var(--gold)', '#333');
-    const pieSVG = makePieSVG(ls.holes, ls.on, ls.off, playerColor, 'var(--gold)', '#444');
-
-    html += `
-      <div class="acl-stats-section">
-        <div class="acl-stats-hdr">${name.toUpperCase()}</div>
-
-        <!-- Pie Charts -->
-        <div style="background:var(--bg3);padding:.4rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)">BAG DISTRIBUTION</div>
-        <div class="pie-container">
-          <div class="pie-wrap">
-            <div class="pie-title">OVERALL</div>
-            ${makePieSVG(ls.holes, ls.on, ls.off, playerColor, 'var(--gold)', '#555')}
-            <div class="pie-legend">
-              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:${playerColor}"></span>IN ${inPct}%</div>
-              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:var(--gold)"></span>ON ${onPct}%</div>
-              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:#555"></span>OFF ${offPct}%</div>
-            </div>
-          </div>
-          <div class="pie-wrap">
-            <div class="pie-title">IN vs REST</div>
-            ${makePieSVG(ls.holes, ls.on + ls.off, 0, playerColor, '#333', '#333')}
-            <div class="pie-legend">
-              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:${playerColor}"></span>IN ${inPct}%</div>
-              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:#333"></span>OTHER</div>
-            </div>
-          </div>
-          <div class="pie-wrap">
-            <div class="pie-title">ON vs OFF</div>
-            ${makePieSVG(0, ls.on, ls.off, playerColor, 'var(--gold)', '#555')}
-            <div class="pie-legend">
-              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:var(--gold)"></span>ON ${onPct}%</div>
-              <div class="pie-leg-item"><span class="pie-leg-dot" style="background:#555"></span>OFF ${offPct}%</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="background:var(--bg3);padding:.4rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);border-top:1px solid var(--border)">PERFORMANCE STATS</div>
-        <div class="perf-grid">
-          <div class="perf-cell"><div class="perf-cell-label">PPR</div><div class="perf-cell-val accent">${ppr}</div></div>
-          <div class="perf-cell"><div class="perf-cell-label">Total Points</div><div class="perf-cell-val">${ls.pts}</div></div>
-          <div class="perf-cell"><div class="perf-cell-label">Rounds</div><div class="perf-cell-val">${Math.round(rounds)}</div></div>
-          <div class="perf-cell"><div class="perf-cell-label">OPPR</div><div class="perf-cell-val accent">${oppr}</div></div>
-          <div class="perf-cell"><div class="perf-cell-label">Opp Points</div><div class="perf-cell-val">${ls.oppPts}</div></div>
-          <div class="perf-cell"><div class="perf-cell-label">Pt. Diff.</div><div class="perf-cell-val" style="color:${ptDiff>=0?'var(--green)':'var(--red)'}">${ptDiff>0?'+':''}${ptDiff}</div></div>
-        </div>
-        <div class="divider-line" style="margin:0"></div>
-        <div class="perf-wide">
-          <div class="wl-box"><div class="wl-box-lbl">Bags In %</div><div class="wl-box-val">${inPct}</div></div>
-          <div class="wl-box"><div class="wl-box-lbl">Bags On %</div><div class="wl-box-val">${onPct}</div></div>
-          <div class="wl-box"><div class="wl-box-lbl">Bags Off %</div><div class="wl-box-val">${offPct}</div></div>
-        </div>
-        <div class="divider-line" style="margin:0"></div>
-
-        <div style="background:var(--bg3);padding:.4rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)">WIN / LOSS STATS</div>
-        <div style="padding:.6rem 1rem;background:var(--bg2);border:1px solid var(--border2);margin:.75rem;border-radius:6px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-            <div style="text-align:center"><div class="wl-box-lbl">Total Wins</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${ls.wins}</div></div>
-            <div style="text-align:center"><div class="wl-box-lbl">Total Losses</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${ls.losses}</div></div>
-            <div style="text-align:center"><div class="wl-box-lbl">Total Games</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${ls.games}</div></div>
-            <div style="text-align:center"><div class="wl-box-lbl">Win %</div><div style="font-family:var(--sf);font-size:2rem;color:var(--white)">${winPct}</div></div>
-          </div>
-        </div>
-        <div style="text-align:center;padding:.5rem">
-          <button onclick="clearPlayerStats('${name.replace(/'/g,"\\'")}')}" style="background:none;border:1px solid var(--text3);border-radius:6px;color:var(--text3);font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:.3rem .75rem;cursor:pointer;transition:all .14s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--text3)';this.style.color='var(--text3)'">Clear ${name} Stats</button>
-        </div>
-      </div>
-    `;
-  });
-
-  document.getElementById('statsBody').innerHTML = html;
+    body.innerHTML = html;
+  } else {
+    if(!records.length) { body.innerHTML = '<p style="text-align:center;padding:2.5rem;color:var(--text3);font-family:var(--hdg);font-size:1rem;letter-spacing:2px;text-transform:uppercase">No matches found.</p>'; return; }
+    let html = '';
+    records.forEach(m => {
+      const dt = new Date(m.date).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+      if(m.type === 'match') {
+        html += `<div class="match-hist-item" onclick="viewMatchDetail(${m.id})"><div><div class="match-hist-date">Match • ${dt}</div><div class="match-hist-title">${m.teamA.join(' & ')} <span style="color:var(--text3)">vs</span> ${m.teamB.join(' & ')}</div></div><div class="match-hist-score">${m.scores[0]} - ${m.scores[1]}</div></div>`;
+      } else {
+        const pts = m.rounds.reduce((sum,r)=>sum+(r.hole*3+r.on), 0);
+        html += `<div class="match-hist-item" onclick="viewMatchDetail(${m.id})"><div><div class="match-hist-date" style="color:var(--purple)">Dekaround • ${dt}</div><div class="match-hist-title">${m.player} (${m.totalRounds} Rds)</div></div><div class="match-hist-score" style="color:var(--purple)">${pts} pts</div></div>`;
+      }
+    });
+    body.innerHTML = html;
+  }
 }
 
-function clearPlayerStats(name) {
-  if (!confirm(`Clear all stats for ${name}?`)) return;
-  delete lifetimeStats[name];
-  save();
-  renderLifetimeStats();
-  toast(`STATS CLEARED FOR ${name.toUpperCase()}`);
+function viewMatchDetail(id) {
+  const m = savedMatches.find(x => x.id === id), body = document.getElementById('statsBody');
+  if(!m) return;
+  if(m.type === 'match') {
+    let trs = m.history.map(h => `<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text3)">R${h.rnd}</td><td style="padding:8px;color:var(--white)">${h.playerA||m.teamA[0]}</td><td style="padding:8px;color:var(--t1-color)">${h.aHole} / ${h.aOn}</td><td style="padding:8px;font-weight:bold;color:var(--t1-color)">+${h.aPts}</td><td style="padding:8px;color:var(--white)">${h.playerB||m.teamB[0]}</td><td style="padding:8px;color:var(--t2-color)">${h.bHole} / ${h.bOn}</td><td style="padding:8px;font-weight:bold;color:var(--t2-color)">+${h.bPts}</td></tr>`).join('');
+    body.innerHTML = `<div class="match-detail-view"><button onclick="renderStatsTabs()" style="background:transparent;border:none;color:var(--text2);cursor:pointer;margin-bottom:1rem;font-weight:bold">← Back to List</button><h3 style="font-family:var(--sf);font-size:2rem;color:var(--gold);margin-bottom:.5rem">Final: ${m.scores[0]} - ${m.scores[1]}</h3><p style="color:var(--text3);margin-bottom:1rem">${m.teamA.join(' & ')} vs ${m.teamB.join(' & ')}</p><div style="overflow-x:auto"><table style="width:100%;text-align:left;font-family:var(--ui);font-size:.85rem;border-collapse:collapse"><thead><tr style="border-bottom:2px solid var(--border);color:var(--text2)"><th>Rd</th><th>T1 Player</th><th>Throw</th><th>Pts</th><th>T2 Player</th><th>Throw</th><th>Pts</th></tr></thead><tbody>${trs}</tbody></table></div></div>`;
+  } else {
+    let trs = m.rounds.map((r, i) => `<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px;color:var(--text3)">R${i+1}</td><td style="padding:8px;color:var(--purple)">${r.hole}</td><td style="padding:8px;color:var(--gold)">${r.on}</td><td style="padding:8px;color:var(--text3)">${r.off}</td><td style="padding:8px;font-weight:bold;color:var(--white)">${r.hole*3+r.on}</td></tr>`).join('');
+    body.innerHTML = `<div class="match-detail-view"><button onclick="renderStatsTabs()" style="background:transparent;border:none;color:var(--text2);cursor:pointer;margin-bottom:1rem;font-weight:bold">← Back to List</button><h3 style="font-family:var(--sf);font-size:2rem;color:var(--purple);margin-bottom:.5rem">${m.player}</h3><p style="color:var(--text3);margin-bottom:1rem">Dekaround (${m.totalRounds} Rounds)</p><div style="overflow-x:auto"><table style="width:100%;text-align:center;font-family:var(--ui);font-size:.85rem;border-collapse:collapse"><thead><tr style="border-bottom:2px solid var(--border);color:var(--text2)"><th>Round</th><th>IN</th><th>ON</th><th>OFF</th><th>PTS</th></tr></thead><tbody>${trs}</tbody></table></div></div>`;
+  }
 }
 
-function renderGameStats() {
-  if (!G) { renderLifetimeStats(); return; }
-  document.getElementById('statsTitle').innerText = 'MATCH STATS';
-  const nameA=G.teamA.join(' & '), nameB=G.teamB.join(' & ');
-
-  const getPPR = (pStat) => pStat.throws > 0 ? (pStat.pts / (pStat.throws / 4)).toFixed(2) : '—';
-  const getInPct = (pStat) => pStat.throws > 0 ? ((pStat.holes / pStat.throws) * 100).toFixed(1) + '%' : '0.0%';
-
-  let team1StatsHTML = '';
-  let team2StatsHTML = '';
-
-  // Player pie charts for team A
-  const buildPlayerRow = (name, pStat, colorVar) => {
-    if (!name) return '';
-    const tot = pStat.throws;
-    const iP = tot>0?((pStat.holes/tot)*100).toFixed(1):'0.0';
-    const oP = tot>0?((pStat.on/tot)*100).toFixed(1):'0.0';
-    const offP = tot>0?((pStat.off/tot)*100).toFixed(1):'0.0';
-    return `
-      <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border)">
-        <div style="font-family:var(--hdg);font-size:.7rem;font-weight:700;letter-spacing:1.5px;color:${colorVar};text-transform:uppercase;margin-bottom:.5rem">${name}</div>
-        <div style="display:grid;grid-template-columns:auto 1fr;gap:.75rem;align-items:center">
-          ${makePieSVG(pStat.holes, pStat.on, pStat.off, colorVar, 'var(--gold)', '#555')}
-          <div>
-            <div class="pie-leg-item" style="font-family:var(--hdg);font-size:.7rem;font-weight:700;color:var(--text2);margin-bottom:3px;display:flex;gap:6px"><span style="display:inline-block;width:8px;height:8px;background:${colorVar};border-radius:50%;margin-top:3px"></span>IN: ${pStat.holes} (${iP}%)</div>
-            <div class="pie-leg-item" style="font-family:var(--hdg);font-size:.7rem;font-weight:700;color:var(--text2);margin-bottom:3px;display:flex;gap:6px"><span style="display:inline-block;width:8px;height:8px;background:var(--gold);border-radius:50%;margin-top:3px"></span>ON: ${pStat.on} (${oP}%)</div>
-            <div class="pie-leg-item" style="font-family:var(--hdg);font-size:.7rem;font-weight:700;color:var(--text2);display:flex;gap:6px"><span style="display:inline-block;width:8px;height:8px;background:#555;border-radius:50%;margin-top:3px"></span>OFF: ${pStat.off} (${offP}%)</div>
-            <div style="font-family:var(--hdg);font-size:.65rem;color:var(--text3);margin-top:5px;letter-spacing:.5px">PPR: ${getPPR(pStat)}</div>
-          </div>
-        </div>
-      </div>`;
-  };
-
-  document.getElementById('statsBody').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-      <div style="background:color-mix(in srgb, var(--t1-color) 15%, transparent);border:1px solid color-mix(in srgb, var(--t1-color) 40%, transparent);border-radius:8px;padding:.7rem;text-align:center">
-        <div style="font-family:var(--hdg);font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t1-color);margin-bottom:.3rem">${nameA}</div>
-        <div style="font-family:var(--sf);font-size:2.5rem;color:var(--white)">${G.scores[0]}</div>
-        <div style="font-family:var(--hdg);font-size:.65rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:1px">Points</div>
-      </div>
-      <div style="background:color-mix(in srgb, var(--t2-color) 15%, transparent);border:1px solid color-mix(in srgb, var(--t2-color) 40%, transparent);border-radius:8px;padding:.7rem;text-align:center">
-        <div style="font-family:var(--hdg);font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t2-color);margin-bottom:.3rem">${nameB}</div>
-        <div style="font-family:var(--sf);font-size:2.5rem;color:var(--white)">${G.scores[1]}</div>
-        <div style="font-family:var(--hdg);font-size:.65rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:1px">Points</div>
-      </div>
-    </div>
-
-    <div class="acl-stats-section">
-      <div class="acl-stats-hdr">PLAYER BAG CHARTS</div>
-      <div style="background:var(--bg3);padding:.35rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t1-color);border-bottom:1px solid var(--border)">TEAM 1</div>
-      ${buildPlayerRow(G.teamA[0], G.pStats[0], 'var(--t1-color)')}
-      ${G.isDoubles && G.teamA[1] ? buildPlayerRow(G.teamA[1], G.pStats[1], 'var(--t1-color)') : ''}
-      <div style="background:var(--bg3);padding:.35rem 1rem;font-family:var(--hdg);font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t2-color);border-bottom:1px solid var(--border);border-top:1px solid var(--border)">TEAM 2</div>
-      ${buildPlayerRow(G.teamB[0], G.pStats[2], 'var(--t2-color)')}
-      ${G.isDoubles && G.teamB[1] ? buildPlayerRow(G.teamB[1], G.pStats[3], 'var(--t2-color)') : ''}
-    </div>
-
-    <div class="acl-stats-section">
-      <div class="acl-stats-hdr">ROUND-BY-ROUND</div>
-      <div style="overflow-x:auto;padding:.75rem">
-        <table style="width:100%;border-collapse:collapse;min-width:300px;font-family:var(--hdg);font-size:.75rem">
-          <thead>
-            <tr style="border-bottom:2px solid var(--border)">
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--text3);font-weight:700;letter-spacing:1.5px;text-transform:uppercase">RD</th>
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--t1-color);font-weight:700">IN</th>
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--gold);font-weight:700">ON</th>
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--t1-color);font-weight:700;font-size:.8rem">+PTS</th>
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--text3);font-weight:700">SCORE</th>
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--t2-color);font-weight:700;font-size:.8rem">+PTS</th>
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--gold);font-weight:700">ON</th>
-              <th style="padding:.3rem .4rem;text-align:center;color:var(--t2-color);font-weight:700">IN</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${G.history.map(h=>`
-              <tr style="border-bottom:.5px solid var(--border)">
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--text3);font-size:.65rem">${h.rnd}</td>
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--t1-color)">${h.aHole}</td>
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--gold)">${h.aOn}</td>
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--t1-color);font-weight:700;font-size:.82rem">+${h.aPts}</td>
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--text3);font-size:.65rem">${h.scoresBefore[0]+h.aPts}–${h.scoresBefore[1]+h.bPts}</td>
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--t2-color);font-weight:700;font-size:.82rem">+${h.bPts}</td>
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--gold)">${h.bOn}</td>
-                <td style="padding:.28rem .4rem;text-align:center;color:var(--t2-color)">${h.bHole}</td>
-              </tr>
-            `).join('')}
-            ${!G.history.length?'<tr><td colspan="8" style="text-align:center;padding:1rem;color:var(--text3)">No rounds played yet</td></tr>':''}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-}
+function clearLifetimeStats() { if(confirm('Reset ALL saved matches and stats? This cannot be undone.')){ savedMatches = []; save(); toast('ALL DATA CLEARED'); } }
 
 /* ═══════════ DEKAROUND ═══════════ */
-function openDekaSetup() {
-  renderDekaScreen();
-  showScreen('deka-screen');
-}
-
-function renderDekaScreen() {
-  const body = document.getElementById('dekaBody');
-  if (!DEKA) {
-    renderDekaSetup(body);
-  } else {
-    renderDekaActive(body);
-  }
-}
-
+function openDekaSetup() { renderDekaScreen(); showScreen('deka-screen'); }
+function renderDekaScreen() { const b = document.getElementById('dekaBody'); if(!DEKA) renderDekaSetup(b); else renderDekaActive(b); }
 function renderDekaSetup(body) {
-  const players = Object.keys(lifetimeStats);
   const quickPicks = savedPlayers.slice(0,8);
   body.innerHTML = `
     <div class="deka-setup">
       <h3>🎯 DEKAROUND</h3>
       <p style="font-family:var(--hdg);font-size:.7rem;color:var(--text3);letter-spacing:.5px;margin-bottom:.85rem">Solo practice — track your own bags In/On/Off over multiple rounds.</p>
-      <div class="sub-lbl">Your Name</div>
       <input type="text" class="setup-inp" id="dekaPlayerName" placeholder="Your name…" style="margin-bottom:.75rem">
-      ${quickPicks.length ? `
-        <div class="sub-lbl">Saved Players</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem">
-          ${quickPicks.map(p=>`<span class="s-chip" onclick="document.getElementById('dekaPlayerName').value='${p.replace(/'/g,"\\'")}'">${p}</span>`).join('')}
-        </div>` : ''}
+      ${quickPicks.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem">${quickPicks.map(p=>`<span class="s-chip" onclick="document.getElementById('dekaPlayerName').value='${p.replace(/'/g,"\\'")}'">${p}</span>`).join('')}</div>` : ''}
       <div class="sub-lbl">Number of Rounds</div>
       <div class="deka-round-grid">
         <div class="deka-round-card" id="drnd10" onclick="setDekaRounds(10)"><div class="drn">10</div><div class="drl">Classic</div></div>
@@ -2401,413 +1120,83 @@ function renderDekaSetup(body) {
       </div>
       <button class="deka-commit-btn" onclick="startDeka()">▶ START DEKAROUND</button>
     </div>
-    ${Object.keys(lifetimeStats).length ? `
-      <div class="deka-setup">
-        <h3 style="color:var(--text2)">PREVIOUS RECORDS</h3>
-        ${Object.keys(lifetimeStats).map(name => {
-          const ls = lifetimeStats[name];
-          if (!ls.throws) return '';
-          const pct = ((ls.holes/ls.throws)*100).toFixed(1);
-          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border);font-family:var(--hdg);font-size:.8rem">
-            <span style="color:var(--white);font-weight:700">${name}</span>
-            <span style="color:var(--text3)">${ls.holes} IN / ${ls.throws} throws / <span style="color:var(--gold)">${pct}% in</span></span>
-          </div>`;
-        }).join('')}
-      </div>` : ''}
   `;
-  // default selection
-  if (!window._dekaRounds) window._dekaRounds = 15;
 }
-
-let _dekaRounds = 15;
-function setDekaRounds(n) {
-  _dekaRounds = n;
-  [10,15,20].forEach(r => document.getElementById('drnd'+r).classList.remove('active'));
-  document.getElementById('drnd'+n).classList.add('active');
-}
-
+function setDekaRounds(n) { _dekaRounds = n; [10,15,20].forEach(r => document.getElementById('drnd'+r).classList.remove('active')); document.getElementById('drnd'+n).classList.add('active'); }
 function startDeka() {
-  const name = document.getElementById('dekaPlayerName').value.trim();
-  if (!name) { toast('Enter your name'); return; }
-  const rounds = _dekaRounds || 15;
-  DEKA = {
-    player: name,
-    totalRounds: rounds,
-    currentRound: 1,
-    rounds: [], // [{hole, on, off}]
-    entry: { hole: 0, on: 0 }
-  };
-  if (!savedPlayers.includes(name)) { savedPlayers.push(name); }
-  if (!lifetimeStats[name]) lifetimeStats[name] = initLifetime();
-  save();
-  renderDekaActive(document.getElementById('dekaBody'));
+  const name = document.getElementById('dekaPlayerName').value.trim(); if(!name){ toast('Enter your name'); return; }
+  DEKA = { player: name, totalRounds: _dekaRounds, currentRound: 1, rounds: [], entry: { hole: 0, on: 0 } };
+  if(!savedPlayers.includes(name)) savedPlayers.push(name);
+  save(); renderDekaActive(document.getElementById('dekaBody'));
 }
-
 function renderDekaActive(body) {
-  if (!DEKA) { renderDekaSetup(body); return; }
-  const done = DEKA.currentRound > DEKA.totalRounds;
-  const entry = DEKA.entry || {hole:0,on:0};
-  const off = 4 - (entry.hole + entry.on);
+  if(!DEKA){ renderDekaSetup(body); return; }
+  const done = DEKA.currentRound > DEKA.totalRounds, entry = DEKA.entry || {hole:0,on:0}, off = 4 - (entry.hole + entry.on);
+  let totHole=0, totOn=0, totOff=0; DEKA.rounds.forEach(r => { totHole+=r.hole; totOn+=r.on; totOff+=r.off; });
+  const totThrows = DEKA.rounds.length * 4, ppr = totThrows>0?((totHole*3+totOn)/(totThrows/4)).toFixed(2):'0.00', inPct = totThrows>0?((totHole/totThrows)*100).toFixed(1):'0.0';
 
-  // Totals so far
-  let totHole=0, totOn=0, totOff=0;
-  DEKA.rounds.forEach(r => { totHole+=r.hole; totOn+=r.on; totOff+=r.off; });
-  const totThrows = DEKA.rounds.length * 4;
-  const ppr = totThrows > 0 ? ((totHole*3+totOn) / DEKA.rounds.length).toFixed(2) : '0.00';
-  const inPct = totThrows > 0 ? ((totHole/totThrows)*100).toFixed(1) : '0.0';
-
-  if (done) {
-    // Finished screen
-    const totalPts = totHole*3 + totOn;
+  if(done) {
     body.innerHTML = `
       <div class="deka-setup" style="text-align:center">
-        <div style="font-size:2.5rem;margin-bottom:.5rem">🎯</div>
         <h3 style="font-size:1.6rem;letter-spacing:4px">SESSION COMPLETE!</h3>
         <p style="font-family:var(--hdg);font-size:.75rem;color:var(--text3);letter-spacing:.5px;margin:0.5rem 0">${DEKA.player.toUpperCase()} — ${DEKA.totalRounds} ROUNDS</p>
-        <div class="deka-score-grid" style="margin:1rem 0">
-          <div class="deka-score-cell"><div class="deka-score-label">Total Pts</div><div class="deka-score-val" style="color:var(--gold)">${totalPts}</div></div>
-          <div class="deka-score-cell"><div class="deka-score-label">Bags In</div><div class="deka-score-val" style="color:var(--purple)">${totHole}</div></div>
-          <div class="deka-score-cell"><div class="deka-score-label">In %</div><div class="deka-score-val">${inPct}%</div></div>
-          <div class="deka-score-cell"><div class="deka-score-label">Bags On</div><div class="deka-score-val">${totOn}</div></div>
-          <div class="deka-score-cell"><div class="deka-score-label">Bags Off</div><div class="deka-score-val">${totOff}</div></div>
-          <div class="deka-score-cell"><div class="deka-score-label">PPR</div><div class="deka-score-val" style="color:var(--gold)">${ppr}</div></div>
+        <div style="font-size:4rem;font-family:var(--sf);color:var(--white);text-shadow:0 0 20px rgba(255,255,255,0.2)">${totHole*3+totOn} PTS</div>
+        <div style="margin:1rem 0;display:flex;justify-content:center">${makePieSVG(totHole, totOn, totOff, 'var(--purple)', 'var(--gold)', '#555')}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:1rem 0">
+          <button class="deka-commit-btn" onclick="saveDekaThenNew()" style="background:var(--green);margin-top:0">✔ SAVE SESSION</button>
+          <button class="deka-commit-btn" onclick="discardDeka()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text3);margin-top:0">DISCARD</button>
         </div>
-        <div style="margin:1rem 0">
-          ${makePieSVG(totHole, totOn, totOff, 'var(--purple)', 'var(--gold)', '#555')}
-        </div>
-      </div>
-      <div class="deka-results">
-        <div class="deka-board-hdr">ROUND BY ROUND</div>
-        <table><thead><tr>
-          <th>RD</th><th style="color:var(--purple)">IN</th><th style="color:var(--gold)">ON</th><th style="color:var(--text3)">OFF</th><th style="color:var(--gold)">PTS</th>
-        </tr></thead><tbody>
-          ${DEKA.rounds.map((r,i)=>`<tr>
-            <td class="rnd-num">${i+1}</td>
-            <td style="color:var(--text3)">${r.hole}</td>
-            <td style="color:var(--text3)">${r.on}</td>
-            <td style="color:var(--text3)">${r.off}</td>
-            <td class="score-val" style="color:var(--white)">${r.hole*3+r.on}</td>
-          </tr>`).join('')}
-        </tbody></table>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 0 1rem">
-        <button class="deka-commit-btn" onclick="saveDekaThenNew()" style="background:var(--green)">✔ SAVE & NEW</button>
-        <button class="deka-commit-btn" onclick="discardDeka()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text3)">DISCARD</button>
       </div>
     `;
     return;
   }
-
-  body.innerHTML = `
-<div style="border-radius: 10px; overflow: hidden; border: 2px solid var(--border); margin-bottom: 1rem; background: var(--bg2); box-shadow: 0 4px 20px rgba(0,0,0,0.6); display: flex; flex-direction: column;">
   
-  <!-- Header Section -->
-  <div style="background: var(--purple); padding: .7rem .85rem; text-align: center; border-bottom: 3px solid var(--border);">
-    <div style="font-family: var(--sf); font-size: 1.6rem; letter-spacing: 4px; color: var(--white); text-transform: uppercase; line-height: 1;">
-      ${DEKA.player}  ROUND ${DEKA.currentRound} of ${DEKA.totalRounds}
-    </div>
-  </div>
-
-  <!-- Main Grid Layout (3 Columns) -->
-  <div style="display: grid; grid-template-columns: 25% 50% 25%; min-height: 180px; background: var(--bg2);">
-    
-    <!-- LEFT PANEL: Hole Settings & Total -->
-    <div style="display: flex; flex-direction: column; background: var(--bg3); border-right: 1px solid var(--border); padding-top: 0.5rem;">
-      <div style="padding: 0 0.5rem; flex: 1; display: flex; flex-direction: column;">
-        <div class="deka-bag-row">
-          <div class="deka-bag-label">
-            <span style="width:9px;height:9px;border-radius:50%;background:var(--purple);display:inline-block"></span> 
-            HOLE (3PT)
-          </div>
-          <div class="deka-btns-vert">
-            ${[0,1,2,3,4].map(n=>`<button class="dbb ${entry.hole===n?'dsel-in':''}" onclick="setDekaBag('hole',${n})" id="dkH${n}">${n}</button>`).join('')}
-          </div>
+  body.innerHTML = `
+    <div style="border-radius:10px;overflow:hidden;border:2px solid var(--border);margin-bottom:1rem;background:var(--bg2);box-shadow:0 4px 20px rgba(0,0,0,0.6)">
+      <div style="background:var(--purple);padding:.7rem .85rem;text-align:center;border-bottom:3px solid var(--border);font-family:var(--sf);font-size:1.6rem;letter-spacing:4px;color:var(--white);text-transform:uppercase">${DEKA.player} — RD ${DEKA.currentRound} of ${DEKA.totalRounds}</div>
+      <div style="display:grid;grid-template-columns:25% 50% 25%;min-height:180px;background:var(--bg2)">
+        <div style="display:flex;flex-direction:column;background:var(--bg3);border-right:1px solid var(--border);padding-top:.5rem">
+          <div style="padding:0 .5rem;flex:1"><div class="deka-bag-label" style="justify-content:center;margin-bottom:4px">IN (3)</div><div class="deka-btns-vert">${[0,1,2,3,4].map(n=>`<button class="dbb ${entry.hole===n?'dsel-in':''}" onclick="setDekaBag('hole',${n})">${n}</button>`).join('')}</div></div>
+          <div style="font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:2px;text-align:center;padding:.5rem .2rem;border-top:1px solid var(--border);color:var(--purple);background:rgba(168,85,247,.15)">BAGS IN</div><div style="text-align:center;font-family:var(--sf);font-size:3rem;color:var(--white);background:#000">${totHole}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem">
+          <div style="font-family:var(--sf);font-size:7rem;line-height:0.85;color:var(--white)">${totHole*3+totOn}</div>
+          <div style="font-family:var(--hdg);font-size:.9rem;font-weight:700;letter-spacing:2px;color:white;background:#444;padding:.2rem 1rem;border-radius:6px;margin-top:.75rem">PPR: ${ppr}</div>
+          <button class="deka-commit-center" onclick="commitDekaRound()">COMMIT ▶</button>
+        </div>
+        <div style="display:flex;flex-direction:column;background:var(--bg3);border-left:1px solid var(--border);padding-top:.5rem">
+          <div style="padding:0 .5rem;flex:1"><div class="deka-bag-label" style="justify-content:center;margin-bottom:4px">ON (1)</div><div class="deka-btns-vert">${[0,1,2,3,4].map(n=>`<button class="dbb ${entry.on===n?'dsel-on':''}" onclick="setDekaBag('on',${n})">${n}</button>`).join('')}</div></div>
+          <div style="font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:2px;text-align:center;padding:.5rem .2rem;border-top:1px solid var(--border);color:var(--gold);background:rgba(245,197,24,.1)">BAGS ON</div><div style="text-align:center;font-family:var(--sf);font-size:3rem;color:var(--white);background:#000">${totOn}</div>
         </div>
       </div>
-      
-      <div style="font-family: var(--hdg); font-size: .65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-align: center; padding: .5rem .2rem; border-top: 1px solid var(--border); color: var(--purple); background: rgba(168,85,247,.15);">
-        BAGS IN
+      <div style="padding:0.8rem;background:var(--bg2);border-top:1px solid var(--border)">
+        ${DEKA.rounds.length > 0 ? `<button onclick="undoDekaRound()" style="width:100%;padding:.5rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;cursor:pointer">↩ UNDO LAST</button>` : `<button onclick="discardDeka()" style="width:100%;padding:.5rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--red);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;cursor:pointer">✕ CANCEL</button>`}
       </div>
-      <div style="display: flex; align-items: center; justify-content: center; font-family: var(--sf); font-size: 4.5rem; color: var(--white); background: #000; padding: 0.5rem 0;">
-        ${totHole}
-      </div>
-    </div>
-
-    <!-- CENTER PANEL: Score Display & PPR -->
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem;">
-      <div style="font-family: var(--sf); font-size: 11rem; line-height: 0.85; color: var(--white);">
-        ${totHole*3+totOn}
-      </div>
-      <div style="font-family: var(--hdg); font-size: 1.2rem; font-weight: 700; letter-spacing: 3px; color: white; background: #8a2908; padding: .25rem 1.2rem; border-radius: 8px; margin-top: .75rem; border: 1px solid rgba(168,85,247,.3); text-align: center;">
-        PPR<br>${ppr}
-      </div>
-      <button class="deka-commit-center" onclick="commitDekaRound()">COMMIT ROUND ▶ (${DEKA.currentRound}/${DEKA.totalRounds})</button>
-    </div>
-
-    <!-- RIGHT PANEL: On Board Settings & Total -->
-    <div style="display: flex; flex-direction: column; background: var(--bg3); border-left: 1px solid var(--border); padding-top: 0.5rem;">
-      <div style="padding: 0 0.5rem; flex: 1; display: flex; flex-direction: column;">
-        <div class="deka-bag-row">
-          <div class="deka-bag-label">
-            <span style="width:9px;height:9px;border-radius:50%;background:var(--gold);display:inline-block"></span> 
-            ON (1PT)
-          </div>
-          <div class="deka-btns-vert">
-            ${[0,1,2,3,4].map(n=>`<button class="dbb ${entry.on===n?'dsel-on':''}" onclick="setDekaBag('on',${n})" id="dkO${n}">${n}</button>`).join('')}
-          </div>
-        </div>
-      </div>
-
-      <div style="font-family: var(--hdg); font-size: .65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-align: center; padding: .5rem .2rem; border-top: 1px solid var(--border); color: var(--gold); background: rgba(245,197,24,.1); ">
-        BAGS ON
-      </div>
-      <div style="display: flex; align-items: center; justify-content: center; font-family: var(--sf); font-size: 4.5rem; color: var(--white); background: #000; padding: 0.5rem 0;">
-        ${totOn}
-      </div>
-    </div>
-
-  </div>
-
-  <!-- BUTTON ACTIONS FOOTER PANEL -->
-  <div style="padding: 0.8rem; background: var(--bg2); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.5rem;">
-    ${DEKA.rounds.length > 0 ? `<button onclick="undoDekaRound()" style="width:100%;padding:.5rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .14s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">↩ UNDO LAST ROUND</button>` : ''}
-  </div>
-
-</div>
-
-
-
-
-    <div class="deka-entry">
-      <div class="deka-entry-name">ROUND ${DEKA.currentRound} ENTRY</div>
-
-      <div class="deka-bag-row">
-        <div class="deka-bag-label"><span style="width:9px;height:9px;border-radius:50%;background:var(--purple);display:inline-block"></span> HOLE (3pt)</div>
-        <div class="deka-btns">
-          ${[1,2,3,4].map(n=>`<button class="dbb ${entry.hole===n?'dsel-in':''}" onclick="setDekaBag('hole',${n})" id="dkH${n}">${n}</button>`).join('')}
-        </div>
-      </div>
-
-      <div class="deka-bag-row">
-        <div class="deka-bag-label"><span style="width:9px;height:9px;border-radius:50%;background:var(--gold);display:inline-block"></span> ON BOARD (1pt)</div>
-        <div class="deka-btns">
-          ${[1,2,3,4].map(n=>`<button class="dbb ${entry.on===n?'dsel-on':''}" onclick="setDekaBag('on',${n})" id="dkO${n}">${n}</button>`).join('')}
-        </div>
-      </div>
-
-      <div class="deka-bag-row">
-        <div class="deka-bag-label" style="color:var(--text3)"><span style="width:9px;height:9px;border-radius:50%;background:#555;display:inline-block"></span> OFF / MISS</div>
-        <div style="width:40px;height:36px;background:var(--bg4);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--sf);font-size:1.1rem;color:var(--text3)">${off}</div>
-      </div>
-
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
-        <span style="font-family:var(--hdg);font-size:.72rem;color:var(--text3);letter-spacing:.5px;text-transform:uppercase">Round Points Preview:</span>
-        <span style="font-family:var(--sf);font-size:1.1rem;color:var(--gold)">+${entry.hole*3+entry.on}</span>
-      </div>
-
-      <button class="deka-commit-btn" onclick="commitDekaRound()">COMMIT ROUND ▶ (${DEKA.currentRound}/${DEKA.totalRounds})</button>
-      ${DEKA.rounds.length > 0 ? `<button onclick="undoDekaRound()" style="width:100%;padding:.5rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:.5rem;transition:all .14s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">↩ UNDO LAST ROUND</button>` : ''}
-    </div>
-
-    ${DEKA.rounds.length > 0 ? `
-    <div class="deka-results">
-      <div class="deka-board-hdr">RESULTS SO FAR</div>
-      <table><thead><tr>
-        <th>RD</th><th style="color:var(--purple)">IN</th><th style="color:var(--gold)">ON</th><th style="color:var(--text3)">OFF</th><th style="color:var(--gold)">PTS</th>
-      </tr></thead><tbody>
-        ${DEKA.rounds.map((r,i)=>`<tr>
-          <td class="rnd-num">${i+1}</td>
-          <td style="color:var(--purple)">${r.hole}</td>
-          <td style="color:var(--gold)">${r.on}</td>
-          <td style="color:var(--text3)">${r.off}</td>
-          <td class="score-val">${r.hole*3+r.on}</td>
-        </tr>`).join('')}
-      </tbody></table>
-    </div>` : ''}
-
-    <div style="padding:0 0 1rem">
-      <button onclick="discardDeka()" style="width:100%;padding:.55rem;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .14s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕ DISCARD SESSION</button>
     </div>
   `;
 }
+function setDekaBag(type, val) { const newEntry = {...DEKA.entry, [type]: val}; if (newEntry.hole + newEntry.on > 4) return; DEKA.entry = newEntry; save(); renderDekaActive(document.getElementById('dekaBody')); }
+function commitDekaRound() { DEKA.rounds.push({ hole: DEKA.entry.hole, on: DEKA.entry.on, off: 4-(DEKA.entry.hole+DEKA.entry.on) }); DEKA.entry = {hole:0,on:0}; DEKA.currentRound++; save(); renderDekaActive(document.getElementById('dekaBody')); }
+function undoDekaRound() { DEKA.rounds.pop(); DEKA.currentRound--; DEKA.entry = {hole:0,on:0}; save(); renderDekaActive(document.getElementById('dekaBody')); }
+function saveDekaThenNew() { savedMatches.push({ id: Date.now(), date: new Date().toISOString(), type: 'deka', player: DEKA.player, rounds: DEKA.rounds, totalRounds: DEKA.totalRounds }); DEKA = null; save(); toast('✔ SAVED TO STATS'); renderDekaSetup(document.getElementById('dekaBody')); }
+function discardDeka() { if(confirm('Discard this session?')) { DEKA = null; save(); renderDekaSetup(document.getElementById('dekaBody')); } }
 
-function setDekaBag(type, val) {
-  if (!DEKA) return;
-  const entry = DEKA.entry || {hole:0,on:0};
-  const newEntry = {...entry, [type]: val};
-  if (newEntry.hole + newEntry.on > 4) return;
-  DEKA.entry = newEntry;
-  save();
-  renderDekaActive(document.getElementById('dekaBody'));
-}
-
-function commitDekaRound() {
-  if (!DEKA) return;
-  const entry = DEKA.entry || {hole:0,on:0};
-  const off = 4 - (entry.hole + entry.on);
-  DEKA.rounds.push({ hole: entry.hole, on: entry.on, off });
-  DEKA.entry = {hole:0,on:0};
-  DEKA.currentRound++;
-  save();
-  renderDekaActive(document.getElementById('dekaBody'));
-}
-
-function undoDekaRound() {
-  if (!DEKA || !DEKA.rounds.length) return;
-  DEKA.rounds.pop();
-  DEKA.currentRound--;
-  DEKA.entry = {hole:0,on:0};
-  save();
-  renderDekaActive(document.getElementById('dekaBody'));
-  toast('↩ ROUND UNDONE');
-}
-
-function saveDekaThenNew() {
-  if (!DEKA) return;
-  // Merge into lifetime stats
-  const name = DEKA.player;
-  if (!lifetimeStats[name]) lifetimeStats[name] = initLifetime();
-  const ls = lifetimeStats[name];
-  DEKA.rounds.forEach(r => {
-    ls.holes += r.hole; ls.on += r.on; ls.off += r.off;
-    ls.throws += 4; ls.pts += (r.hole*3+r.on);
-  });
-  DEKA = null;
-  save();
-  toast('✔ DEKAROUND SAVED TO STATS');
-  renderDekaSetup(document.getElementById('dekaBody'));
-}
-
-function discardDeka() {
-  if (!confirm('Discard this Dekaround session?')) return;
-  DEKA = null;
-  save();
-  renderDekaSetup(document.getElementById('dekaBody'));
-}
-
-/* ═══════════ EXPORT & SHARE ═══════════ */
-function openShareModal() {
-  document.getElementById('shareModal').classList.remove('hidden');
-}
-
-function closeShareModal() {
-  document.getElementById('shareModal').classList.add('hidden');
-}
-
-function buildMatchSummaryText() {
-  const date = new Date().toLocaleDateString('en-US', {weekday:'short',month:'short',day:'numeric',year:'numeric'});
-  let lines = [`🎯 CORNHOLE MATCH SUMMARY`, `📅 ${date}`, ``];
-
-  if (G) {
-    lines.push(`LIVE MATCH (In Progress):`);
-    lines.push(`${G.teamA.join(' & ')} vs ${G.teamB.join(' & ')}`);
-    lines.push(`Score: ${G.scores[0]} – ${G.scores[1]}`);
-    lines.push(`Round: ${G.round}`);
-    lines.push(`Rules: Win at ${G.winScore || '∞'}, ${G.rule === 'cancel' ? 'Cancellation' : 'All Points'}`);
-    lines.push(``);
-    lines.push(`TEAM 1 (${G.teamA.join(' & ')}):`);
-    lines.push(`  Bags In: ${G.stats[0].holes} | Bags On: ${G.stats[0].on} | Bags Off: ${G.stats[0].off}`);
-    lines.push(`  In %: ${G.stats[0].throws>0?((G.stats[0].holes/G.stats[0].throws*100).toFixed(1)+'%'):'—'}`);
-    lines.push(`TEAM 2 (${G.teamB.join(' & ')}):`);
-    lines.push(`  Bags In: ${G.stats[1].holes} | Bags On: ${G.stats[1].on} | Bags Off: ${G.stats[1].off}`);
-    lines.push(`  In %: ${G.stats[1].throws>0?((G.stats[1].holes/G.stats[1].throws*100).toFixed(1)+'%'):'—'}`);
-  } else {
-    lines.push(`No active game.`);
-  }
-
-  if (Object.keys(lifetimeStats).length) {
-    lines.push(``);
-    lines.push(`LIFETIME STATS:`);
-    Object.entries(lifetimeStats).forEach(([name, ls]) => {
-      const ppr = ls.throws>0?(ls.pts/(ls.throws/4)).toFixed(2):'—';
-      const inPct = ls.throws>0?((ls.holes/ls.throws*100).toFixed(1)+'%'):'—';
-      lines.push(`  ${name}: ${ls.wins}W-${ls.losses}L | PPR ${ppr} | In% ${inPct}`);
-    });
-  }
-
-  return lines.join('\n');
-}
-
+/* ═══════════ EXPORT ═══════════ */
+function openShareModal() { document.getElementById('shareModal').classList.remove('hidden'); }
+function closeShareModal() { document.getElementById('shareModal').classList.add('hidden'); }
 function exportAsText() {
-  const text = buildMatchSummaryText();
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(() => {
-      toast('📋 COPIED TO CLIPBOARD');
-      closeShareModal();
-    }).catch(() => fallbackCopy(text));
-  } else {
-    fallbackCopy(text);
-  }
+  const pStats = buildDynamicPlayerStats(filterMatches()), lines = ['🎯 STATS SUMMARY'];
+  Object.entries(pStats).forEach(([n, s]) => lines.push(`${n}: ${s.wins}W-${s.losses}L | PPR ${(s.pts/(s.throws/4||1)).toFixed(2)} | In% ${((s.holes/s.throws||0)*100).toFixed(1)}%`));
+  const t = lines.join('\n'); if(navigator.clipboard){ navigator.clipboard.writeText(t); toast('📋 COPIED'); } closeShareModal();
 }
-
-function fallbackCopy(text) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.opacity = '0';
-  document.body.appendChild(ta);
-  ta.select();
-  try { document.execCommand('copy'); toast('📋 COPIED'); } catch(e) { toast('Could not copy'); }
-  document.body.removeChild(ta);
-  closeShareModal();
-}
-
 function exportAsJSON() {
-  const data = {
-    exportedAt: new Date().toISOString(),
-    activeGame: G,
-    lifetimeStats,
-    savedSeries
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `cornhole_stats_${Date.now()}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('💾 JSON DOWNLOADED');
-  closeShareModal();
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify({savedMatches, savedSeries}, null, 2)],{type:'application/json'})); a.download=`cornhole_data_${Date.now()}.json`; a.click(); toast('💾 JSON DOWNLOADED'); closeShareModal();
 }
-
 function exportLifetimeCSV() {
-  const players = Object.entries(lifetimeStats);
-  if (!players.length) { toast('No stats to export'); return; }
-  const headers = ['Player','Games','Wins','Losses','Win%','PPR','OPPR','Bags In','Bags On','Bags Off','Total Throws','In%','On%','Off%','Total Pts','Opp Pts','Pt Diff'];
-  const rows = players.map(([name, ls]) => {
-    const rounds = ls.throws/4 || 1;
-    const ppr = ls.throws>0?(ls.pts/rounds).toFixed(2):0;
-    const oppr = ls.games>0?(ls.oppPts/rounds).toFixed(2):0;
-    const winPct = ls.games>0?((ls.wins/ls.games)*100).toFixed(1):0;
-    const inPct = ls.throws>0?((ls.holes/ls.throws)*100).toFixed(1):0;
-    const onPct = ls.throws>0?((ls.on/ls.throws)*100).toFixed(1):0;
-    const offPct = ls.throws>0?((ls.off/ls.throws)*100).toFixed(1):0;
-    const ptDiff = ls.pts - ls.oppPts;
-    return [name,ls.games,ls.wins,ls.losses,winPct,ppr,oppr,ls.holes,ls.on,ls.off,ls.throws,inPct,onPct,offPct,ls.pts,ls.oppPts,ptDiff].join(',');
-  });
-  const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `cornhole_lifetime_stats_${Date.now()}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('📊 CSV DOWNLOADED');
-  closeShareModal();
+  const pStats = buildDynamicPlayerStats(filterMatches()), rows = [['Player','Games','Wins','Losses','Win%','PPR','In%','Total Pts']];
+  Object.entries(pStats).forEach(([n, s]) => rows.push([n, s.games, s.wins, s.losses, ((s.wins/s.games||0)*100).toFixed(1), (s.pts/(s.throws/4||1)).toFixed(2), ((s.holes/s.throws||0)*100).toFixed(1), s.pts]));
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'})); a.download=`cornhole_stats_${Date.now()}.csv`; a.click(); toast('📊 CSV DOWNLOADED'); closeShareModal();
 }
-
-function shareNative() {
-  const text = buildMatchSummaryText();
-  if (navigator.share) {
-    navigator.share({ title: '🎯 Cornhole Match Stats', text })
-      .then(() => closeShareModal())
-      .catch(() => exportAsText());
-  } else {
-    exportAsText();
-  }
-}
-
 </script>
 </body>
 </html>
