@@ -1130,51 +1130,97 @@ function startDeka() {
   save(); renderDekaActive(document.getElementById('dekaBody'));
 }
 function renderDekaActive(body) {
-  if(!DEKA){ renderDekaSetup(body); return; }
-  const done = DEKA.currentRound > DEKA.totalRounds, entry = DEKA.entry || {hole:0,on:0}, off = 4 - (entry.hole + entry.on);
-  let totHole=0, totOn=0, totOff=0; DEKA.rounds.forEach(r => { totHole+=r.hole; totOn+=r.on; totOff+=r.off; });
-  const totThrows = DEKA.rounds.length * 4, ppr = totThrows>0?((totHole*3+totOn)/(totThrows/4)).toFixed(2):'0.00', inPct = totThrows>0?((totHole/totThrows)*100).toFixed(1):'0.0';
+    if(!DEKA){
+        renderDekaSetup(body);
+        return;
+    }
 
-  if(done) {
+    const done = DEKA.currentRound > DEKA.totalRounds,
+          entry = DEKA.entry || {hole:0,on:0},
+          off = 4 - (entry.hole + entry.on);
+
+    let totHole=0, totOn=0, totOff=0;
+    DEKA.rounds.forEach(r => {
+        totHole+=r.hole;
+        totOn+=r.on;
+        totOff+=r.off;
+    });
+
+    const totThrows = DEKA.rounds.length * 4,
+          ppr = totThrows>0?((totHole*3+totOn)/(totThrows/4)).toFixed(2):'0.00',
+          inPct = totThrows>0?((totHole/totThrows)*100).toFixed(1):'0.0';
+
+    // Generate reusable history list HTML
+    const historyListHTML = DEKA.rounds.length === 0 
+        ? `<div style="text-align:center;color:var(--text3);font-size:0.75rem;padding:0.5rem 0;">No rounds completed yet.</div>`
+        : `<div style="max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;background:var(--bg3)">
+            ${DEKA.rounds.map((r, idx) => `
+                <div style="display:grid;grid-template-columns:1.5fr 2fr 1.5fr;padding:0.4rem 0.6rem;font-size:0.75rem;border-bottom:1px solid var(--border2);align-items:center;color:var(--text2)">
+                    <div style="font-weight:bold;color:var(--text3)">RD ${idx + 1}</div>
+                    <div style="display:flex;gap:8px;">
+                        <span style="color:var(--purple)">In ${r.hole}</span>
+                        <span style="color:var(--gold)">On ${r.on}</span>
+                        <span style="color:var(--text3)">off ${r.off}</span>
+                    </div>
+                    <div style="text-align:right;font-weight:bold;color:var(--white)">+${(r.hole * 3) + r.on} PTS</div>
+                </div>
+            `).join('')}
+           </div>`;
+
+    if(done) {
+        body.innerHTML = `
+        <div class="deka-setup" style="text-align:center">
+            <h3 style="font-size:1.6rem;letter-spacing:4px">SESSION COMPLETE!</h3>
+            <p style="font-family:var(--hdg);font-size:.75rem;color:var(--text3);letter-spacing:.5px;margin:0.5rem 0">${DEKA.player.toUpperCase()} — ${DEKA.totalRounds} ROUNDS</p>
+            <div style="font-size:4rem;font-family:var(--sf);color:var(--white);text-shadow:0 0 20px rgba(255,255,255,0.2)">${totHole*3+totOn} PTS</div>
+            <div style="margin:1rem 0;display:flex;justify-content:center">${makePieSVG(totHole, totOn, totOff, 'var(--purple)', 'var(--gold)', '#555')}</div>
+            
+            <div style="text-align:left;margin-top:1.5rem">
+                <div style="font-family:var(--hdg);font-size:0.7rem;letter-spacing:1px;color:var(--text3);margin-bottom:0.4rem;text-transform:uppercase">Final Round Breakdown</div>
+                ${historyListHTML}
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:1rem 0;margin-top:1rem">
+                <button class="deka-commit-btn" onclick="saveDekaThenNew()" style="background:var(--green);margin-top:0">✔ SAVE SESSION</button>
+                <button class="deka-commit-btn" onclick="discardDeka()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text3);margin-top:0">DISCARD</button>
+            </div>
+        </div>
+        `;
+        return;
+    }
+
     body.innerHTML = `
-      <div class="deka-setup" style="text-align:center">
-        <h3 style="font-size:1.6rem;letter-spacing:4px">SESSION COMPLETE!</h3>
-        <p style="font-family:var(--hdg);font-size:.75rem;color:var(--text3);letter-spacing:.5px;margin:0.5rem 0">${DEKA.player.toUpperCase()} — ${DEKA.totalRounds} ROUNDS</p>
-        <div style="font-size:4rem;font-family:var(--sf);color:var(--white);text-shadow:0 0 20px rgba(255,255,255,0.2)">${totHole*3+totOn} PTS</div>
-        <div style="margin:1rem 0;display:flex;justify-content:center">${makePieSVG(totHole, totOn, totOff, 'var(--purple)', 'var(--gold)', '#555')}</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:1rem 0">
-          <button class="deka-commit-btn" onclick="saveDekaThenNew()" style="background:var(--green);margin-top:0">✔ SAVE SESSION</button>
-          <button class="deka-commit-btn" onclick="discardDeka()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text3);margin-top:0">DISCARD</button>
-        </div>
-      </div>
-    `;
-    return;
-  }
-  
-  body.innerHTML = `
     <div style="border-radius:10px;overflow:hidden;border:2px solid var(--border);margin-bottom:1rem;background:var(--bg2);box-shadow:0 4px 20px rgba(0,0,0,0.6)">
-      <div style="background:var(--purple);padding:.7rem .85rem;text-align:center;border-bottom:3px solid var(--border);font-family:var(--sf);font-size:1.6rem;letter-spacing:4px;color:var(--white);text-transform:uppercase">${DEKA.player} — RD ${DEKA.currentRound} of ${DEKA.totalRounds}</div>
-      <div style="display:grid;grid-template-columns:25% 50% 25%;min-height:180px;background:var(--bg2)">
-        <div style="display:flex;flex-direction:column;background:var(--bg3);border-right:1px solid var(--border);padding-top:.5rem">
-          <div style="padding:0 .5rem;flex:1"><div class="deka-bag-label" style="justify-content:center;margin-bottom:4px">IN (3)</div><div class="deka-btns-vert">${[0,1,2,3,4].map(n=>`<button class="dbb ${entry.hole===n?'dsel-in':''}" onclick="setDekaBag('hole',${n})">${n}</button>`).join('')}</div></div>
-          <div style="font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:2px;text-align:center;padding:.5rem .2rem;border-top:1px solid var(--border);color:var(--purple);background:rgba(168,85,247,.15)">BAGS IN</div><div style="text-align:center;font-family:var(--sf);font-size:3rem;color:var(--white);background:#000">${totHole}</div>
+        <div style="background:var(--purple);padding:.7rem .85rem;text-align:center;border-bottom:3px solid var(--border);font-family:var(--sf);font-size:1.6rem;letter-spacing:4px;color:var(--white);text-transform:uppercase">${DEKA.player} — RD ${DEKA.currentRound} of ${DEKA.totalRounds}</div>
+        <div style="display:grid;grid-template-columns:25% 50% 25%;min-height:180px;background:var(--bg2)">
+            <div style="display:flex;flex-direction:column;background:var(--bg3);border-right:1px solid var(--border);padding-top:.5rem">
+                <div style="padding:0 .5rem;flex:1"><div class="deka-bag-label" style="justify-content:center;margin-bottom:4px">IN (3)</div><div class="deka-btns-vert">${[0,1,2,3,4].map(n=>`<button class="dbb ${entry.hole===n?'dsel-in':''}" onclick="setDekaBag('hole',${n})">${n}</button>`).join('')}</div></div>
+                <div style="font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:2px;text-align:center;padding:.5rem .2rem;border-top:1px solid var(--border);color:var(--purple);background:rgba(168,85,247,.15)">BAGS IN</div><div style="text-align:center;font-family:var(--sf);font-size:3rem;color:var(--white);background:#000">${totHole}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem">
+                <div style="font-family:var(--sf);font-size:7rem;line-height:0.85;color:var(--white)">${totHole*3+totOn}</div>
+                <div style="font-family:var(--hdg);font-size:.9rem;font-weight:700;letter-spacing:2px;color:white;background:#444;padding:.2rem 1rem;border-radius:6px;margin-top:.75rem">PPR: ${ppr}</div>
+                <button class="deka-commit-center" onclick="commitDekaRound()">COMMIT ▶</button>
+            </div>
+            <div style="display:flex;flex-direction:column;background:var(--bg3);border-left:1px solid var(--border);padding-top:.5rem">
+                <div style="padding:0 .5rem;flex:1"><div class="deka-bag-label" style="justify-content:center;margin-bottom:4px">ON (1)</div><div class="deka-btns-vert">${[0,1,2,3,4].map(n=>`<button class="dbb ${entry.on===n?'dsel-on':''}" onclick="setDekaBag('on',${n})">${n}</button>`).join('')}</div></div>
+                <div style="font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:2px;text-align:center;padding:.5rem .2rem;border-top:1px solid var(--border);color:var(--gold);background:rgba(245,197,24,.1)">BAGS ON</div><div style="text-align:center;font-family:var(--sf);font-size:3rem;color:var(--white);background:#000">${totOn}</div>
+            </div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem">
-          <div style="font-family:var(--sf);font-size:7rem;line-height:0.85;color:var(--white)">${totHole*3+totOn}</div>
-          <div style="font-family:var(--hdg);font-size:.9rem;font-weight:700;letter-spacing:2px;color:white;background:#444;padding:.2rem 1rem;border-radius:6px;margin-top:.75rem">PPR: ${ppr}</div>
-          <button class="deka-commit-center" onclick="commitDekaRound()">COMMIT ▶</button>
+        
+        <!-- Round History Section -->
+        <div style="padding:0.8rem;background:var(--bg2);border-top:1px solid var(--border)">
+            <div style="font-family:var(--hdg);font-size:0.7rem;letter-spacing:1px;color:var(--text3);margin-bottom:0.4rem;text-transform:uppercase">Round History</div>
+            ${historyListHTML}
         </div>
-        <div style="display:flex;flex-direction:column;background:var(--bg3);border-left:1px solid var(--border);padding-top:.5rem">
-          <div style="padding:0 .5rem;flex:1"><div class="deka-bag-label" style="justify-content:center;margin-bottom:4px">ON (1)</div><div class="deka-btns-vert">${[0,1,2,3,4].map(n=>`<button class="dbb ${entry.on===n?'dsel-on':''}" onclick="setDekaBag('on',${n})">${n}</button>`).join('')}</div></div>
-          <div style="font-family:var(--hdg);font-size:.65rem;font-weight:700;letter-spacing:2px;text-align:center;padding:.5rem .2rem;border-top:1px solid var(--border);color:var(--gold);background:rgba(245,197,24,.1)">BAGS ON</div><div style="text-align:center;font-family:var(--sf);font-size:3rem;color:var(--white);background:#000">${totOn}</div>
+
+        <div style="padding:0.8rem;background:var(--bg2);border-top:1px solid var(--border)">
+            ${DEKA.rounds.length > 0 ? `<button onclick="undoDekaRound()" style="width:100%;padding:.5rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;cursor:pointer">↩ UNDO LAST</button>` : `<button onclick="discardDeka()" style="width:100%;padding:.5rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--red);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;cursor:pointer">✕ CANCEL</button>`}
         </div>
-      </div>
-      <div style="padding:0.8rem;background:var(--bg2);border-top:1px solid var(--border)">
-        ${DEKA.rounds.length > 0 ? `<button onclick="undoDekaRound()" style="width:100%;padding:.5rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;cursor:pointer">↩ UNDO LAST</button>` : `<button onclick="discardDeka()" style="width:100%;padding:.5rem;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--red);font-family:var(--hdg);font-size:.72rem;font-weight:700;letter-spacing:1px;cursor:pointer">✕ CANCEL</button>`}
-      </div>
     </div>
-  `;
+    `;
 }
+
 function setDekaBag(type, val) { const newEntry = {...DEKA.entry, [type]: val}; if (newEntry.hole + newEntry.on > 4) return; DEKA.entry = newEntry; save(); renderDekaActive(document.getElementById('dekaBody')); }
 function commitDekaRound() { DEKA.rounds.push({ hole: DEKA.entry.hole, on: DEKA.entry.on, off: 4-(DEKA.entry.hole+DEKA.entry.on) }); DEKA.entry = {hole:0,on:0}; DEKA.currentRound++; save(); renderDekaActive(document.getElementById('dekaBody')); }
 function undoDekaRound() { DEKA.rounds.pop(); DEKA.currentRound--; DEKA.entry = {hole:0,on:0}; save(); renderDekaActive(document.getElementById('dekaBody')); }
