@@ -2,540 +2,691 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Weather & Traffic Command | Radar & Live Cameras</title>
-    <meta name="description" content="Live weather radar and traffic camera feeds across the region.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather &amp; Traffic Command | OBS Dashboard</title>
+    <meta name="description" content="OBS-ready live weather radar, NWS alerts, and rotating traffic cameras.">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #050505;
-            --panel: #141414;
+            --panel: #131313;
+            --panel-2: #1b1b1b;
+            --border: #2a2a2a;
             --accent: #00f3ff;
-            --nav-height: 70px;
+            --text: #e9e9e9;
+            --muted: #8a8a8a;
+            --canvas-w: 1920px;
+            --canvas-h: 1080px;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; background: #000; color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased; overflow: hidden;
         }
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: #e5e5e5;
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* === VIEW MANAGEMENT === */
-        .view-section {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%;
-            height: calc(100% - var(--nav-height));
-            display: none; /* Hidden by default */
-            z-index: 10;
-        }
-        .view-section.active { display: block; }
-
-        /* === MAP VIEW === */
-        #map { height: 100%; width: 100%; background: #0d0d0d; }
-
-        /* === CAMERA GRID VIEW === */
-        #cam-grid-container {
-            padding: 20px;
-            overflow-y: auto;
-            height: 100%;
-            box-sizing: border-box;
-            background: linear-gradient(to bottom, #111, #000);
-        }
-
-        .grid-header { 
-            margin-bottom: 20px; 
-            padding-bottom: 15px; 
-            border-bottom: 1px solid #333;
-            position: sticky;
-            top: 0;
-            background: #111;
-            z-index: 20;
-        }
-        .grid-header h1 { margin: 0; font-size: 1.35rem; font-weight: 600; color: #fff; letter-spacing: 0.02em; }
-        .grid-subtitle { font-size: 0.8rem; color: #888; display: block; margin-top: 4px; }
-
-        .cam-grid {
+        #stage-wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; }
+        #stage {
+            width: var(--canvas-w); height: var(--canvas-h);
+            transform-origin: center center; position: relative; background: var(--bg);
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 15px;
-            padding-bottom: 80px;
+            grid-template-columns: 1.35fr 1fr;
+            grid-template-rows: 64px 1fr 56px;
+            grid-template-areas: "header header" "camera side" "ticker ticker";
+            gap: 12px; padding: 12px;
         }
+        #stage.chrome-off .card-label,
+        #stage.chrome-off .cam-overlay-top,
+        #stage.chrome-off .cam-thumbs,
+        #stage.chrome-off .radar-legend { display: none !important; }
 
-        .cam-card {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: 0.2s;
-            position: relative;
-        }
-        .cam-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        /* HEADER */
+        #header { grid-area: header; display: flex; align-items: center; justify-content: space-between;
+            background: linear-gradient(90deg, #101010, #161616); border: 1px solid var(--border); border-radius: 14px; padding: 0 22px; }
+        .brand { display: flex; align-items: center; gap: 14px; }
+        .brand .glyph { width: 36px; height: 36px; border-radius: 9px; background: radial-gradient(circle at 30% 30%, var(--accent), #0088aa);
+            box-shadow: 0 0 18px rgba(0,243,255,.45); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #001015; font-weight: 800; }
+        .brand h1 { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: .04em; }
+        .brand .sub { font-size: .72rem; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .clock { text-align: right; }
+        .clock .time { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+        .clock .date { font-size: .72rem; color: var(--muted); letter-spacing: .06em; }
+        .updated { font-size: .68rem; color: var(--muted); text-align: right; line-height: 1.5; }
+        .updated b { color: var(--accent); font-weight: 600; }
 
-        .cam-preview {
-            height: 180px;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #555;
-            font-size: 3rem;
-            position: relative;
-            overflow: hidden;
-        }
+        .icon-btn { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); width: 40px; height: 40px;
+            border-radius: 10px; cursor: pointer; font-size: 1.15rem; display: flex; align-items: center; justify-content: center; transition: .15s; }
+        .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-        .cam-preview video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        /* CAMERA */
+        #camera { grid-area: camera; position: relative; background: #000; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+        #cam-stage { position: absolute; inset: 0; background: #000; }
+        #cam-stage video, #cam-stage iframe { width: 100%; height: 100%; border: none; object-fit: cover; background: #000; }
+        .cam-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: .95rem; letter-spacing: .05em; z-index: 2; }
+        .cam-overlay-top { position: absolute; top: 0; left: 0; right: 0; z-index: 4; display: flex; align-items: flex-start; justify-content: space-between;
+            padding: 16px 18px; background: linear-gradient(180deg, rgba(0,0,0,.75), transparent); pointer-events: none; }
+        .cam-name { font-size: 1.35rem; font-weight: 800; text-shadow: 0 2px 6px rgba(0,0,0,.9); }
+        .cam-sub { font-size: .74rem; color: #cfcfcf; letter-spacing: .05em; margin-top: 2px; text-shadow: 0 1px 4px rgba(0,0,0,.9); }
+        .badges { display: flex; gap: 8px; align-items: center; }
+        .live-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(220,20,40,.92); color: #fff;
+            font-size: .72rem; font-weight: 700; letter-spacing: .12em; padding: 5px 11px; border-radius: 6px; text-transform: uppercase; }
+        .lock-badge { display: none; background: rgba(0,243,255,.9); color: #001015; font-size: .72rem; font-weight: 800;
+            letter-spacing: .1em; padding: 5px 11px; border-radius: 6px; text-transform: uppercase; }
+        #stage.locked .lock-badge { display: inline-flex; }
+        .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; animation: pulse 1.4s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
 
-        .cam-preview.loading::after {
-            content: "Loading…";
-            position: absolute;
-            font-size: 0.85rem;
-            color: #666;
-        }
+        /* Manual nav arrows */
+        .cam-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 6; background: rgba(0,0,0,.5);
+            border: 1px solid rgba(255,255,255,.2); color: #fff; width: 46px; height: 46px; border-radius: 50%; cursor: pointer;
+            font-size: 1.3rem; display: flex; align-items: center; justify-content: center; opacity: 0; transition: .2s; }
+        #camera:hover .cam-nav { opacity: 1; }
+        .cam-nav:hover { background: rgba(0,243,255,.3); border-color: var(--accent); }
+        .cam-nav.prev { left: 14px; } .cam-nav.next { right: 14px; }
 
-        .cam-meta { padding: 15px; }
-        .cam-title { font-weight: 600; font-size: 1rem; margin-bottom: 5px; }
-        .cam-weather { font-family: monospace; color: var(--accent); font-size: 0.85rem; }
+        .cam-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: rgba(255,255,255,.12); z-index: 4; }
+        .cam-progress-bar { height: 100%; width: 0%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+        #stage.locked .cam-progress-bar { background: #555; box-shadow: none; }
 
-        /* === BOTTOM NAV === */
-        #nav-bar {
-            position: fixed;
-            bottom: 0; left: 0;
-            width: 100%;
-            height: var(--nav-height);
-            background: rgba(20, 20, 20, 0.95);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid #333;
-            display: flex;
-            z-index: 5000;
-        }
+        .cam-thumbs { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 7px; z-index: 5; }
+        .cam-thumb-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.3); transition: .3s; cursor: pointer; }
+        .cam-thumb-dot.active { background: var(--accent); width: 22px; border-radius: 4px; }
 
-        .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-        .nav-item.active { color: var(--accent); background: rgba(0, 243, 255, 0.08); }
-        .nav-icon { font-size: 1.1rem; margin-bottom: 4px; opacity: 0.9; }
-        .nav-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em; }
+        /* SIDE */
+        #side { grid-area: side; display: grid; grid-template-rows: 1.15fr 1fr; gap: 12px; min-height: 0; }
+        #radar-card { position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; min-height: 0; }
+        #map { position: absolute; inset: 0; background: #0d0d0d; }
+        .card-label { position: absolute; top: 0; left: 0; z-index: 500; background: linear-gradient(90deg, rgba(0,0,0,.85), transparent);
+            padding: 9px 16px; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); pointer-events: none; width: 100%; }
+        .radar-legend { position: absolute; bottom: 8px; left: 10px; z-index: 500; font-size: .62rem; color: var(--muted); background: rgba(0,0,0,.55); padding: 3px 8px; border-radius: 6px; pointer-events: none; }
 
-        /* === FULLSCREEN OVERLAY === */
-        #fs-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            z-index: 9999;
-            display: none;
-        }
+        #wx-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; min-height: 0; }
+        .wx-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .wx-loc { font-size: .95rem; font-weight: 700; }
+        .wx-cond { font-size: .74rem; color: var(--muted); }
+        .wx-now { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+        .wx-temp { font-size: 3.2rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+        .wx-icon { font-size: 2.6rem; }
+        .wx-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .wx-stat { background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px; padding: 8px 10px; }
+        .wx-stat .k { font-size: .62rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+        .wx-stat .v { font-size: 1rem; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+        .wx-forecast { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: auto; padding-top: 12px; }
+        .wx-hour { text-align: center; background: var(--panel-2); border: 1px solid var(--border); border-radius: 9px; padding: 8px 4px; }
+        .wx-hour .h { font-size: .62rem; color: var(--muted); }
+        .wx-hour .i { font-size: 1.15rem; margin: 3px 0; }
+        .wx-hour .t { font-size: .82rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
-        .fs-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            z-index: 10001;
-            backdrop-filter: blur(8px);
-            transition: background 0.2s;
-        }
-        .fs-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+        /* TICKER */
+        #ticker { grid-area: ticker; display: flex; align-items: stretch; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+        #ticker-label { display: flex; align-items: center; gap: 9px; padding: 0 20px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+            font-size: .82rem; white-space: nowrap; color: #fff; background: linear-gradient(90deg, #b00020, #7a0016); }
+        #ticker-label.calm { background: linear-gradient(90deg, #0a6b3f, #084d2d); }
+        #ticker-track-wrap { flex: 1; overflow: hidden; position: relative; display: flex; align-items: center; }
+        #ticker-track { display: inline-flex; white-space: nowrap; align-items: center; will-change: transform; animation: scroll-left 40s linear infinite; }
+        #ticker-track:hover { animation-play-state: paused; }
+        @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .tk-item { display: inline-flex; align-items: center; padding: 0 26px; font-size: .92rem; }
+        .tk-item .sev { font-weight: 800; margin-right: 9px; padding: 2px 8px; border-radius: 5px; font-size: .74rem; letter-spacing: .05em; text-transform: uppercase; }
+        .sev.extreme, .sev.severe { background: #d61f32; color: #fff; }
+        .sev.moderate { background: #e08a00; color: #1a1000; }
+        .sev.minor, .sev.watch { background: #c9b400; color: #1a1600; }
+        .tk-sep { color: var(--border); padding: 0 4px; }
 
-        .fs-info {
-            position: absolute;
-            top: 20px; left: 20px;
-            z-index: 10001;
-            pointer-events: none;
-        }
-        .fs-title { font-size: 1.2rem; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-        .fs-weather { color: var(--accent); font-family: monospace; font-size: 1rem; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; }
+        /* SETTINGS PANEL */
+        #settings-panel { position: absolute; top: 0; right: 0; width: 360px; height: 100%; background: rgba(12,12,12,.97);
+            border-left: 1px solid var(--border); z-index: 9000; transform: translateX(100%); transition: transform .28s ease;
+            overflow-y: auto; padding: 20px; backdrop-filter: blur(8px); }
+        #settings-panel.open { transform: translateX(0); }
+        .sp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+        .sp-head h2 { margin: 0; font-size: 1.05rem; font-weight: 700; letter-spacing: .04em; }
+        .sp-section { margin-bottom: 22px; }
+        .sp-section h3 { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin: 0 0 10px; }
+        .sp-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 10px; }
+        .sp-row label { font-size: .86rem; }
+        .sp-val { font-size: .82rem; color: var(--accent); font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; }
+        input[type=range] { width: 150px; accent-color: var(--accent); }
+        .switch { position: relative; width: 42px; height: 22px; flex: none; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider-tg { position: absolute; inset: 0; background: #333; border-radius: 22px; cursor: pointer; transition: .2s; }
+        .slider-tg:before { content: ""; position: absolute; height: 16px; width: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+        .switch input:checked + .slider-tg { background: var(--accent); }
+        .switch input:checked + .slider-tg:before { transform: translateX(20px); }
+        .cam-list { display: flex; flex-direction: column; gap: 6px; }
+        .cam-list-item { display: flex; align-items: center; justify-content: space-between; background: var(--panel-2); border: 1px solid var(--border);
+            border-radius: 8px; padding: 7px 10px; gap: 8px; }
+        .cam-list-item.current { border-color: var(--accent); }
+        .cam-list-item .cli-title { font-size: .82rem; flex: 1; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cam-list-item .cli-jump { font-size: .68rem; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 5px; padding: 3px 7px; cursor: pointer; }
+        .cam-list-item .cli-jump:hover { border-color: var(--accent); color: var(--accent); }
+        textarea#custom-css { width: 100%; height: 120px; background: #0a0a0a; color: #d0f0f5; border: 1px solid var(--border); border-radius: 8px;
+            font-family: 'SFMono-Regular', Menlo, monospace; font-size: .72rem; padding: 10px; resize: vertical; }
+        .sp-note { font-size: .68rem; color: var(--muted); line-height: 1.5; margin-top: 6px; }
+        .sp-note code { background: #000; padding: 1px 4px; border-radius: 3px; color: #9fe; }
+        .btn-row { display: flex; gap: 8px; }
+        .sp-btn { flex: 1; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); padding: 9px; border-radius: 8px; cursor: pointer; font-size: .8rem; font-weight: 600; }
+        .sp-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .sp-btn.primary { background: rgba(0,243,255,.15); border-color: var(--accent); color: var(--accent); }
 
-        #fs-video-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        #fs-video-container video { width: 100%; height: 100%; object-fit: contain; }
-
-        .fs-next {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            background: rgba(0, 243, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(0, 243, 255, 0.4);
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            z-index: 10001;
-            backdrop-filter: blur(8px);
-            transition: background 0.2s;
-        }
-        .fs-next:hover {
-            background: rgba(0, 243, 255, 0.35);
-        }
-
-        /* Map camera markers */
-        .cam-marker { background: none; border: none; }
-        .cam-marker-dot {
-            display: block;
-            width: 12px; height: 12px;
-            background: var(--accent);
-            border: 2px solid rgba(0,0,0,0.6);
-            border-radius: 50%;
-            box-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
-        }
-        .cam-marker:hover .cam-marker-dot { transform: scale(1.2); }
-        .leaflet-popup-content { margin: 10px 14px; min-width: 120px; }
-        .map-popup-link { color: var(--accent); text-decoration: none; font-size: 0.85rem; }
-        .map-popup-link:hover { text-decoration: underline; }
+        @media (max-width: 700px) { #stage { gap: 8px; padding: 8px; } }
     </style>
+    <style id="user-style"></style>
 </head>
 <body>
-
-    <div id="view-map" class="view-section active">
-        <div id="map"></div>
-    </div>
-
-    <div id="view-cams" class="view-section">
-        <div id="cam-grid-container">
-            <div class="grid-header">
-                <h1>Live Cameras</h1>
-                <span class="grid-subtitle">Traffic feeds with current conditions</span>
+    <div id="stage-wrap">
+        <div id="stage">
+            <div id="header">
+                <div class="brand">
+                    <div class="glyph">◇</div>
+                    <div>
+                        <h1>WEATHER &amp; TRAFFIC COMMAND</h1>
+                        <div class="sub">Live Radar · NWS Alerts · Rotating Cameras</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="updated" id="updated">Radar <b id="u-radar">—</b><br>Weather <b id="u-wx">—</b></div>
+                    <div class="clock">
+                        <div class="time" id="clock-time">--:--:--</div>
+                        <div class="date" id="clock-date">—</div>
+                    </div>
+                    <button class="icon-btn" id="lock-btn" title="Lock on this camera (L)">🔓</button>
+                    <button class="icon-btn" id="gear-btn" title="Settings (S)">⚙</button>
+                </div>
             </div>
-            <div id="cam-grid" class="cam-grid"></div>
-        </div>
-    </div>
 
-    <nav id="nav-bar" role="navigation" aria-label="Main">
-        <button type="button" class="nav-item active" onclick="switchTab('map')" aria-current="page">
-            <span class="nav-icon" aria-hidden="true">◇</span>
-            <span class="nav-label">Radar</span>
-        </button>
-        <button type="button" class="nav-item" onclick="switchTab('cams')">
-            <span class="nav-icon" aria-hidden="true">▣</span>
-            <span class="nav-label">Cameras</span>
-        </button>
-    </nav>
+            <div id="camera">
+                <div id="cam-stage"></div>
+                <div class="cam-loading" id="cam-loading">Loading camera…</div>
+                <button class="cam-nav prev" id="nav-prev" title="Previous (←)">‹</button>
+                <button class="cam-nav next" id="nav-next" title="Next (→)">›</button>
+                <div class="cam-overlay-top">
+                    <div>
+                        <div class="cam-name" id="cam-name">Camera</div>
+                        <div class="cam-sub" id="cam-sub">—</div>
+                    </div>
+                    <div class="badges">
+                        <div class="lock-badge">🔒 Locked</div>
+                        <div class="live-badge"><span class="live-dot"></span> Live</div>
+                    </div>
+                </div>
+                <div class="cam-thumbs" id="cam-thumbs"></div>
+                <div class="cam-progress"><div class="cam-progress-bar" id="cam-progress-bar"></div></div>
+            </div>
 
-    <div id="fs-overlay" role="dialog" aria-modal="true" aria-label="Camera fullscreen">
-        <button type="button" class="fs-close" onclick="closeFS()" aria-label="Close">Close</button>
-        <button type="button" class="fs-next" onclick="nextCamera()" aria-label="Next camera">Next</button>
-        <div class="fs-info">
-            <div class="fs-title" id="fs-title-text">Camera</div>
-            <div class="fs-weather" id="fs-weather-text">—</div>
+            <div id="side">
+                <div id="radar-card">
+                    <div class="card-label">Live Radar</div>
+                    <div id="map"></div>
+                    <div class="radar-legend">RainViewer NEXRAD · animated loop</div>
+                </div>
+                <div id="wx-card">
+                    <div class="wx-head">
+                        <div>
+                            <div class="wx-loc" id="wx-loc">—</div>
+                            <div class="wx-cond" id="wx-cond">Loading conditions…</div>
+                        </div>
+                    </div>
+                    <div class="wx-now">
+                        <div class="wx-icon" id="wx-icon">•</div>
+                        <div class="wx-temp" id="wx-temp">--°</div>
+                    </div>
+                    <div class="wx-stats">
+                        <div class="wx-stat"><div class="k">Wind</div><div class="v" id="wx-wind">—</div></div>
+                        <div class="wx-stat"><div class="k">Humidity</div><div class="v" id="wx-hum">—</div></div>
+                        <div class="wx-stat"><div class="k">Feels</div><div class="v" id="wx-feels">—</div></div>
+                    </div>
+                    <div class="wx-forecast" id="wx-forecast"></div>
+                </div>
+            </div>
+
+            <div id="ticker">
+                <div id="ticker-label" class="calm"><span>⚠</span><span id="ticker-label-text">Alerts</span></div>
+                <div id="ticker-track-wrap"><div id="ticker-track"></div></div>
+            </div>
+
+            <!-- SETTINGS -->
+            <div id="settings-panel">
+                <div class="sp-head">
+                    <h2>Settings</h2>
+                    <button class="icon-btn" id="sp-close">✕</button>
+                </div>
+
+                <div class="sp-section">
+                    <h3>Rotation</h3>
+                    <div class="sp-row">
+                        <label for="rot-slider">Dwell per camera</label>
+                        <span class="sp-val" id="rot-val">20s</span>
+                    </div>
+                    <input type="range" id="rot-slider" min="5" max="120" step="5" value="20" style="width:100%">
+                    <div class="sp-row" style="margin-top:12px">
+                        <label for="tg-lock">Lock on current camera</label>
+                        <span class="switch"><input type="checkbox" id="tg-lock"><span class="slider-tg"></span></span>
+                    </div>
+                </div>
+
+                <div class="sp-section">
+                    <h3>Cameras <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">(toggle to include in rotation)</span></h3>
+                    <div class="cam-list" id="cam-list"></div>
+                </div>
+
+                <div class="sp-section">
+                    <h3>Display</h3>
+                    <div class="sp-row"><label for="tg-radar">Animate radar loop</label><span class="switch"><input type="checkbox" id="tg-radar" checked><span class="slider-tg"></span></span></div>
+                    <div class="sp-row"><label for="tg-chrome">Show camera labels / dots</label><span class="switch"><input type="checkbox" id="tg-chrome" checked><span class="slider-tg"></span></span></div>
+                    <div class="sp-row"><label for="tg-mute">Mute camera audio</label><span class="switch"><input type="checkbox" id="tg-mute" checked><span class="slider-tg"></span></span></div>
+                    <div class="sp-row">
+                        <label for="radar-op">Radar opacity</label>
+                        <span class="sp-val" id="radar-op-val">70%</span>
+                    </div>
+                    <input type="range" id="radar-op" min="20" max="100" step="5" value="70" style="width:100%">
+                </div>
+
+                <div class="sp-section">
+                    <h3>Custom CSS</h3>
+                    <textarea id="custom-css" spellcheck="false" placeholder="/* Applies to VIDEO-based cameras + the dashboard */
+video { filter: contrast(1.05); }"></textarea>
+                    <div class="sp-note">
+                        These rules apply to the dashboard and any <code>&lt;video&gt;</code> camera.
+                        <b>They cannot reach inside iframe embeds</b> (ipcamlive, wetmet) — that's a browser security limit.
+                        To hide logos on those, paste your rules into <b>OBS → Browser Source → Custom CSS</b>:
+                        <br><code>.vjs-bug.vjs-bug-tl.no-link img { opacity: 0; }</code>
+                        <code>#mediaplaybackdiv_logo { opacity: 0 !important; }</code>
+                    </div>
+                </div>
+
+                <div class="sp-section">
+                    <div class="btn-row">
+                        <button class="sp-btn primary" id="sp-apply">Apply &amp; Save</button>
+                        <button class="sp-btn" id="sp-reset">Reset</button>
+                    </div>
+                    <div class="sp-note">Settings are saved in this browser and persist across OBS restarts.</div>
+                </div>
+            </div>
         </div>
-        <div id="fs-video-container"></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
-
     <script>
-        // === DATA CONFIG ===
-        const cameras = [
-            { id: 'c1', title: 'US-50 @ MM 16.5', url: 'https://vtc3.roadsummary.com/rtplive/CAM004/playlist.m3u8', lat: 39.245052, lon: -81.391205 },
-            { id: 'c2', title: 'I-77 @ 176 US 50 I/C', url: 'https://vtc3.roadsummary.com/rtplive/CAM078/playlist.m3u8', lat: 39.267584, lon: -81.499343 },
-            { id: 'c3', title: 'Downtown Parkersburg', url: 'https://s117.ipcamlive.com/streams_storage/5ciuewkaxydc4tzjp/stream.m3u8', lat: 39.263304, lon: -81.564240 },
-            { id: 'c5', title: 'I-77 Williamstown', url: 'https://vtc3.roadsummary.com/rtplive/CAM103/playlist.m3u8', lat: 39.399095, lon: -81.434647 },
-            { id: 'c6', title: 'Charleston WV', url: 'https://wmse-us-ea1.wetmet.net/live/157-06-01/chunks.m3u8?nimblesessionid=28884802&wmsAuthSign=c2VydmVyX3RpbWU9Mi83LzIwMjYgMzoyMjo1OCBQTSZoYXNoX3ZhbHVlPTgyeWVZazkvVDVMQkZwNTdiV2tYeXc9PSZ2YWxpZG1pbnV0ZXM9MzA=', lat: 38.3498, lon: -81.6326 },
-            { id: 'c7', title: 'I-79 Clarksburg', url: 'https://vtc1.roadsummary.com/rtplive/CAM028/playlist.m3u8', lat: 39.274573, lon: -80.285608 },
-            { id: 'c8', title: 'Wheeling I-70', url: 'https://vtc3.roadsummary.com/rtplive/CAM070/playlist.m3u8', lat: 40.0684, lon: -80.7183 },
-            { id: 'c9', title: 'Greenville SC', url: 'https://s53.ipcamlive.com/streams/353btftmcvh5iexku/stream.m3u8', lat: 34.8485, lon: -82.4000 },
-            { id: 'c10', title: 'Aiken SC', url: 'https://wmso-us-ea1.wetmet.net/live/191-08-01/chunks.m3u8?nimblesessionid=86645906&wmsAuthSign=c2VydmVyX3RpbWU9Mi83LzIwMjYgMzo1NDo0MiBQTSZoYXNoX3ZhbHVlPXdjQjBnd1FDZnhUUzJwNEV5TVgyclE9PSZ2YWxpZG1pbnV0ZXM9MzA=', lat: 33.5505, lon: -81.7164 },
-            { id: 'c11', title: 'I-95 Exit 22', url: 'https://s20.us-east-1.skyvdn.com/rtplive/60303/chunklist_w977767992.m3u8', lat: 32.502583, lon: -80.971254 },
-            { id: 'c12', title: 'Lake Keowee Marina', url: 'https://s165.ipcamlive.com/streams/a53jlsg9qwuizxpvh/stream.m3u8', lat: 34.711982, lon: -82.949066 },
-            { id: 'c13', title: 'Tuscaloosa', url: 'https://video.hazcams.com/tuscaloosa-al-us-001/main_stream.m3u8', lat: 33.208856, lon: -87.550406 },
-            { id: 'c14', title: 'Marietta OH', url: 'https://s161.ipcamlive.com/streams_storage/a1yonn8gzqcvwrje7/stream.m3u8', lat: 39.416016, lon: -81.456336 }
-        ];
-        let currentCamIndex = 0;
+    /* =========================================================
+       CAMERA CONFIG — add cameras here.
+       url can be an iframe embed (player.php / frame.php / any page)
+       OR an HLS .m3u8 / DASH .mpd stream. No m3u8 required.
+       ========================================================= */
+    const cameras = [
+      { id: 'c9',  title: 'Greenville SC',       url: 'https://g1.ipcamlive.com/player/player.php?alias=67bf7cda4de89&autoplay=true&muted=true', lat: 34.8485, lon: -82.4000 },
+      { id: 'c10', title: 'Aiken SC',            url: 'https://api.wetmet.net/widgets/stream/frame.php?uid=05ba9d5621e5a7aac75a9c91f94a7c83&autoplay=1&mute=1', lat: 33.5505, lon: -81.7164 },
+      { id: 'c3',  title: 'Downtown Parkersburg',url: 'https://g1.ipcamlive.com/player/player.php?alias=62e70994c6fa3&autoplay=true&muted=true', lat: 39.263304, lon: -81.564240 },
+      { id: 'c14', title: 'Marietta OH',         url: 'https://g1.ipcamlive.com/player/player.php?alias=64301b7153152&autoplay=true&muted=true', lat: 39.416016, lon: -81.456336 },
+      { id: 'c1',  title: 'US-50 @ MM 16.5',     url: 'https://vtc3.roadsummary.com/rtplive/CAM004/playlist.m3u8', lat: 39.245052, lon: -81.391205 },
+      { id: 'c2',  title: 'I-77 @ 176 US 50 I/C',url: 'https://vtc3.roadsummary.com/rtplive/CAM078/playlist.m3u8', lat: 39.267584, lon: -81.499343 },
+      { id: 'c5',  title: 'I-77 Williamstown',   url: 'https://vtc3.roadsummary.com/rtplive/CAM103/playlist.m3u8', lat: 39.399095, lon: -81.434647 },
+      { id: 'c7',  title: 'I-79 Clarksburg',     url: 'https://vtc1.roadsummary.com/rtplive/CAM028/playlist.m3u8', lat: 39.274573, lon: -80.285608 },
+      { id: 'c8',  title: 'Wheeling I-70',       url: 'https://vtc3.roadsummary.com/rtplive/CAM070/playlist.m3u8', lat: 40.0684,  lon: -80.7183 },
+      { id: 'c12', title: 'Lake Keowee Marina',  url: 'https://g1.ipcamlive.com/player/player.php?alias=68a77f8987e1f&autoplay=true&muted=true', lat: 34.711982, lon: -82.949066 },
+      { id: 'c13', title: 'Tuscaloosa',          url: 'https://video.hazcams.com/tuscaloosa-al-us-001/main_stream.m3u8', lat: 33.208856, lon: -87.550406 }
+    ];
 
-        let map, dashPlayer = null;
+    const RADAR_ZOOM = 7;
+    const LS_KEY = 'wxcmd_settings_v1';
 
-        // === INIT ===
-        function init() {
-            initMap();
-            renderGrid();
-            fetchWeather();
+    /* ---- persisted settings ---- */
+    const defaults = {
+        rotateSeconds: 20,
+        locked: false,
+        animateRadar: true,
+        showChrome: true,
+        muteAudio: true,
+        radarOpacity: 0.7,
+        customCss: '',
+        disabledCams: []   // array of camera ids to skip
+    };
+    let settings = loadSettings();
+
+    function loadSettings(){
+        try { return Object.assign({}, defaults, JSON.parse(localStorage.getItem(LS_KEY) || '{}')); }
+        catch(e){ return Object.assign({}, defaults); }
+    }
+    function saveSettings(){ try { localStorage.setItem(LS_KEY, JSON.stringify(settings)); } catch(e){} }
+
+    /* ---- state ---- */
+    let currentIndex = 0;
+    let map, camMarkers = [];
+    let hls = null, dashPlayer = null, currentVideo = null;
+    let rotateTimer = null, progressTimer = null, progressStart = 0, paused = false;
+
+    /* ---- helpers ---- */
+    function esc(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+    function isEmbed(url){ return !/\.m3u8($|\?)/.test(url) && !/\.mpd($|\?)/.test(url); }
+    function nowStamp(){ return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false}); }
+    function enabledCams(){ return cameras.filter(c => !settings.disabledCams.includes(c.id)); }
+
+    function wmo(code){
+        const m = {0:['☀️','Clear'],1:['🌤️','Mostly clear'],2:['⛅','Partly cloudy'],3:['☁️','Overcast'],45:['🌫️','Fog'],48:['🌫️','Rime fog'],
+            51:['🌦️','Light drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Dense drizzle'],61:['🌧️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],
+            66:['🌧️','Freezing rain'],67:['🌧️','Freezing rain'],71:['🌨️','Light snow'],73:['🌨️','Snow'],75:['❄️','Heavy snow'],77:['❄️','Snow grains'],
+            80:['🌦️','Rain showers'],81:['🌧️','Showers'],82:['⛈️','Violent showers'],85:['🌨️','Snow showers'],86:['❄️','Snow showers'],
+            95:['⛈️','Thunderstorm'],96:['⛈️','Storm + hail'],99:['⛈️','Severe storm']};
+        return m[code] || ['🌡️','—'];
+    }
+
+    /* =========================================================
+       MAP / RADAR
+       ========================================================= */
+    let radarFrames = [], radarLayers = [], radarIdx = 0, radarHost = '', radarAnimTimer = null;
+    function initMap(){
+        map = L.map('map', { zoomControl:false, attributionControl:false, keyboard:false, dragging:false, scrollWheelZoom:false, doubleClickZoom:false })
+              .setView([cameras[0].lat, cameras[0].lon], RADAR_ZOOM);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { subdomains:'abcd' }).addTo(map);
+        const camIcon = L.divIcon({ className:'', html:'<span style="display:block;width:11px;height:11px;background:#00f3ff;border:2px solid #001015;border-radius:50%;box-shadow:0 0 8px #00f3ff;"></span>', iconSize:[11,11], iconAnchor:[5,5] });
+        cameras.forEach(c => { camMarkers.push(L.marker([c.lat,c.lon],{icon:camIcon}).addTo(map)); });
+        loadRadar();
+        setInterval(loadRadar, 5 * 60 * 1000);
+    }
+    async function loadRadar(){
+        try {
+            const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+            const data = await res.json();
+            radarHost = data.host;
+            const past = (data.radar && data.radar.past) || [];
+            const nowcast = (data.radar && data.radar.nowcast) || [];
+            radarFrames = past.concat(nowcast).slice(-12);
+            radarLayers.forEach(l => map.removeLayer(l));
+            radarLayers = radarFrames.map(f => L.tileLayer(`${radarHost}${f.path}/256/{z}/{x}/{y}/4/1_1.png`, { opacity:0, tileSize:256 }).addTo(map));
+            radarIdx = radarLayers.length - 1;
+            applyRadarMode();
+            document.getElementById('u-radar').textContent = nowStamp();
+        } catch(e){ document.getElementById('u-radar').textContent = 'offline'; }
+    }
+    function applyRadarMode(){
+        if (radarAnimTimer) { clearInterval(radarAnimTimer); radarAnimTimer = null; }
+        if (!radarLayers.length) return;
+        if (settings.animateRadar) {
+            radarAnimTimer = setInterval(() => {
+                radarLayers.forEach(l => l.setOpacity(0));
+                radarIdx = (radarIdx + 1) % radarLayers.length;
+                if (radarLayers[radarIdx]) radarLayers[radarIdx].setOpacity(settings.radarOpacity);
+            }, 600);
+        } else {
+            radarLayers.forEach((l,i) => l.setOpacity(i === radarLayers.length-1 ? settings.radarOpacity : 0));
         }
+    }
+    function panRadarTo(cam){
+        map.flyTo([cam.lat, cam.lon], RADAR_ZOOM, { duration: 1.2 });
+        camMarkers.forEach(m => m.setOpacity(0.5));
+        const idx = cameras.findIndex(c => c.id === cam.id);
+        if (camMarkers[idx]) camMarkers[idx].setOpacity(1);
+    }
 
-        // === MAP SETUP (FIXED RADAR) ===
-        function initMap() {
-            map = L.map('map', { zoomControl: false }).setView([37, -85], 5);
-            
-            // Dark Base Layer
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap &copy; CartoDB',
-                subdomains: 'abcd'
-            }).addTo(map);
+    /* =========================================================
+       CAMERA PLAYBACK
+       ========================================================= */
+    function teardownPlayers(){
+        if (hls){ try{ hls.destroy(); }catch(e){} hls = null; }
+        if (dashPlayer){ try{ dashPlayer.reset(); }catch(e){} dashPlayer = null; }
+        currentVideo = null;
+        document.getElementById('cam-stage').innerHTML = '';
+    }
+    function playCamera(cam){
+        teardownPlayers();
+        const stage = document.getElementById('cam-stage');
+        const loading = document.getElementById('cam-loading');
+        loading.textContent = 'Loading camera…';
+        loading.style.display = 'flex';
 
-            // FIXED: US Weather Radar (IEM WMS)
-            // This is more reliable than RainViewer for static HTML
-            const radarLayer = L.tileLayer.wms("https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi", {
-                layers: 'nexrad-n0r-900913',
-                format: 'image/png',
-                transparent: true,
-                opacity: 0.60
-            }).addTo(map);
-
-            // Camera location markers
-            const camIcon = L.divIcon({
-                className: 'cam-marker',
-                html: '<span class="cam-marker-dot"></span>',
-                iconSize: [12, 12],
-                iconAnchor: [6, 6]
-            });
-            cameras.forEach(function (cam) {
-                const marker = L.marker([cam.lat, cam.lon], { icon: camIcon }).addTo(map);
-                marker.bindPopup(
-                    '<div class="map-popup">' +
-                    '<strong>' + escapeHtml(cam.title) + '</strong>' +
-                    '<br><a href="#" class="map-popup-link" data-cam-id="' + cam.id + '">View camera</a></div>'
-                );
-            });
-            document.body.addEventListener('click', function (e) {
-                const link = e.target.closest('.map-popup-link');
-                if (link && link.dataset.camId) {
-                    e.preventDefault();
-                    switchTab('cams');
-                    openFS(link.dataset.camId);
-                }
-            });
+        if (isEmbed(cam.url)) {
+            const iframe = document.createElement('iframe');
+            iframe.src = cam.url;
+            iframe.allow = 'autoplay; fullscreen';
+            iframe.setAttribute('allowfullscreen','');
+            iframe.onload = () => { loading.style.display = 'none'; };
+            stage.appendChild(iframe);
+            setTimeout(() => { loading.style.display = 'none'; }, 4000);
+            return;
         }
+        const video = document.createElement('video');
+        video.autoplay = true; video.muted = settings.muteAudio; video.playsInline = true;
+        currentVideo = video;
+        stage.appendChild(video);
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Resolve m3u8 from embed page (e.g. Aiken SC – stream URL changes periodically)
-        async function getStreamUrl(cam) {
-            if (cam.resolvedUrl) return cam.resolvedUrl;
-            if (!cam.resolveM3u8 || cam.url.includes('.m3u8')) return cam.url;
+        if (/\.mpd($|\?)/.test(cam.url)) {
             try {
-                const res = await fetch(cam.url, { mode: 'cors' });
-                const html = await res.text();
-                const m = html.match(/https?:\/\/[^\s'"<>]+\.m3u8[^\s'"<>]*/);
-                if (m && m[0]) {
-                    cam.resolvedUrl = m[0].replace(/\\\//g, '/');
-                    return cam.resolvedUrl;
-                }
-            } catch (e) { /* CORS or network – fall back to iframe */ }
-            return cam.url;
+                dashPlayer = dashjs.MediaPlayer().create();
+                dashPlayer.initialize(video, cam.url, true);
+                dashPlayer.on('streamInitialized', () => { loading.style.display='none'; });
+                dashPlayer.on('error', () => { loading.textContent='Stream unavailable'; });
+            } catch(e){ loading.textContent = 'Error loading stream'; }
+            return;
         }
+        if (window.Hls && Hls.isSupported()) {
+            hls = new Hls({ liveDurationInfinity:true });
+            hls.loadSource(cam.url);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => { loading.style.display='none'; video.play().catch(()=>{}); });
+            hls.on(Hls.Events.ERROR, (evt, d) => { if (d && d.fatal){ loading.textContent = 'Stream unavailable'; } });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = cam.url;
+            video.addEventListener('loadeddata', () => { loading.style.display='none'; });
+        } else { loading.textContent = 'Format unsupported'; }
+    }
 
-        function openFS(id) {
-            const idx = cameras.findIndex(c => c.id === id);
-            if (idx >= 0) showCameraFullscreen(idx);
-        }
-
-        // === GRID RENDER ===
-        function renderGrid() {
-            const grid = document.getElementById('cam-grid');
-            cameras.forEach(cam => {
-                const div = document.createElement('div');
-                div.className = 'cam-card';
-                div.onclick = () => openFS(cam.id);
-                
-                const preview = document.createElement('div');
-                preview.className = 'cam-preview loading';
-                preview.id = `preview-${cam.id}`;
-                
-                const meta = document.createElement('div');
-                meta.className = 'cam-meta';
-                meta.innerHTML = `
-                    <div class="cam-title">${cam.title}</div>
-                    <div class="cam-weather" id="w-${cam.id}">Loading...</div>
-                `;
-                
-                div.appendChild(preview);
-                div.appendChild(meta);
-                grid.appendChild(div);
-                
-                // Initialize preview player
-                initPreviewPlayer(cam, preview);
+    /* =========================================================
+       WEATHER + ALERTS
+       ========================================================= */
+    async function loadWeather(cam){
+        const el = id => document.getElementById(id);
+        el('wx-loc').textContent = cam.title;
+        el('wx-cond').textContent = 'Loading conditions…';
+        try {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${cam.lat}&longitude=${cam.lon}`
+                + `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m`
+                + `&hourly=temperature_2m,weather_code&forecast_hours=6&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
+            const res = await fetch(url); const d = await res.json(); const c = d.current;
+            const [icon, text] = wmo(c.weather_code);
+            el('wx-icon').textContent = icon; el('wx-cond').textContent = text;
+            el('wx-temp').textContent = Math.round(c.temperature_2m) + '°';
+            el('wx-wind').textContent = Math.round(c.wind_speed_10m) + ' mph';
+            el('wx-hum').textContent = Math.round(c.relative_humidity_2m) + '%';
+            el('wx-feels').textContent = Math.round(c.apparent_temperature) + '°';
+            const fc = el('wx-forecast'); fc.innerHTML = '';
+            const times = d.hourly.time, temps = d.hourly.temperature_2m, codes = d.hourly.weather_code;
+            for (let i = 1; i <= 5 && i < times.length; i++) {
+                const hr = new Date(times[i]).toLocaleTimeString('en-US',{hour:'numeric',hour12:true}).replace(' ','');
+                const [hi] = wmo(codes[i]);
+                const div = document.createElement('div'); div.className = 'wx-hour';
+                div.innerHTML = `<div class="h">${hr}</div><div class="i">${hi}</div><div class="t">${Math.round(temps[i])}°</div>`;
+                fc.appendChild(div);
+            }
+            el('u-wx').textContent = nowStamp();
+        } catch(e){ el('wx-cond').textContent = 'Weather unavailable'; el('u-wx').textContent = 'offline'; }
+    }
+    async function loadAlerts(cam){
+        const track = document.getElementById('ticker-track');
+        const label = document.getElementById('ticker-label');
+        const labelText = document.getElementById('ticker-label-text');
+        try {
+            const res = await fetch(`https://api.weather.gov/alerts/active?point=${cam.lat},${cam.lon}`, { headers:{'Accept':'application/geo+json'} });
+            const data = await res.json();
+            const features = (data.features || []);
+            if (!features.length) {
+                label.classList.add('calm'); labelText.textContent = 'No active alerts';
+                setTicker(track, [`<span class="tk-item">✔ No active weather alerts for ${esc(cam.title)} · Radar and cameras nominal</span>`]);
+                return;
+            }
+            label.classList.remove('calm');
+            labelText.textContent = features.length + ' Active Alert' + (features.length>1?'s':'');
+            const items = features.map(f => {
+                const p = f.properties; const sev = (p.severity || 'minor').toLowerCase();
+                return `<span class="tk-item"><span class="sev ${sev}">${esc(p.event)}</span>${esc(p.areaDesc || '')} — ${esc(p.headline || p.event)}</span>`;
             });
+            setTicker(track, items);
+        } catch(e){
+            label.classList.add('calm'); labelText.textContent = 'Alerts';
+            setTicker(track, ['<span class="tk-item">Alert feed unavailable</span>']);
         }
+    }
+    function setTicker(track, items){
+        const html = items.join('<span class="tk-sep">•</span>');
+        track.innerHTML = html + '<span class="tk-sep">•</span>' + html;
+    }
 
-        // === PREVIEW PLAYER INIT ===
-        function initPreviewPlayer(cam, previewDiv) {
-            function playWithUrl(streamUrl) {
-                const url = streamUrl || cam.url;
-                if (cam.type === 'dash' || (url && url.endsWith('.mpd'))) {
-                    const video = document.createElement('video');
-                    video.autoplay = true;
-                    video.muted = true;
-                    video.style.width = '100%';
-                    video.style.height = '100%';
-                    previewDiv.appendChild(video);
-                    try {
-                        const dp = dashjs.MediaPlayer().create();
-                        dp.initialize(video, url, true);
-                        dp.on('streamInitialized', () => previewDiv.classList.remove('loading'));
-                    } catch (e) {
-                        previewDiv.classList.remove('loading');
-                        previewDiv.innerHTML = '<span style="color:#666;">Unavailable</span>';
-                    }
-                } else if (url && url.includes('.m3u8')) {
-                    const video = document.createElement('video');
-                    video.autoplay = true;
-                    video.muted = true;
-                    video.style.width = '100%';
-                    video.style.height = '100%';
-                    previewDiv.appendChild(video);
-                    if (Hls.isSupported()) {
-                        const hls = new Hls({ debug: false });
-                        hls.loadSource(url);
-                        hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED, () => previewDiv.classList.remove('loading'));
-                        hls.on(Hls.Events.ERROR, () => {
-                            previewDiv.classList.remove('loading');
-                            previewDiv.innerHTML = '<span style="color:#666;">Unavailable</span>';
-                        });
-                    } else {
-                        video.src = url;
-                        previewDiv.classList.remove('loading');
-                    }
-                } else {
-                    previewDiv.classList.remove('loading');
-                    previewDiv.innerHTML = '<span style="color:#666;">Embed only</span>';
-                }
-            }
-            if (cam.resolveM3u8 && !cam.url.includes('.m3u8')) {
-                getStreamUrl(cam).then(playWithUrl);
-            } else {
-                playWithUrl(cam.url);
-            }
-        }
-        
+    /* =========================================================
+       ROTATION + NAV
+       ========================================================= */
+    function renderThumbs(){
+        const wrap = document.getElementById('cam-thumbs'); wrap.innerHTML = '';
+        const list = enabledCams();
+        list.forEach((c) => {
+            const d = document.createElement('div');
+            d.className = 'cam-thumb-dot' + (c.id === cameras[currentIndex].id ? ' active' : '');
+            d.title = c.title;
+            d.onclick = () => jumpToCam(c.id);
+            wrap.appendChild(d);
+        });
+    }
+    function showCameraByGlobalIndex(index){
+        currentIndex = (index + cameras.length) % cameras.length;
+        const cam = cameras[currentIndex];
+        document.getElementById('cam-name').textContent = cam.title;
+        document.getElementById('cam-sub').textContent = `${cam.lat.toFixed(3)}, ${cam.lon.toFixed(3)}`;
+        renderThumbs(); renderCamList();
+        playCamera(cam); panRadarTo(cam); loadWeather(cam); loadAlerts(cam);
+        restartProgress();
+    }
+    function jumpToCam(id){
+        const idx = cameras.findIndex(c => c.id === id);
+        if (idx >= 0) showCameraByGlobalIndex(idx);
+    }
+    function step(dir){
+        const list = enabledCams();
+        if (!list.length) return;
+        const curId = cameras[currentIndex].id;
+        let pos = list.findIndex(c => c.id === curId);
+        if (pos === -1) pos = 0; else pos = (pos + dir + list.length) % list.length;
+        jumpToCam(list[pos].id);
+    }
+    function nextCamera(){ step(1); }
+    function prevCamera(){ step(-1); }
 
-        // === WEATHER FETCH ===
-        async function fetchWeather() {
-            for(let cam of cameras) {
-                try {
-                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${cam.lat}&longitude=${cam.lon}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph`);
-                    const data = await res.json();
-                    const info = `${Math.round(data.current_weather.temperature)}°F | ${Math.round(data.current_weather.windspeed)}mph`;
-                    cam.weatherData = info;
-                    const el = document.getElementById(`w-${cam.id}`);
-                    if(el) el.innerText = info;
-                } catch (e) {
-                    if (document.getElementById(`w-${cam.id}`)) document.getElementById(`w-${cam.id}`).innerText = '—';
-                }
-            }
-        }
+    function restartProgress(){
+        const bar = document.getElementById('cam-progress-bar');
+        progressStart = Date.now();
+        if (progressTimer) clearInterval(progressTimer);
+        if (rotateTimer) clearTimeout(rotateTimer);
+        if (settings.locked) { bar.style.width = '100%'; return; }
+        progressTimer = setInterval(() => {
+            const pct = Math.min(100, ((Date.now()-progressStart)/(settings.rotateSeconds*1000))*100);
+            bar.style.width = pct + '%';
+        }, 100);
+        rotateTimer = setTimeout(nextCamera, settings.rotateSeconds*1000);
+    }
 
-        // === FULLSCREEN PLAYER ===
-        async function showCameraFullscreen(index) {
-            currentCamIndex = index;
-            const cam = cameras[index];
-            const overlay = document.getElementById('fs-overlay');
-            const container = document.getElementById('fs-video-container');
+    /* =========================================================
+       SETTINGS PANEL WIRING
+       ========================================================= */
+    function renderCamList(){
+        const list = document.getElementById('cam-list'); list.innerHTML = '';
+        cameras.forEach(c => {
+            const enabled = !settings.disabledCams.includes(c.id);
+            const row = document.createElement('div');
+            row.className = 'cam-list-item' + (c.id === cameras[currentIndex].id ? ' current' : '');
+            row.innerHTML = `
+                <span class="cli-title" title="${esc(c.title)}">${esc(c.title)}</span>
+                <button class="cli-jump">Go</button>
+                <span class="switch"><input type="checkbox" ${enabled?'checked':''}><span class="slider-tg"></span></span>`;
+            row.querySelector('.cli-jump').onclick = () => jumpToCam(c.id);
+            row.querySelector('.cli-title').onclick = () => jumpToCam(c.id);
+            row.querySelector('input').onchange = (e) => {
+                if (e.target.checked) settings.disabledCams = settings.disabledCams.filter(x => x !== c.id);
+                else if (!settings.disabledCams.includes(c.id)) settings.disabledCams.push(c.id);
+                saveSettings(); renderThumbs();
+            };
+            list.appendChild(row);
+        });
+    }
+    function applyCustomCss(){ document.getElementById('user-style').textContent = settings.customCss || ''; }
+    function applyLockUI(){
+        document.getElementById('stage').classList.toggle('locked', settings.locked);
+        document.getElementById('lock-btn').textContent = settings.locked ? '🔒' : '🔓';
+        document.getElementById('tg-lock').checked = settings.locked;
+    }
+    function applyChrome(){ document.getElementById('stage').classList.toggle('chrome-off', !settings.showChrome); }
 
-            document.getElementById('fs-title-text').innerText = cam.title;
-            document.getElementById('fs-weather-text').innerText = cam.weatherData || '—';
-            overlay.style.display = 'block';
+    function syncControlsFromSettings(){
+        document.getElementById('rot-slider').value = settings.rotateSeconds;
+        document.getElementById('rot-val').textContent = settings.rotateSeconds + 's';
+        document.getElementById('tg-radar').checked = settings.animateRadar;
+        document.getElementById('tg-chrome').checked = settings.showChrome;
+        document.getElementById('tg-mute').checked = settings.muteAudio;
+        document.getElementById('radar-op').value = Math.round(settings.radarOpacity*100);
+        document.getElementById('radar-op-val').textContent = Math.round(settings.radarOpacity*100) + '%';
+        document.getElementById('custom-css').value = settings.customCss || '';
+        applyLockUI(); applyChrome();
+    }
 
-            container.innerHTML = '<p style="color:#888; padding: 20px;">Loading stream…</p>';
-            if (dashPlayer) { dashPlayer.reset(); dashPlayer = null; }
+    function wireSettings(){
+        const $ = id => document.getElementById(id);
+        $('gear-btn').onclick = () => $('settings-panel').classList.add('open');
+        $('sp-close').onclick = () => $('settings-panel').classList.remove('open');
 
-            const streamUrl = await getStreamUrl(cam);
+        $('lock-btn').onclick = () => { settings.locked = !settings.locked; saveSettings(); applyLockUI(); restartProgress(); };
 
-            container.innerHTML = '';
-            if (cam.type === 'dash' || (streamUrl && streamUrl.endsWith('.mpd'))) {
-                const video = document.createElement('video');
-                video.controls = true;
-                video.autoplay = true;
-                video.style.width = '100%';
-                video.style.height = '100%';
-                container.appendChild(video);
-                try {
-                    dashPlayer = dashjs.MediaPlayer().create();
-                    dashPlayer.initialize(video, streamUrl, true);
-                    dashPlayer.on('error', function () {
-                        container.innerHTML = '<p style="color:#888; padding: 20px;">Stream unavailable.</p>';
-                    });
-                } catch (e) {
-                    container.innerHTML = '<p style="color:#888; padding: 20px;">Error loading stream.</p>';
-                }
-            } else if (streamUrl && streamUrl.includes('.m3u8')) {
-                const video = document.createElement('video');
-                video.controls = true;
-                video.autoplay = true;
-                video.style.width = '100%';
-                video.style.height = '100%';
-                container.appendChild(video);
-                if (Hls.isSupported()) {
-                    const hls = new Hls();
-                    hls.loadSource(streamUrl);
-                    hls.attachMedia(video);
-                } else {
-                    video.src = streamUrl;
-                }
-            } else {
-                container.innerHTML = '<iframe src="' + cam.url.replace(/"/g, '&quot;') + '" style="width:100%;height:100%;border:none;"></iframe>';
-            }
-        }
+        $('rot-slider').oninput = (e) => { $('rot-val').textContent = e.target.value + 's'; };
+        $('rot-slider').onchange = (e) => { settings.rotateSeconds = +e.target.value; saveSettings(); if(!settings.locked) restartProgress(); };
 
-        function loadCameraByIndex(index) {
-            showCameraFullscreen(index);
-        }
+        $('tg-lock').onchange = (e) => { settings.locked = e.target.checked; saveSettings(); applyLockUI(); restartProgress(); };
+        $('tg-radar').onchange = (e) => { settings.animateRadar = e.target.checked; saveSettings(); applyRadarMode(); };
+        $('tg-chrome').onchange = (e) => { settings.showChrome = e.target.checked; saveSettings(); applyChrome(); };
+        $('tg-mute').onchange = (e) => { settings.muteAudio = e.target.checked; saveSettings(); if (currentVideo) currentVideo.muted = settings.muteAudio; };
 
-        function nextCamera() {
-            currentCamIndex = (currentCamIndex + 1) % cameras.length;
-            loadCameraByIndex(currentCamIndex);
-        }
-        
+        $('radar-op').oninput = (e) => { $('radar-op-val').textContent = e.target.value + '%'; };
+        $('radar-op').onchange = (e) => { settings.radarOpacity = +e.target.value/100; saveSettings(); applyRadarMode(); };
 
-        function closeFS() {
-            document.getElementById('fs-overlay').style.display = 'none';
-            document.getElementById('fs-video-container').innerHTML = '';
-            if(dashPlayer) { dashPlayer.reset(); dashPlayer = null; }
-        }
+        $('sp-apply').onclick = () => { settings.customCss = $('custom-css').value; saveSettings(); applyCustomCss(); $('settings-panel').classList.remove('open'); };
+        $('sp-reset').onclick = () => { settings = Object.assign({}, defaults); saveSettings(); syncControlsFromSettings(); applyCustomCss(); applyRadarMode(); renderCamList(); renderThumbs(); restartProgress(); };
 
-        // === TAB SWITCHING ===
-        window.switchTab = function (tab) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('active'); el.removeAttribute('aria-current'); });
-            if (tab === 'map') {
-                document.getElementById('view-map').classList.add('active');
-                document.querySelector('#nav-bar .nav-item:first-child').classList.add('active');
-                document.querySelector('#nav-bar .nav-item:first-child').setAttribute('aria-current', 'page');
-                map.invalidateSize();
-            } else {
-                document.getElementById('view-cams').classList.add('active');
-                document.querySelector('#nav-bar .nav-item:last-child').classList.add('active');
-                document.querySelector('#nav-bar .nav-item:last-child').setAttribute('aria-current', 'page');
-            }
-        };
-        init();
+        $('nav-prev').onclick = prevCamera;
+        $('nav-next').onclick = nextCamera;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+            if (e.key === 'ArrowRight') nextCamera();
+            else if (e.key === 'ArrowLeft') prevCamera();
+            else if (e.key.toLowerCase() === 'l') { settings.locked = !settings.locked; saveSettings(); applyLockUI(); restartProgress(); }
+            else if (e.key.toLowerCase() === 's') $('settings-panel').classList.toggle('open');
+        });
+    }
+
+    /* =========================================================
+       CLOCK + SCALING + INIT
+       ========================================================= */
+    function tickClock(){
+        const now = new Date();
+        document.getElementById('clock-time').textContent = now.toLocaleTimeString('en-US',{hour12:false});
+        document.getElementById('clock-date').textContent = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}).toUpperCase();
+    }
+    function fitStage(){
+        const stage = document.getElementById('stage');
+        const scale = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+        stage.style.transform = `scale(${scale})`;
+    }
+    function init(){
+        initMap();
+        syncControlsFromSettings();
+        applyCustomCss();
+        wireSettings();
+        renderCamList();
+        // start on first enabled camera
+        const first = enabledCams()[0] || cameras[0];
+        showCameraByGlobalIndex(cameras.findIndex(c => c.id === first.id));
+        tickClock(); setInterval(tickClock, 1000);
+        fitStage(); window.addEventListener('resize', fitStage);
+        setTimeout(() => map.invalidateSize(), 500);
+    }
+    init();
     </script>
 </body>
 </html>
-
