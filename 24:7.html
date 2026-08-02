@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>24/7 Weather & Live Cams - Pro Version</title>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+    
+        /* Global Reset & Scrollbar Hiding */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden !important; /* Prevents scrolling on the main page */
+            background-color: #000;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+        }
+    
+        .vjs-bug.vjs-bug-tl.no-link img {
+        
+        opacity: 0;
+        
+        }
+        
+        html, body {
+        
+        overflow: hidden !important;
+        
+        
+        
+        }
+        
+        
+        
+        ::-webkit-scrollbar {
+        
+        display: none !important;
+        
+        }
+        
+        #mediaplaybackdiv_logo {
+        
+        opacity: 0 !important;
+        
+        } 
+    
+        /* Iframe Base Styling */
+        iframe {
+            border: none;
+            position: absolute;
+            transition: opacity 0.8s ease-in-out;
+        }
+    
+        /* Layer 1: Background Live Camera */
+        #cam-layer {
+            /* Scale it up by 5% and center it to push watermarks off-screen */
+            width: 105vw;
+            height: 105vh;
+            top: -2.5vh;
+            left: -2.5vw;
+            z-index: 1;
+            
+            /* Optional: If a specific logo is in the top left, you can shift the frame up and left instead of centering */
+            /* transform-origin: top left; */
+        }
+    
+        /* Layer 2: Radar Overlay (Bottom Right) */
+        #radar-layer {
+            width: 450px;
+            height: 450px;
+            bottom: 30px; 
+            right: 30px;
+            z-index: 2;
+            border-radius: 16px;
+            box-shadow: 0px 15px 35px rgba(0,0,0,0.5);
+            background: #111;
+            
+            /* Zoom the radar slightly to hide its UI elements if needed */
+            transform: scale(1.02);
+            overflow: hidden;
+        }
+
+        /* Layer 3: Custom Glassmorphism Weather Widget (Bottom Left) */
+        #weather-widget {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            z-index: 3;
+            width: 420px;
+            padding: 25px;
+            box-sizing: border-box;
+
+            /* Frosted Glass Effect */
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            box-shadow: 0px 20px 40px rgba(0,0,0,0.4);
+
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease;
+        }
+
+        /* Weather UI Typography */
+        #city-name {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .data-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .data-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .data-value {
+            font-size: 38px;
+            font-weight: 900;
+            text-shadow: 0px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .data-unit {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.7;
+        }
+
+        /* Animation classes */
+        .fade-out { opacity: 0; transform: translateY(10px); }
+        .fade-in { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <iframe id="cam-layer" src="" allow="autoplay"></iframe>
+    <iframe id="radar-layer" src=""></iframe>
+
+    <div id="weather-widget" class="fade-out">
+        <div id="city-name">Loading...</div>
+
+        <div class="weather-grid">
+            <div class="data-group">
+                <span class="data-label">Temperature</span>
+                <span class="data-value" id="temp-val">--<span class="data-unit">°F</span></span>
+            </div>
+
+            <div class="data-group">
+                <span class="data-label">Wind</span>
+                <span class="data-value" id="wind-val">-- <span class="data-unit">MPH</span></span>
+            </div>
+
+            <div class="data-group">
+                <span class="data-label">Humidity</span>
+                <span class="data-value" id="hum-val">--<span class="data-unit">%</span></span>
+            </div>
+
+            <div class="data-group">
+                <span class="data-label">Precipitation</span>
+                <span class="data-value" id="precip-val">--<span class="data-unit">"</span></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Expanded Data with 5 Locations
+        // Weather relies on latitude and longitude to fetch live API data
+        const scenes = [
+            {
+                name: "Charleston, SC",
+                cam: "https://g1.ipcamlive.com/player/player.php?alias=601978ed75aba&autoplay=true&muted=true",
+                radar: "https://www.rainviewer.com/map.html?loc=32.77,-79.93,9&oC=1&oCS=1&oF=1&c=9&o=83&lm=1&layer=radar&sm=1&sn=1",
+                lat: 32.77,
+                lon: -79.93
+            },
+            {
+                name: "Greenville, SC",
+                cam: "https://g1.ipcamlive.com/player/player.php?alias=67bf7cda4de89&autoplay=true&muted=true",
+                radar: "https://www.rainviewer.com/map.html?loc=34.711,-82.949,8&oC=1&oCS=1&oF=1&c=9&o=83&lm=1&layer=radar&sm=1&sn=1",
+                lat: 34.711982,
+                lon: -82.949066
+            },
+            {
+                name: "Parkersburg, WV",
+                cam: "https://g1.ipcamlive.com/player/player.php?alias=62e70994c6fa3&autoplay=true&muted=true",
+                radar: "https://www.rainviewer.com/map.html?loc=39.26,-81.56,8&oC=1&oCS=1&oF=1&c=9&o=83&lm=1&layer=radar&sm=1&sn=1",
+                lat: 39.2642,
+                lon: -81.5607
+            },
+            {
+                name: "Aiken, SC",
+                cam: "https://api.wetmet.net/widgets/stream/frame.php?uid=05ba9d5621e5a7aac75a9c91f94a7c83&autoplay=1&mute=1",
+                radar: "https://www.rainviewer.com/map.html?loc=33.56,-81.72,8&oC=1&oCS=1&oF=1&c=9&o=83&lm=1&layer=radar&sm=1&sn=1",
+                lat: 33.564913,
+                lon: -81.723882
+            },
+            {
+                name: "Marietta, OH",
+                cam: "https://g1.ipcamlive.com/player/player.php?alias=64301b7153152&autoplay=true&muted=true",
+                radar: "https://www.rainviewer.com/map.html?loc=39.41,-81.45,8&oC=1&oCS=1&oF=1&c=9&o=83&lm=1&layer=radar&sm=1&sn=1",
+                lat: 39.416016,
+                lon: -81.456336
+            }
+        ];
+
+        const CYCLE_INTERVAL_MS = 10000; // 1 second per scene
+        let currentIndex = 0;
+
+        // DOM Elements
+        const camIframe = document.getElementById('cam-layer');
+        const radarIframe = document.getElementById('radar-layer');
+        const weatherWidget = document.getElementById('weather-widget');
+
+        // Fetch Live Weather from Free Open-Meteo API
+        async function fetchWeather(lat, lon) {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // Update Widget UI
+                document.getElementById('temp-val').innerHTML = `${Math.round(data.current.temperature_2m)}<span class="data-unit">°F</span>`;
+                document.getElementById('wind-val').innerHTML = `${Math.round(data.current.wind_speed_10m)} <span class="data-unit">MPH</span>`;
+                document.getElementById('hum-val').innerHTML = `${Math.round(data.current.relative_humidity_2m)}<span class="data-unit">%</span>`;
+                document.getElementById('precip-val').innerHTML = `${data.current.precipitation}<span class="data-unit">"</span>`;
+            } catch (error) {
+                console.error("Weather fetch failed:", error);
+            }
+        }
+
+        function updateScene() {
+            const scene = scenes[currentIndex];
+
+            // Fade out everything
+            camIframe.classList.add('fade-out');
+            radarIframe.classList.add('fade-out');
+            weatherWidget.classList.add('fade-out');
+
+            setTimeout(async () => {
+                // Swap Camera and Radar Sources
+                camIframe.src = scene.cam;
+                radarIframe.src = scene.radar;
+
+                // Update City Name
+                document.getElementById('city-name').innerText = scene.name;
+
+                // Fetch new weather data while screens are fading out
+                await fetchWeather(scene.lat, scene.lon);
+
+                // Fade everything back in
+                camIframe.classList.remove('fade-out');
+                radarIframe.classList.remove('fade-out');
+                weatherWidget.classList.remove('fade-out');
+            }, 800); // 800ms gives time for the CSS transition to finish
+
+            // Advance index
+            currentIndex = (currentIndex + 1) % scenes.length;
+        }
+
+        // Initialize first scene
+        updateScene();
+
+        // Start cycle loop
+        setInterval(updateScene, CYCLE_INTERVAL_MS);
+
+    </script>
+</body>
+</html>
