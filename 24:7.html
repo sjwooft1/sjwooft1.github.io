@@ -69,8 +69,8 @@
     
         /* Layer 2: Radar Overlay (Bottom Right) */
         #radar-layer {
-            width: 450px;
-            height: 450px;
+            width: 20rem;
+            height: 20rem;
             bottom: 30px; 
             right: 30px;
             z-index: 2;
@@ -89,7 +89,7 @@
             bottom: 30px;
             left: 30px;
             z-index: 3;
-            width: 420px;
+            width: 25%;
             padding: 25px;
             box-sizing: border-box;
 
@@ -198,9 +198,16 @@
                 lon: -79.93
             },
             {
+                name: "Charleston, WV",
+                cam: "https://api.wetmet.net/widgets/stream/frame.php?uid=d2c15f15bf17079cc7a6f0cc29dc4428&autoplay=1&mute=1",
+                radar: "https://www.rainviewer.com/map.html?loc=38.3403,-81.6368,9.754865856320166&oC=true&oCS=1&oF=1&c=9&o=83&lm=1&layer=radar&sm=1&sn=1",
+                lat: 38.349819 ,
+                lon: -81.632622
+            },
+            {
                 name: "Greenville, SC",
                 cam: "https://g1.ipcamlive.com/player/player.php?alias=67bf7cda4de89&autoplay=true&muted=true",
-                radar: "https://www.rainviewer.com/map.html?loc=34.711,-82.949,8&oC=1&oCS=1&oF=1&c=9&o=83&lm=1&layer=radar&sm=1&sn=1",
+                radar: "https://www.rainviewer.com/map.html?loc=34.711982,-82.949066,8&oC=1&oCS=1&oF=1&c=9&o=83&lm=1&layer=radar&sm=1&sn=1",
                 lat: 34.711982,
                 lon: -82.949066
             },
@@ -227,7 +234,7 @@
             }
         ];
 
-        const CYCLE_INTERVAL_MS = 10000; // 1 second per scene
+        const CYCLE_INTERVAL_MS = 60000; // 1 second per scene
         let currentIndex = 0;
 
         // DOM Elements
