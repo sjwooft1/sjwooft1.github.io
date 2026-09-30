@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <style>
 :root{
   --bg:#10161d; --panel:#161f29; --panel2:#1c2733; --line:#263341;
@@ -67,6 +69,96 @@ a.lnk{color:var(--accent2);text-decoration:none;font-size:12px;border-bottom:1px
 .thumb .tl{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.85));font-size:9px;font-family:var(--mono);padding:8px 3px 2px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .thumb .ab{position:absolute;top:2px;left:2px;font-size:9px;font-family:var(--mono);background:#b3123f;color:#fff;border-radius:3px;padding:1px 4px;}
 
+/* camera finder */
+#controlView{display:grid;grid-template-columns:1fr;gap:14px;padding:16px;max-width:1800px;margin:0 auto;align-items:start}
+.controlnav{display:flex;gap:8px;margin-bottom:0}
+.controlnav button{padding:10px 18px;font-size:14px}
+.controlnav button.on{background:var(--accent);border-color:var(--accent);color:#10161d;font-weight:700}
+#controlView.settings-page{grid-template-columns:1fr;max-width:1200px}
+#controlView.settings-page #dashRow,#controlView.settings-page .finder-detail{display:none!important}
+#controlView>#controlLeft,#controlView>#controlRight{display:contents}
+#controlView .settings-only{display:none}
+#controlView.settings-page .settings-only{display:block}
+#controlView.settings-page .panel.settings-only{margin-bottom:12px}
+#dashRow{display:grid;grid-template-columns:minmax(230px,300px) minmax(0,1fr);gap:14px;align-items:start;min-height:70vh}
+.finder-tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;padding:14px}
+.finder-tool-grid>.panel{margin:0}
+.finder-sidebar,.finder-main{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}
+.finder-sidebar{position:sticky;top:12px;max-height:calc(100vh - 30px);overflow:auto}
+.finder-sidebar h2{margin:3px 0 12px}
+.finder-all{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;margin-bottom:8px;padding:9px 10px}
+.finder-all.on{border-color:var(--accent);color:var(--accent)}
+.finder-main{padding:16px}
+.finder-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.finder-heading h2{font-size:14px;color:var(--text);margin:0}
+.finder-heading .path{font-size:12px;color:var(--muted);font-weight:400;margin-left:8px}
+.group-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin:10px 0}
+.group-tools input{min-width:0}
+#newGroupParent{grid-column:1/-1;width:100%;max-width:none}
+#groupList{display:flex;flex-direction:column;gap:3px;margin-top:10px}
+.groupitem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 6px;padding:7px 6px 7px calc(6px + min(var(--depth,0),8) * 14px);border-radius:5px;border:1px solid transparent;margin:0;min-width:0}
+.groupitem:hover,.groupitem.selected{background:var(--panel2);border-color:var(--line)}
+.groupitem.selected{box-shadow:inset 2px 0 var(--accent)}
+.groupitem.inactive{opacity:.62}
+.groupitem .folder-indent{display:none}
+.groupitem .folder-title{display:flex;align-items:center;gap:6px;min-width:0;grid-column:1}
+.groupitem .gname{display:none}
+.folder-open{padding:3px 2px;border:0;background:transparent;min-width:0;flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.folder-open:hover{color:var(--accent2)}
+.folder-open .folder-icon{margin-right:5px}
+.groupitem .folder-depth{font-size:9px;color:var(--muted)}
+.groupitem>.pill{align-self:center}
+.folder-actions{grid-column:1/-1;position:relative}
+.folder-actions>summary{cursor:pointer;color:var(--muted);font-size:10px;list-style:none;text-align:right}
+.folder-actions>summary::-webkit-details-marker{display:none}
+.folder-actions-tools{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:6px;background:var(--bg);border:1px solid var(--line);border-radius:5px}
+.folder-actions-tools input,.folder-actions-tools select{grid-column:1/-1;width:100%;font-size:10px;padding:4px}
+.folder-actions-tools button{font-size:10px;padding:4px}
+.folder-actions-tools [data-gact=toggle]{grid-column:1}
+.folder-actions-tools [data-gact=del]{grid-column:2}
+.folder-caret{padding:2px;width:19px;border:0;background:transparent;color:var(--muted);font-size:11px}
+.folder-caret:disabled{cursor:default;opacity:.45}
+.folder-empty{padding:12px 6px;color:var(--muted);font-size:12px;line-height:1.5}
+.dashbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.dashbar input{min-width:160px;flex:1}
+.dashbar select{min-width:160px}
+.dashgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:14px;align-content:start}
+.camera-card{min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:8px;background:var(--panel2);transition:border-color .15s,box-shadow .15s}
+.camera-card:hover{border-color:var(--accent2)}
+.camera-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.camera-card.inactive{opacity:.62}
+.camera-card .camtile{border:0;border-radius:0;cursor:pointer}
+.camera-card .camtile .cap{font-size:11px}
+.camera-card .camtile .cap button{display:block}
+.camera-card .camera-card-info{min-height:76px}
+.camera-card-actions input{accent-color:var(--accent2)}
+.finder-tool-grid .finder-detail{margin:0}
+.camera-card-info{padding:10px 11px 9px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.camera-card-titles{min-width:0}
+.camera-card-titles strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.camera-card-titles span{display:block;margin-top:3px;font:10px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.camera-card-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.camera-card-actions label{display:flex;align-items:center;gap:4px;margin:0;font-size:10px;white-space:nowrap}
+.camera-card-actions button{font-size:10px;padding:4px 7px}
+.dashpager{display:flex;justify-content:center;align-items:center;gap:10px;padding-top:14px}
+.camfilters{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.camfilters input{flex:1;min-width:140px}
+.camrow.inactive{opacity:.52}
+.finder-details{margin-top:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel)}
+.finder-details>summary{cursor:pointer;padding:11px 14px;color:var(--muted);font-size:12px;letter-spacing:.03em;text-transform:uppercase}
+.finder-details[open]>summary{border-bottom:1px solid var(--line);color:var(--text)}
+.finder-details .panel{border:0;margin:0;background:transparent}
+.finder-detail{margin:0 auto;width:100%;max-width:1800px}
+#controlLeft,#controlRight{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;align-items:start}
+#controlLeft>.panel,#controlRight>.panel{margin:0}
+.custom-widget-preview{padding:10px;border:1px dashed var(--line);border-radius:5px;margin-top:8px}
+.qrbox{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#pairQr{background:#fff;padding:8px;border-radius:6px;min-width:180px;min-height:180px;display:flex;align-items:center;justify-content:center}
+#pairQr img{display:block}
+#scanArea{display:none;margin:10px 0}
+#scanVideo{width:100%;max-height:280px;background:#000;border-radius:8px}
+#scanStatus{font-size:12px;color:var(--muted);margin-top:4px}
+
 /* camera list */
 .camrow{border:1px solid var(--line);border-radius:4px;padding:8px 10px;margin-bottom:8px;background:var(--panel2);}
 .camrow.act{border-color:var(--accent);}
@@ -106,7 +198,6 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 #outputView.hasbg{background-image:linear-gradient(rgba(4,7,11,.86),rgba(4,7,11,.86)),var(--stbg);background-size:cover;background-position:center;background-attachment:fixed}
 #outputView.edge{max-width:none;padding:0}
 #outputView.edge .owrap{border-radius:0;border-left:0;border-right:0;margin-bottom:0}
-#outputView.edge #radarPanel{margin:0 0 8px}
 #outputView.fsbarhide #outBar{display:none}
 .owrap{position:relative;background:#000;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:12px;}
 .grid{display:grid;gap:var(--gap,2px);background:#000;}
@@ -135,6 +226,14 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .camtile .cap .rt{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .camtile .cap .st{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:10px}
 .camtile .cap .alerttag{display:none;background:var(--sev,#e8590c);color:#fff;border-radius:3px;padding:1px 6px;font-size:10px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.camwx{position:absolute;top:10px;right:10px;z-index:4;display:flex;align-items:center;gap:6px;max-width:calc(100% - 20px);padding:6px 9px;border:1px solid rgba(255,255,255,.2);border-radius:7px;background:rgba(8,12,16,.76);backdrop-filter:blur(8px);color:#fff;font-family:var(--mono);text-shadow:0 1px 2px #000;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.camwx .camwx-icon{font-size:18px;line-height:1}
+.camwx b{font-size:16px;font-weight:700;white-space:nowrap;letter-spacing:-.03em}
+.camwx .camwx-cond{min-width:0;font-size:10px;color:#d9e3ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.camwx.unavailable .camwx-cond{color:var(--muted)}
+.camera-card .camwx{top:8px;right:8px;padding:4px 7px;gap:5px}
+.camera-card .camwx b{font-size:14px}
+.camera-card .camwx .camwx-cond{font-size:9px}
 .camtile .cap button{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.22);color:#fff;padding:1px 7px;font-size:12px;opacity:.3;transition:.15s}
 .camtile:hover .cap button{opacity:1}
 .pagestrip{position:absolute;top:0;left:0;right:0;z-index:7;display:flex;flex-direction:column;gap:4px}
@@ -148,12 +247,24 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 
 /* widgets overlay */
-.wl{position:absolute;z-index:6;display:flex;flex-direction:column;gap:6px;pointer-events:none;max-width:48%;font-size:calc(13px * var(--ovscale));}
+.wl{position:absolute;z-index:6;display:flex;flex-direction:column;gap:6px;pointer-events:none;max-width:48%;font-size:calc(var(--ovfont,13px) * var(--ovscale));}
 .wl[data-c=tl]{top:calc(10px + var(--btop,0px));left:10px}
 .wl[data-c=tr]{top:calc(10px + var(--btop,0px));right:10px;align-items:flex-end}
 .wl[data-c=bl]{bottom:calc(40px + var(--tickh,0px));left:10px}
 .wl[data-c=br]{bottom:calc(40px + var(--tickh,0px));right:10px;align-items:flex-end}
-.w{background:rgba(8,12,16,var(--ovbg));backdrop-filter:blur(var(--blur,3px));border-radius:5px;padding:4px 9px;color:#fff;font-family:var(--mono);font-size:.86em;display:flex;gap:7px;align-items:center;pointer-events:auto}
+.w{background:rgba(8,12,16,var(--ovbg));backdrop-filter:blur(var(--blur,3px));border-radius:5px;padding:var(--ovpad,4px) calc(var(--ovpad,4px) * 2);color:#fff;font-family:var(--mono);font-size:.86em;display:flex;gap:7px;align-items:center;pointer-events:auto}
+.w.custom{max-width:100%;white-space:pre-wrap;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.w.custom.badge{border-radius:999px}
+.w.custom.strip{border-radius:2px;width:max-content;max-width:min(80vw,680px)}
+.camrow.group-inactive{opacity:.5}
+.group-tools{display:grid;grid-template-columns:1fr auto auto;gap:6px;margin:8px 0}
+.group-tools input{min-width:0}
+.group-bulk{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.group-bulk select{flex:1;min-width:100px}
+.camlistpage{display:flex;justify-content:center;gap:10px;align-items:center;padding:8px}
+.camtile.inactive-tile{filter:saturate(.55);opacity:.62}
+.qrnote{font-size:11px;max-width:300px;line-height:1.5}
+
 .w.name{font-family:var(--sans);font-weight:600;font-size:1.02em}
 .w.wx{gap:9px}
 .w.wx .big{font-size:1.25em;color:#fff}
@@ -164,19 +275,26 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .w.clock .d{font-size:.72em;color:#cbd6e0}
 .w.logo{background:transparent;padding:0}
 .w.logo img{height:calc(46px * var(--ovscale));display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
-/* on-camera radar (RainViewer tiles, animated) */
-.radarov{position:relative;flex:0 0 auto;width:300px;aspect-ratio:1.55;border-radius:6px;overflow:hidden;background:#0b0f14;border:1px solid rgba(255,255,255,.18);box-shadow:0 6px 18px rgba(0,0,0,.55)}
+/* compact on-camera radar: distinct from the other widgets, with readable status + intensity key */
+.radarov{position:relative;flex:0 1 auto;width:220px;height:auto;aspect-ratio:1.5;border-radius:9px;overflow:hidden;background:#111923;border:1px solid rgba(255,255,255,.42);box-shadow:0 5px 18px rgba(0,0,0,.5);isolation:isolate}
 .radarov[hidden]{display:none}
-.radarov .rovmap{position:absolute;inset:0;overflow:hidden;background:#0b0f14}
+.radarov .rovmap{position:absolute;inset:0;overflow:hidden;background:#111923}
 .radarov .rovbase,.radarov .rovlay{position:absolute;inset:0}
-.radarov .rovmap img{position:absolute;width:256px;height:256px;display:block;border:0}
-.radarov .rovbase img{opacity:.92;filter:brightness(1.35) contrast(1.05)}
-.radarov .rovlay{opacity:0;transition:opacity .32s linear}
-.radarov .rovlay.on{opacity:.96}
-.radarov .rovhead{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;gap:6px;align-items:center;padding:12px 7px 3px;font-family:var(--mono);font-size:10px;color:#e7edf3;background:linear-gradient(rgba(6,10,14,0),rgba(6,10,14,.85))}
-.radarov .rovhead b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.radarov .rovtime{margin-left:auto;color:#cbd6e0;flex:0 0 auto}
-.radarov .rovattr{position:absolute;top:3px;right:4px;z-index:3;font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.6)}
+.radarov .rovpin{position:absolute;left:50%;top:50%;z-index:2;width:12px;height:12px;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(6,16,26,.8),0 1px 5px #000;pointer-events:none}
+.radarov .rovmap img{position:absolute;width:256px;height:256px;display:block;border:0;max-width:none}
+.radarov .rovlay img{width:256px;height:256px;image-rendering:auto}
+.radarov .rovbase img{opacity:.86;filter:brightness(1.23) saturate(.88) contrast(1.08)}
+.radarov .rovlay{opacity:0;transition:opacity .4s ease}
+.radarov .rovlay.on{opacity:.9}
+.radarov .rovhead{position:absolute;top:7px;left:7px;right:7px;z-index:3;display:flex;gap:6px;align-items:center;min-width:0;padding:5px 8px;border:1px solid rgba(255,255,255,.22);border-radius:6px;background:rgba(7,12,18,.88);backdrop-filter:blur(6px);font-family:var(--mono);font-size:9px;color:#f2f6fa;box-shadow:0 1px 5px rgba(0,0,0,.28)}
+.radarov .rovhead>b{font:700 9px var(--sans);letter-spacing:.09em;white-space:nowrap;color:#fff}
+.radarov .rovhead .rovname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d5e0e8}
+.radarov .rovtime{margin-left:auto;color:#fff;flex:0 0 auto;font-size:9px}
+.radarov .rovkind{color:#a9d9ff;font-size:8px;letter-spacing:.04em}
+.radarov .rovfoot{position:absolute;left:7px;right:7px;bottom:6px;z-index:3;display:flex;align-items:center;gap:6px;padding:4px 6px;border:1px solid rgba(255,255,255,.18);border-radius:5px;background:rgba(7,12,18,.84);font:7px var(--mono);letter-spacing:.04em;color:#e7edf3}
+.radarov .rovlegend{height:5px;flex:1;border-radius:4px;background:linear-gradient(90deg,#69b7ff 0%,#3acb79 34%,#f1df3b 62%,#ff9f35 80%,#ed4242 100%);box-shadow:0 0 3px #000}
+.radarov .rovattr{flex:0 0 auto;color:rgba(255,255,255,.8)}
+@media(max-width:560px){.radarov{width:180px!important;height:auto!important;aspect-ratio:1.5}.radarov .rovhead{top:5px;left:5px;right:5px;padding:4px 6px}.radarov .rovfoot{left:5px;right:5px;bottom:5px}}
 .w.next{gap:8px;padding:4px 8px 4px 4px}
 .w.next img{width:76px;height:43px;object-fit:cover;border-radius:3px;display:block;background:#0b0f14}
 .w.next .nx{display:flex;flex-direction:column;line-height:1.25}
@@ -193,17 +311,11 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 #outBar .right{margin-left:auto;display:flex;gap:8px;align-items:center}
 #outBar .cd{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--panel2);border-radius:0 0 6px 6px}
 #paused{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.1em}
-#radarPanel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:12px}
-#radarPanel iframe{width:100%;border:0;border-radius:4px;display:block;background:#0b0f14}
-.linkcard{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-.linkcard a{background:var(--panel2);border:1px solid var(--line);color:var(--text);text-decoration:none;padding:10px 14px;border-radius:6px;font-size:13px}
-.linkcard a:hover{border-color:var(--accent2)}
 
 /* TV / kiosk mode */
 body.tv header,body.tv #outBar{display:none}
 body.tv #outputView{padding:0;max-width:none;margin:0}
 body.tv .owrap{border:0;border-radius:0;margin:0}
-body.tv #radarPanel{margin:0;border-left:0;border-right:0;border-radius:0}
 body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
 #tvSplash{position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:rgba(4,7,11,.94);color:#e7edf3;font-family:var(--mono);text-align:center;padding:24px}
 #tvSplash .big{font-family:var(--sans);font-size:24px;letter-spacing:.08em}
@@ -217,9 +329,6 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
 .rmstatus .nm{font-size:15px;font-weight:600}
 .rmstatus .st{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px}
 #rmWx{color:#cfe0ee}
-#rmRadar{display:flex;justify-content:center;margin:0 0 12px}
-#rmRadar:empty{display:none}
-#rmRadar .radarov{box-shadow:0 4px 14px rgba(0,0,0,.45)}
 .conn{font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:2px 8px;border-radius:9px;border:1px solid var(--line);color:var(--muted);flex:0 0 auto}
 .conn.on{color:#3fa76a;border-color:#3fa76a}
 .conn.wait{color:var(--accent);border-color:var(--accent)}
@@ -233,7 +342,9 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
 .rmcams .rc.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .rmcams .rc img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#0b0f14}
 .rmcams .rc b{display:block;font-size:11px;font-weight:500;padding:6px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media(max-width:900px){#controlView{grid-template-columns:1fr}.grid.g4,.grid.g6{grid-template-columns:1fr}}
+@media(max-width:900px){#controlView{grid-template-columns:1fr}#dashRow{grid-template-columns:230px minmax(0,1fr)}.grid.g4,.grid.g6{grid-template-columns:1fr}}
+@media(max-width:650px){#dashRow{grid-template-columns:1fr}.finder-sidebar{position:static;max-height:42vh}.dashgrid{grid-template-columns:1fr}.finder-heading{align-items:flex-start;flex-direction:column}}
+@media(max-width:430px){#controlView{padding:9px;gap:10px}.finder-sidebar,.finder-main{padding:10px}.controlnav button{flex:1;padding:9px 8px;font-size:12px}.camera-card-actions{gap:6px}.camera-card-actions label{font-size:9px}}
 @media(max-width:560px){
   header{flex-wrap:wrap;gap:8px;padding:10px 12px}
   header h1{font-size:15px}
@@ -253,9 +364,32 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
 </header>
 
 <div id="controlView">
-  <div>
+  <div class="controlnav">
+    <button id="pageDashboard" class="on">📷 Camera dashboard</button>
+    <button id="pageSettings">⚙ Settings &amp; overlays</button>
+  </div>
+  <div id="dashRow">
+    <aside class="finder-sidebar" aria-label="Camera folders">
+      <h2>Locations &amp; folders <b id="camCount"></b></h2>
+      <button id="folderAll" class="finder-all on"><span>📁 All cameras</span><span class="mono" id="folderAllCount"></span></button>
+      <div class="group-tools"><input id="newGroupName" placeholder="New folder name" aria-label="New folder name"><select id="newGroupParent" aria-label="Create folder inside"></select><button class="sm primary" id="addGroupBtn">+ Create folder</button></div>
+      <div id="groupList"></div>
+      <div class="hint">Choose a folder to browse everything inside it. Use ••• on a folder to move, activate, or delete it.</div>
+    </aside>
+    <main class="finder-main">
+      <div class="finder-heading"><h2>Camera library <span class="path" id="folderPath">All cameras</span></h2><b id="dashInfo" class="pill"></b></div>
+      <div class="dashbar"><input id="dashSearch" type="search" placeholder="Search cameras by name, URL, or location…" aria-label="Search cameras"><select id="dashGroup" aria-label="Filter by folder"><option value="all">All folders</option></select><button class="sm" id="showInactive">Show inactive</button><button class="sm primary" id="finderAddCamera" type="button">+ Add camera</button><button class="sm" id="finderManageBtn" type="button">Manage</button></div>
+      <div class="dashgrid" id="dashGrid"></div>
+      <div class="dashpager"><button class="sm" id="dashPrev">← Prev</button><span class="mono" id="dashPageInfo"></span><button class="sm" id="dashNext">Next →</button></div>
+      <div class="hint">Select a preview to make it active. Camera toggles control availability; Grid toggles control multi-view membership.</div>
+    </main>
+  </div>
+  <div id="controlLeft">
+    <details class="finder-details finder-detail" id="cameraTools">
+      <summary>Camera tools · Add feeds, live preview, and weather alerts</summary>
+      <div class="finder-tool-grid">
     <!-- ADD CAMERA -->
-    <div class="panel">
+    <div class="panel" id="addCameraPanel">
       <h2>Add camera</h2>
       <div class="row">
         <button class="sm" id="geoBtn">📍 Use my location</button>
@@ -270,6 +404,7 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
         <div><label>Refresh (sec)</label><input type="number" id="newRefresh" value="30" min="5"></div>
         <div><label>Lat</label><input type="text" id="newLat" placeholder="39.5000"></div>
         <div><label>Lon</label><input type="text" id="newLon" placeholder="-98.3500"></div>
+        <div class="full"><label>Folder / group</label><select id="newCamGroup"></select></div>
         <div class="full"><label>Feed URL</label><input type="text" id="newUrl" placeholder="https://example.com/cam.jpg"></div>
         <div class="full"><label>Feed type</label>
           <select id="newType" style="width:100%">
@@ -310,9 +445,11 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
       <div class="row"><button class="sm" id="alertNow">Check now</button><span class="hint" style="margin:0">Auto-refresh every 2 min · US locations only (api.weather.gov)</span></div>
       <div class="alist" id="alertList" style="margin-top:10px"></div>
     </div>
+      </div>
+    </details>
 
     <!-- THEME -->
-    <div class="panel">
+    <div class="panel settings-only">
       <h2>Theme &amp; colors</h2>
       <div class="srow"><label>Preset</label>
         <select id="themeSel">
@@ -331,7 +468,7 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
     </div>
 
     <!-- BACKUP -->
-    <div class="panel">
+    <div class="panel settings-only">
       <h2>Backup &amp; sharing</h2>
       <div class="row" style="margin-bottom:8px">
         <button class="sm" id="expBtn">Export JSON</button>
@@ -343,19 +480,19 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
     </div>
   </div>
 
-  <div>
+  <div id="controlRight">
     <!-- CAMERAS -->
-    <div class="panel">
-      <h2>Cameras <b id="camCount"></b></h2>
-      <div class="row" style="margin-bottom:6px">
-        <label style="margin:0"><input type="checkbox" id="rowThumbs" checked> tiny thumbnails</label>
-        <button class="sm" id="checkAllBtn">Check all alerts</button>
+    <details class="finder-details finder-detail" id="cameraManager">
+      <summary>Advanced camera management</summary>
+      <div class="panel">
+        <div class="camfilters"><input id="camSearch" type="search" placeholder="Search all cameras"><select id="camGroupFilter"><option value="all">Every folder</option></select><button class="sm" id="clearGroupFilter">Clear folder</button><label><input type="checkbox" id="rowThumbs" checked> thumbnails</label><button class="sm" id="checkAllBtn">Check alerts</button></div>
+      <div class="group-bulk"><span class="hint" style="margin:0">Bulk:</span><button class="sm" id="activateFiltered">Activate shown</button><button class="sm" id="deactivateFiltered">Deactivate shown</button><button class="sm" id="moveFilteredBtn">Move shown to…</button><select id="moveFilteredGroup" aria-label="Move shown cameras to group"></select><button class="sm" id="allToGrid">Select all active for output grid</button></div>
+      <div id="camList"></div><div class="camlistpage"><button class="sm" id="camPrev">← Prev</button><span id="camPageInfo" class="mono"></span><button class="sm" id="camNext">Next →</button></div>
       </div>
-      <div id="camList"></div>
-    </div>
+    </details>
 
     <!-- OUTPUT & LAYOUT -->
-    <div class="panel">
+    <div class="panel settings-only">
       <h2>Output &amp; layout</h2>
       <div class="srow"><label>Multi-view layout</label>
         <select id="multiView"><option value="1">Single (rotating)</option><option value="4">2×2 (4)</option><option value="6">3×2 (6)</option></select>
@@ -374,21 +511,12 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
         <div class="ctl"><select id="fit"><option value="cover">Cover</option><option value="contain">Contain</option></select>
           <select id="fitFs"><option value="contain">Contain</option><option value="cover">Cover</option></select></div>
       </div>
-      <div class="srow"><label>Radar panel</label>
-        <div class="ctl"><select id="radarMode">
-            <option value="embed">Embedded RainViewer map</option>
-            <option value="windy">Embedded Windy map</option>
-            <option value="link">Link only</option>
-            <option value="off">Hidden</option>
-          </select>
-          <input type="number" id="radarH" value="300" min="120" max="900" step="20" title="Panel height (px)" style="width:66px"></div>
-      </div>
-      <div class="srow"><label>Radar panel position</label>
-        <select id="radarPos"><option value="below">Below the cameras</option><option value="above">Above the cameras</option></select>
+      <div class="srow"><label>Output radar overlay</label>
+        <select id="radarMode"><option value="embed">RainViewer</option><option value="off">Off</option></select>
       </div>
       <div class="srow"><label>Radar follows</label>
         <div class="ctl"><select id="radarCam"></select>
-          <input type="number" id="radarZoom" min="4" max="11" step="0.5" title="Radar zoom" style="width:62px"></div>
+          <input type="number" id="radarZoom" min="4" max="7" step="1" title="Radar zoom (RainViewer maximum: 7)" style="width:62px"></div>
       </div>
       <div class="srow"><label>Show “last update” badge</label><input type="checkbox" id="showBadge"></div>
       <div class="srow"><label>Per-camera alert badges</label><input type="checkbox" id="alertsPerTile"></div>
@@ -397,7 +525,7 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
     </div>
 
     <!-- DISPLAY OPTIONS -->
-    <div class="panel">
+    <div class="panel settings-only">
       <h2>Display options</h2>
       <div class="srow"><label>Clock format</label>
         <div class="ctl"><label><input type="checkbox" id="clock24"> 24-hour</label>
@@ -424,37 +552,44 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
     </div>
 
     <!-- TV & REMOTE -->
-    <div class="panel">
+    <div class="panel settings-only">
       <h2>TV &amp; remote</h2>
       <div class="row" style="margin-bottom:8px">
         <button class="sm" id="btnTVWin">📺 Open TV window</button>
-        <button class="sm" id="btnSecond">🖥 Open on second screen</button>
+        <button class="sm" id="btnSecondSettings">🖥 Open on second screen</button>
       </div>
       <div class="hint" style="margin-bottom:8px">The TV window runs in kiosk mode: edge-to-edge, no bars, auto-hiding cursor, screen stays awake. If your browser asks, allow fullscreen (and multi-screen if offered) — then drag the window to the TV with <b>Win</b>+<b>Shift</b>+<b>←/→</b>.</div>
       <div class="srow"><label>Phone remote</label>
         <div class="ctl"><input type="text" id="remoteURL" readonly style="flex:1;min-width:0;font-family:var(--mono);font-size:11px"><button class="sm" id="copyRemote">Copy</button></div>
       </div>
       <div class="hint" style="margin-bottom:8px">Open that link on your phone to drive the station (next / pause / pick cameras / layout). Same Wi-Fi computer: the remote pairs automatically. Other devices: type the pairing code shown on the remote.</div>
-      <div class="srow"><label>Pairing code</label>
-        <div class="ctl"><span class="mono" id="pairCode" style="font-size:15px;letter-spacing:.18em"></span><button class="sm" id="btnNewCode">New code</button></div>
+      <div class="srow"><label>Scan to pair</label>
+        <div class="qrbox"><div id="pairQr"></div><div><div class="mono" id="pairCode" style="font-size:20px;letter-spacing:.18em"></div><div class="hint">Open the Remote page on your phone, tap Scan QR, and point the camera here.</div><button class="sm" id="btnNewCode">New code</button></div></div>
       </div>
       <div class="srow"><label>Cross-device relay (free public MQTT)</label><input type="checkbox" id="remoteOn"></div>
       <div class="hint">Relay lets the phone control the TV over the internet — commands and station config travel through a public MQTT broker, scoped to your pairing code. Turn it off for local-only control.</div>
     </div>
 
     <!-- WIDGETS -->
-    <div class="panel">
+    <div class="panel settings-only">
       <h2>Widgets &amp; overlays</h2>
       <div class="srow"><label>Overlay scale</label><input type="range" id="wxScale" min="0.7" max="2" step="0.05" value="1" style="width:150px"><span class="mono" id="wxScaleVal">1.00</span></div>
       <div class="srow"><label>Widget background opacity</label><input type="range" id="wxBg" min="0" max="0.95" step="0.05" value="0.62" style="width:150px"></div>
       <div class="srow"><label>Ticker text</label><input type="text" id="tickerText" style="width:56%" placeholder="Station slogan or message"></div>
-      <div class="srow"><label>On-camera radar size</label><input type="range" id="radarOvW" min="160" max="620" step="10" style="width:150px"><span class="mono" id="radarOvWVal">300px</span></div>
-      <div class="hint" style="margin-bottom:8px">Toggle each widget and pick the screen corner it snaps to. Alerts always render as a severity-colored banner along the top; the ticker runs along the bottom.</div>
+      <div class="srow"><label>Radar overlay width</label><input type="range" id="radarOvW" min="140" max="280" step="10" style="width:150px"><span class="mono" id="radarOvWVal">220px</span></div>
+      <div class="hint" style="margin-bottom:8px">Each camera tile shows its own live local temperature. Radar uses RainViewer's supported high-resolution tile colors, a clear intensity key, and a compact output-only overlay.</div>
       <div class="wloc" id="widgetGrid"></div>
+      <div class="srow"><label>Custom message</label><input id="customOverlayText" type="text" maxlength="120" placeholder="Add your own on-screen message" style="width:58%"></div>
+      <div class="srow"><label>Message style</label><select id="customOverlayStyle"><option value="card">Glass card</option><option value="badge">Rounded badge</option><option value="strip">Wide strip</option></select></div>
+      <div class="srow"><label>Text / background</label><div class="ctl"><input type="color" id="customOverlayColor"><input type="color" id="customOverlayBg"></div></div>
+      <div class="srow"><label>Background opacity</label><input type="range" id="customOverlayOpacity" min="0.1" max="1" step="0.05"><span class="mono" id="customOverlayOpacityVal"></span></div>
+      <div class="srow"><label>Overlay type size</label><input type="range" id="overlayFont" min="9" max="32" step="1"><span class="mono" id="overlayFontVal"></span></div>
+      <div class="srow"><label>Overlay padding</label><input type="range" id="overlayPad" min="0" max="24" step="1"><span class="mono" id="overlayPadVal"></span></div>
+      <div class="custom-widget-preview" id="customOverlayPreview">Example overlay message</div>
     </div>
 
     <!-- CUSTOM IMAGES -->
-    <div class="panel">
+    <div class="panel settings-only">
       <h2>Custom images</h2>
       <div class="srow"><label>Station logo</label>
         <div class="ctl"><input type="file" id="logoFile" accept="image/*" style="font-size:11px;max-width:150px"><button class="sm" id="logoClear">Clear</button></div>
@@ -468,7 +603,6 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
 </div>
 
 <div id="outputView">
-  <div id="radarPanel" style="display:none"></div>
   <div class="owrap" id="oWrap">
     <div class="pagestrip"></div>
     <div class="grid g1" id="viewerGrid"></div>
@@ -500,18 +634,18 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
   <div class="panel">
     <h2>📱 Remote <span class="conn" id="rmConn">…</span></h2>
     <div id="rmPair" style="display:none">
-      <div class="srow"><label>Pairing code</label>
-        <div class="ctl"><input type="text" id="rmCode" placeholder="ABC123" maxlength="10" style="width:110px;text-transform:uppercase"><button class="sm primary" id="rmPairBtn">Connect</button></div>
+      <div class="srow"><label>Pair with QR code</label>
+        <div class="ctl"><button class="sm primary" id="scanQrBtn">📷 Scan QR</button><input type="text" id="rmCode" placeholder="or type code" maxlength="10" style="width:110px;text-transform:uppercase"><button class="sm" id="rmPairBtn">Connect</button></div>
       </div>
-      <div class="hint">On the computer running the wall, open <b>Control → TV &amp; remote</b> and read the 6-character pairing code.</div>
+      <div id="scanArea"><video id="scanVideo" playsinline muted></video><div id="scanStatus">Camera scanner starting…</div><button class="sm" id="stopScan">Stop scanning</button></div>
+      <div class="hint">On the TV/computer, open <b>Settings → TV &amp; remote</b>, then scan its QR code. Camera access requires HTTPS (or localhost). If unavailable, enter the short code manually.</div>
       <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
     </div>
     <div class="rmstatus">
       <img id="rmThumb" alt="">
       <div style="min-width:0"><div class="nm" id="rmName">—</div><div class="st" id="rmMeta"></div><div class="st" id="rmWx"></div></div>
     </div>
-    <div id="rmRadar"></div>
-    <div class="rmbig">
+      <div class="rmbig">
       <button id="rmPrev" title="Previous camera">⏮</button>
       <button id="rmPlay" title="Pause / play">⏸</button>
       <button id="rmNext" title="Next camera">⏭</button>
@@ -569,7 +703,8 @@ const WIDGETS=[
   {k:'clock',t:'Clock / date'},
   {k:'radar',t:'On-camera radar'},
   {k:'logo', t:'Logo image'},
-  {k:'next', t:'Next camera'}
+  {k:'next', t:'Next camera'},
+  {k:'custom',t:'Custom message'}
 ];
 function defaultCfg(){
   return {
@@ -578,12 +713,14 @@ function defaultCfg(){
     wxScale:1, wxBg:.62, wxDetail:true, clock24:false, showDate:true,
     tickerText:'LIVE WEATHER CAMS · CONDITIONS UPDATE IN REAL TIME',
     logoData:'',
-    radarMode:'embed', radarH:300, radarZoom:7.12, radarCam:'', radarOvW:300,
+    radarMode:'embed', radarZoom:6, radarCam:'', radarOvW:220,
     alertMax:2, alertsPerTile:true, fsBarHide:true, fsWidgets:true, fsChrome:false, edgeMode:false,
     prevSec:5, prevOverlay:true, rowThumbs:true,
-    show:{alert:true,wx:true,clock:true,radar:true,ticker:true,logo:true,next:true},
-    corner:{wx:'br',clock:'tr',radar:'tl',logo:'tl',next:'bl'},
-    showName:true, showCoords:true, camHeight:'56', radarPos:'below',
+    show:{alert:true,wx:true,clock:true,radar:true,ticker:true,logo:true,next:true,custom:true},
+    corner:{wx:'br',clock:'tr',radar:'tl',logo:'tl',next:'bl',custom:'bl'},
+    overlayFont:13, overlayPad:4,
+    customOverlay:{text:'',color:'#ffffff',bg:'#111820',opacity:.78,style:'card'},
+    showName:true, showCoords:true, camHeight:'56',
     tileGap:2, blur:3, tickerSec:26, bgData:'',
     remote:{on:true,code:genCode()}
   };
@@ -596,7 +733,8 @@ function defaultState(){
     {id:uid(),name:'Miami Beach (demo)',lat:25.7907,lon:-80.1300,url:'https://picsum.photos/seed/miami/800/450',refresh:30,type:'image'},
     {id:uid(),name:'Denver Skyline (demo)',lat:39.7392,lon:-104.9903,url:'https://picsum.photos/seed/denver/800/450',refresh:30,type:'image'},
   ];
-  return {cameras:cams,activeId:cams[0].id,multiIds:cams.map(c=>c.id),multiView:1,
+  cams.forEach(c=>{c.groupId='g-general';c.active=true;});
+  return {cameras:cams,groups:[{id:'g-general',name:'General',active:true}],activeId:cams[0].id,multiIds:cams.map(c=>c.id),multiView:1,
     autoRotate:true,rotateSec:10,rotateOrder:'seq',transition:'fade',fadeMs:700,
     showBadge:true,cfg:defaultCfg()};
 }
@@ -617,15 +755,36 @@ function loadState(){
   if(!saved) return d;
   const s=deepMerge(d,saved);
   if(!Array.isArray(s.cameras)||!s.cameras.length) s.cameras=d.cameras;
-  s.cameras.forEach(c=>{ if(!c.type) c.type='image'; if(!c.refresh) c.refresh=30; });
+  if(!Array.isArray(s.groups)||!s.groups.length) s.groups=[{id:'g-general',name:'General',active:true,parentId:null}];
+  s.groups.forEach(g=>{ if(!g.id) g.id=uid(); if(!g.name) g.name='New group'; if(typeof g.active!=='boolean') g.active=true; if(!('parentId' in g)) g.parentId=null; });
+  const groupIds=new Set(s.groups.map(g=>g.id));
+  s.groups.forEach(g=>{ if(!groupIds.has(g.parentId)||g.parentId===g.id) g.parentId=null; });
+  const groupById=id=>s.groups.find(g=>g.id===id);
+  s.groups.forEach(g=>{
+    const seen=new Set([g.id]); let p=groupById(g.parentId);
+    while(p){ if(seen.has(p.id)){ g.parentId=null; break; } seen.add(p.id); p=groupById(p.parentId); }
+  });
+  s.cameras.forEach(c=>{
+    if(!c.type) c.type='image'; if(!c.refresh) c.refresh=30;
+    if(typeof c.active!=='boolean') c.active=true;
+    if(!c.groupId||!s.groups.some(g=>g.id===c.groupId)) c.groupId=s.groups[0].id;
+  });    if(!isObj(s.cfg.customOverlay)) s.cfg.customOverlay=defaultCfg().customOverlay;
+  if(typeof s.cfg.customOverlay.opacity!=='number') s.cfg.customOverlay.opacity=.78;
+  if(!['card','badge','strip'].includes(s.cfg.customOverlay.style)) s.cfg.customOverlay.style='card';
+  if(!isFinite(+s.cfg.overlayFont)) s.cfg.overlayFont=13;
+  if(!isFinite(+s.cfg.overlayPad)) s.cfg.overlayPad=4;
   if(!s.activeId||!s.cameras.some(c=>c.id===s.activeId)) s.activeId=s.cameras[0].id;
+  if(s.activeId&&!cameraActive(s.cameras.find(c=>c.id===s.activeId),s)) s.activeId=s.cameras.find(c=>cameraActive(c,s))?.id||null;
+  if(!s.cameras.some(c=>cameraActive(c,s))) s.activeId=null;
   if(!Array.isArray(s.multiIds)) s.multiIds=s.cameras.map(c=>c.id);
   s.multiIds=s.multiIds.filter(id=>s.cameras.some(c=>c.id===id));
   s.multiView=[1,4,6].includes(+s.multiView)?+s.multiView:1;
   ['rotateSec','fadeMs'].forEach(k=>{ const v=parseInt(s[k]); s[k]=isNaN(v)?defaultState()[k]:v; });
-  ['alertMax','prevSec','radarH','wxScale','wxBg','radarZoom','radarOvW'].forEach(k=>{ const v=parseFloat(s.cfg[k]); s.cfg[k]=isNaN(v)?defaultCfg()[k]:v; });
+  ['alertMax','prevSec','wxScale','wxBg','radarZoom','radarOvW'].forEach(k=>{ const v=parseFloat(s.cfg[k]); s.cfg[k]=isNaN(v)?defaultCfg()[k]:v; });
+  s.cfg.radarOvW=Math.max(140,Math.min(280,s.cfg.radarOvW));
+  s.cfg.radarZoom=Math.max(4,Math.min(7,s.cfg.radarZoom));
   if(s.cfg.camHeight==='fill'||!s.cfg.camHeight) s.cfg.camHeight='56';
-  if(!s.cfg.radarPos||s.cfg.radarPos==='bottom') s.cfg.radarPos='below';
+  if(!['embed','off'].includes(s.cfg.radarMode)) s.cfg.radarMode='embed';
   if(!isObj(s.cfg.remote)) s.cfg.remote={on:true,code:genCode()};
   if(typeof s.cfg.remote.on!=='boolean') s.cfg.remote.on=true;
   if(!s.cfg.remote.code) s.cfg.remote.code=genCode();
@@ -639,6 +798,17 @@ function saveState(){
   if(mode!=='remote') syncSend({t:'state',state});   /* remote is a controller only — never overwrites the station */
 }
 let state=loadState();
+function cameraActive(cam,s=state){
+  if(!cam||cam.active===false) return false;
+  let group=(s.groups||[]).find(g=>g.id===cam.groupId), seen=new Set();
+  while(group){
+    if(group.active===false||seen.has(group.id)) return false;
+    seen.add(group.id);
+    group=(s.groups||[]).find(g=>g.id===group.parentId);
+  }
+  return true;
+}
+function enabledCameras(s=state){ return (s.cameras||[]).filter(c=>cameraActive(c,s)); }
 
 /* ---------------- cross-tab / cross-device sync ----------------
    Same device: localStorage events (KEY + KEY:msg) already reach every tab.
@@ -739,6 +909,8 @@ function applyStyle(){
   THEME_KEYS.forEach(k=>r.setProperty('--'+k,c[k]||THEMES.midnight[k]));
   r.setProperty('--ovscale',state.cfg.wxScale);
   r.setProperty('--ovbg',state.cfg.wxBg);
+  r.setProperty('--ovfont',(+state.cfg.overlayFont||13)+'px');
+  r.setProperty('--ovpad',(+state.cfg.overlayPad||0)+'px');
   r.setProperty('--fit',state.cfg.fit);
   r.setProperty('--fitfs',state.cfg.fitFs);
   r.setProperty('--gap',(+state.cfg.tileGap||0)+'px');
@@ -780,7 +952,7 @@ function fetchWx(cam){
     +`&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m,surface_pressure,is_day,precipitation`
     +`&daily=sunrise,sunset,precipitation_probability_max&forecast_days=1&timezone=auto`
     +`&temperature_unit=fahrenheit&wind_speed_unit=mph`;
-  return fetch(u).then(r=>r.json()).then(d=>{
+  return fetch(u).then(r=>{ if(!r.ok) throw new Error('weather request failed'); return r.json(); }).then(d=>{
     const c=d.current, day=d.daily||{};
     if(!c) throw new Error('no current');
     const data={temp:c.temperature_2m,feels:c.apparent_temperature,code:c.weather_code,wind:c.wind_speed_10m,
@@ -809,8 +981,7 @@ function fetchAlerts(cam){
 
 /* coordinate parsing + lookup links */
 function parseCoords(str){
-  if(!str) return null;
-  let m;
+  if(!str) return null;    let m;
   if((m=str.match(/(-?\d{1,3}(?:\.\d+)?)\s*[,; ]\s*(-?\d{1,3}(?:\.\d+)?)/))){
     const lat=+m[1],lon=+m[2];
     if(Math.abs(lat)<=90&&Math.abs(lon)<=180&&!((lat===0&&lon===0))) return {lat,lon};
@@ -840,12 +1011,96 @@ function mediaHTML(cam){
   const src=cam.url+(cam.url.includes('?')?'&':'?')+'t='+Date.now();
   return `<img src="${esc(src)}" alt="">`;
 }
+/* ---------------- HLS playback ----------------
+   hls.js is loaded from a CDN (with a jsDelivr fallback) — without it desktop
+   Chrome cannot play .m3u8 at all. Streams get error recovery plus a periodic
+   retry, so a temporarily dead or blocked feed shows the offline card and heals
+   itself instead of sitting on a black tile forever. */
+const HLS_SRCS=[
+  'https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js',
+  'https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js'
+];
+let hlsLoader=null;
+function loadHls(){
+  if(window.Hls) return Promise.resolve(window.Hls);
+  if(hlsLoader) return hlsLoader;
+  hlsLoader=new Promise(res=>{
+    let i=0;
+    const next=()=>{
+      if(i>=HLS_SRCS.length){ res(null); return; }
+      const s=document.createElement('script');
+      s.src=HLS_SRCS[i++];
+      s.onload=()=>res(window.Hls||null);
+      s.onerror=next;
+      document.head.appendChild(s);
+    };
+    next();
+  }).then(c=>{ if(!c) hlsLoader=null; return c; });   /* both CDNs down? try again later */
+  return hlsLoader;
+}
+function hlsOk(tile){
+  tile._hlsRetries=0;
+  tile.classList.remove('nofeed');
+  const o=tile.querySelector('.offline'); if(o) o.remove();
+  const dot=tile.querySelector('[data-dot]'); if(dot) dot.className='tdot';
+  const ts=tile.querySelector('[data-ts]'); if(ts) ts.textContent='LIVE';
+}
+function hlsFail(tile,cam,reason){
+  const dot=tile.querySelector('[data-dot]'); if(dot) dot.className='tdot error';
+  const ts=tile.querySelector('[data-ts]'); if(ts) ts.textContent='offline';
+  tile.classList.add('nofeed');
+  const o=tile.querySelector('.offline'); if(o) o.remove();   /* keep the reason current */
+  tile.insertAdjacentHTML('beforeend',offlineNote(cam,reason));
+}
+function hlsRetry(tile,cam){
+  const tries=(tile._hlsRetries=(tile._hlsRetries||0)+1);
+  if(!tile.isConnected||tries>20) return;
+  setTimeout(()=>{
+    if(!tile.isConnected) return;
+    const v=tile.querySelector('video'); if(!v) return;
+    if(v._hls){ try{ v._hls.destroy(); }catch(e){} v._hls=null; }
+    v._hlsNative=false;
+    attachMedia(tile,cam);
+  },30000);
+}
 function attachMedia(tile,cam){
   if(cam.type!=='hls') return;
   const v=tile.querySelector('video');
   if(!v) return;
-  if(window.Hls&&Hls.isSupported()){ const h=new Hls(); h.loadSource(cam.url); h.attachMedia(v); }
-  else if(v.canPlayType('application/vnd.apple.mpegurl')) v.src=cam.url;
+  if(v._hls||v._hlsNative) return;
+  v.muted=true;
+  const play=()=>{ const p=v.play&&v.play(); if(p&&p.catch) p.catch(()=>{}); };
+  loadHls().then(HlsCtor=>{
+    if(HlsCtor&&HlsCtor.isSupported()){
+      const h=new HlsCtor({manifestLoadingMaxRetry:2,levelLoadingMaxRetry:4,fragLoadingMaxRetry:6});
+      v._hls=h;
+      let fatal=0;
+      h.on(HlsCtor.Events.MANIFEST_PARSED,()=>{ hlsOk(tile); play(); });
+      h.on(HlsCtor.Events.ERROR,(ev,data)=>{
+        if(!data||!data.fatal) return;
+        fatal++;
+        if(fatal<3&&data.type===HlsCtor.ErrorTypes.NETWORK_ERROR){ h.startLoad(); return; }
+        if(fatal<3&&data.type===HlsCtor.ErrorTypes.MEDIA_ERROR){ h.recoverMediaError(); return; }
+        let reason=data.details||'stream error';
+        if(data.response&&data.response.code) reason='HTTP '+data.response.code;
+        else if(/manifestLoadError/i.test(String(data.details))&&!data.response) reason='blocked by host (CORS / 403)';
+        try{ h.destroy(); }catch(e){}
+        v._hls=null;
+        hlsFail(tile,cam,reason);
+        hlsRetry(tile,cam);
+      });
+      h.loadSource(cam.url);
+      h.attachMedia(v);
+    } else if(v.canPlayType('application/vnd.apple.mpegurl')){
+      v._hlsNative=true;
+      v.addEventListener('loadedmetadata',()=>{ hlsOk(tile); play(); },{once:true});
+      v.addEventListener('error',()=>{ v._hlsNative=false; hlsFail(tile,cam,'stream error'); hlsRetry(tile,cam); },{once:true});
+      v.src=cam.url;
+      play();
+    } else {
+      hlsFail(tile,cam,'HLS not supported in this browser');
+    }
+  });
 }
 function tileChrome(cam){
   const cfg=state.cfg;
@@ -853,12 +1108,12 @@ function tileChrome(cam){
   const alert=cfg.alertsPerTile?`<span class="alerttag" data-talert></span>`:'';
   const name=cfg.showName?`<b>${esc(cam.name)}</b>`:'';
   const coords=cfg.showCoords?`<span class="co">${(+cam.lat).toFixed(3)}, ${(+cam.lon).toFixed(3)}</span>`:'';
-  return `<div class="cap"><span class="lt">${alert}${name}${coords}</span>
+  return `<div class="camwx" data-camwx role="status" aria-label="Loading current weather for ${esc(cam.name)}" title="Current local weather"><span class="camwx-icon" data-wxicon>…</span><b data-wxtemp>—°</b><span class="camwx-cond" data-wxcond>Loading weather</span></div><div class="cap"><span class="lt">${alert}${name}${coords}</span>
     <span class="rt">${status}<button data-fs title="Fullscreen this camera">⛶</button></span></div>`;
 }
 function stamp(cam){ return cam.url+(cam.url.includes('?')?'&':'?')+'t='+Date.now(); }
-function offlineNote(cam){
-  return `<div class="offline">📡 feed unavailable<div style="opacity:.8;font-size:10.5px">${esc(cam.name)} · retrying every ${Math.max(5,cam.refresh||30)}s</div></div>`;
+function offlineNote(cam,reason){
+  return `<div class="offline">📡 feed unavailable<div style="opacity:.8;font-size:10.5px">${esc(cam.name)} · retrying every 30s${reason?' · '+esc(reason):''}</div></div>`;
 }
 function wireImg(tile,cam,img){
   const dot=tile.querySelector('[data-dot]'), ts=tile.querySelector('[data-ts]');
@@ -878,6 +1133,23 @@ function wireImg(tile,cam,img){
   img.onload=ok; img.onerror=bad;
   if(img.complete&&img.naturalWidth>0) ok();
 }
+function updateTileWeather(tile,cam){
+  fetchWx(cam).then(wx=>{
+    const badge=tile.querySelector('[data-camwx]'); if(!badge||!wx) return;
+    badge.querySelector('[data-wxicon]').textContent=wxIcon(wx.code,wx.isDay);
+    badge.querySelector('[data-wxtemp]').textContent=Math.round(wx.temp)+'°F';
+    badge.querySelector('[data-wxcond]').textContent=WX_COND[wx.code]||'Current conditions';
+    badge.title=`${Math.round(wx.temp)}°F · ${WX_COND[wx.code]||'Current conditions'} · feels ${Math.round(wx.feels)}°F · wind ${Math.round(wx.wind)} mph`;
+    badge.setAttribute('aria-label',`Current weather for ${cam.name}: ${badge.title}`);
+    badge.classList.remove('unavailable');
+  }).catch(()=>{
+    const badge=tile.querySelector('[data-camwx]'); if(!badge) return;
+    badge.querySelector('[data-wxicon]').textContent='🌡️';
+    badge.querySelector('[data-wxtemp]').textContent='—°F';
+    badge.querySelector('[data-wxcond]').textContent='Weather unavailable';
+    badge.classList.add('unavailable');
+  });
+}
 function buildTile(cam){
   const tile=document.createElement('div');
   tile.className='camtile'; tile.dataset.camid=cam.id;
@@ -885,6 +1157,7 @@ function buildTile(cam){
   attachMedia(tile,cam);
   const img=tile.querySelector('img');
   if(img){ tile._last=Date.now(); wireImg(tile,cam,img); }
+  updateTileWeather(tile,cam);
   return tile;
 }
 function refreshTileImage(tile,cam){
@@ -931,6 +1204,11 @@ function bannerHTML(a){
   if(cfg.show.clock){
     put('clock',`<div class="w clock"><span class="t" data-wclock>${fmtClock()}</span>${cfg.showDate?`<span class="d" data-wdate>${new Date().toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'})}</span>`:''}</div>`);
   }
+  if(cfg.show.custom&&cfg.customOverlay&&cfg.customOverlay.text){
+    const co=cfg.customOverlay, alpha=Math.max(.1,Math.min(1,+co.opacity||.78));
+    const bg=co.bg||'#111820', rgb=parseInt(bg.slice(1),16), rr=(rgb>>16)&255,gg=(rgb>>8)&255,bb=rgb&255;
+    put('custom',`<div class="w custom ${esc(co.style||'card')}" style="font-size:${+cfg.overlayFont||13}px;padding:${+cfg.overlayPad||0}px;color:${esc(co.color||'#fff')};background:rgba(${rr},${gg},${bb},${alpha})">${esc(co.text)}</div>`);
+  }
   if(cfg.show.logo&&cfg.logoData){
     put('logo',`<div class="w logo"><img src="${esc(cfg.logoData)}" alt="logo"></div>`);
   }
@@ -972,17 +1250,8 @@ function radarCam(fallback){
   if(id){ const c=state.cameras.find(x=>x.id===id); if(c) return c; }
   return fallback||state.cameras.find(c=>c.id===state.activeId)||state.cameras[0]||null;
 }
-function radarZoom(){ return Math.max(3,Math.min(11,Number(state.cfg.radarZoom)||7)); }
+function radarZoom(){ return Math.max(4,Math.min(7,Number(state.cfg.radarZoom)||6)); }
 /* the map page the user pinned, re-centred on a camera */
-function rvSrc(cam){
-  return `https://www.rainviewer.com/map.html?loc=${cam.lat},${cam.lon},${radarZoom()}`
-    +'&oC=true&oCS=1&oF=1&c=9&o=83&lm=1&layer=radar&sm=1&sn=1';
-}
-function windySrc(cam){
-  const z=Math.round(radarZoom());
-  return `https://embed.windy.com/embed2.html?lat=${cam.lat}&lon=${cam.lon}&detailLat=${cam.lat}&detailLon=${cam.lon}&width=650&height=450&zoom=${z}&level=surface&overlay=radar&product=radar&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1`;
-}
-function radarSrc(cam){ return state.cfg.radarMode==='windy'?windySrc(cam):rvSrc(cam); }
 function rvFrames(){
   const r=(RV.meta&&RV.meta.radar)||{};
   const past=(r.past||[]).slice(-6).map(f=>({path:f.path,time:f.time}));
@@ -993,7 +1262,7 @@ function rvLoad(){
   if(RV.meta&&Date.now()-RV.at<5*60*1000) return Promise.resolve(RV.meta);
   if(RV.loading) return RV.loading;
   RV.loading=fetch('https://api.rainviewer.com/public/weather-maps.json')
-    .then(r=>r.json())
+    .then(r=>{ if(!r.ok) throw new Error('radar metadata unavailable'); return r.json(); })
     .then(j=>{ RV.meta=j; RV.at=Date.now(); RV.loading=null; if(j.host) RV.host=j.host; return j; })
     .catch(()=>{ RV.loading=null; return null; });
   return RV.loading;
@@ -1002,13 +1271,13 @@ function fracTile(lat,lon,z){
   const n=Math.pow(2,z), r=lat*Math.PI/180;
   return {x:(lon+180)/360*n, y:(1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n};
 }
-function rovSize(){ const w=Math.max(150,Math.min(620,+state.cfg.radarOvW||300)); return {w:w,h:Math.round(w/1.55)}; }
+function rovSize(){ const w=Math.max(140,Math.min(280,+state.cfg.radarOvW||220)); return {w:w,h:Math.round(w/1.5)}; }
 function makeRadarEl(){
   const d=document.createElement('div');
   d.className='radarov'; d.hidden=true;
-  d.innerHTML='<div class="rovmap"><div class="rovbase"></div><div class="rovlay a"></div><div class="rovlay b"></div></div>'
-    +'<span class="rovattr">rainviewer</span>'
-    +'<div class="rovhead"><span class="tdot"></span><b data-rovname>—</b><span class="rovtime" data-rovtime></span></div>';
+  d.innerHTML='<div class="rovmap"><div class="rovbase"></div><div class="rovlay a"></div><div class="rovlay b"></div><span class="rovpin" aria-label="Camera location"></span></div>'
+    +'<div class="rovhead"><span class="tdot"></span><b>RADAR</b><span class="rovname" data-rovname>—</span><span class="rovkind" data-rovkind>OBS</span><span class="rovtime" data-rovtime>LOADING</span></div>'
+    +'<div class="rovfoot"><span>LOW</span><span class="rovlegend" aria-label="Light to heavy precipitation"></span><span>HIGH</span><span class="rovattr">ESRI · RAINVIEWER</span></div>';
   return d;
 }
 /* build basemap + two radar layers for the camera's location */
@@ -1018,10 +1287,13 @@ function rovBuild(el,cam){
   el._z=z; el._ti=-1; el._busy=false;
   el.dataset.loc=[cam.lat,cam.lon,z,s.w,s.h].join(',');
   for(let ty=Math.floor(f.y)-1;ty<=Math.floor(f.y)+1;ty++)
-    for(let tx=Math.floor(f.x)-1;tx<=Math.floor(f.x)+1;tx++)
-      tiles.push({tx:tx,ty:ty,left:Math.round((tx-f.x)*256+s.w/2-128),top:Math.round((ty-f.y)*256+s.h/2-128)});
+    for(let tx=Math.floor(f.x)-1;tx<=Math.floor(f.x)+1;tx++){
+      const left=Math.round((tx-f.x)*256+s.w/2), top=Math.round((ty-f.y)*256+s.h/2);
+      if(left>=s.w||left+256<=0||top>=s.h||top+256<=0) continue;
+      tiles.push({tx:tx,ty:ty,left:left,top:top});
+    }
   const map=el.querySelector('.rovmap');
-  map.innerHTML='<div class="rovbase"></div><div class="rovlay a"></div><div class="rovlay b"></div>';
+  map.innerHTML='<div class="rovbase"></div><div class="rovlay a"></div><div class="rovlay b"></div><span class="rovpin" aria-label="Camera location"></span>';
   const base=map.querySelector('.rovbase');
   tiles.forEach(t=>{
     const im=new Image(); im.alt=''; im.decoding='async';
@@ -1047,17 +1319,24 @@ function rovFrame(el,idx){
   const top=(el._top==='b')?B:A, bot=(el._top==='b')?A:B, imgs=[...top.querySelectorAll('img')];
   if(!imgs.length) return;
   el._busy=true;
-  let left=imgs.length;
-  const done=()=>{
+  let left=imgs.length, frameFailed=false;
+  const done=ok=>{
+    if(!ok) frameFailed=true;
     if(--left>0) return;
-    el._busy=false; el._ti=i; el._top=(el._top==='b')?'a':'b';
+    el._busy=false;
+    if(frameFailed){
+      const t=el.querySelector('[data-rovtime]'); if(t) t.textContent='RADAR UNAVAILABLE';
+      return;
+    }
+    el._ti=i; el._top=(el._top==='b')?'a':'b';
     top.classList.add('on'); bot.classList.remove('on');
     const t=el.querySelector('[data-rovtime]');
-    if(t) t.textContent=new Date(cur.time*1000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+(cur.fc?' fc':'');
+    if(t) t.textContent=new Date(cur.time*1000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    const kind=el.querySelector('[data-rovkind]'); if(kind) kind.textContent=cur.fc?'FORECAST':'OBS';
   };
   imgs.forEach(im=>{
-    im.onload=done; im.onerror=done;
-    im.src=RV.host+cur.path+'/256/'+el._z+'/'+im.dataset.x+'/'+im.dataset.y+'/9/1_1.png';
+    im.onload=()=>done(true); im.onerror=()=>done(false);
+    im.src=RV.host+cur.path+'/512/'+el._z+'/'+im.dataset.x+'/'+im.dataset.y+'/2/1_1.png';
   });
 }
 function rovTick(){
@@ -1069,8 +1348,7 @@ function rovTick(){
 }
 /* shared by the output wall and the control preview */
 function syncRadarOverlay(scope,fallback){
-  const cfg=state.cfg;
-  const on=!!scope._showWidgets&&!!cfg.show.radar&&cfg.radarMode!=='off'&&cfg.radarMode!=='link';
+  const cfg=state.cfg;    const on=mode==='output'&&!!scope._showWidgets&&!!cfg.show.radar&&cfg.radarMode==='embed';
   let el=scope._radarEl;
   if(!on||!radarCam(fallback)){ if(el) el.hidden=true; return null; }
   if(!el){ el=makeRadarEl(); scope._radarEl=el; }
@@ -1081,18 +1359,17 @@ function syncRadarOverlay(scope,fallback){
   if(el.dataset.loc!==loc) rovBuild(el,cam);
   return el;
 }
-setInterval(rovTick,400);
+setInterval(rovTick,850);
 /* header clock */
 function tickClock(){ const el=$('clock'); if(el) el.textContent=new Date().toLocaleTimeString(); }
 tickClock(); setInterval(tickClock,1000);
-applyStyle();
-rvLoad();   /* warm the RainViewer frame list for the animated on-camera radar */
+applyStyle();  if(mode==='output') rvLoad();   /* radar tiles are only loaded for the output overlay */
 
 /* ---------------- pairing + TV window helpers ---------------- */
 const hadStation=(()=>{ try{ return !!localStorage.getItem(KEY); }catch(e){ return false; } })();
 const urlCode=(params.get('code')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10);
-let pairCode=urlCode||'';
-if(!pairCode&&mode==='remote'){ try{ pairCode=(localStorage.getItem(KEY+':pair')||'').toUpperCase(); }catch(e){} }
+let pairCode=urlCode||'';  if(!pairCode&&mode==='remote'){ try{ pairCode=(localStorage.getItem(KEY+':pair')||'').toUpperCase(); }catch(e){} }
+
 if(urlCode) state.cfg.remote.code=urlCode;
 relay.code=pairCode||(mode==='remote'&&!hadStation?'':state.cfg.remote.code)||'';
 if(relay.code&&mode==='remote'){ try{ localStorage.setItem(KEY+':pair',relay.code); }catch(e){} }
@@ -1113,7 +1390,8 @@ async function openTVWindow(second){
 
 /* ================= CONTROL MODE ================= */
 if(mode==='control'){
-  const activeCam=()=>state.cameras.find(c=>c.id===state.activeId)||state.cameras[0]||null;
+  const activeCam=()=>state.cameras.find(c=>c.id===state.activeId&&cameraActive(c))||enabledCameras()[0]||null;
+  const syncActive=()=>{ state.activeId=activeCam()?.id||null; };
   const OBS_CAMERAS=[
     {name:'Aiken, SC',lat:33.5619,lon:-81.7218,type:'iframe',url:'https://api.wetmet.net/widgets/stream/frame.php?uid=05ba9d5621e5a7aac75a9c91f94a7c83&autoplay=1&mute=1',refresh:0},
     {name:'Tuscaloosa, AL (Bryan Denny)',lat:33.2098,lon:-87.5692,type:'hls',url:'https://video.hazcams.com/tuscaloosa-al-us-001/main_stream.m3u8',refresh:0},
@@ -1162,38 +1440,157 @@ if(mode==='control'){
     const url=$('newUrl').value.trim(), type=$('newType').value;
     const refresh=parseInt($('newRefresh').value)||30;
     if(!name||isNaN(lat)||isNaN(lon)||!url){alert('Need a name, coordinates (paste them above) and a feed URL.');return;}
-    const cam={id:uid(),name,lat,lon,url,type,refresh};
+    const cam={id:uid(),name,lat,lon,url,type,refresh,active:true,groupId:$('newCamGroup').value||selectedFolderId||state.groups[0].id};
     state.cameras.push(cam);
     state.multiIds.push(cam.id);
     state.activeId=cam.id;
     saveState();
     ['newName','newLat','newLon','newUrl','pasteCoords'].forEach(id=>$(id).value='');
     updateOsmLink(NaN,NaN);
-    renderCamList();renderThumbs();renderPreview(true);renderAlerts();
+    renderGroupControls();
+    renderGroupList();
+    renderCamList();
+    renderDash();
+    renderThumbs();
+    renderPreview(true);renderAlerts();
     fetchAlerts(cam).then(renderAlerts);
   };
   $('importObsBtn').onclick=()=>{
     const have=new Set(state.cameras.map(c=>c.name));
     let added=0;
-    OBS_CAMERAS.forEach(c=>{ if(!have.has(c.name)){const cam={id:uid(),...c};state.cameras.push(cam);state.multiIds.push(cam.id);added++;} });
+    OBS_CAMERAS.forEach(c=>{ if(!have.has(c.name)){const cam={id:uid(),...c,active:true,groupId:state.groups[0].id};state.cameras.push(cam);state.multiIds.push(cam.id);added++;} });
     if(!added){alert('All OBS cameras are already in your list.');return;}
-    saveState();renderCamList();renderThumbs();renderPreview(true);
+    saveState();renderGroupControls();renderGroupList();renderCamList();renderThumbs();renderDash();renderPreview(true);
     alert(`Imported ${added} camera(s) from the OBS collection.`);
   };
 
   /* ---- camera list ---- */
+  let camPage=0;
+  const CAM_PAGE_SIZE=40;
+  function groupPath(group){
+    const parts=[],seen=new Set(); let g=group;
+    while(g&&!seen.has(g.id)){ seen.add(g.id); parts.unshift(g.name); g=state.groups.find(x=>x.id===g.parentId); }
+    return parts.join(' / ');
+  }
+  function groupDepth(group){
+    let depth=0,g=group,seen=new Set();
+    while(g&&g.parentId&&!seen.has(g.id)){ seen.add(g.id); depth++; g=state.groups.find(x=>x.id===g.parentId); }
+    return depth;
+  }
+  function descendantsOf(groupId){
+    const ids=new Set([groupId]); let changed=true;
+    while(changed){ changed=false; state.groups.forEach(g=>{ if(ids.has(g.parentId)&&!ids.has(g.id)){ids.add(g.id);changed=true;} }); }
+    return ids;
+  }
+  function cameraMatches(){
+    const q=($('camSearch')&&$('camSearch').value||'').trim().toLowerCase();
+    const gid=($('camGroupFilter')&&$('camGroupFilter').value)||'all';
+    const folderIds=gid==='all'?null:descendantsOf(gid);
+    return state.cameras.filter(c=>{
+      if(folderIds&&!folderIds.has(c.groupId)) return false;
+      return !q||[c.name,c.url,c.lat,c.lon].join(' ').toLowerCase().includes(q);
+    });
+  }
+  function renderGroupControls(){
+    const fills=[['camGroupFilter','all','Every folder'],['newCamGroup','', 'Choose folder'],['moveFilteredGroup','','Choose folder']];
+    fills.forEach(([id,allVal,allText])=>{
+      const el=$(id); if(!el) return;
+      const old=el.value;
+      el.innerHTML=(allVal!==''?`<option value="${allVal}">${allText}</option>`:`<option value="">${allText}</option>`)+state.groups.map(g=>`<option value="${esc(g.id)}">${esc(groupPath(g))}${g.active?'':' (inactive)'}</option>`).join('');
+      el.value=state.groups.some(g=>g.id===old)?old:(allVal||state.groups[0]?.id||'');
+    });
+    const parent=$('newGroupParent');
+    if(parent){ const old=parent.value; parent.innerHTML='<option value="">Top level</option>'+state.groups.map(g=>`<option value="${esc(g.id)}">${esc(groupPath(g))}</option>`).join(''); parent.value=state.groups.some(g=>g.id===old)?old:''; }
+    renderDashGroups();
+  }
+  function renderGroupList(){
+    const box=$('groupList'); if(!box) return;
+    const allActive=enabledCameras().length, children=new Map();
+    state.groups.forEach(g=>{ const key=g.parentId||''; if(!children.has(key)) children.set(key,[]); children.get(key).push(g); });
+    const rows=[];
+    function draw(parentId,depth){
+      (children.get(parentId||'')||[]).forEach(g=>{
+        const folderIds=descendantsOf(g.id), cameras=state.cameras.filter(c=>folderIds.has(c.groupId));
+        const active=cameras.filter(cameraActive).length, n=cameras.length;
+        const childFolders=children.get(g.id)||[],hasChildren=childFolders.length>0;
+        rows.push(`<div class="groupitem${g.active?'':' inactive'}${selectedFolderId===g.id?' selected':''}" data-group="${esc(g.id)}" style="--depth:${Math.min(depth,8)}"><div class="folder-title"><button class="folder-caret" type="button" data-folder-toggle="${esc(g.id)}" aria-label="${collapsedFolders.has(g.id)?'Expand':'Collapse'} ${esc(g.name)}" ${hasChildren?'':'disabled'}>${hasChildren?(collapsedFolders.has(g.id)?'▸':'▾'):'·'}</button><button class="folder-open" type="button" data-folder-open="${esc(g.id)}" title="Browse ${esc(groupPath(g))}"><span class="folder-icon">${selectedFolderId===g.id?'📂':'📁'}</span>${esc(g.name)}</button></div><span class="pill" title="Active / total cameras in this folder and its subfolders">${active}/${n}</span><details class="folder-actions"><summary aria-label="Folder actions">•••</summary><div class="folder-actions-tools"><input class="gname" value="${esc(g.name)}" aria-label="Rename folder" title="Rename folder"><select class="gparent" aria-label="Move ${esc(g.name)} folder" title="Move folder under another folder"><option value="">Top level</option>${state.groups.filter(x=>x.id!==g.id&&!descendantsOf(g.id).has(x.id)).map(x=>`<option value="${esc(x.id)}"${g.parentId===x.id?' selected':''}>${esc(groupPath(x))}</option>`).join('')}</select><button class="sm" data-gact="toggle">${g.active?'Deactivate subtree':'Activate subtree'}</button><button class="sm" data-gact="del">Delete folder</button></div></details></div>`);
+        if(!collapsedFolders.has(g.id)) draw(g.id,depth+1);
+      });
+    }
+    draw(null,0); box.innerHTML=rows.join('')||'<div class="folder-empty">No folders yet. Add a top-level folder or choose a parent to nest it.</div>';
+    box.querySelectorAll('[data-group]').forEach(row=>{
+      const g=state.groups.find(x=>x.id===row.dataset.group); if(!g) return;
+      row.querySelector('[data-folder-open]').onclick=()=>selectFolder(g.id);
+      row.querySelector('[data-folder-toggle]').onclick=()=>{ if(collapsedFolders.has(g.id)) collapsedFolders.delete(g.id); else collapsedFolders.add(g.id); renderGroupList(); };
+      const rename=row.querySelector('.gname');
+      rename.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();rename.blur();}};
+      rename.onchange=e=>{ g.name=e.target.value.trim()||'New folder'; saveState(); renderGroupControls(); renderGroupList(); renderCamList(); renderDash(); };
+      row.querySelector('.gparent').onchange=e=>{
+        const parentId=e.target.value||null;
+        if(parentId&&descendantsOf(g.id).has(parentId)){ e.target.value=g.parentId||''; return; }
+        g.parentId=parentId;
+        syncActive(); saveState(); renderGroupControls(); renderGroupList(); renderCamList(); renderDash(); renderThumbs(); renderPreview(true); renderAlerts();
+      };
+      row.querySelector('[data-gact=toggle]').onclick=()=>{
+        g.active=!g.active; syncActive();
+        saveState(); renderGroupList(); renderGroupControls(); renderCamList(); renderDash(); renderThumbs(); renderPreview(true); renderAlerts();
+      };
+      row.querySelector('[data-gact=del]').onclick=()=>{
+        const mode=confirm('OK: move child folders and cameras into the parent. Cancel: move child folders to the top level and direct cameras into Unsorted.');
+        const parentId=state.groups.some(x=>x.id===g.parentId)?g.parentId:null;
+        const childFolders=state.groups.filter(x=>x.parentId===g.id);
+        const directCameras=state.cameras.filter(c=>c.groupId===g.id);
+        const groupIsActive=folder=>{
+          let current=folder,seen=new Set();
+          while(current){
+            if(current.active===false||seen.has(current.id)) return false;
+            seen.add(current.id);
+            current=state.groups.find(x=>x.id===current.parentId);
+          }
+          return true;
+        };
+        const childActivity=new Map(childFolders.map(folder=>[folder.id,groupIsActive(folder)]));
+        const cameraActivity=new Map(directCameras.map(cam=>[cam.id,cameraActive(cam)]));
+        const destination=mode?parentId:null;
+        childFolders.forEach(folder=>{
+          folder.parentId=destination;
+          folder.active=childActivity.get(folder.id);
+        });
+        let cameraDestination=destination;
+        if(!cameraDestination&&directCameras.length){
+          let unsorted=state.groups.find(x=>x.id!==g.id&&x.parentId==null&&x.name.toLowerCase()==='unsorted');
+          if(!unsorted){ unsorted={id:uid(),name:'Unsorted',active:true,parentId:null}; state.groups.push(unsorted); }
+          cameraDestination=unsorted.id;
+        }
+        directCameras.forEach(cam=>{
+          cam.groupId=cameraDestination;
+          if(!cameraActivity.get(cam.id)) cam.active=false;
+        });
+        state.groups=state.groups.filter(x=>x.id!==g.id);
+        if(!state.groups.length) state.groups.push({id:uid(),name:'General',active:true,parentId:null});
+        state.cameras.forEach(c=>{if(!state.groups.some(x=>x.id===c.groupId))c.groupId=state.groups[0].id;});
+        if(!cameraActive(state.cameras.find(c=>c.id===state.activeId))) syncActive();
+        saveState(); renderGroupControls(); renderGroupList(); renderCamList(); renderDash(); renderThumbs(); renderPreview(true); renderAlerts();
+      };
+    });
+    const info=$('camCount'); if(info) info.textContent=state.cameras.length+' total · '+allActive+' active · '+state.groups.length+' folders';
+  }
   function renderCamList(){
     const list=$('camList');
-    $('camCount').textContent=state.cameras.length+' total · '+state.multiIds.length+' in grid';
+    const matches=cameraMatches();
+    const pages=Math.max(1,Math.ceil(matches.length/CAM_PAGE_SIZE));
+    camPage=Math.min(camPage,pages-1);
+    const pageInfo=$('camPageInfo'); if(pageInfo) pageInfo.textContent=`${matches.length?camPage*CAM_PAGE_SIZE+1:0}–${Math.min(matches.length,(camPage+1)*CAM_PAGE_SIZE)} of ${matches.length}`;
+    $('camCount').textContent=state.cameras.length+' total · '+enabledCameras().length+' active · '+state.groups.length+' groups';
     list.innerHTML='';
-    if(!state.cameras.length) list.innerHTML='<div class="hint">No cameras yet — add one above.</div>';
-    state.cameras.forEach(c=>{
+    if(!matches.length){ list.innerHTML='<div class="hint">No cameras match the current search or group.</div>'; return; }
+    matches.slice(camPage*CAM_PAGE_SIZE,(camPage+1)*CAM_PAGE_SIZE).forEach(c=>{
       const al=(alCache[c.id]&&alCache[c.id].data.length)||0;
       const thumb=(c.type==='image'&&state.cfg.rowThumbs)
         ? `<img data-thumb="${c.id}" src="${esc(c.url)}" style="width:96px;height:54px;object-fit:cover;border-radius:3px;border:1px solid var(--line);background:#000" alt="">`
         : `<span class="pill">${c.type==='image'?'thumb off':c.type.toUpperCase()+' stream'}</span>`;
       const row=document.createElement('div');
-      row.className='camrow'+(c.id===state.activeId?' act':'');
+      row.className='camrow'+(c.id===state.activeId?' act':'')+(cameraActive(c)?'':' inactive');
       row.innerHTML=`
         <div class="row" style="align-items:flex-start;flex-wrap:nowrap">
           <div style="flex:0 0 96px">${thumb}</div>
@@ -1208,6 +1605,8 @@ if(mode==='control'){
               <a class="lnk" target="_blank" href="https://www.openstreetmap.org/#map=10/${c.lat}/${c.lon}">map ↗</a></div>
             <input type="text" value="${esc(c.url)}" data-f="url" style="width:100%;font-family:var(--mono);font-size:11px;margin-bottom:6px">
             <div class="camrow-actions">
+              <select data-f="groupId" style="font-size:11px;padding:3px 5px">${state.groups.map(g=>`<option value="${esc(g.id)}"${c.groupId===g.id?' selected':''}>${'　'.repeat(Math.min(groupDepth(g),8))}${esc(g.name)}</option>`).join('')}</select>
+              <label><input type="checkbox" data-f="active"${c.active?' checked':''}> Active</label>
               <select data-f="type" style="font-size:11px;padding:3px 5px">
                 <option value="image"${c.type==='image'?' selected':''}>Image</option>
                 <option value="iframe"${c.type==='iframe'?' selected':''}>Embed</option>
@@ -1217,42 +1616,86 @@ if(mode==='control'){
               <label><input type="checkbox"${state.multiIds.includes(c.id)?' checked':''} data-act="multi"> In grid</label>
             </div>
           </div>
-        </div>`;
-      row.querySelectorAll('[data-f]').forEach(inp=>{
+        </div>`;      row.querySelectorAll('[data-f]').forEach(inp=>{
         inp.addEventListener('change',()=>{
           const f=inp.dataset.f;
-          c[f]= inp.type==='number'?(parseInt(inp.value)||0):inp.value;
-          saveState(); renderThumbs(); if(c.id===state.activeId) renderPreview(true);
+          const wasActive=cameraActive(c), wasSelected=c.id===state.activeId;
+          c[f]= inp.type==='number'?(parseInt(inp.value)||0):(inp.type==='checkbox'?inp.checked:inp.value);
+          if(f==='groupId'||f==='active'){
+            if(c.id===state.activeId&&!cameraActive(c)) syncActive();
+            if(!wasActive&&cameraActive(c)&&!state.multiIds.includes(c.id)) state.multiIds.push(c.id);
+            if(!cameraActive(c)) state.multiIds=state.multiIds.filter(id=>id!==c.id);
+            renderGroupControls();
+          }
+          saveState(); renderGroupList(); renderCamList(); renderDash(); renderThumbs();
+          if(wasSelected||c.id===state.activeId||!enabledCameras().length||!activeCam()) renderPreview(true);
+          renderAlerts();
         });
       });
       row.querySelector('[data-act=active]').onchange=()=>{
+        if(!cameraActive(c)){ alert('Activate this camera and its group before selecting it for the output.'); return; }
         state.activeId=c.id;saveState();renderCamList();renderThumbs();renderPreview(true);renderAlerts();
         fetchAlerts(c).then(renderAlerts);
       };
       row.querySelector('[data-act=multi]').onchange=e=>{
-        if(e.target.checked){ if(!state.multiIds.includes(c.id)) state.multiIds.push(c.id); }
-        else state.multiIds=state.multiIds.filter(id=>id!==c.id);
-        saveState();$('camCount').textContent=state.cameras.length+' total · '+state.multiIds.length+' in grid';
+        if(e.target.checked){
+          if(!cameraActive(c)){ e.target.checked=false; alert('Activate this camera and its group before adding it to the output grid.'); return; }
+          if(!state.multiIds.includes(c.id)) state.multiIds.push(c.id);
+        } else state.multiIds=state.multiIds.filter(id=>id!==c.id);
+        saveState();$('camCount').textContent=state.cameras.length+' total · '+enabledCameras().length+' active · '+state.multiIds.length+' in grid';
       };
       row.querySelector('[data-act=preview]').onclick=()=>{
+        if(!cameraActive(c)){ alert('Activate this camera and its group first.'); return; }
         state.activeId=c.id;saveState();renderCamList();renderThumbs();renderPreview(true);renderAlerts();
       };
       row.querySelector('[data-act=del]').onclick=()=>{
         state.cameras=state.cameras.filter(x=>x.id!==c.id);
         state.multiIds=state.multiIds.filter(id=>id!==c.id);
-        if(state.activeId===c.id) state.activeId=state.cameras[0]?state.cameras[0].id:null;
-        saveState();renderCamList();renderThumbs();renderPreview(true);renderAlerts();
+        if(state.activeId===c.id) state.activeId=enabledCameras()[0]?.id||null;
+        saveState();renderCamList();renderThumbs();renderDash();renderPreview(true);renderAlerts();
       };
       list.appendChild(row);
     });
     updateThumbImages();
     renderRadarCamSel();
+    const prev=$('camPrev'),next=$('camNext');
+    if(prev) prev.disabled=camPage<=0;
+    if(next) next.disabled=camPage>=pages-1;
   }
+  $('camSearch').oninput=()=>{ camPage=0; renderCamList(); };
+  $('camGroupFilter').onchange=()=>{ camPage=0; renderCamList(); };
+  $('clearGroupFilter').onclick=()=>{ $('camGroupFilter').value='all'; camPage=0; renderCamList(); };
+  $('camPrev').onclick=()=>{camPage=Math.max(0,camPage-1);renderCamList();};
+  $('camNext').onclick=()=>{camPage++;renderCamList();};
+  $('addGroupBtn').onclick=()=>{
+    const name=$('newGroupName').value.trim(); if(!name) return;
+    const parentId=$('newGroupParent').value||null;
+    const folder={id:uid(),name,active:true,parentId}; state.groups.push(folder); $('newGroupName').value='';
+    collapsedFolders.delete(parentId);
+    saveState(); renderGroupControls(); selectFolder(folder.id); renderCamList();
+  };
+  $('newGroupName').addEventListener('keydown',e=>{if(e.key==='Enter')$('addGroupBtn').click();});
+  $('allToGrid').onclick=()=>{ state.multiIds=enabledCameras().map(c=>c.id); saveState();renderDash();renderCamList();renderGroupList(); };
+  function setFilteredActive(on){
+    const matches=cameraMatches();
+    matches.forEach(c=>c.active=on);
+    if(on) state.multiIds=[...new Set([...state.multiIds,...matches.filter(c=>cameraActive(c)).map(c=>c.id)])];
+    else state.multiIds=state.multiIds.filter(id=>!matches.some(c=>c.id===id));
+    syncActive();
+    saveState();renderGroupList();renderCamList();renderDash();renderThumbs();renderPreview(true);renderAlerts();
+  }
+  $('activateFiltered').onclick=()=>setFilteredActive(true);
+  $('deactivateFiltered').onclick=()=>setFilteredActive(false);
+  $('moveFilteredBtn').onclick=()=>{
+    const id=$('moveFilteredGroup').value; if(!id) return;
+    cameraMatches().forEach(c=>c.groupId=id);
+    syncActive();    saveState();renderGroupControls();renderGroupList();renderCamList();renderDash();renderThumbs();renderPreview(true);renderAlerts();
+  };
   function updateThumbImages(){
     document.querySelectorAll('[data-thumb],[data-thumb2]').forEach(img=>{
       const id=img.dataset.thumb||img.dataset.thumb2;
       const cam=state.cameras.find(c=>c.id===id);
-      if(!cam||cam.type!=='image') return;
+      if(!cam||!cameraActive(cam)||cam.type!=='image') return;
       if(!img._t||Date.now()-img._t>=(cam.refresh||30)*1000){
         img._t=Date.now();
         img.src=cam.url+(cam.url.includes('?')?'&':'?')+'t='+Date.now();
@@ -1267,7 +1710,7 @@ if(mode==='control'){
     const st=$('prevStage');
     const cam=activeCam();
     if(reset) prevLast=Date.now();
-    if(!cam){ st.innerHTML='<div class="msg">Add a camera to see a live preview.</div>'; prevCamId=null; return; }
+    if(!cam||!cameraActive(cam)){ $('prevName').textContent='—'; $('prevType').textContent=''; st.innerHTML='<div class="msg">No active camera selected. Activate a camera group to continue.</div>'; prevCamId=null; return; }
     prevCamId=cam.id;
     st.innerHTML='<div class="pagestrip"></div>';
     st.appendChild(buildTile(cam));
@@ -1305,17 +1748,20 @@ if(mode==='control'){
 
   /* ---- thumbnails strip ---- */
   function renderThumbs(){
+    renderDash();
     const box=$('thumbs'); if(!box) return;
-    if(!state.cameras.length){ box.innerHTML='<div class="hint">No cameras yet.</div>'; return; }
-    box.innerHTML=state.cameras.map(c=>{
+    const thumbCams=state.cameras.filter(cameraActive).slice(0,24);
+    if(!thumbCams.length){ box.innerHTML='<div class="hint">No active cameras.</div>'; return; }
+    box.innerHTML=thumbCams.map(c=>{
       const al=(alCache[c.id]&&alCache[c.id].data.length)||0;
       const inner=c.type==='image'
         ? `<img src="${esc(c.url)}" data-thumb2="${c.id}" alt="">`
         : `<span class="ph">${c.type==='hls'?'HLS ▶':'EMBED ▶'}</span>`;
       return `<div class="thumb${c.id===state.activeId?' on':''}" data-th="${c.id}" title="${esc(c.name)}">${inner}${al?`<span class="ab">⚠ ${al}</span>`:''}<span class="tl">${esc(c.name)}</span></div>`;
-    }).join('');
+    }).join('')+(enabledCameras().length>24?`<div class="hint">Showing 24 of ${enabledCameras().length} active cameras. Search or choose a group in the camera manager.</div>`:'');
     box.querySelectorAll('[data-th]').forEach(el=>{
       el.onclick=()=>{
+        if(!cameraActive(state.cameras.find(c=>c.id===el.dataset.th))) return;
         state.activeId=el.dataset.th; saveState();
         renderThumbs(); renderCamList(); renderPreview(true); renderAlerts();
       };
@@ -1325,6 +1771,125 @@ if(mode==='control'){
       img.onerror=()=>{ const sp=document.createElement('span'); sp.className='ph'; sp.textContent='no image'; img.replaceWith(sp); };
     });
   }
+
+  /* ---- dashboard: live-feed grid + camera map ---- */
+  function selectCam(id){
+    const cam=state.cameras.find(c=>c.id===id); if(!cam||!cameraActive(cam)) return;
+    if(state.activeId!==id){
+      state.activeId=id; saveState();
+      renderCamList(); renderThumbs(); renderPreview(true); renderAlerts();
+      fetchAlerts(cam).then(renderAlerts);
+    }
+    dashSyncActive();
+  }
+  let dashSig='',dashPage=0,showInactiveDash=false,selectedFolderId=null;
+  const collapsedFolders=new Set();
+  const DASH_PAGE_SIZE=18;
+  function dashMatches(){
+    const q=($('dashSearch')&&$('dashSearch').value||'').trim().toLowerCase();
+    const gid=selectedFolderId;
+    const folderIds=gid?descendantsOf(gid):null;
+    return state.cameras.filter(c=>{
+      if(!showInactiveDash&&!cameraActive(c)) return false;
+      if(folderIds&&!folderIds.has(c.groupId)) return false;
+      return !q||[c.name,c.url,c.lat,c.lon].join(' ').toLowerCase().includes(q);
+    });
+  }
+  function renderDash(){
+    const box=$('dashGrid'); if(!box) return;
+    const matches=dashMatches();
+    const signature=JSON.stringify([matches.map(c=>[c.id,c.name,c.url,c.type,c.active,c.groupId]),state.cameras.map(c=>[c.id,c.name,c.lat,c.lon,c.active,c.groupId]),state.groups,state.activeId,state.multiIds,state.cfg.showBadge,showInactiveDash,selectedFolderId]);
+    const di=$('dashInfo'); if(di) di.textContent=matches.length+' cameras · '+enabledCameras().length+' active';
+    const path=$('folderPath'); if(path) path.textContent=selectedFolderId?(groupPath(state.groups.find(g=>g.id===selectedFolderId))||'All cameras'):'All cameras';
+    const allCount=$('folderAllCount'); if(allCount) allCount.textContent=state.cameras.length+' · '+enabledCameras().length+' active';
+    $('folderAll').classList.toggle('on',!selectedFolderId);
+    const pages=Math.max(1,Math.ceil(matches.length/DASH_PAGE_SIZE));
+    dashPage=Math.min(dashPage,pages-1);
+    const info=$('dashPageInfo'); if(info) info.textContent=(dashPage+1)+' / '+pages;
+    if(signature===dashSig){ dashSyncActive(); return; }
+    dashSig=signature;
+    box.innerHTML='';
+    if(!matches.length){ box.innerHTML='<div class="hint">No cameras match this folder or search. Add a camera, choose another folder, or show inactive cameras.</div>'; return; }
+    matches.slice(dashPage*DASH_PAGE_SIZE,(dashPage+1)*DASH_PAGE_SIZE).forEach(c=>{
+      const card=document.createElement('article');
+      card.className='camera-card'+(c.id===state.activeId?' selected':'')+(cameraActive(c)?'':' inactive');
+      const tile=buildTile(c);
+      tile.classList.toggle('inactive-tile',!cameraActive(c));
+      tile.addEventListener('click',e=>{ if(e.target.closest('[data-fs]')) return; selectCam(c.id); });
+      card.appendChild(tile);
+      const info=document.createElement('div'); info.className='camera-card-info';
+      const titles=document.createElement('div'); titles.className='camera-card-titles';
+      titles.innerHTML=`<strong title="${esc(c.name)}">${esc(c.name)}</strong><span title="${esc(groupPath(state.groups.find(g=>g.id===c.groupId))||'Unsorted')}">📁 ${esc(groupPath(state.groups.find(g=>g.id===c.groupId))||'Unsorted')}</span>`;
+      const actions=document.createElement('div'); actions.className='camera-card-actions';
+      const activeLabel=document.createElement('label'); activeLabel.title='Include this camera in the station output';
+      activeLabel.innerHTML=`<input type="checkbox" data-card-active="${esc(c.id)}"${c.active?' checked':''}> On`;
+      const gridLabel=document.createElement('label'); gridLabel.title='Include this camera in multi-view layouts';
+      gridLabel.innerHTML=`<input type="checkbox" data-card-grid="${esc(c.id)}"${state.multiIds.includes(c.id)?' checked':''}> Grid`;
+      actions.append(activeLabel,gridLabel); info.append(titles,actions); card.appendChild(info); box.appendChild(card);
+    });
+    box.querySelectorAll('[data-card-active]').forEach(input=>input.onchange=()=>{
+      const cam=state.cameras.find(c=>c.id===input.dataset.cardActive); if(!cam) return;
+      const wasActive=cameraActive(cam); cam.active=input.checked;
+      if(!wasActive&&cameraActive(cam)&&!state.multiIds.includes(cam.id)) state.multiIds.push(cam.id);
+      if(!cameraActive(cam)) state.multiIds=state.multiIds.filter(id=>id!==cam.id);
+      syncActive(); saveState(); renderGroupList(); renderGroupControls(); renderCamList(); renderDash(); renderThumbs(); renderPreview(true); renderAlerts();
+    });
+    box.querySelectorAll('[data-card-grid]').forEach(input=>input.onchange=()=>{
+      const cam=state.cameras.find(c=>c.id===input.dataset.cardGrid); if(!cam) return;
+      if(input.checked&&!cameraActive(cam)){input.checked=false;alert('Activate this camera and its folder before adding it to the output grid.');return;}
+      if(input.checked&&!state.multiIds.includes(cam.id)) state.multiIds.push(cam.id);
+      if(!input.checked) state.multiIds=state.multiIds.filter(id=>id!==cam.id);
+      saveState(); renderCamList();
+    });
+    dashSyncActive();
+  }
+  function selectFolder(id){
+    selectedFolderId=id||null;
+    let parent=state.groups.find(g=>g.id===selectedFolderId);
+    while(parent&&parent.parentId){ collapsedFolders.delete(parent.parentId); parent=state.groups.find(g=>g.id===parent.parentId); }
+    $('dashGroup').value=selectedFolderId||'all'; $('camGroupFilter').value=selectedFolderId||'all'; $('newCamGroup').value=selectedFolderId||state.groups[0]?.id||''; $('newGroupParent').value=selectedFolderId||'';
+    $('dashSearch').value=''; $('camSearch').value='';
+    dashFilterChanged(); renderGroupList();
+  }
+  function dashFilterChanged(){ dashPage=0; dashSig=''; renderDash(); }
+  $('dashSearch').oninput=()=>{ $('camSearch').value=$('dashSearch').value; dashFilterChanged(); };
+  $('dashGroup').onchange=()=>{ selectedFolderId=$('dashGroup').value==='all'?null:$('dashGroup').value; $('camGroupFilter').value=$('dashGroup').value; dashFilterChanged(); renderGroupList(); };
+  $('folderAll').onclick=()=>selectFolder(null);
+  $('finderAddCamera').onclick=()=>{ $('cameraTools').open=true; $('newCamGroup').value=selectedFolderId||state.groups[0]?.id||''; $('addCameraPanel').scrollIntoView({behavior:'smooth',block:'start'}); };
+  $('finderManageBtn').onclick=()=>{ $('cameraManager').open=!$('cameraManager').open; if($('cameraManager').open) $('cameraManager').scrollIntoView({behavior:'smooth',block:'start'}); };
+  $('camSearch').oninput=()=>{ $('dashSearch').value=$('camSearch').value; if($('camGroupFilter').value!=='all') selectedFolderId=$('camGroupFilter').value; dashFilterChanged(); };
+  $('camGroupFilter').onchange=()=>{ $('dashGroup').value=$('camGroupFilter').value; selectedFolderId=$('camGroupFilter').value==='all'?null:$('camGroupFilter').value; $('dashSearch').value=$('camSearch').value; dashFilterChanged(); renderGroupList(); };
+  $('clearGroupFilter').onclick=()=>{ $('camGroupFilter').value='all'; $('dashGroup').value='all'; $('dashSearch').value=''; $('camSearch').value=''; selectFolder(null); };
+  $('dashSearch').addEventListener('input',()=>{ $('camSearch').value=$('dashSearch').value; });
+  $('finderAddCamera').setAttribute('aria-controls','addCameraPanel'); $('finderManageBtn').setAttribute('aria-controls','cameraManager');
+  $('showInactive').onclick=()=>{ showInactiveDash=!showInactiveDash; $('showInactive').classList.toggle('on',showInactiveDash); $('showInactive').textContent=showInactiveDash?'Hide inactive':'Show inactive'; dashFilterChanged(); };
+  $('dashPrev').onclick=()=>{dashPage=Math.max(0,dashPage-1);dashSig='';renderDash();};
+  $('dashNext').onclick=()=>{dashPage++;dashSig='';renderDash();};
+  function renderDashGroups(){
+    const sel=$('dashGroup'); if(!sel) return;
+    const val=sel.value||'all';
+    sel.innerHTML='<option value="all">All folders</option>'+state.groups.map(g=>`<option value="${esc(g.id)}">${esc(groupPath(g))}${g.active?'':' (inactive)'}</option>`).join('');
+    sel.value=state.groups.some(g=>g.id===val)?val:'all';
+    if(selectedFolderId&&!state.groups.some(g=>g.id===selectedFolderId)) selectedFolderId=null;
+    sel.value=selectedFolderId||'all';
+    const cameraFolder=$('newCamGroup'); if(cameraFolder&&selectedFolderId) cameraFolder.value=selectedFolderId;
+  }
+  function dashSyncActive(){
+    document.querySelectorAll('#dashGrid .camera-card').forEach(card=>{
+      const selected=card.querySelector('.camtile')?.dataset.camid===state.activeId;
+      card.classList.toggle('selected',selected);
+      const tile=card.querySelector('.camtile'); if(tile) tile.classList.toggle('on',selected);
+    });
+  }
+  setInterval(()=>{   /* keep visible still-image feeds ticking */
+    document.querySelectorAll('#dashGrid .camtile').forEach(tile=>{
+      const cam=state.cameras.find(c=>c.id===tile.dataset.camid);
+      if(!cam||!cameraActive(cam)||cam.type!=='image') return;
+      const ms=Math.max(5,cam.refresh||30)*1000;
+      if(Date.now()-(tile._last||0)>=ms) refreshTileImage(tile,cam);
+    });
+  },2000);
+
 
   /* ---- NWS alerts ---- */
   function updateAlertPill(cam){
@@ -1363,7 +1928,7 @@ if(mode==='control'){
   };
   $('checkAllBtn').onclick=async()=>{
     $('checkAllBtn').textContent='checking…';
-    for(const c of state.cameras){ alCache[c.id]=null; await fetchAlerts(c); }
+    for(const c of state.cameras.filter(cameraActive)){ alCache[c.id]=null; await fetchAlerts(c); }
     $('checkAllBtn').textContent='Check all alerts';
     renderCamList(); renderThumbs(); renderAlerts(); renderPreview(false);
   };
@@ -1378,9 +1943,7 @@ if(mode==='control'){
   bindNum('fadeMs','fadeMs',150,3000);
   bindSel('fit','cfg.fit',()=>{ rerenderWidgets(); renderPreview(false); });
   bindSel('fitFs','cfg.fitFs');
-  bindSel('radarMode','cfg.radarMode',()=>{ rerenderWidgets(); renderPreview(false); });
-  bindSel('radarPos','cfg.radarPos');
-  bindNum('radarH','cfg.radarH',120,900);
+  bindSel('radarMode','cfg.radarMode',()=>{ rvLoad(); rerenderWidgets(); renderPreview(false); });
   bindChk('showBadge','showBadge');
   bindChk('alertsPerTile','cfg.alertsPerTile');
   bindNum('alertMax','cfg.alertMax',0,4);
@@ -1438,11 +2001,12 @@ if(mode==='control'){
       +state.cameras.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
     sel.value=state.cfg.radarCam||'';
   }
-  $('radarCam').onchange=()=>{ state.cfg.radarCam=$('radarCam').value; saveState(); rerenderWidgets(); renderPreview(false); };
+  $('radarCam').onchange=()=>{ state.cfg.radarCam=$('radarCam').value;    saveState(); rerenderWidgets(); renderPreview(false);
+  };
   $('radarZoom').value=state.cfg.radarZoom;
   $('radarZoom').onchange=()=>{
     let v=parseFloat($('radarZoom').value); if(isNaN(v)) v=defaultCfg().radarZoom;
-    v=Math.min(11,Math.max(4,v)); state.cfg.radarZoom=v; $('radarZoom').value=v;
+    v=Math.min(7,Math.max(4,v)); state.cfg.radarZoom=v; $('radarZoom').value=v;
     saveState(); rerenderWidgets(); renderPreview(false);
   };
   function renderWidgetGrid(){
@@ -1513,19 +2077,57 @@ if(mode==='control'){
     else{ try{ if(relay.ws) relay.ws.close(); }catch(e){} relay.ws=null; relay.st='off'; }
   });
   $('btnTVWin').onclick=()=>openTVWindow(false);
-  $('btnSecond').onclick=()=>openTVWindow(true);
+  $('btnSecondSettings').onclick=()=>openTVWindow(true);
   $('copyRemote').onclick=()=>{ const t=$('remoteURL'); t.select(); try{document.execCommand('copy');}catch(e){} };
+  const renderPairQr=()=>{
+    const box=$('pairQr'); if(!box) return;
+    box.innerHTML='';
+    if(typeof window.QRCode==='undefined'){ box.textContent='QR library unavailable'; return; }
+    new QRCode(box,{text:$('remoteURL').value,width:180,height:180,colorDark:'#111820',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  };
+
   $('btnNewCode').onclick=()=>{
     state.cfg.remote.code=genCode(); relay.code=state.cfg.remote.code;
     try{ if(relay.ws) relay.ws.close(); }catch(e){} relay.ws=null; relay.st='off';
-    saveState(); renderRemoteUI(); relayConnect();
+    saveState(); renderRemoteUI(); renderPairQr(); relayConnect();
   };
-  renderRemoteUI();
+  renderRemoteUI(); renderPairQr();
+  $('pageSettings').onclick=()=>{ $('controlView').classList.add('settings-page'); $('pageSettings').classList.add('on'); $('pageDashboard').classList.remove('on'); history.replaceState(null,'',location.pathname+'?mode=control&view=settings'); };
+  $('pageDashboard').onclick=()=>{ $('controlView').classList.remove('settings-page'); $('pageDashboard').classList.add('on'); $('pageSettings').classList.remove('on'); history.replaceState(null,'',location.pathname+'?mode=control'); };
+  if(params.get('view')==='settings') $('pageSettings').click();
+  let customOverlaySave;
+  function bindCustomOverlay(){
+    const c=state.cfg.customOverlay;
+    $('customOverlayText').value=c.text||''; $('customOverlayStyle').value=c.style||'card';
+    $('customOverlayColor').value=c.color||'#ffffff'; $('customOverlayBg').value=c.bg||'#111820';
+    $('customOverlayOpacity').value=c.opacity||.78; $('overlayFont').value=state.cfg.overlayFont||13; $('overlayPad').value=state.cfg.overlayPad||4;
+    function paint(){
+      $('customOverlayOpacityVal').textContent=(+$('customOverlayOpacity').value).toFixed(2);
+      $('overlayFontVal').textContent=$('overlayFont').value+'px'; $('overlayPadVal').textContent=$('overlayPad').value+'px';
+      const preview=$('customOverlayPreview');
+      preview.textContent=$('customOverlayText').value||'Example overlay message';
+      preview.style.cssText=`color:${$('customOverlayColor').value};background:${$('customOverlayBg').value};opacity:${$('customOverlayOpacity').value};font-size:${$('overlayFont').value}px;padding:${$('overlayPad').value}px;border-radius:${$('customOverlayStyle').value==='badge'?'999px':$('customOverlayStyle').value==='strip'?'2px':'5px'}`;
+    }
+    const save=()=>{
+      c.text=$('customOverlayText').value.trim(); c.style=$('customOverlayStyle').value;
+      c.color=$('customOverlayColor').value; c.bg=$('customOverlayBg').value; c.opacity=+$('customOverlayOpacity').value;
+      state.cfg.overlayFont=+$('overlayFont').value; state.cfg.overlayPad=+$('overlayPad').value;
+      applyStyle(); saveState(); rerenderWidgets(); paint();
+    };
+    let saveTimer;
+    ['customOverlayText','customOverlayStyle','customOverlayColor','customOverlayBg','customOverlayOpacity','overlayFont','overlayPad'].forEach(id=>{
+      const el=$(id); el.oninput=()=>{paint(); clearTimeout(saveTimer); saveTimer=setTimeout(save,350);}; el.onchange=()=>{clearTimeout(saveTimer);save();};
+    });
+    customOverlaySave=save; paint();
+  }
+  bindCustomOverlay();
 
   /* ---- boot ---- */
   updateOsmLink(NaN,NaN);
   renderThemeUI();
   renderWidgetGrid();
+  renderGroupControls();
+  renderGroupList();
   renderCamList();
   renderThumbs();
   renderPreview(true);
@@ -1534,60 +2136,24 @@ if(mode==='control'){
 
   /* other tabs (the output wall) write state on every rotation — keep the page still
      unless settings actually changed; a full rebuild every 10s makes the preview look broken */
-  const settingsSig=()=>JSON.stringify([state.cameras,state.cfg,state.multiView,state.multiIds,
+  const settingsSig=()=>JSON.stringify([state.cameras,state.groups,state.cfg,state.multiView,state.multiIds,
     state.autoRotate,state.rotateSec,state.rotateOrder,state.transition,state.fadeMs,state.showBadge]);
   let lastSig=settingsSig();
   window.addEventListener('storage',e=>{
     if(e.key!==KEY) return;
     state=loadState();
     applyStyle();
-    if(settingsSig()===lastSig){ renderPreview(true); renderThumbs(); updateAlertPill(activeCam()); return; }
+    if(settingsSig()===lastSig){ renderGroupControls(); renderGroupList(); renderCamList();renderDash(); renderPreview(true); renderThumbs(); updateAlertPill(activeCam()); return; }
     lastSig=settingsSig();
-    renderThemeUI(); renderWidgetGrid(); renderCamList(); renderThumbs(); renderPreview(true); renderAlerts();
+    renderThemeUI(); renderWidgetGrid(); renderGroupControls(); renderGroupList(); renderCamList(); renderThumbs(); renderPreview(true); renderAlerts(); bindCustomOverlay();
   });
 }
 
 /* ================= OUTPUT MODE ================= */
 if(mode==='output'){
   const grid=$('viewerGrid'), oWrap=$('oWrap'), view=$('outputView');
-  const currentCam=()=>state.cameras.find(c=>c.id===state.activeId)||state.cameras[0]||null;
-  const gridCams=()=>state.cameras.filter(c=>state.multiIds.includes(c.id)).slice(0,state.multiView);
-
-  /* ---- radar panel: embedded RainViewer/Windy map page, or just links ----
-     the map re-centres whenever the wall rotates (unless a radar camera is pinned) ---- */
-  function renderRadar(cam){
-    const p=$('radarPanel'), m=state.cfg.radarMode, anchor=radarCam(cam);
-    if(!anchor||m==='off'){ p.style.display='none'; p.innerHTML=''; p.dataset.src=''; p.dataset.mode=''; return; }
-    p.style.display='block';
-    if(m==='link'){
-      if(p.dataset.mode!=='link'){
-        p.dataset.mode='link'; p.dataset.src='';
-        p.innerHTML=`<h2>Live radar — quick links</h2>
-          <div class="linkcard">
-            <a target="_blank" href="https://www.rainviewer.com/map.html">🛰 RainViewer radar ↗</a>
-            <a target="_blank" id="rvOut" href="#">🛰 RainViewer — this camera ↗</a>
-            <a target="_blank" href="https://radar.weather.gov/">⛈ NWS radar ↗</a>
-            <a target="_blank" id="osmOut" href="#">🗺 OpenStreetMap ↗</a>
-          </div>
-          <div class="hint">Camera <b data-rcam>${esc(anchor.name)}</b> — the map stays external so the output view loads fast and never restarts.</div>`;
-      }
-      const o=$('osmOut'); if(o) o.href=`https://www.openstreetmap.org/#map=9/${anchor.lat}/${anchor.lon}`;
-      const r=$('rvOut'); if(r) r.href=rvSrc(anchor);
-      const n=p.querySelector('[data-rcam]'); if(n) n.textContent=anchor.name;
-      return;
-    }
-    const src=radarSrc(anchor);
-    const f=p.querySelector('iframe');
-    if(p.dataset.mode!==m){
-      p.dataset.mode=m; p.dataset.src=src;
-      p.innerHTML=`<h2>Live radar — ${m==='windy'?'Windy rain layer':'RainViewer'} <span class="mono" style="font-size:11px;color:var(--muted)" data-rcam>${esc(anchor.name)}</span></h2>
-        <iframe src="${esc(src)}" height="${state.cfg.radarH}" allowfullscreen loading="lazy" title="Live radar"></iframe>`;
-      return;
-    }
-    const nm=p.querySelector('[data-rcam]'); if(nm) nm.textContent=anchor.name;
-    if(f&&p.dataset.src!==src){ p.dataset.src=src; f.src=src; }
-    else if(f) f.height=state.cfg.radarH;
-  }
+  const currentCam=()=>state.cameras.find(c=>c.id===state.activeId&&cameraActive(c))||enabledCameras()[0]||null;
+  const gridCams=()=>enabledCameras().filter(c=>state.multiIds.includes(c.id)).slice(0,state.multiView);
 
   /* ---- tile alert badges ---- */
   function applyTileAlerts(){
@@ -1644,14 +2210,15 @@ if(mode==='output'){
   /* ---- rotation engine ---- */
   let paused=false,hoverPause=false,lastRotate=Date.now(),hoverRemain=null,shuffleBag=[];
   const rotationMs=()=>Math.max(3,state.rotateSec)*1000;
-  const rotationActive=()=>state.autoRotate&&state.multiView===1&&state.cameras.length>1;
+  const rotationActive=()=>state.autoRotate&&state.multiView===1&&enabledCameras().length>1;
   function refillBag(excludeId){
-    const ids=state.cameras.filter(c=>c.id!==excludeId).map(c=>c.id);
+    const ids=enabledCameras().filter(c=>c.id!==excludeId).map(c=>c.id);
     for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=ids[i];ids[i]=ids[j];ids[j]=t;}
     shuffleBag=ids;
   }
   function nextId(dir){
-    const ids=state.cameras.map(c=>c.id);
+    const ids=enabledCameras().map(c=>c.id);
+    if(!ids.length) return null;
     if(state.rotateOrder==='shuffle'){
       if(!shuffleBag.length) refillBag(state.activeId);
       return shuffleBag.pop()||state.activeId;
@@ -1660,8 +2227,8 @@ if(mode==='output'){
     return ids[(i+(dir||1)+ids.length)%ids.length];
   }
   function peekNextCam(){
-    const ids=state.cameras.map(c=>c.id);
-    let id;
+    const ids=enabledCameras().map(c=>c.id);
+    if(!ids.length) return null;      let id;
     if(state.rotateOrder==='shuffle'){
       id=shuffleBag.length?shuffleBag[shuffleBag.length-1]:ids.filter(x=>x!==state.activeId)[0];
     } else {
@@ -1673,6 +2240,7 @@ if(mode==='output'){
 
   /* ---- rendering ---- */
   function showCamera(c,fade){
+    if(!c||!cameraActive(c)){ c=currentCam(); if(!c){grid.innerHTML='<div class="hint" style="padding:20px">No active cameras. Activate a group in Control → Cameras.</div>';return;} }
     grid.className='grid g1'+(state.cfg.bgData?' hasbg':'');
     const old=grid.querySelector('.camtile:not(.leaving)');
     const tile=buildTile(c);
@@ -1684,12 +2252,12 @@ if(mode==='output'){
       setTimeout(()=>{old.remove();tile.classList.remove('entering');},state.fadeMs+60);
     } else { grid.innerHTML=''; }
     grid.appendChild(tile);
-    $('rotIdx').textContent='Cam '+(state.cameras.indexOf(c)+1)+' / '+state.cameras.length;
+    $('rotIdx').textContent='Cam '+(enabledCameras().indexOf(c)+1)+' / '+enabledCameras().length;
     $('rotName').textContent=c.name;
     ['btnPrev','btnPlay','btnNext'].forEach(id=>{ const b=$(id); if(b) b.disabled=!rotationActive(); });
     fetchWx(c).then(d=>{ setScope(c,d,oWrap._ctx.alerts,nextCtx()); });
     loadAlertsFor([c],list=>{ setScope(c,oWrap._ctx.wx,list,nextCtx()); });
-    renderRadar(c);   /* the map re-centres every time the wall rotates */
+
     updatePauseVisuals();
   }
   function renderGrid(){
@@ -1697,29 +2265,28 @@ if(mode==='output'){
     grid.className='grid g'+state.multiView+(state.cfg.bgData?' hasbg':'');
     grid.innerHTML='';
     if(!cams.length){
-      grid.innerHTML='<div class="hint" style="padding:20px">No cameras selected for the grid — enable “In grid” on cameras in the Control tab.</div>';
+      grid.innerHTML='<div class="hint" style="padding:20px">No active cameras selected for this grid. Activate cameras/groups and choose “In grid” in Control.</div>';
       setScope(null,null,[],null); return;
     }
     cams.forEach(c=>grid.appendChild(buildTile(c)));
     $('rotIdx').textContent='Grid · '+cams.length+' cams';
     $('rotName').textContent='';
     ['btnPrev','btnPlay','btnNext'].forEach(id=>{ const b=$(id); if(b) b.disabled=true; });
-    fetchWx(cams[0]).then(d=>{ setScope(null,d,oWrap._ctx.alerts,null); });
     loadAlertsFor(cams,list=>setScope(null,null,list,null));
   }
   function renderOutput(rebuild){
+    const eligible=enabledCameras();
+    if(!eligible.length){ state.activeId=null; state.multiView=1; }
+    else if(!eligible.some(c=>c.id===state.activeId)) state.activeId=eligible[0].id;
     applyStyle();
     oWrap.classList.toggle('fill',state.cfg.camHeight!=='auto');
     oWrap.classList.toggle('hasbg',!!state.cfg.bgData);
     view.classList.toggle('hasbg',!!state.cfg.bgData);
     view.classList.toggle('edge',!!state.cfg.edgeMode);
-    const rp=$('radarPanel');
-    if(state.cfg.radarPos==='above') view.insertBefore(rp,oWrap);
-    else oWrap.insertAdjacentElement('afterend',rp);
     if(!document.fullscreenElement) view.classList.remove('fsbarhide');
     const cam=currentCam();
     if(state.multiView===1){ showCamera(cam,!rebuild); }
-    else { renderGrid(); renderRadar(cam); }
+    else { renderGrid(); }
     lastRotate=Date.now();
   }
 
@@ -1733,12 +2300,14 @@ if(mode==='output'){
   setInterval(()=>{
     grid.querySelectorAll('.camtile').forEach(t=>{
       const cam=state.cameras.find(c=>c.id===t.dataset.camid);
+      if(!cameraActive(cam)){ t.remove(); return; }
       refreshTile(t,cam,false);
     });
   },1000);
   function forceRefresh(){
     grid.querySelectorAll('.camtile').forEach(t=>{
       const cam=state.cameras.find(c=>c.id===t.dataset.camid);
+      if(!cameraActive(cam)) return;
       refreshTile(t,cam,true);
     });
   }
@@ -1749,7 +2318,7 @@ if(mode==='output'){
     const ms=rotationMs(), now=Date.now();
     if(!paused&&!hoverPause&&now-lastRotate>=ms){
       lastRotate=now;
-      state.activeId=nextId(1); saveState();
+      state.activeId=nextId(1); if(!state.activeId) return; saveState();
       showCamera(state.cameras.find(c=>c.id===state.activeId),true);
     }
     const el=(paused||hoverPause)?ms:Math.min(ms,now-lastRotate);
@@ -1762,7 +2331,7 @@ if(mode==='output'){
 
   /* ---- controls ---- */
   function togglePause(){ if(!rotationActive()) return; paused=!paused; if(!paused) lastRotate=Date.now(); updatePauseVisuals(); }
-  function step(dir){ if(state.cameras.length<2||state.multiView!==1) return; state.activeId=nextId(dir); saveState(); showCamera(state.cameras.find(c=>c.id===state.activeId),true); }
+  function step(dir){ if(enabledCameras().length<2||state.multiView!==1) return; state.activeId=nextId(dir); if(!state.activeId) return; saveState(); showCamera(state.cameras.find(c=>c.id===state.activeId),true); }
   $('btnPlay').onclick=e=>{togglePause();e.currentTarget.blur();};
   $('btnNext').onclick=e=>{step(1);e.currentTarget.blur();};
   $('btnPrev').onclick=e=>{step(-1);e.currentTarget.blur();};
@@ -1821,9 +2390,13 @@ if(mode==='output'){
     const cams=state.multiView===1?[currentCam()].filter(Boolean):gridCams();
     if(!cams.length) return;
     loadAlertsFor(cams);
-  },2*60*1000);
-
-  window.addEventListener('storage',e=>{ if(e.key===KEY){ state=loadState(); renderOutput(true); } });
+  },2*60*1000);  window.addEventListener('storage',e=>{
+    if(e.key!==KEY) return;
+    state=loadState();
+    if(currentCam()) state.activeId=currentCam().id;
+    else state.activeId=null;
+    renderOutput(true);
+  });
   window.addEventListener('online',()=>{ forceRefresh(); renderOutput(true); });
 
   /* ---- TV / kiosk mode: wake lock, idle cursor, one-tap fullscreen start ---- */
@@ -1855,7 +2428,7 @@ if(mode==='output'){
 
   /* ---- remote control: commands in, status out ---- */
   function sendStatus(){
-    syncSend({t:'status',activeId:state.activeId,multiView:state.multiView,paused:!!paused,rotating:rotationActive(),n:state.cameras.length});
+    syncSend({t:'status',activeId:state.activeId,multiView:state.multiView,paused:!!paused,rotating:rotationActive(),n:enabledCameras().length});
   }
   onSync((msg,via)=>{
     if(msg.t==='hello'){ sendStatus(); syncSend({t:'state',state}); return; }
@@ -1874,7 +2447,7 @@ if(mode==='output'){
     else if(c==='refresh') forceRefresh();
     else if(c==='widgets') $('btnOverlay').click();
     else if(c==='fullscreen') $('btnFull').click();
-    else if(c==='show'&&v){ state.activeId=v; state.multiView=1; saveState(); renderOutput(true); }
+    else if(c==='show'&&v&&state.cameras.some(cam=>cam.id===v&&cameraActive(cam))){ state.activeId=v; state.multiView=1; saveState(); renderOutput(true); }
     else if(c==='layout'){ state.multiView=[1,4,6].includes(+v)?+v:1; saveState(); renderOutput(true); }
     else if(c==='auto'){ state.autoRotate=!!v; saveState(); renderOutput(true); }
     else if(c==='speed'){ state.rotateSec=Math.min(600,Math.max(3,parseInt(v)||10)); saveState(); }
@@ -1901,9 +2474,48 @@ if(mode==='remote'){
   const pairBox=$('rmPair');
   if(relay.code){ pairBox.style.display='none'; rememberPair(); }
   else pairBox.style.display='';
+  let scanStream=null,scanFrame=0,scanDetector=null,scanCanvas=null,scanCtx=null;
+  function stopQrScan(){
+    if(scanFrame) cancelAnimationFrame(scanFrame); scanFrame=0;
+    if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+    $('scanVideo').srcObject=null; $('scanArea').style.display='none';
+  }
+  function acceptQr(value){
+    if(!value) return false;
+    let code='',url;
+    try{ url=new URL(value); code=(url.searchParams.get('code')||'').toUpperCase(); }
+    catch(e){ code=value.toUpperCase().replace(/[^A-Z0-9]/g,''); }
+    code=code.replace(/[^A-Z0-9]/g,'').slice(0,10);
+    if(!code) return false;
+    $('rmCode').value=code; stopQrScan(); $('rmPairBtn').click(); return true;
+  }
+  async function startQrScan(){
+    $('scanArea').style.display='block';
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ $('scanStatus').textContent='Camera access requires HTTPS and a supported browser. Enter the code manually.'; return; }
+    try{
+      scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+      $('scanVideo').srcObject=scanStream; await $('scanVideo').play();
+      if('BarcodeDetector' in window){ scanDetector=new BarcodeDetector({formats:['qr_code']}); }
+      else if(typeof window.jsQR==='function'){ scanCanvas=document.createElement('canvas'); scanCtx=scanCanvas.getContext('2d',{willReadFrequently:true}); }
+      else { $('scanStatus').textContent='QR decoder unavailable. Enter the short code manually.'; return; }
+      const scan=async()=>{
+        if(!scanStream) return;
+        const v=$('scanVideo');
+          try{
+            if(scanDetector){ const codes=await scanDetector.detect(v); if(codes.length&&acceptQr(codes[0].rawValue)) return; }
+            else if(v.readyState>=2){ scanCanvas.width=v.videoWidth; scanCanvas.height=v.videoHeight; scanCtx.drawImage(v,0,0); const im=scanCtx.getImageData(0,0,scanCanvas.width,scanCanvas.height); const code=window.jsQR(im.data,im.width,im.height,{inversionAttempts:'attemptBoth'}); if(code&&acceptQr(code.data)) return; }
+          }catch(e){}
+          scanFrame=requestAnimationFrame(scan);
+        };
+      $('scanStatus').textContent='Point the rear camera at the pairing QR code.'; scan();
+    }catch(e){ $('scanStatus').textContent='Could not open camera. Allow camera access or enter the short code manually.'; }
+  }
+  $('scanQrBtn').onclick=startQrScan;
+  $('stopScan').onclick=stopQrScan;
   $('rmPairBtn').onclick=()=>{
     const c=($('rmCode').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10);
     if(!c) return;
+    stopQrScan();
     relay.code=c; state.cfg.remote.code=c;
     rememberPair();
     pairBox.style.display='none';
@@ -1924,39 +2536,11 @@ if(mode==='remote'){
   $('rmSpeed').onchange=()=>cmd('speed',+$('rmSpeed').value);
 
   /* live weather + animated mini radar for whatever is playing on the wall */
-  function renderRemoteWidgets(){
-    if(!RS) return;
-    const cam=RS.cameras.find(x=>x.id===RS.activeId)||RS.cameras[0];
-    if(!cam) return;
-    const rc=(RS.cfg&&RS.cfg.radarCam)?(RS.cameras.find(x=>x.id===RS.cfg.radarCam)||cam):cam;
-    const box=$('rmRadar');
-    let el=box.querySelector('.radarov');
-    if(!el){ el=makeRadarEl(); box.appendChild(el); }
-    el.hidden=false;
-    const nm=el.querySelector('[data-rovname]'); if(nm) nm.textContent=rc.name;
-    const zoom=(RS.cfg&&Number(RS.cfg.radarZoom))||7.12;
-    const want=[rc.lat,rc.lon,Math.round(zoom)].join(',');
-    if(el.dataset.rloc!==want){
-      el.dataset.rloc=want;
-      /* the remote never saves state, so borrowing these cfg fields for rovBuild is safe */
-      const keepZ=state.cfg.radarZoom, keepW=state.cfg.radarOvW;
-      state.cfg.radarZoom=zoom; state.cfg.radarOvW=220;
-      rovBuild(el,rc);
-      state.cfg.radarZoom=keepZ; state.cfg.radarOvW=keepW;
-    }
-    fetchWx(cam).then(d=>{
-      const w=$('rmWx'); if(!w||!d) return;
-      w.textContent=`${wxIcon(d.code,d.isDay)} ${Math.round(d.temp)}° · ${WX_COND[d.code]||'—'} · feels ${Math.round(d.feels)}° · wind ${Math.round(d.wind)} mph`
-        +(d.rain!=null?` · rain ${d.rain}%`:'');
-    }).catch(()=>{});
-  }
-
   let rmSig='';
   function renderRemote(){
     const badge=$('rmConn');
     const fresh=!!RS&&Date.now()-RSTAT.seen<15000;
-    /* state + status echo back and forth across tabs — only touch the DOM when something really changed */
-    const sig=JSON.stringify([relay.st,relay.code,RS&&RS.activeId,RS&&RS.multiView,RS&&RS.autoRotate,RS&&RS.rotateSec,RSTAT.paused,fresh,RS&&RS.cameras.map(c=>c.id+c.name)]);
+    /* state + status echo back and forth across tabs — only touch the DOM when something really changed */    const sig=JSON.stringify([relay.st,relay.code,RS&&RS.activeId,RS&&RS.multiView,RS&&RS.autoRotate,RS&&RS.rotateSec,RSTAT.paused,fresh,RS&&RS.groups,RS&&RS.cameras&&RS.cameras.map(c=>[c.id,c.name,c.active,c.groupId])]);
     if(sig===rmSig) return;
     rmSig=sig;
     if(relay.st==='on'){ badge.className='conn on'; badge.textContent='RELAY ONLINE'; }
@@ -1969,7 +2553,8 @@ if(mode==='remote'){
       $('rmCams').innerHTML='';
       return;
     }
-    const cam=RS.cameras.find(x=>x.id===RS.activeId)||RS.cameras[0];
+    const activeRemote=(RS.cameras||[]).filter(x=>cameraActive(x,RS));
+    const cam=activeRemote.find(x=>x.id===RS.activeId)||activeRemote[0]||null;
     if(cam&&cam.type==='image') $('rmThumb').src=cam.url+(cam.url.includes('?')?'&':'?')+'t='+Math.floor(Date.now()/60000);
     else $('rmThumb').removeAttribute('src');
     $('rmName').textContent=cam?cam.name:'—';
@@ -1978,7 +2563,8 @@ if(mode==='remote'){
     $('rmSpeed').value=RS.rotateSec||10; $('rmSpeedVal').textContent=(RS.rotateSec||10)+'s';
     document.querySelectorAll('.rmlay').forEach(b=>b.classList.toggle('on',+b.dataset.lay===+RS.multiView));
     $('rmAuto').classList.toggle('on',!!RS.autoRotate);
-    $('rmCams').innerHTML=RS.cameras.map(x=>`
+    const remoteCams=(RS.cameras||[]).filter(x=>cameraActive(x,RS));
+    $('rmCams').innerHTML=remoteCams.map(x=>`
       <div class="rc${x.id===RS.activeId?' on':''}" data-cam="${x.id}">
         ${x.type==='image'?`<img src="${esc(x.url)}" loading="lazy" alt="">`:'<div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:22px">📹</div>'}
         <b>${esc(x.name)}</b>
@@ -1987,9 +2573,14 @@ if(mode==='remote'){
       cmd('show',el.dataset.cam);
       RS.activeId=el.dataset.cam; RS.multiView=1; renderRemote();   /* instant feedback */
     });
-    renderRemoteWidgets();
   }
-  setInterval(renderRemoteWidgets,60000);   /* weather refresh (fetchWx caches 10 min) */
+  setInterval(()=>{
+    const cam=RS&&(RS.cameras||[]).find(c=>c.id===RS.activeId&&cameraActive(c,RS));
+    if(!cam) return;
+    fetchWx(cam).then(d=>{
+      const w=$('rmWx'); if(w&&d) w.textContent=`${wxIcon(d.code,d.isDay)} ${Math.round(d.temp)}° · ${WX_COND[d.code]||'—'} · feels ${Math.round(d.feels)}° · wind ${Math.round(d.wind)} mph`+(d.rain!=null?` · rain ${d.rain}%`:'');
+    }).catch(()=>{});
+  },60000);   /* weather refresh (fetchWx caches 10 min) */
 
   onSync(msg=>{
     if(msg.t==='state'){ RS=msg.state; renderRemote(); }
