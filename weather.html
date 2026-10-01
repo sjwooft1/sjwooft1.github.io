@@ -53,7 +53,16 @@ a.lnk{color:var(--accent2);text-decoration:none;font-size:12px;border-bottom:1px
 
 /* live preview */
 .prevwrap{display:grid;grid-template-columns:1fr;gap:10px;}
-.stage{position:relative;background:#000;border:1px solid var(--line);border-radius:6px;overflow:hidden;aspect-ratio:16/9;}
+.output-preview-panel{width:100%;max-width:1600px;margin:0 auto!important}
+.output-preview-panel .stage{width:100%}
+.stage{position:relative;background:#000;border:1px solid var(--line);border-radius:6px;overflow:hidden;aspect-ratio:var(--stage-ratio,16/9);}
+.stage.output-stage{isolation:isolate}
+.stage.output-stage:fullscreen{width:100vw;height:100vh;max-height:none;aspect-ratio:auto;border:0;border-radius:0}
+.stage.output-stage>.grid{position:absolute;inset:0;width:100%;height:100%;min-height:0;grid-auto-rows:minmax(0,1fr);grid-template-rows:repeat(2,minmax(0,1fr))}
+.stage.output-stage>.grid.g1{grid-template-columns:1fr;grid-template-rows:1fr;grid-auto-rows:auto}
+.stage.output-stage>.grid.g4{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+.stage.output-stage>.grid.g6{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+.stage.output-stage .camtile{min-height:0;aspect-ratio:auto}
 .stage img,.stage video,.stage iframe{width:100%;height:100%;object-fit:cover;display:block;border:0;background:#000;}
 .stage.contain img,.stage.contain video{object-fit:contain;}
 .stage .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;text-align:center;padding:20px;}
@@ -138,9 +147,26 @@ a.lnk{color:var(--accent2);text-decoration:none;font-size:12px;border-bottom:1px
 .camera-card-titles strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .camera-card-titles span{display:block;margin-top:3px;font:10px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .camera-card-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.camera-card-actions label{display:flex;align-items:center;gap:4px;margin:0;font-size:10px;white-space:nowrap}
-.camera-card-actions button{font-size:10px;padding:4px 7px}
-.dashpager{display:flex;justify-content:center;align-items:center;gap:10px;padding-top:14px}
+.camera-card-actions label{display:flex;align-items:center;gap:4px;margin:0;font-size:10px;white-space:nowrap}  .camera-card-actions button{font-size:10px;padding:4px 7px}
+.quick-controls{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;padding:9px 12px;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.quick-control{display:flex;align-items:center;gap:10px;padding:2px 10px;border-right:1px solid var(--line);flex-wrap:wrap}
+.quick-control:last-child{border-right:0}
+.quick-title{font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent2)}
+.quick-control label{display:flex;align-items:center;gap:4px;margin:0;white-space:nowrap;font-size:11px}
+.quick-control input[type=number]{padding:3px 5px}
+.quick-control button{white-space:nowrap}
+.cam-iframe-css{margin:5px 0 8px}
+textarea.cam-iframe-editor{width:100%;min-height:110px;font-size:11px}  .cam-css-note{font-size:10px;color:var(--muted);line-height:1.45;margin:4px 0 8px}
+.iframe-view-controls{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.iframe-view-controls label{display:flex;align-items:center;gap:4px;margin:0}
+.iframe-view-controls input{width:68px;font-size:11px;padding:3px 5px}
+.iframe-css-status{display:block;font-size:10px;color:var(--muted);margin:4px 0}
+.iframe-css-status.applied{color:#7fd6a5}
+.iframe-css-status.blocked{color:var(--bad)}
+.preview-tools{border-top:1px solid var(--line);padding-top:6px}
+.preview-tools>summary{cursor:pointer;font-size:11px;color:var(--muted)}
+.preview-tools[open] .row{margin:8px 0}
+  .dashpager{display:flex;justify-content:center;align-items:center;gap:10px;padding-top:14px}
 .camfilters{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
 .camfilters input{flex:1;min-width:140px}
 .camrow.inactive{opacity:.52}
@@ -208,7 +234,6 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .camtile{position:relative;background:#000;overflow:hidden;aspect-ratio:16/9;}
 .camtile.nofeed{background:var(--stbg,#0b0f14) center/cover no-repeat;}
 .camtile.nofeed img{opacity:0}
-.camtile:fullscreen.fsnocap .cap{display:none}
 .offline{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#dfe7ee;font-family:var(--mono);font-size:12px;text-align:center;padding:14px;background:rgba(6,10,14,.55);text-shadow:0 1px 3px #000}
 .owrap.fill .grid.g1 .camtile{aspect-ratio:auto;height:var(--camh,56vh)}
 .camtile img,.camtile video,.camtile iframe{width:100%;height:100%;object-fit:var(--fit,cover);display:block;border:0;background:#000;}
@@ -231,6 +256,7 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .camwx b{font-size:16px;font-weight:700;white-space:nowrap;letter-spacing:-.03em}
 .camwx .camwx-cond{min-width:0;font-size:10px;color:#d9e3ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .camwx.unavailable .camwx-cond{color:var(--muted)}
+.camtile:fullscreen .camwx{position:absolute!important;top:10px!important;right:10px!important;display:flex!important;max-width:min(420px,46vw)}
 .camera-card .camwx{top:8px;right:8px;padding:4px 7px;gap:5px}
 .camera-card .camwx b{font-size:14px}
 .camera-card .camwx .camwx-cond{font-size:9px}
@@ -276,25 +302,25 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .w.logo{background:transparent;padding:0}
 .w.logo img{height:calc(46px * var(--ovscale));display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
 /* compact on-camera radar: distinct from the other widgets, with readable status + intensity key */
-.radarov{position:relative;flex:0 1 auto;width:220px;height:auto;aspect-ratio:1.5;border-radius:9px;overflow:hidden;background:#111923;border:1px solid rgba(255,255,255,.42);box-shadow:0 5px 18px rgba(0,0,0,.5);isolation:isolate}
+.radarov{position:relative;flex:0 1 auto;width:320px;height:auto;aspect-ratio:1;border-radius:9px;overflow:hidden;background:#111923;border:1px solid rgba(255,255,255,.42);box-shadow:0 5px 18px rgba(0,0,0,.5);isolation:isolate}
 .radarov[hidden]{display:none}
 .radarov .rovmap{position:absolute;inset:0;overflow:hidden;background:#111923}
 .radarov .rovbase,.radarov .rovlay{position:absolute;inset:0}
+.radarov .rovlay img{position:absolute;width:256px;height:256px;max-width:none;object-fit:fill}
 .radarov .rovpin{position:absolute;left:50%;top:50%;z-index:2;width:12px;height:12px;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(6,16,26,.8),0 1px 5px #000;pointer-events:none}
 .radarov .rovmap img{position:absolute;width:256px;height:256px;display:block;border:0;max-width:none}
-.radarov .rovlay img{width:256px;height:256px;image-rendering:auto}
-.radarov .rovbase img{opacity:.86;filter:brightness(1.23) saturate(.88) contrast(1.08)}
+.radarov .rovbase img{width:256px;height:256px;opacity:.98;filter:none}
+.radarov .rovbase img.rovlabels{opacity:.88;filter:none}
 .radarov .rovlay{opacity:0;transition:opacity .4s ease}
 .radarov .rovlay.on{opacity:.9}
 .radarov .rovhead{position:absolute;top:7px;left:7px;right:7px;z-index:3;display:flex;gap:6px;align-items:center;min-width:0;padding:5px 8px;border:1px solid rgba(255,255,255,.22);border-radius:6px;background:rgba(7,12,18,.88);backdrop-filter:blur(6px);font-family:var(--mono);font-size:9px;color:#f2f6fa;box-shadow:0 1px 5px rgba(0,0,0,.28)}
 .radarov .rovhead>b{font:700 9px var(--sans);letter-spacing:.09em;white-space:nowrap;color:#fff}
 .radarov .rovhead .rovname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d5e0e8}
 .radarov .rovtime{margin-left:auto;color:#fff;flex:0 0 auto;font-size:9px}
-.radarov .rovkind{color:#a9d9ff;font-size:8px;letter-spacing:.04em}
-.radarov .rovfoot{position:absolute;left:7px;right:7px;bottom:6px;z-index:3;display:flex;align-items:center;gap:6px;padding:4px 6px;border:1px solid rgba(255,255,255,.18);border-radius:5px;background:rgba(7,12,18,.84);font:7px var(--mono);letter-spacing:.04em;color:#e7edf3}
-.radarov .rovlegend{height:5px;flex:1;border-radius:4px;background:linear-gradient(90deg,#69b7ff 0%,#3acb79 34%,#f1df3b 62%,#ff9f35 80%,#ed4242 100%);box-shadow:0 0 3px #000}
+.radarov .rovkind{color:#a9d9ff;font-size:8px;letter-spacing:.04em}  .radarov .rovfoot{position:absolute;left:7px;right:7px;bottom:6px;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 7px;border:1px solid rgba(255,255,255,.18);border-radius:5px;background:rgba(7,12,18,.84);font:7px var(--mono);letter-spacing:.04em;color:#e7edf3}
+.radarov .rovlegend{display:none}
 .radarov .rovattr{flex:0 0 auto;color:rgba(255,255,255,.8)}
-@media(max-width:560px){.radarov{width:180px!important;height:auto!important;aspect-ratio:1.5}.radarov .rovhead{top:5px;left:5px;right:5px;padding:4px 6px}.radarov .rovfoot{left:5px;right:5px;bottom:5px}}
+@media(max-width:560px){.radarov .rovhead{top:5px;left:5px;right:5px;padding:4px 6px}.radarov .rovfoot{left:5px;right:5px;bottom:5px}}
 .w.next{gap:8px;padding:4px 8px 4px 4px}
 .w.next img{width:76px;height:43px;object-fit:cover;border-radius:3px;display:block;background:#0b0f14}
 .w.next .nx{display:flex;flex-direction:column;line-height:1.25}
@@ -302,7 +328,19 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .w.next .nx span{font-size:.72em;color:#cbd6e0}
 .abanner{display:flex;gap:8px;align-items:center;background:var(--sev,#e8590c);color:#fff;border-radius:5px;padding:5px 10px;font-family:var(--mono);font-size:.84em;pointer-events:auto;max-width:100%}
 .abanner b{font-family:var(--sans)}
-.owrap.fsframe .wl,.owrap.fsframe .camtile .cap,.owrap.fsframe .pagestrip,.owrap.fsframe .tickbar{display:none}
+.owrap.fsframe .wl,.owrap.fsframe .pagestrip,.owrap.fsframe .tickbar{display:flex}
+.owrap.fsframe .camtile .cap{display:flex}
+.owrap:fullscreen{width:100vw;height:100vh;max-width:none;margin:0;border:0;border-radius:0;display:flex;flex-direction:column}
+.owrap:fullscreen>#viewerGrid{width:100%;height:100%;min-height:0;flex:1;grid-auto-rows:minmax(0,1fr)}
+.owrap:fullscreen>#viewerGrid.g4,.owrap:fullscreen>#viewerGrid.g6{grid-template-rows:repeat(2,minmax(0,1fr))}
+.owrap:fullscreen>#viewerGrid.g1 .camtile{height:100%;min-height:100%;aspect-ratio:auto}
+.owrap:fullscreen>#viewerGrid.g4 .camtile,.owrap:fullscreen>#viewerGrid.g6 .camtile{height:100%;min-height:0;aspect-ratio:auto}
+.owrap:fullscreen>.wl,.owrap:fullscreen>.pagestrip,.owrap:fullscreen>.tickbar{display:flex!important}
+.owrap:fullscreen>.wl{max-width:min(48vw,520px);max-height:calc(100vh - var(--btop,0px) - var(--tickh,0px) - 48px);overflow:visible}
+.owrap:fullscreen>.wl[data-c=tl],.owrap:fullscreen>.wl[data-c=tr]{top:calc(10px + var(--btop,0px))}
+.owrap:fullscreen>.wl[data-c=bl],.owrap:fullscreen>.wl[data-c=br]{bottom:calc(40px + var(--tickh,0px))}
+.owrap:fullscreen .camtile .cap{display:flex!important}
+.owrap:fullscreen .radarov{max-width:100%}
 
 /* output bar + radar */
 #outBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:12px;position:relative}
@@ -344,6 +382,7 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
 .rmcams .rc b{display:block;font-size:11px;font-weight:500;padding:6px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:900px){#controlView{grid-template-columns:1fr}#dashRow{grid-template-columns:230px minmax(0,1fr)}.grid.g4,.grid.g6{grid-template-columns:1fr}}
 @media(max-width:650px){#dashRow{grid-template-columns:1fr}.finder-sidebar{position:static;max-height:42vh}.dashgrid{grid-template-columns:1fr}.finder-heading{align-items:flex-start;flex-direction:column}}
+@media(max-width:650px){.quick-controls{gap:4px;padding:8px}.quick-control{flex:1 1 100%;justify-content:space-between;border-right:0;border-bottom:1px solid var(--line);padding:5px 2px}.quick-control:last-child{border-bottom:0}}
 @media(max-width:430px){#controlView{padding:9px;gap:10px}.finder-sidebar,.finder-main{padding:10px}.controlnav button{flex:1;padding:9px 8px;font-size:12px}.camera-card-actions{gap:6px}.camera-card-actions label{font-size:9px}}
 @media(max-width:560px){
   header{flex-wrap:wrap;gap:8px;padding:10px 12px}
@@ -368,21 +407,44 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
     <button id="pageDashboard" class="on">📷 Camera dashboard</button>
     <button id="pageSettings">⚙ Settings &amp; overlays</button>
   </div>
+  <section class="quick-controls" aria-label="Essential output settings">
+    <div class="quick-control"><span class="quick-title">Rotation</span><label><input type="checkbox" id="autoRotate"> Rotate</label><label>Every <input type="number" id="rotateSec" value="10" min="3" style="width:58px"> sec</label></div>
+    <div class="quick-control"><span class="quick-title">Clock</span><label><input type="checkbox" id="clockWidgetOn"> Show clock</label><label><input type="checkbox" id="clock24"> 24-hour</label><label><input type="checkbox" id="showDate"> Date</label></div>
+    <div class="quick-control"><span class="quick-title">Widgets</span><label><input type="checkbox" id="widgetsOn" checked> Show on output</label><button class="sm" id="quickWidgetSettings" type="button">Configure</button></div>
+  </section>
   <div id="dashRow">
     <aside class="finder-sidebar" aria-label="Camera folders">
       <h2>Locations &amp; folders <b id="camCount"></b></h2>
       <button id="folderAll" class="finder-all on"><span>📁 All cameras</span><span class="mono" id="folderAllCount"></span></button>
       <div class="group-tools"><input id="newGroupName" placeholder="New folder name" aria-label="New folder name"><select id="newGroupParent" aria-label="Create folder inside"></select><button class="sm primary" id="addGroupBtn">+ Create folder</button></div>
       <div id="groupList"></div>
-      <div class="hint">Choose a folder to browse everything inside it. Use ••• on a folder to move, activate, or delete it.</div>
+      <div class="hint">Folders are for organizing cameras only; they do not control which cameras appear in the output.</div>
     </aside>
     <main class="finder-main">
       <div class="finder-heading"><h2>Camera library <span class="path" id="folderPath">All cameras</span></h2><b id="dashInfo" class="pill"></b></div>
-      <div class="dashbar"><input id="dashSearch" type="search" placeholder="Search cameras by name, URL, or location…" aria-label="Search cameras"><select id="dashGroup" aria-label="Filter by folder"><option value="all">All folders</option></select><button class="sm" id="showInactive">Show inactive</button><button class="sm primary" id="finderAddCamera" type="button">+ Add camera</button><button class="sm" id="finderManageBtn" type="button">Manage</button></div>
+      <div class="dashbar"><input id="dashSearch" type="search" placeholder="Search cameras by name, URL, or location…" aria-label="Search cameras"><select id="dashGroup" aria-label="Filter by folder"><option value="all">All folders</option></select><button class="sm primary" id="finderAddCamera" type="button">+ Add camera</button><button class="sm" id="finderManageBtn" type="button">Manage</button></div>
       <div class="dashgrid" id="dashGrid"></div>
       <div class="dashpager"><button class="sm" id="dashPrev">← Prev</button><span class="mono" id="dashPageInfo"></span><button class="sm" id="dashNext">Next →</button></div>
-      <div class="hint">Select a preview to make it active. Camera toggles control availability; Grid toggles control multi-view membership.</div>
+      <div class="hint">Click a preview to make it the active camera and include it in output; use the Output checkbox for other cameras. Folders never limit output selection.</div>
     </main>
+  </div>
+  <div class="panel output-preview-panel">
+    <h2>Current output preview <b id="prevType"></b></h2>
+    <div class="prevwrap">
+      <div class="stage" id="prevStage"></div>
+      <div class="prevbar">
+        <span class="nm" id="prevName">—</span>
+        <span class="pill" id="prevAlert">no alerts</span>
+        <span class="cd"><i id="prevFill"></i></span>
+        <button class="sm" id="prevNow">⟳ now</button>
+        <button class="sm" id="prevFull">⛶</button>
+        <a class="lnk" href="?mode=output" target="_blank">output ↗</a>
+      </div>
+      <details class="preview-tools"><summary>Preview tools · image refresh and camera shortcuts</summary>
+        <div class="row"><label style="margin:0">Image refresh (sec)</label><input type="number" id="prevSec" value="5" min="2" style="width:64px"></div>
+        <div class="thumbs" id="thumbs"></div>
+      </details>
+    </div>
   </div>
   <div id="controlLeft">
     <details class="finder-details finder-detail" id="cameraTools">
@@ -413,31 +475,16 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
             <option value="hls">HLS stream (.m3u8)</option>
           </select>
         </div>
+        <div class="full" id="newIframeCssWrap" hidden><label>Custom iframe CSS</label><textarea id="newIframeCss" class="cam-iframe-editor" maxlength="12000" placeholder=".vjs-bug.vjs-bug-tl.no-link img { opacity: 0; }\nhtml, body { overflow: hidden !important; width: 110%; height: 105vh; margin: -10px; }\n::-webkit-scrollbar { display: none !important; }"></textarea><div class="row"><button type="button" class="sm" id="copyNewIframeCss">Copy DevTools console snippet</button><span class="cam-css-note" id="newIframeCssCopyStatus" aria-live="polite"></span></div><p class="cam-css-note">This CSS targets elements inside the camera page. It can only be injected into a same-origin iframe, and the camera site's CSP may still block it. Most third-party feeds are cross-origin, so this editor cannot hide their internal logo. To try your CSS manually, click <b>Copy DevTools console snippet</b>, open the camera page's DevTools Console, select the camera iframe in the execution-context dropdown, paste, and run it. The change is temporary and may still be blocked by the camera site's CSP. In your example, change <code>hieght</code> to <code>height</code> (and use <code>105vh</code> for viewport height).</p>
+          <label>Viewport crop (works with third-party feeds)</label>
+          <div class="iframe-view-controls"><label>Zoom % <input id="newIframeZoom" type="number" min="100" max="200" value="100"></label><label>Pan X % <input id="newIframeOffsetX" type="number" min="-50" max="50" value="0"></label><label>Pan Y % <input id="newIframeOffsetY" type="number" min="-50" max="50" value="0"></label></div><span class="cam-css-note">Zoom first, then pan. Positive X/Y moves the image right/down; use negative values to move it left/up (for a top-left logo). Cropping may hide other edge content too.</span></div>
       </div>
       <button class="primary" id="addBtn" style="margin-top:10px;width:100%">+ Add camera</button>
       <button id="importObsBtn" style="margin-top:6px;width:100%">+ Import 15 cameras from OBS collection</button>
-      <div class="hint">Demo cameras use placeholder images. Swap the Feed URL for a real webcam JPG, embeddable player, or .m3u8 stream to go live.</div>
+      <div class="hint">Folders organize the library only. Choose any cameras for the output with their Output checkboxes, regardless of folder. Demo feeds use placeholder images.</div>
     </div>
 
     <!-- LIVE PREVIEW -->
-    <div class="panel">
-      <h2>Live preview <b id="prevType"></b></h2>
-      <div class="prevwrap">
-        <div class="stage" id="prevStage"></div>
-        <div class="prevbar">
-          <span class="nm" id="prevName">—</span>
-          <span class="pill" id="prevAlert">no alerts</span>
-          <span class="cd"><i id="prevFill"></i></span>
-          <button class="sm" id="prevNow">⟳ now</button>
-          <button class="sm" id="prevFull">⛶</button>
-          <a class="lnk" href="?mode=output" target="_blank">output ↗</a>
-        </div>
-        <div class="row"><label style="margin:0">Refresh (sec)</label><input type="number" id="prevSec" value="5" min="2" style="width:64px">
-          <label style="margin:0"><input type="checkbox" id="prevOverlay" checked> show overlays</label>
-        </div>
-        <div class="thumbs" id="thumbs"></div>
-      </div>
-    </div>
 
     <!-- NWS ALERTS -->
     <div class="panel">
@@ -486,7 +533,7 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
       <summary>Advanced camera management</summary>
       <div class="panel">
         <div class="camfilters"><input id="camSearch" type="search" placeholder="Search all cameras"><select id="camGroupFilter"><option value="all">Every folder</option></select><button class="sm" id="clearGroupFilter">Clear folder</button><label><input type="checkbox" id="rowThumbs" checked> thumbnails</label><button class="sm" id="checkAllBtn">Check alerts</button></div>
-      <div class="group-bulk"><span class="hint" style="margin:0">Bulk:</span><button class="sm" id="activateFiltered">Activate shown</button><button class="sm" id="deactivateFiltered">Deactivate shown</button><button class="sm" id="moveFilteredBtn">Move shown to…</button><select id="moveFilteredGroup" aria-label="Move shown cameras to group"></select><button class="sm" id="allToGrid">Select all active for output grid</button></div>
+      <div class="group-bulk"><span class="hint" style="margin:0">Bulk:</span><button class="sm" id="activateFiltered">Enable shown</button><button class="sm" id="deactivateFiltered">Disable shown</button><button class="sm" id="moveFilteredBtn">Move shown to…</button><select id="moveFilteredGroup" aria-label="Move shown cameras to folder"></select><button class="sm" id="allToGrid">Add all cameras to output</button></div>
       <div id="camList"></div><div class="camlistpage"><button class="sm" id="camPrev">← Prev</button><span id="camPageInfo" class="mono"></span><button class="sm" id="camNext">Next →</button></div>
       </div>
     </details>
@@ -496,9 +543,6 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
       <h2>Output &amp; layout</h2>
       <div class="srow"><label>Multi-view layout</label>
         <select id="multiView"><option value="1">Single (rotating)</option><option value="4">2×2 (4)</option><option value="6">3×2 (6)</option></select>
-      </div>
-      <div class="srow"><label>Auto-rotate (single view)</label>
-        <div class="ctl"><input type="checkbox" id="autoRotate"> every <input type="number" id="rotateSec" value="10" min="3" style="width:52px"> sec</div>
       </div>
       <div class="srow"><label>Rotate order</label>
         <select id="rotateOrder"><option value="seq">Sequential</option><option value="shuffle">Shuffle</option></select>
@@ -527,10 +571,6 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
     <!-- DISPLAY OPTIONS -->
     <div class="panel settings-only">
       <h2>Display options</h2>
-      <div class="srow"><label>Clock format</label>
-        <div class="ctl"><label><input type="checkbox" id="clock24"> 24-hour</label>
-          <label><input type="checkbox" id="showDate"> show date</label></div>
-      </div>
       <div class="srow"><label>Camera name &amp; coordinates on tile</label>
         <div class="ctl"><label><input type="checkbox" id="showName"> name</label>
           <label><input type="checkbox" id="showCoords"> coords</label></div>
@@ -546,8 +586,6 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
       <div class="srow"><label>Tile gap</label><input type="range" id="tileGap" min="0" max="14" step="1" style="width:120px"><span class="mono" id="tileGapVal">2px</span></div>
       <div class="srow"><label>Widget background blur</label><input type="range" id="blurAmt" min="0" max="14" step="1" style="width:120px"><span class="mono" id="blurAmtVal">3px</span></div>
       <div class="srow"><label>Ticker scroll time</label><input type="range" id="tickerSec" min="8" max="60" step="2" style="width:120px"><span class="mono" id="tickerSecVal">26s</span></div>
-      <div class="srow"><label>Fullscreen: keep widgets on the camera</label><input type="checkbox" id="fsWidgets"></div>
-      <div class="srow"><label>Fullscreen: keep caption bar</label><input type="checkbox" id="fsChrome"></div>
       <div class="srow"><label>Edge-to-edge output (no page margins)</label><input type="checkbox" id="edgeMode"></div>
     </div>
 
@@ -571,13 +609,13 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
     </div>
 
     <!-- WIDGETS -->
-    <div class="panel settings-only">
+    <div class="panel settings-only" id="widgetSettingsPanel">
       <h2>Widgets &amp; overlays</h2>
       <div class="srow"><label>Overlay scale</label><input type="range" id="wxScale" min="0.7" max="2" step="0.05" value="1" style="width:150px"><span class="mono" id="wxScaleVal">1.00</span></div>
       <div class="srow"><label>Widget background opacity</label><input type="range" id="wxBg" min="0" max="0.95" step="0.05" value="0.62" style="width:150px"></div>
       <div class="srow"><label>Ticker text</label><input type="text" id="tickerText" style="width:56%" placeholder="Station slogan or message"></div>
-      <div class="srow"><label>Radar overlay width</label><input type="range" id="radarOvW" min="140" max="280" step="10" style="width:150px"><span class="mono" id="radarOvWVal">220px</span></div>
-      <div class="hint" style="margin-bottom:8px">Each camera tile shows its own live local temperature. Radar uses RainViewer's supported high-resolution tile colors, a clear intensity key, and a compact output-only overlay.</div>
+      <div class="srow"><label>Radar overlay width</label><input type="range" id="radarOvW" min="220" max="420" step="20" style="width:150px"><span class="mono" id="radarOvWVal">320px</span></div>
+      <div class="hint" style="margin-bottom:8px">Use the essentials bar on the dashboard for rotation, clock, and widget visibility. The preview below mirrors the selected output layout.</div>
       <div class="wloc" id="widgetGrid"></div>
       <div class="srow"><label>Custom message</label><input id="customOverlayText" type="text" maxlength="120" placeholder="Add your own on-screen message" style="width:58%"></div>
       <div class="srow"><label>Message style</label><select id="customOverlayStyle"><option value="card">Glass card</option><option value="badge">Rounded badge</option><option value="strip">Wide strip</option></select></div>
@@ -713,9 +751,9 @@ function defaultCfg(){
     wxScale:1, wxBg:.62, wxDetail:true, clock24:false, showDate:true,
     tickerText:'LIVE WEATHER CAMS · CONDITIONS UPDATE IN REAL TIME',
     logoData:'',
-    radarMode:'embed', radarZoom:6, radarCam:'', radarOvW:220,
-    alertMax:2, alertsPerTile:true, fsBarHide:true, fsWidgets:true, fsChrome:false, edgeMode:false,
-    prevSec:5, prevOverlay:true, rowThumbs:true,
+    radarMode:'embed', radarZoom:6, radarCam:'', radarOvW:320, widgetsOn:true,
+    alertMax:2, alertsPerTile:true, fsBarHide:true, edgeMode:false,
+    prevSec:5, rowThumbs:true,
     show:{alert:true,wx:true,clock:true,radar:true,ticker:true,logo:true,next:true,custom:true},
     corner:{wx:'br',clock:'tr',radar:'tl',logo:'tl',next:'bl',custom:'bl'},
     overlayFont:13, overlayPad:4,
@@ -734,7 +772,7 @@ function defaultState(){
     {id:uid(),name:'Denver Skyline (demo)',lat:39.7392,lon:-104.9903,url:'https://picsum.photos/seed/denver/800/450',refresh:30,type:'image'},
   ];
   cams.forEach(c=>{c.groupId='g-general';c.active=true;});
-  return {cameras:cams,groups:[{id:'g-general',name:'General',active:true}],activeId:cams[0].id,multiIds:cams.map(c=>c.id),multiView:1,
+  return {cameras:cams,groups:[{id:'g-general',name:'General'}],activeId:cams[0].id,multiIds:cams.map(c=>c.id),multiView:1,
     autoRotate:true,rotateSec:10,rotateOrder:'seq',transition:'fade',fadeMs:700,
     showBadge:true,cfg:defaultCfg()};
 }
@@ -755,8 +793,8 @@ function loadState(){
   if(!saved) return d;
   const s=deepMerge(d,saved);
   if(!Array.isArray(s.cameras)||!s.cameras.length) s.cameras=d.cameras;
-  if(!Array.isArray(s.groups)||!s.groups.length) s.groups=[{id:'g-general',name:'General',active:true,parentId:null}];
-  s.groups.forEach(g=>{ if(!g.id) g.id=uid(); if(!g.name) g.name='New group'; if(typeof g.active!=='boolean') g.active=true; if(!('parentId' in g)) g.parentId=null; });
+  if(!Array.isArray(s.groups)||!s.groups.length) s.groups=[{id:'g-general',name:'General',parentId:null}];
+  s.groups.forEach(g=>{ if(!g.id) g.id=uid(); if(!g.name) g.name='New folder'; if(!('parentId' in g)) g.parentId=null; delete g.active; });
   const groupIds=new Set(s.groups.map(g=>g.id));
   s.groups.forEach(g=>{ if(!groupIds.has(g.parentId)||g.parentId===g.id) g.parentId=null; });
   const groupById=id=>s.groups.find(g=>g.id===id);
@@ -767,21 +805,28 @@ function loadState(){
   s.cameras.forEach(c=>{
     if(!c.type) c.type='image'; if(!c.refresh) c.refresh=30;
     if(typeof c.active!=='boolean') c.active=true;
-    if(!c.groupId||!s.groups.some(g=>g.id===c.groupId)) c.groupId=s.groups[0].id;
-  });    if(!isObj(s.cfg.customOverlay)) s.cfg.customOverlay=defaultCfg().customOverlay;
+    if(typeof c.iframeCss!=='string') c.iframeCss='';
+    else c.iframeCss=c.iframeCss.slice(0,12000);
+    c.iframeZoom=Math.max(100,Math.min(200,+c.iframeZoom||100));
+    c.iframeOffsetX=Math.max(-50,Math.min(50,+c.iframeOffsetX||0));
+    c.iframeOffsetY=Math.max(-50,Math.min(50,+c.iframeOffsetY||0));
+    if(c.groupId&&!s.groups.some(g=>g.id===c.groupId)) c.groupId=null;
+    if(!('groupId' in c)) c.groupId=null;
+  });
+  if(!isObj(s.cfg.customOverlay)) s.cfg.customOverlay=defaultCfg().customOverlay;
   if(typeof s.cfg.customOverlay.opacity!=='number') s.cfg.customOverlay.opacity=.78;
   if(!['card','badge','strip'].includes(s.cfg.customOverlay.style)) s.cfg.customOverlay.style='card';
   if(!isFinite(+s.cfg.overlayFont)) s.cfg.overlayFont=13;
   if(!isFinite(+s.cfg.overlayPad)) s.cfg.overlayPad=4;
-  if(!s.activeId||!s.cameras.some(c=>c.id===s.activeId)) s.activeId=s.cameras[0].id;
-  if(s.activeId&&!cameraActive(s.cameras.find(c=>c.id===s.activeId),s)) s.activeId=s.cameras.find(c=>cameraActive(c,s))?.id||null;
-  if(!s.cameras.some(c=>cameraActive(c,s))) s.activeId=null;
+  if(!s.activeId||!s.cameras.some(c=>c.id===s.activeId)) s.activeId=s.cameras[0]?.id||null;
   if(!Array.isArray(s.multiIds)) s.multiIds=s.cameras.map(c=>c.id);
   s.multiIds=s.multiIds.filter(id=>s.cameras.some(c=>c.id===id));
+  const selected=s.cameras.filter(c=>s.multiIds.includes(c.id)&&cameraActive(c,s));
+  if(!selected.some(c=>c.id===s.activeId)) s.activeId=selected[0]?.id||null;
   s.multiView=[1,4,6].includes(+s.multiView)?+s.multiView:1;
   ['rotateSec','fadeMs'].forEach(k=>{ const v=parseInt(s[k]); s[k]=isNaN(v)?defaultState()[k]:v; });
   ['alertMax','prevSec','wxScale','wxBg','radarZoom','radarOvW'].forEach(k=>{ const v=parseFloat(s.cfg[k]); s.cfg[k]=isNaN(v)?defaultCfg()[k]:v; });
-  s.cfg.radarOvW=Math.max(140,Math.min(280,s.cfg.radarOvW));
+  s.cfg.radarOvW=Math.max(220,Math.min(420,s.cfg.radarOvW));
   s.cfg.radarZoom=Math.max(4,Math.min(7,s.cfg.radarZoom));
   if(s.cfg.camHeight==='fill'||!s.cfg.camHeight) s.cfg.camHeight='56';
   if(!['embed','off'].includes(s.cfg.radarMode)) s.cfg.radarMode='embed';
@@ -798,17 +843,10 @@ function saveState(){
   if(mode!=='remote') syncSend({t:'state',state});   /* remote is a controller only — never overwrites the station */
 }
 let state=loadState();
-function cameraActive(cam,s=state){
-  if(!cam||cam.active===false) return false;
-  let group=(s.groups||[]).find(g=>g.id===cam.groupId), seen=new Set();
-  while(group){
-    if(group.active===false||seen.has(group.id)) return false;
-    seen.add(group.id);
-    group=(s.groups||[]).find(g=>g.id===group.parentId);
-  }
-  return true;
-}
+function cameraActive(cam){ return !!cam&&cam.active!==false; }
 function enabledCameras(s=state){ return (s.cameras||[]).filter(c=>cameraActive(c,s)); }
+function selectedOutputCameras(s=state){ return (s.cameras||[]).filter(c=>Array.isArray(s.multiIds)&&s.multiIds.includes(c.id)); }
+function outputCameras(s=state){ return selectedOutputCameras(s).filter(c=>cameraActive(c,s)); }
 
 /* ---------------- cross-tab / cross-device sync ----------------
    Same device: localStorage events (KEY + KEY:msg) already reach every tab.
@@ -1150,10 +1188,85 @@ function updateTileWeather(tile,cam){
     badge.classList.add('unavailable');
   });
 }
+function setIframeCssStatus(cam,status){
+  document.querySelectorAll('[data-iframe-css-status]').forEach(el=>{
+    if(el.dataset.iframeCssStatusFor!==cam.id) return;
+    el.textContent=status;
+    el.classList.toggle('blocked',status.startsWith('Blocked'));
+    el.classList.toggle('applied',status.startsWith('Injected')||status.startsWith('Applied'));
+  });
+}
+function iframeConsoleSnippet(css){
+  return `const previousStyle = document.getElementById('custom-console-css');\nif (previousStyle) previousStyle.remove();\n\nconst style = document.createElement('style');\nstyle.id = 'custom-console-css';\nstyle.textContent = ${JSON.stringify(String(css||''))};\ndocument.head.appendChild(style);`;
+}
+async function copyIframeConsoleSnippet(css,statusEl){
+  const snippet=iframeConsoleSnippet(css);
+  try{
+    if(navigator.clipboard&&window.isSecureContext) await navigator.clipboard.writeText(snippet);
+    else throw new Error('Clipboard API unavailable');
+  }catch(e){
+    const field=document.createElement('textarea');
+    field.value=snippet; field.style.position='fixed'; field.style.left='-9999px';
+    document.body.appendChild(field); field.select();
+    const copied=document.execCommand('copy'); field.remove();
+    if(!copied) throw e;
+  }
+  if(statusEl){
+    statusEl.textContent='Copied. Run it in DevTools with the camera iframe selected.';
+    clearTimeout(statusEl._copyTimer);
+    statusEl._copyTimer=setTimeout(()=>{statusEl.textContent='';},6000);
+  }
+}
+function applyIframeCss(frame,cam){
+  const install=()=>{
+    try{
+      const doc=frame.contentDocument;
+      if(!doc){ frame.dataset.cssApplied='blocked'; setIframeCssStatus(cam,'Blocked: iframe is cross-origin; browser forbids injected CSS'); return; }
+      const css=(cam.iframeCss||'').slice(0,12000).trim();
+      const oldStyle=doc.getElementById('wcamCustomCss');
+      if(!css){
+        if(oldStyle) oldStyle.remove();
+        frame.dataset.cssApplied='false';
+        setIframeCssStatus(cam,'No custom CSS set');
+        return;
+      }
+      const style=oldStyle||doc.createElement('style');
+      style.id='wcamCustomCss';
+      if(!oldStyle) (doc.head||doc.documentElement).appendChild(style);
+      style.textContent=css;
+      frame.dataset.cssApplied='true';
+      setIframeCssStatus(cam,'Injected — selectors or site CSP may still prevent a visible change');
+    }catch(e){
+      frame.dataset.cssApplied='blocked';
+      setIframeCssStatus(cam,'Blocked: camera site is cross-origin');
+    }
+  };
+  if(!frame._wcamCssLoadBound){
+    frame.addEventListener('load',install);
+    frame._wcamCssLoadBound=true;
+  }
+  try{
+    const doc=frame.contentDocument;
+    if(doc&&doc.readyState==='complete') install();
+  }catch(e){
+    frame.dataset.cssApplied='blocked';
+    setIframeCssStatus(cam,'Blocked: camera site is cross-origin');
+  }
+}
+function applyIframeView(frame,cam){
+  const zoom=Math.max(100,Math.min(200,Number(cam.iframeZoom)||100))/100;
+  const x=Math.max(-50,Math.min(50,Number(cam.iframeOffsetX)||0));
+  const y=Math.max(-50,Math.min(50,Number(cam.iframeOffsetY)||0));
+  frame.style.transform=zoom===1&&x===0&&y===0?'':`scale(${zoom}) translate(${x/zoom}%,${y/zoom}%)`;
+  frame.style.transformOrigin='center center';
+  frame.parentElement.style.overflow='hidden';
+}
 function buildTile(cam){
   const tile=document.createElement('div');
   tile.className='camtile'; tile.dataset.camid=cam.id;
   tile.innerHTML=mediaHTML(cam)+tileChrome(cam);
+  const frame=tile.querySelector('iframe');
+  if(frame){ applyIframeCss(frame,cam); applyIframeView(frame,cam); }
   attachMedia(tile,cam);
   const img=tile.querySelector('img');
   if(img){ tile._last=Date.now(); wireImg(tile,cam,img); }
@@ -1171,24 +1284,27 @@ function bannerHTML(a){
   return `<div class="abanner" style="--sev:${color}" title="${esc(a.desc.slice(0,600))}">⚠ <b>${esc(a.event)}</b><span>${esc(a.head||a.area)}</span></div>`;
 }
 /* widgets render into a scope: element containing .wl[data-c] corner slots */function renderWidgets(scope){
+  const root=scope._fullscreenTile&&scope._fullscreenTile.isConnected?scope._fullscreenTile:scope;
   const ctx=scope._ctx||{};
   const cfg=state.cfg, cam=ctx.cam, wx=ctx.wx, alerts=ctx.alerts||[], next=ctx.next;
   /* wipe widget slots but keep the persistent radar element alive (no map reload on every redraw) */
-  scope.querySelectorAll('.wl[data-c]').forEach(el=>{
+  root.querySelectorAll('.wl[data-c]').forEach(el=>{
     [...el.children].forEach(ch=>{ if(ch!==scope._radarEl) ch.remove(); });
   });
-  const ps=scope.querySelector('.pagestrip'); if(ps) ps.innerHTML='';
-  const tb=scope.querySelector('.tickbar');
-  const on=!!scope._showWidgets;
-  scope.style.setProperty('--tickh',(on&&cfg.show.ticker)?'26px':'0px');
-  scope.style.setProperty('--btop','0px');
+  const ps=root.querySelector('.pagestrip'); if(ps) ps.innerHTML='';
+  const tb=root.querySelector('.tickbar');
+  const on=!!scope._showWidgets&&cfg.widgetsOn!==false;
+  const tickHeight=(on&&cfg.show.ticker)?'26px':'0px';
+  scope.style.setProperty('--tickh',tickHeight); root.style.setProperty('--tickh',tickHeight);
+  scope.style.setProperty('--btop','0px'); root.style.setProperty('--btop','0px');
   if(!on){ if(tb) tb.innerHTML=''; if(scope._radarEl) scope._radarEl.hidden=true; return; }
-  const slot=c=>{const el=scope.querySelector(`.wl[data-c="${c}"]`); return el;};
+  const slot=c=>{const el=root.querySelector(`.wl[data-c="${c}"]`); return el;};
   const put=(key,html)=>{const el=slot(cfg.corner[key]||'tl'); if(el) el.insertAdjacentHTML('beforeend',html);};
   if(cfg.show.alert&&alerts.length&&ps){
     const max=Math.max(1,+cfg.alertMax||1);
     alerts.slice(0,max).forEach(a=>ps.insertAdjacentHTML('beforeend',bannerHTML(a)));
-    scope.style.setProperty('--btop',Math.min(alerts.length,max)*34+'px');
+    const bannerHeight=Math.min(alerts.length,max)*34+'px';
+    scope.style.setProperty('--btop',bannerHeight); root.style.setProperty('--btop',bannerHeight);
   }
   if(cfg.show.wx&&wx){
     put('wx',`<div class="w wx"><span class="big">${wxIcon(wx.code,wx.isDay)}</span><b>${Math.round(wx.temp)}°F</b><span>${esc(WX_COND[wx.code]||'—')}</span></div>`);
@@ -1226,25 +1342,28 @@ function bannerHTML(a){
     const rEl=syncRadarOverlay(scope,ctx.cam);
     const rSlot=slot(cfg.corner.radar||'tl');
     if(rEl&&rSlot&&rEl.parentNode!==rSlot) rSlot.appendChild(rEl);
+    if(rEl&&rSlot) requestAnimationFrame(()=>fitRadar(rEl));
   } else if(scope._radarEl) scope._radarEl.hidden=true;
 }
 const scopes=[];
-function registerScope(el,ctx){ el._ctx=ctx; el._showWidgets=true; if(!scopes.includes(el)) scopes.push(el); renderWidgets(el); }
-function rerenderWidgets(){ scopes.forEach(el=>{ if(el.isConnected) renderWidgets(el); }); }
+function registerScope(el,ctx){ el._ctx=ctx; if(typeof el._showWidgets!=='boolean') el._showWidgets=state.cfg.widgetsOn!==false; if(!scopes.includes(el)) scopes.push(el); renderWidgets(el); }
+function rerenderWidgets(){ scopes.forEach(el=>{ if(el.isConnected){ el._showWidgets=state.cfg.widgetsOn!==false; renderWidgets(el); } }); }
 /* live clock text + next-camera label updates */
 setInterval(()=>{
   scopes.forEach(el=>{
     if(!el.isConnected) return;
-    const c=el.querySelector('[data-wclock]'); if(c) c.textContent=fmtClock();
-    const d=el.querySelector('[data-wdate]');
+    const root=el._fullscreenTile&&el._fullscreenTile.isConnected?el._fullscreenTile:el;
+    const c=root.querySelector('[data-wclock]'); if(c) c.textContent=fmtClock();
+    const d=root.querySelector('[data-wdate]');
     if(d) d.textContent=new Date().toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'});
   });
 },1000);
 
-/* ---------------- radar: RainViewer map page (panel) + animated radar tiles (on-camera) ---------------- */
-const RV={host:'https://tilecache.rainviewer.com', meta:null, at:0, loading:null,
-  /* CARTO basemaps now watermark without an API key — use Esri's keyless dark canvas (note z/y/x tile order) */
-  base:(z,x,y)=>`https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/${z}/${y}/${x}`};
+/* ---------------- RainViewer radar overlay ---------------- */
+const RV={host:'https://tilecache.rainviewer.com', meta:null, at:0, loading:null, retryAt:0, failures:0,
+  /* Esri dark canvas tiles provide context beneath RainViewer's coordinate-centred radar image. */
+  base:(z,x,y)=>`https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/${z}/${y}/${x}`,
+  labels:(z,x,y)=>`https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/${z}/${y}/${x}`};
 function radarCam(fallback){
   const id=state.cfg.radarCam;
   if(id){ const c=state.cameras.find(x=>x.id===id); if(c) return c; }
@@ -1254,43 +1373,59 @@ function radarZoom(){ return Math.max(4,Math.min(7,Number(state.cfg.radarZoom)||
 /* the map page the user pinned, re-centred on a camera */
 function rvFrames(){
   const r=(RV.meta&&RV.meta.radar)||{};
-  const past=(r.past||[]).slice(-6).map(f=>({path:f.path,time:f.time}));
-  const fc=(r.nowcast||[]).slice(0,3).map(f=>({path:f.path,time:f.time,fc:true}));
-  return past.concat(fc);
+  return (r.past||[]).slice(-6).map(f=>({path:f.path,time:f.time}));
 }
 function rvLoad(){
   if(RV.meta&&Date.now()-RV.at<5*60*1000) return Promise.resolve(RV.meta);
   if(RV.loading) return RV.loading;
+  if(Date.now()<RV.retryAt) return Promise.resolve(null);
   RV.loading=fetch('https://api.rainviewer.com/public/weather-maps.json')
     .then(r=>{ if(!r.ok) throw new Error('radar metadata unavailable'); return r.json(); })
-    .then(j=>{ RV.meta=j; RV.at=Date.now(); RV.loading=null; if(j.host) RV.host=j.host; return j; })
-    .catch(()=>{ RV.loading=null; return null; });
+    .then(j=>{ RV.meta=j; RV.at=Date.now(); RV.loading=null; RV.retryAt=0; RV.failures=0; if(j.host) RV.host=j.host; return j; })
+    .catch(()=>{
+      RV.loading=null; RV.failures++; RV.retryAt=Date.now()+Math.min(5*60*1000,15000*Math.pow(2,RV.failures-1));
+      document.querySelectorAll('.radarov:not([hidden])').forEach(el=>{
+        const dot=el.querySelector('.rovhead .tdot'), time=el.querySelector('[data-rovtime]');
+        if(dot) dot.className='tdot error';
+        if(time) time.textContent='RADAR UNAVAILABLE';
+      });
+      return null;
+    });
   return RV.loading;
 }
 function fracTile(lat,lon,z){
+  lat=Math.max(-85.05112878,Math.min(85.05112878,Number(lat)||0));
+  lon=((Number(lon)||0)+180)%360; if(lon<0) lon+=360; lon-=180;
   const n=Math.pow(2,z), r=lat*Math.PI/180;
   return {x:(lon+180)/360*n, y:(1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n};
 }
-function rovSize(){ const w=Math.max(140,Math.min(280,+state.cfg.radarOvW||220)); return {w:w,h:Math.round(w/1.5)}; }
+function rovSize(){ const w=Math.max(220,Math.min(420,+state.cfg.radarOvW||320)); return {w:w,h:w}; }
 function makeRadarEl(){
   const d=document.createElement('div');
   d.className='radarov'; d.hidden=true;
   d.innerHTML='<div class="rovmap"><div class="rovbase"></div><div class="rovlay a"></div><div class="rovlay b"></div><span class="rovpin" aria-label="Camera location"></span></div>'
-    +'<div class="rovhead"><span class="tdot"></span><b>RADAR</b><span class="rovname" data-rovname>—</span><span class="rovkind" data-rovkind>OBS</span><span class="rovtime" data-rovtime>LOADING</span></div>'
-    +'<div class="rovfoot"><span>LOW</span><span class="rovlegend" aria-label="Light to heavy precipitation"></span><span>HIGH</span><span class="rovattr">ESRI · RAINVIEWER</span></div>';
+    +'<div class="rovhead"><span class="tdot"></span><b>RADAR</b><span class="rovname" data-rovname>—</span><span class="rovkind" data-rovkind>OBS</span><span class="rovtime" data-rovtime role="status" aria-live="polite">LOADING</span></div>'
+    +'<div class="rovfoot"><span>PRECIPITATION · UNIVERSAL BLUE</span><span class="rovattr">ESRI · RAINVIEWER</span></div>';
   return d;
 }
-/* build basemap + two radar layers for the camera's location */
+/* Build an aligned local basemap and RainViewer radar tiles around the camera. */
 function rovBuild(el,cam){
   const z=Math.round(radarZoom()), s=rovSize(), f=fracTile(cam.lat,cam.lon,z), tiles=[];
-  el.style.width=s.w+'px'; el.style.height=s.h+'px';
+  el._baseWidth=s.w; el._lastFrameAt=0; el._frameFailedUntil=0;
+  el.dataset.radarLoc=[Number(cam.lat).toFixed(5),Number(cam.lon).toFixed(5)].join('/');
+  el.style.width=s.w+'px'; el.style.height=s.h+'px'; el.style.transform='';
+  const dot=el.querySelector('.rovhead .tdot'), time=el.querySelector('[data-rovtime]');
+  if(dot) dot.className='tdot loading';
+  if(time) time.textContent='LOADING';
   el._z=z; el._ti=-1; el._busy=false;
+  el._requestId=(el._requestId||0)+1;
   el.dataset.loc=[cam.lat,cam.lon,z,s.w,s.h].join(',');
+  const n=Math.pow(2,z), tileSize=256;
   for(let ty=Math.floor(f.y)-1;ty<=Math.floor(f.y)+1;ty++)
     for(let tx=Math.floor(f.x)-1;tx<=Math.floor(f.x)+1;tx++){
-      const left=Math.round((tx-f.x)*256+s.w/2), top=Math.round((ty-f.y)*256+s.h/2);
-      if(left>=s.w||left+256<=0||top>=s.h||top+256<=0) continue;
-      tiles.push({tx:tx,ty:ty,left:left,top:top});
+      const left=Math.round((tx-f.x)*tileSize+s.w/2), top=Math.round((ty-f.y)*tileSize+s.h/2);
+      if(ty<0||ty>=n||left>=s.w||left+tileSize<=0||top>=s.h||top+tileSize<=0) continue;
+      tiles.push({tx:((tx%n)+n)%n,ty:ty,left:left,top:top});
     }
   const map=el.querySelector('.rovmap');
   map.innerHTML='<div class="rovbase"></div><div class="rovlay a"></div><div class="rovlay b"></div><span class="rovpin" aria-label="Camera location"></span>';
@@ -1299,12 +1434,19 @@ function rovBuild(el,cam){
     const im=new Image(); im.alt=''; im.decoding='async';
     im.style.left=t.left+'px'; im.style.top=t.top+'px';
     im.src=RV.base(z,t.tx,t.ty);
+    im.onerror=()=>im.remove();
     base.appendChild(im);
+    const labels=new Image(); labels.alt=''; labels.decoding='async'; labels.className='rovlabels';
+    labels.style.left=t.left+'px'; labels.style.top=t.top+'px';
+    labels.src=RV.labels(z,t.tx,t.ty);
+    labels.onerror=()=>labels.remove();
+    base.appendChild(labels);
   });
+  el._radarTileCount=tiles.length;
   ['rovlay a','rovlay b'].forEach(cls=>{
     const lay=map.querySelector('.'+cls.replace(' ','.'));
     tiles.forEach(t=>{
-      const im=new Image(); im.alt=''; im.decoding='async';
+      const im=new Image(); im.alt='Radar reflectivity'; im.decoding='async';
       im.style.left=t.left+'px'; im.style.top=t.top+'px';
       im.dataset.x=t.tx; im.dataset.y=t.ty;
       lay.appendChild(im);
@@ -1316,54 +1458,96 @@ function rovFrame(el,idx){
   const i=((idx%fr.length)+fr.length)%fr.length, cur=fr[i];
   const A=el.querySelector('.rovlay.a'), B=el.querySelector('.rovlay.b');
   if(!A||!B) return;
-  const top=(el._top==='b')?B:A, bot=(el._top==='b')?A:B, imgs=[...top.querySelectorAll('img')];
+  const top=el._top==='b'?B:A, bot=el._top==='b'?A:B, imgs=[...top.querySelectorAll('img')];
   if(!imgs.length) return;
   el._busy=true;
-  let left=imgs.length, frameFailed=false;
+  const requestId=el._requestId;
+  let remaining=imgs.length, failed=false;
   const done=ok=>{
-    if(!ok) frameFailed=true;
-    if(--left>0) return;
+    if(requestId!==el._requestId) return;
+    failed=failed||!ok;
+    if(--remaining) return;
     el._busy=false;
-    if(frameFailed){
-      const t=el.querySelector('[data-rovtime]'); if(t) t.textContent='RADAR UNAVAILABLE';
+    const dot=el.querySelector('.rovhead .tdot');
+    if(failed){
+      el._frameFailedUntil=Date.now()+60000;
+      if(dot) dot.className='tdot error';
+      const time=el.querySelector('[data-rovtime]'); if(time) time.textContent='RADAR UNAVAILABLE';
       return;
     }
-    el._ti=i; el._top=(el._top==='b')?'a':'b';
+    el._frameFailedUntil=0;
+    if(dot) dot.className='tdot';
+    el._ti=i; el._top=el._top==='b'?'a':'b';
     top.classList.add('on'); bot.classList.remove('on');
-    const t=el.querySelector('[data-rovtime]');
-    if(t) t.textContent=new Date(cur.time*1000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    const kind=el.querySelector('[data-rovkind]'); if(kind) kind.textContent=cur.fc?'FORECAST':'OBS';
+    const time=el.querySelector('[data-rovtime]');
+    if(time) time.textContent=new Date(cur.time*1000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    const kind=el.querySelector('[data-rovkind]'); if(kind) kind.textContent='OBS';
   };
-  imgs.forEach(im=>{
-    im.onload=()=>done(true); im.onerror=()=>done(false);
-    im.src=RV.host+cur.path+'/512/'+el._z+'/'+im.dataset.x+'/'+im.dataset.y+'/2/1_1.png';
+  imgs.forEach(img=>{
+    img.onload=()=>done(true); img.onerror=()=>done(false);
+    img.src=RV.host+cur.path+'/256/'+el._z+'/'+img.dataset.x+'/'+img.dataset.y+'/2/1_1.png';
   });
 }
 function rovTick(){
   if(document.hidden) return;
   const els=[...document.querySelectorAll('.radarov:not([hidden])')];
   if(!els.length) return;
-  if(!rvFrames().length){ rvLoad(); return; }
-  els.forEach(el=>{ if(el._z!=null) rovFrame(el,(el._ti==null?-1:el._ti)+1); });
+  if(Date.now()-RV.at>=5*60*1000) rvLoad();
+  if(!rvFrames().length){
+    if(RV.meta){
+      els.forEach(el=>{
+        const dot=el.querySelector('.rovhead .tdot'), time=el.querySelector('[data-rovtime]');
+        if(dot) dot.className='tdot error';
+        if(time) time.textContent='NO RADAR DATA';
+      });
+    }
+    rvLoad(); return;
+  }
+  els.forEach(el=>{
+    if(el._z==null||Date.now()<(el._frameFailedUntil||0)) return;
+    const frameInterval=Math.max(10000,(el._radarTileCount||1)*2000);
+    if(Date.now()-(el._lastFrameAt||0)<frameInterval) return;
+    el._lastFrameAt=Date.now();
+    rovFrame(el,(el._ti==null?-1:el._ti)+1);
+  });
 }
+function fitRadar(el){
+  const slot=el&&el.parentElement;
+  if(!slot) return;
+  const natural=el._baseWidth||rovSize().w, rect=slot.getBoundingClientRect();
+  const available=Math.min(rect.width||natural,innerWidth*.48,600);
+  const scale=available>0?Math.min(1,available/natural):1;
+  el.style.width=natural+'px'; el.style.height=natural+'px';
+  el.style.transform=scale<1?`scale(${scale})`:'';
+  el.style.transformOrigin=(slot.dataset.c==='tr'||slot.dataset.c==='br'?'right ':'left ')+(slot.dataset.c==='bl'||slot.dataset.c==='br'?'bottom':'top');
+}  window.addEventListener('resize',()=>scopes.forEach(scope=>{ if(scope.isConnected&&scope._radarEl) fitRadar(scope._radarEl); }));
+  window.addEventListener('fullscreenchange',()=>requestAnimationFrame(()=>scopes.forEach(scope=>{ if(scope.isConnected&&scope._radarEl) fitRadar(scope._radarEl); })));
 /* shared by the output wall and the control preview */
 function syncRadarOverlay(scope,fallback){
-  const cfg=state.cfg;    const on=mode==='output'&&!!scope._showWidgets&&!!cfg.show.radar&&cfg.radarMode==='embed';
+  const cfg=state.cfg, on=(mode==='output'||scope._outputPreview)&&!!scope._showWidgets&&!!cfg.show.radar&&cfg.radarMode==='embed';
   let el=scope._radarEl;
   if(!on||!radarCam(fallback)){ if(el) el.hidden=true; return null; }
   if(!el){ el=makeRadarEl(); scope._radarEl=el; }
   const cam=radarCam(fallback);
   el.hidden=false;
   const nm=el.querySelector('[data-rovname]'); if(nm) nm.textContent=cam.name;
+  if(!RV.meta&&Date.now()<RV.retryAt){
+    const dot=el.querySelector('.rovhead .tdot'), time=el.querySelector('[data-rovtime]');
+    if(dot) dot.className='tdot error';
+    if(time) time.textContent='RADAR UNAVAILABLE';  }
   const loc=[cam.lat,cam.lon,Math.round(radarZoom()),rovSize().w].join(',');
-  if(el.dataset.loc!==loc) rovBuild(el,cam);
+  if(el.dataset.loc!==loc){
+    el._top='b';
+    el.querySelectorAll('.rovlay').forEach(layer=>layer.classList.remove('on'));
+    rovBuild(el,cam);
+  }
   return el;
 }
 setInterval(rovTick,850);
 /* header clock */
 function tickClock(){ const el=$('clock'); if(el) el.textContent=new Date().toLocaleTimeString(); }
 tickClock(); setInterval(tickClock,1000);
-applyStyle();  if(mode==='output') rvLoad();   /* radar tiles are only loaded for the output overlay */
+applyStyle();  if(mode==='output'||mode==='control') rvLoad();   /* control mode uses a true output preview */
 
 /* ---------------- pairing + TV window helpers ---------------- */
 const hadStation=(()=>{ try{ return !!localStorage.getItem(KEY); }catch(e){ return false; } })();
@@ -1390,7 +1574,10 @@ async function openTVWindow(second){
 
 /* ================= CONTROL MODE ================= */
 if(mode==='control'){
-  const activeCam=()=>state.cameras.find(c=>c.id===state.activeId&&cameraActive(c))||enabledCameras()[0]||null;
+  const activeCam=()=>{
+    const cams=outputCameras();
+    return cams.find(c=>c.id===state.activeId)||cams[0]||null;
+  };
   const syncActive=()=>{ state.activeId=activeCam()?.id||null; };
   const OBS_CAMERAS=[
     {name:'Aiken, SC',lat:33.5619,lon:-81.7218,type:'iframe',url:'https://api.wetmet.net/widgets/stream/frame.php?uid=05ba9d5621e5a7aac75a9c91f94a7c83&autoplay=1&mute=1',refresh:0},
@@ -1425,6 +1612,8 @@ if(mode==='control'){
     $('pasteCoords').style.borderColor='';
     setCoords(p.lat,p.lon);
   };
+  $('newType').onchange=()=>{ $('newIframeCssWrap').hidden=$('newType').value!=='iframe'; };
+  $('copyNewIframeCss').onclick=()=>copyIframeConsoleSnippet($('newIframeCss').value,$('newIframeCssCopyStatus')).catch(()=>{ $('newIframeCssCopyStatus').textContent='Could not copy snippet; check browser clipboard permissions.'; });
   $('pasteCoords').addEventListener('keydown',e=>{if(e.key==='Enter')$('parseBtn').click();});
   $('geoBtn').onclick=()=>{
     if(!navigator.geolocation){alert('Geolocation is not available in this browser.');return;}
@@ -1440,12 +1629,13 @@ if(mode==='control'){
     const url=$('newUrl').value.trim(), type=$('newType').value;
     const refresh=parseInt($('newRefresh').value)||30;
     if(!name||isNaN(lat)||isNaN(lon)||!url){alert('Need a name, coordinates (paste them above) and a feed URL.');return;}
-    const cam={id:uid(),name,lat,lon,url,type,refresh,active:true,groupId:$('newCamGroup').value||selectedFolderId||state.groups[0].id};
+    const cam={id:uid(),name,lat,lon,url,type,refresh,active:true,groupId:$('newCamGroup').value||null,iframeCss:type==='iframe'?$('newIframeCss').value.slice(0,12000).trim():'',iframeZoom:+$('newIframeZoom').value||100,iframeOffsetX:+$('newIframeOffsetX').value||0,iframeOffsetY:+$('newIframeOffsetY').value||0};
     state.cameras.push(cam);
     state.multiIds.push(cam.id);
     state.activeId=cam.id;
     saveState();
-    ['newName','newLat','newLon','newUrl','pasteCoords'].forEach(id=>$(id).value='');
+    ['newName','newLat','newLon','newUrl','pasteCoords','newIframeCss'].forEach(id=>$(id).value='');
+    $('newIframeZoom').value=100; $('newIframeOffsetX').value=0; $('newIframeOffsetY').value=0;
     updateOsmLink(NaN,NaN);
     renderGroupControls();
     renderGroupList();
@@ -1456,9 +1646,8 @@ if(mode==='control'){
     fetchAlerts(cam).then(renderAlerts);
   };
   $('importObsBtn').onclick=()=>{
-    const have=new Set(state.cameras.map(c=>c.name));
-    let added=0;
-    OBS_CAMERAS.forEach(c=>{ if(!have.has(c.name)){const cam={id:uid(),...c,active:true,groupId:state.groups[0].id};state.cameras.push(cam);state.multiIds.push(cam.id);added++;} });
+    const have=new Set(state.cameras.map(c=>c.name));    let added=0;
+    OBS_CAMERAS.forEach(c=>{ if(!have.has(c.name)){ const cam={id:uid(),...c,active:true,groupId:null};state.cameras.push(cam);state.multiIds.push(cam.id);if(!state.activeId)state.activeId=cam.id;added++;} });
     if(!added){alert('All OBS cameras are already in your list.');return;}
     saveState();renderGroupControls();renderGroupList();renderCamList();renderThumbs();renderDash();renderPreview(true);
     alert(`Imported ${added} camera(s) from the OBS collection.`);
@@ -1492,12 +1681,13 @@ if(mode==='control'){
     });
   }
   function renderGroupControls(){
-    const fills=[['camGroupFilter','all','Every folder'],['newCamGroup','', 'Choose folder'],['moveFilteredGroup','','Choose folder']];
+    const fills=[['camGroupFilter','all','Every folder'],['newCamGroup','','No folder'],['moveFilteredGroup','','Choose folder']];
     fills.forEach(([id,allVal,allText])=>{
       const el=$(id); if(!el) return;
       const old=el.value;
-      el.innerHTML=(allVal!==''?`<option value="${allVal}">${allText}</option>`:`<option value="">${allText}</option>`)+state.groups.map(g=>`<option value="${esc(g.id)}">${esc(groupPath(g))}${g.active?'':' (inactive)'}</option>`).join('');
-      el.value=state.groups.some(g=>g.id===old)?old:(allVal||state.groups[0]?.id||'');
+      const first=id==='newCamGroup'?'<option value="">No folder</option>':id==='moveFilteredGroup'?'<option value="">Choose folder</option><option value="__none__">No folder</option>':`<option value="${allVal}">${allText}</option>`;
+      el.innerHTML=first+state.groups.map(g=>`<option value="${esc(g.id)}">${esc(groupPath(g))}</option>`).join('');
+      el.value=id==='newCamGroup'?(state.groups.some(g=>g.id===old)?old:''):id==='moveFilteredGroup'?(old==='__none__'||state.groups.some(g=>g.id===old)?old:''):(state.groups.some(g=>g.id===old)?old:(allVal||''));
     });
     const parent=$('newGroupParent');
     if(parent){ const old=parent.value; parent.innerHTML='<option value="">Top level</option>'+state.groups.map(g=>`<option value="${esc(g.id)}">${esc(groupPath(g))}</option>`).join(''); parent.value=state.groups.some(g=>g.id===old)?old:''; }
@@ -1505,15 +1695,15 @@ if(mode==='control'){
   }
   function renderGroupList(){
     const box=$('groupList'); if(!box) return;
-    const allActive=enabledCameras().length, children=new Map();
+    const children=new Map();
     state.groups.forEach(g=>{ const key=g.parentId||''; if(!children.has(key)) children.set(key,[]); children.get(key).push(g); });
     const rows=[];
     function draw(parentId,depth){
       (children.get(parentId||'')||[]).forEach(g=>{
         const folderIds=descendantsOf(g.id), cameras=state.cameras.filter(c=>folderIds.has(c.groupId));
-        const active=cameras.filter(cameraActive).length, n=cameras.length;
+        const inOutput=selectedOutputCameras().filter(c=>folderIds.has(c.groupId)).length, n=cameras.length;
         const childFolders=children.get(g.id)||[],hasChildren=childFolders.length>0;
-        rows.push(`<div class="groupitem${g.active?'':' inactive'}${selectedFolderId===g.id?' selected':''}" data-group="${esc(g.id)}" style="--depth:${Math.min(depth,8)}"><div class="folder-title"><button class="folder-caret" type="button" data-folder-toggle="${esc(g.id)}" aria-label="${collapsedFolders.has(g.id)?'Expand':'Collapse'} ${esc(g.name)}" ${hasChildren?'':'disabled'}>${hasChildren?(collapsedFolders.has(g.id)?'▸':'▾'):'·'}</button><button class="folder-open" type="button" data-folder-open="${esc(g.id)}" title="Browse ${esc(groupPath(g))}"><span class="folder-icon">${selectedFolderId===g.id?'📂':'📁'}</span>${esc(g.name)}</button></div><span class="pill" title="Active / total cameras in this folder and its subfolders">${active}/${n}</span><details class="folder-actions"><summary aria-label="Folder actions">•••</summary><div class="folder-actions-tools"><input class="gname" value="${esc(g.name)}" aria-label="Rename folder" title="Rename folder"><select class="gparent" aria-label="Move ${esc(g.name)} folder" title="Move folder under another folder"><option value="">Top level</option>${state.groups.filter(x=>x.id!==g.id&&!descendantsOf(g.id).has(x.id)).map(x=>`<option value="${esc(x.id)}"${g.parentId===x.id?' selected':''}>${esc(groupPath(x))}</option>`).join('')}</select><button class="sm" data-gact="toggle">${g.active?'Deactivate subtree':'Activate subtree'}</button><button class="sm" data-gact="del">Delete folder</button></div></details></div>`);
+        rows.push(`<div class="groupitem${selectedFolderId===g.id?' selected':''}" data-group="${esc(g.id)}" style="--depth:${Math.min(depth,8)}"><div class="folder-title"><button class="folder-caret" type="button" data-folder-toggle="${esc(g.id)}" aria-label="${collapsedFolders.has(g.id)?'Expand':'Collapse'} ${esc(g.name)}" ${hasChildren?'':'disabled'}>${hasChildren?(collapsedFolders.has(g.id)?'▸':'▾'):'·'}</button><button class="folder-open" type="button" data-folder-open="${esc(g.id)}" title="Browse ${esc(groupPath(g))}"><span class="folder-icon">${selectedFolderId===g.id?'📂':'📁'}</span>${esc(g.name)}</button></div><span class="pill" title="Selected for output / total cameras in this folder and its subfolders">${inOutput}/${n}</span><details class="folder-actions"><summary aria-label="Folder actions">•••</summary><div class="folder-actions-tools"><input class="gname" value="${esc(g.name)}" aria-label="Rename folder" title="Rename folder"><select class="gparent" aria-label="Move ${esc(g.name)} folder" title="Move folder under another folder"><option value="">Top level</option>${state.groups.filter(x=>x.id!==g.id&&!descendantsOf(g.id).has(x.id)).map(x=>`<option value="${esc(x.id)}"${g.parentId===x.id?' selected':''}>${esc(groupPath(x))}</option>`).join('')}</select><button class="sm" data-gact="del">Delete folder</button></div></details></div>`);
         if(!collapsedFolders.has(g.id)) draw(g.id,depth+1);
       });
     }
@@ -1531,57 +1721,33 @@ if(mode==='control'){
         g.parentId=parentId;
         syncActive(); saveState(); renderGroupControls(); renderGroupList(); renderCamList(); renderDash(); renderThumbs(); renderPreview(true); renderAlerts();
       };
-      row.querySelector('[data-gact=toggle]').onclick=()=>{
-        g.active=!g.active; syncActive();
-        saveState(); renderGroupList(); renderGroupControls(); renderCamList(); renderDash(); renderThumbs(); renderPreview(true); renderAlerts();
-      };
       row.querySelector('[data-gact=del]').onclick=()=>{
-        const mode=confirm('OK: move child folders and cameras into the parent. Cancel: move child folders to the top level and direct cameras into Unsorted.');
+              const mode=confirm('OK: move child folders and cameras into the parent. Cancel: move child folders to the top level and cameras to No folder.');
         const parentId=state.groups.some(x=>x.id===g.parentId)?g.parentId:null;
         const childFolders=state.groups.filter(x=>x.parentId===g.id);
         const directCameras=state.cameras.filter(c=>c.groupId===g.id);
-        const groupIsActive=folder=>{
-          let current=folder,seen=new Set();
-          while(current){
-            if(current.active===false||seen.has(current.id)) return false;
-            seen.add(current.id);
-            current=state.groups.find(x=>x.id===current.parentId);
-          }
-          return true;
-        };
-        const childActivity=new Map(childFolders.map(folder=>[folder.id,groupIsActive(folder)]));
-        const cameraActivity=new Map(directCameras.map(cam=>[cam.id,cameraActive(cam)]));
         const destination=mode?parentId:null;
-        childFolders.forEach(folder=>{
-          folder.parentId=destination;
-          folder.active=childActivity.get(folder.id);
-        });
-        let cameraDestination=destination;
-        if(!cameraDestination&&directCameras.length){
-          let unsorted=state.groups.find(x=>x.id!==g.id&&x.parentId==null&&x.name.toLowerCase()==='unsorted');
-          if(!unsorted){ unsorted={id:uid(),name:'Unsorted',active:true,parentId:null}; state.groups.push(unsorted); }
-          cameraDestination=unsorted.id;
-        }
-        directCameras.forEach(cam=>{
-          cam.groupId=cameraDestination;
-          if(!cameraActivity.get(cam.id)) cam.active=false;
-        });
+        childFolders.forEach(folder=>{ folder.parentId=destination; });
+        const cameraDestination=destination;
+        directCameras.forEach(cam=>{ cam.groupId=cameraDestination; });
         state.groups=state.groups.filter(x=>x.id!==g.id);
-        if(!state.groups.length) state.groups.push({id:uid(),name:'General',active:true,parentId:null});
-        state.cameras.forEach(c=>{if(!state.groups.some(x=>x.id===c.groupId))c.groupId=state.groups[0].id;});
-        if(!cameraActive(state.cameras.find(c=>c.id===state.activeId))) syncActive();
+        if(!state.groups.length) state.groups.push({id:uid(),name:'General',parentId:null});
+        const retained=new Set(state.groups.map(x=>x.id));
+        state.cameras.forEach(cam=>{ if(cam.groupId&&!retained.has(cam.groupId)) cam.groupId=null; });
+        if(!outputCameras().some(c=>c.id===state.activeId)) syncActive();
         saveState(); renderGroupControls(); renderGroupList(); renderCamList(); renderDash(); renderThumbs(); renderPreview(true); renderAlerts();
       };
     });
-    const info=$('camCount'); if(info) info.textContent=state.cameras.length+' total · '+allActive+' active · '+state.groups.length+' folders';
+    const info=$('camCount'); if(info) info.textContent=state.cameras.length+' cameras · '+outputCameras().length+' in output · '+state.groups.length+' folders';
   }
   function renderCamList(){
     const list=$('camList');
+    const openIframeCssIds=new Set([...list.querySelectorAll('.cam-iframe-css[open]')].map(details=>details.closest('.camrow')?.dataset.camid).filter(Boolean));
     const matches=cameraMatches();
     const pages=Math.max(1,Math.ceil(matches.length/CAM_PAGE_SIZE));
     camPage=Math.min(camPage,pages-1);
     const pageInfo=$('camPageInfo'); if(pageInfo) pageInfo.textContent=`${matches.length?camPage*CAM_PAGE_SIZE+1:0}–${Math.min(matches.length,(camPage+1)*CAM_PAGE_SIZE)} of ${matches.length}`;
-    $('camCount').textContent=state.cameras.length+' total · '+enabledCameras().length+' active · '+state.groups.length+' groups';
+    $('camCount').textContent=state.cameras.length+' cameras · '+outputCameras().length+' in output · '+state.groups.length+' folders';
     list.innerHTML='';
     if(!matches.length){ list.innerHTML='<div class="hint">No cameras match the current search or group.</div>'; return; }
     matches.slice(camPage*CAM_PAGE_SIZE,(camPage+1)*CAM_PAGE_SIZE).forEach(c=>{
@@ -1591,6 +1757,7 @@ if(mode==='control'){
         : `<span class="pill">${c.type==='image'?'thumb off':c.type.toUpperCase()+' stream'}</span>`;
       const row=document.createElement('div');
       row.className='camrow'+(c.id===state.activeId?' act':'')+(cameraActive(c)?'':' inactive');
+      row.dataset.camid=c.id;
       row.innerHTML=`
         <div class="row" style="align-items:flex-start;flex-wrap:nowrap">
           <div style="flex:0 0 96px">${thumb}</div>
@@ -1604,57 +1771,84 @@ if(mode==='control'){
               <button class="sm" data-act="preview">👁 preview</button>
               <a class="lnk" target="_blank" href="https://www.openstreetmap.org/#map=10/${c.lat}/${c.lon}">map ↗</a></div>
             <input type="text" value="${esc(c.url)}" data-f="url" style="width:100%;font-family:var(--mono);font-size:11px;margin-bottom:6px">
+            ${c.type==='iframe'?`<details class="cam-iframe-css"><summary>Custom iframe CSS</summary><p class="cam-css-note">This CSS targets elements inside the camera page. It can only be injected into a same-origin iframe, and the camera site's CSP may still block it. Most third-party feeds are cross-origin, so this editor cannot hide their internal logo. To try your CSS manually, click <b>Copy DevTools console snippet</b>, open the camera page's DevTools Console, select the camera iframe in the execution-context dropdown, paste, and run it. The change is temporary and may still be blocked by the camera site's CSP. In your example, change <code>hieght</code> to <code>height</code> (and use <code>105vh</code> for viewport height).</p><textarea class="cam-iframe-editor" data-f="iframeCss" maxlength="12000" aria-label="Custom CSS for ${esc(c.name)}" placeholder=".vjs-bug.vjs-bug-tl.no-link img { opacity: 0; }\nhtml, body { overflow: hidden !important; width: 110%; height: 105vh; margin: -10px; }\n::-webkit-scrollbar { display: none !important; }">${esc(c.iframeCss||'')}</textarea><div class="row"><button type="button" class="sm" data-act="copy-iframe-css">Copy DevTools console snippet</button><span class="cam-css-note" data-css-copy-status aria-live="polite"></span></div><span class="iframe-css-status" data-iframe-css-status data-iframe-css-status-for="${esc(c.id)}">Waiting for iframe…</span><label>Viewport crop (works with third-party feeds)</label><div class="iframe-view-controls"><label>Zoom % <input type="number" data-f="iframeZoom" min="100" max="200" value="${Math.max(100,Math.min(200,+c.iframeZoom||100))}"></label><label>Pan X % <input type="number" data-f="iframeOffsetX" min="-50" max="50" value="${Math.max(-50,Math.min(50,+c.iframeOffsetX||0))}"></label><label>Pan Y % <input type="number" data-f="iframeOffsetY" min="-50" max="50" value="${Math.max(-50,Math.min(50,+c.iframeOffsetY||0))}"></label></div><span class="cam-css-note">Zoom first, then pan. Positive X/Y moves the image right/down; use negative values to move it left/up (for a top-left logo). Cropping may hide other edge content too.</span></details>`:''}
             <div class="camrow-actions">
-              <select data-f="groupId" style="font-size:11px;padding:3px 5px">${state.groups.map(g=>`<option value="${esc(g.id)}"${c.groupId===g.id?' selected':''}>${'　'.repeat(Math.min(groupDepth(g),8))}${esc(g.name)}</option>`).join('')}</select>
-              <label><input type="checkbox" data-f="active"${c.active?' checked':''}> Active</label>
+              <select data-f="groupId" style="font-size:11px;padding:3px 5px"><option value=""${c.groupId?'':' selected'}>No folder</option>${state.groups.map(g=>`<option value="${esc(g.id)}"${c.groupId===g.id?' selected':''}>${'　'.repeat(Math.min(groupDepth(g),8))}${esc(g.name)}</option>`).join('')}</select>
+              <label><input type="checkbox" data-f="active"${c.active?' checked':''}> Enabled</label>
               <select data-f="type" style="font-size:11px;padding:3px 5px">
                 <option value="image"${c.type==='image'?' selected':''}>Image</option>
                 <option value="iframe"${c.type==='iframe'?' selected':''}>Embed</option>
                 <option value="hls"${c.type==='hls'?' selected':''}>HLS</option>
               </select>
-              <label><input type="radio" name="active"${c.id===state.activeId?' checked':''} data-act="active"> Active</label>
-              <label><input type="checkbox"${state.multiIds.includes(c.id)?' checked':''} data-act="multi"> In grid</label>
+              <label><input type="radio" name="active"${c.id===state.activeId?' checked':''} data-act="active"> Show now</label>
+              <label><input type="checkbox"${state.multiIds.includes(c.id)?' checked':''} data-act="multi"> In output</label>
             </div>
           </div>
-        </div>`;      row.querySelectorAll('[data-f]').forEach(inp=>{
+        </div>`;
+      const copyCssButton=row.querySelector('[data-act=copy-iframe-css]');
+      if(copyCssButton) copyCssButton.onclick=()=>copyIframeConsoleSnippet(c.iframeCss,row.querySelector('[data-css-copy-status]')).catch(()=>{ row.querySelector('[data-css-copy-status]').textContent='Could not copy snippet; check browser clipboard permissions.'; });
+      row.querySelectorAll('[data-f]').forEach(inp=>{
+        if(inp.dataset.f==='iframeCss') inp.addEventListener('input',()=>{
+          c.iframeCss=inp.value.slice(0,12000);
+          const tiles=[...document.querySelectorAll('.camtile')].filter(tile=>tile.dataset.camid===c.id);
+          tiles.forEach(tile=>{ const frame=tile.querySelector('iframe'); if(frame) applyIframeCss(frame,c); });
+        });
         inp.addEventListener('change',()=>{
           const f=inp.dataset.f;
-          const wasActive=cameraActive(c), wasSelected=c.id===state.activeId;
-          c[f]= inp.type==='number'?(parseInt(inp.value)||0):(inp.type==='checkbox'?inp.checked:inp.value);
-          if(f==='groupId'||f==='active'){
-            if(c.id===state.activeId&&!cameraActive(c)) syncActive();
-            if(!wasActive&&cameraActive(c)&&!state.multiIds.includes(c.id)) state.multiIds.push(c.id);
-            if(!cameraActive(c)) state.multiIds=state.multiIds.filter(id=>id!==c.id);
-            renderGroupControls();
+          const wasSelected=c.id===state.activeId;
+          c[f]=inp.type==='checkbox'?inp.checked:inp.type==='number'?(parseFloat(inp.value)||0):inp.value;
+          if(f==='url'&&c.type==='iframe'){
+            saveState(); renderCamList(); renderDash(); renderPreview(true); renderThumbs(); renderAlerts();
+            return;
           }
+          if(f==='iframeCss'){
+            c.iframeCss=String(c.iframeCss||'').slice(0,12000);
+            const tiles=[...document.querySelectorAll('.camtile')].filter(tile=>tile.dataset.camid===c.id);
+            tiles.forEach(tile=>{ const frame=tile.querySelector('iframe'); if(frame) applyIframeCss(frame,c); });
+            saveState(); renderPreview(true);
+            return;
+          }
+          if(f==='iframeZoom'||f==='iframeOffsetX'||f==='iframeOffsetY'){
+            c.iframeZoom=Math.max(100,Math.min(200,+c.iframeZoom||100));
+            c.iframeOffsetX=Math.max(-50,Math.min(50,+c.iframeOffsetX||0));
+            c.iframeOffsetY=Math.max(-50,Math.min(50,+c.iframeOffsetY||0));
+            inp.value=c[f];
+            const tiles=[...document.querySelectorAll('.camtile')].filter(tile=>tile.dataset.camid===c.id);
+            tiles.forEach(tile=>{ const frame=tile.querySelector('iframe'); if(frame) applyIframeView(frame,c); });
+          }
+          if(f==='groupId') renderGroupControls();
+          if(f==='active'&&!cameraActive(c)) state.multiIds=state.multiIds.filter(id=>id!==c.id);
+          if(f==='active'&&!outputCameras().some(x=>x.id===state.activeId)) syncActive();
           saveState(); renderGroupList(); renderCamList(); renderDash(); renderThumbs();
-          if(wasSelected||c.id===state.activeId||!enabledCameras().length||!activeCam()) renderPreview(true);
+          if(f==='type'||f==='url'||f==='iframeCss'||f==='iframeZoom'||f==='iframeOffsetX'||f==='iframeOffsetY'||f==='active'||wasSelected||c.id===state.activeId||!outputCameras().length||!activeCam()) renderPreview(true);
           renderAlerts();
         });
       });
       row.querySelector('[data-act=active]').onchange=()=>{
-        if(!cameraActive(c)){ alert('Activate this camera and its group before selecting it for the output.'); return; }
-        state.activeId=c.id;saveState();renderCamList();renderThumbs();renderPreview(true);renderAlerts();
+        c.active=true;
+        state.activeId=c.id;
+        if(!state.multiIds.includes(c.id)) state.multiIds.push(c.id);
+        saveState();renderCamList();renderDash();renderGroupList();renderThumbs();renderPreview(true);renderAlerts();
         fetchAlerts(c).then(renderAlerts);
       };
       row.querySelector('[data-act=multi]').onchange=e=>{
-        if(e.target.checked){
-          if(!cameraActive(c)){ e.target.checked=false; alert('Activate this camera and its group before adding it to the output grid.'); return; }
-          if(!state.multiIds.includes(c.id)) state.multiIds.push(c.id);
-        } else state.multiIds=state.multiIds.filter(id=>id!==c.id);
-        saveState();$('camCount').textContent=state.cameras.length+' total · '+enabledCameras().length+' active · '+state.multiIds.length+' in grid';
+        if(e.target.checked){ c.active=true; if(!state.multiIds.includes(c.id)) state.multiIds.push(c.id); }
+        else state.multiIds=state.multiIds.filter(id=>id!==c.id);
+        if(e.target.checked&&(!state.activeId||!outputCameras().some(x=>x.id===state.activeId))) state.activeId=c.id;
+        if(state.activeId===c.id&&!e.target.checked) state.activeId=outputCameras()[0]?.id||null;
+        saveState(); renderDash(); renderGroupList(); renderCamList(); renderPreview(true);
       };
-      row.querySelector('[data-act=preview]').onclick=()=>{
-        if(!cameraActive(c)){ alert('Activate this camera and its group first.'); return; }
-        state.activeId=c.id;saveState();renderCamList();renderThumbs();renderPreview(true);renderAlerts();
-      };
+      row.querySelector('[data-act=preview]').onclick=()=>selectCam(c.id);
       row.querySelector('[data-act=del]').onclick=()=>{
         state.cameras=state.cameras.filter(x=>x.id!==c.id);
         state.multiIds=state.multiIds.filter(id=>id!==c.id);
-        if(state.activeId===c.id) state.activeId=enabledCameras()[0]?.id||null;
+        if(state.activeId===c.id) state.activeId=outputCameras()[0]?.id||null;
         saveState();renderCamList();renderThumbs();renderDash();renderPreview(true);renderAlerts();
       };
       list.appendChild(row);
+    });
+    list.querySelectorAll('.cam-iframe-css').forEach(details=>{
+      if(openIframeCssIds.has(details.closest('.camrow')?.dataset.camid)) details.open=true;
     });
     updateThumbImages();
     renderRadarCamSel();
@@ -1670,17 +1864,20 @@ if(mode==='control'){
   $('addGroupBtn').onclick=()=>{
     const name=$('newGroupName').value.trim(); if(!name) return;
     const parentId=$('newGroupParent').value||null;
-    const folder={id:uid(),name,active:true,parentId}; state.groups.push(folder); $('newGroupName').value='';
+    const folder={id:uid(),name,parentId}; state.groups.push(folder); $('newGroupName').value='';
     collapsedFolders.delete(parentId);
     saveState(); renderGroupControls(); selectFolder(folder.id); renderCamList();
   };
   $('newGroupName').addEventListener('keydown',e=>{if(e.key==='Enter')$('addGroupBtn').click();});
-  $('allToGrid').onclick=()=>{ state.multiIds=enabledCameras().map(c=>c.id); saveState();renderDash();renderCamList();renderGroupList(); };
+  $('allToGrid').onclick=()=>{
+    state.cameras.forEach(c=>c.active=true);
+    state.multiIds=state.cameras.map(c=>c.id);
+    if(!state.multiIds.includes(state.activeId)) state.activeId=state.multiIds[0]||null;
+    saveState(); renderDash(); renderCamList(); renderGroupList(); renderPreview(true);
+  };
   function setFilteredActive(on){
     const matches=cameraMatches();
-    matches.forEach(c=>c.active=on);
-    if(on) state.multiIds=[...new Set([...state.multiIds,...matches.filter(c=>cameraActive(c)).map(c=>c.id)])];
-    else state.multiIds=state.multiIds.filter(id=>!matches.some(c=>c.id===id));
+    matches.forEach(c=>{ c.active=on; });
     syncActive();
     saveState();renderGroupList();renderCamList();renderDash();renderThumbs();renderPreview(true);renderAlerts();
   }
@@ -1688,8 +1885,9 @@ if(mode==='control'){
   $('deactivateFiltered').onclick=()=>setFilteredActive(false);
   $('moveFilteredBtn').onclick=()=>{
     const id=$('moveFilteredGroup').value; if(!id) return;
-    cameraMatches().forEach(c=>c.groupId=id);
-    syncActive();    saveState();renderGroupControls();renderGroupList();renderCamList();renderDash();renderThumbs();renderPreview(true);renderAlerts();
+    const destination=id==='__none__'?null:id;
+    cameraMatches().forEach(c=>c.groupId=destination);
+    saveState(); renderGroupControls(); renderGroupList(); renderCamList(); renderDash(); renderThumbs(); renderPreview(true); renderAlerts();
   };
   function updateThumbImages(){
     document.querySelectorAll('[data-thumb],[data-thumb2]').forEach(img=>{
@@ -1705,46 +1903,135 @@ if(mode==='control'){
   setInterval(updateThumbImages,2000);
 
   /* ---- live preview ---- */
-  let prevLast=Date.now(), prevCamId=null;
+  let prevLast=Date.now();
   function renderPreview(reset){
     const st=$('prevStage');
-    const cam=activeCam();
+    const outputs=outputCameras();
+    const active=outputs.find(c=>c.id===state.activeId)||outputs[0]||null;
+    const cams=state.multiView===1?(active?[active]:[]):outputs.slice(0,state.multiView);
+    st._previewSig=JSON.stringify([cams.map(c=>c.id),active&&active.id,state.multiView,state.cfg.widgetsOn,state.cfg.show,state.cfg.corner,state.cameras.map(c=>[c.id,c.type,c.iframeCss,c.url])]);
     if(reset) prevLast=Date.now();
-    if(!cam||!cameraActive(cam)){ $('prevName').textContent='—'; $('prevType').textContent=''; st.innerHTML='<div class="msg">No active camera selected. Activate a camera group to continue.</div>'; prevCamId=null; return; }
-    prevCamId=cam.id;
-    st.innerHTML='<div class="pagestrip"></div>';
-    st.appendChild(buildTile(cam));
+    st.innerHTML='';
+    st.classList.add('output-stage');
+    st.classList.toggle('contain',state.cfg.fit==='contain');
+    st.style.setProperty('--gap',(state.cfg.tileGap||0)+'px');
+    if(!cams.length){
+      $('prevName').textContent='—'; $('prevType').textContent='';
+      st.className='stage output-stage';
+      st._outputPreview=true; st._showWidgets=state.cfg.widgetsOn!==false;
+      st.innerHTML='<div class="msg">No cameras are selected for the output. Add any camera with its Output checkbox; folder assignment is optional.</div>';
+      return;
+    }
+    const layout=state.multiView===1?1:state.multiView;
+    const grid=document.createElement('div'); grid.className='grid g'+layout+(state.cfg.bgData?' hasbg':'');
+    cams.forEach(c=>grid.appendChild(buildTile(c)));
+    st.appendChild(grid);
+    st.insertAdjacentHTML('beforeend','<div class="pagestrip"></div>');
     CORNERS.forEach(c=>st.insertAdjacentHTML('beforeend',`<div class="wl" data-c="${c}"></div>`));
     st.insertAdjacentHTML('beforeend','<div class="tickbar"></div>');
-    st.classList.toggle('contain',state.cfg.fit==='contain');
-    st._showWidgets=!!state.cfg.prevOverlay;
-    registerScope(st,{cam,wx:(wxCache[cam.id]&&wxCache[cam.id].data)||null,alerts:(alCache[cam.id]&&alCache[cam.id].data)||[],next:null});
-    $('prevName').textContent=cam.name;
-    $('prevType').textContent='· '+({image:'still image',iframe:'embedded player',hls:'HLS stream'}[cam.type]||cam.type);
+    st._outputPreview=true; st._showWidgets=state.cfg.widgetsOn!==false;
+    const cam=active&&cams.some(c=>c.id===active.id)?active:cams[0];
+    const previewSig=JSON.stringify([cams.map(c=>c.id),active&&active.id,state.multiView,state.cfg.widgetsOn,state.cfg.show,state.cfg.corner,state.cameras.map(c=>[c.id,c.type,c.iframeCss,c.url])]);
+    st._previewSig=previewSig;
+    const alerts=cams.flatMap(c=>(alCache[c.id]&&alCache[c.id].data)||[]);
+    const wx=(wxCache[cam.id]&&wxCache[cam.id].data)||null;
+    registerScope(st,{cam,wx,alerts,next:null});
+    st.querySelectorAll('.camtile').forEach(tile=>{ ['--tickh','--btop'].forEach(name=>tile.style.setProperty(name,getComputedStyle(st).getPropertyValue(name)||'0px')); });
+    $('prevName').textContent=state.multiView===1?cam.name:(cams.length+' cameras in '+(layout===4?'2×2':'3×2')+' output');
+    $('prevType').textContent=state.multiView===1?'· '+({image:'still image',iframe:'embedded player',hls:'HLS stream'}[cam.type]||cam.type):'· live output layout';
     updateAlertPill(cam);
-    fetchWx(cam).then(d=>{ st._ctx.wx=d; renderWidgets(st); }).catch(()=>{});
-    fetchAlerts(cam).then(a=>{ st._ctx.alerts=a; renderWidgets(st); updateAlertPill(cam); renderAlerts(); });
+    Promise.all(cams.map(fetchWx)).then(()=>{
+      if(!st.isConnected||st._previewSig!==previewSig||!st._ctx||st._ctx.cam.id!==cam.id) return;
+      st._ctx.wx=(wxCache[cam.id]&&wxCache[cam.id].data)||null; renderWidgets(st);
+    }).catch(()=>{});
+    Promise.all(cams.map(fetchAlerts)).then(lists=>{
+      if(!st.isConnected||st._previewSig!==previewSig||!st._ctx||st._ctx.cam.id!==cam.id) return;
+      st._ctx.alerts=lists.flat(); renderWidgets(st); updateAlertPill(cam); renderAlerts();
+    }).catch(()=>{});
   }
   setInterval(()=>{
-    const st=$('prevStage'); const cam=activeCam();
-    if(!st||!cam) return;
-    const ms=Math.max(2,state.cfg.prevSec)*1000;
-    const el=Date.now()-prevLast;
-    $('prevFill').style.width=Math.min(100,el/ms*100)+'%';
-    if(el>=ms){
+    const st=$('prevStage'); if(!st) return;
+    if(document.fullscreenElement) return;
+    const outputs=outputCameras();
+    const active=outputs.find(c=>c.id===state.activeId)||outputs[0]||null;
+    const cams=state.multiView===1?(active?[active]:[]):outputs.slice(0,state.multiView);
+    const previewSig=JSON.stringify([cams.map(c=>c.id),active&&active.id,state.multiView,state.cfg.widgetsOn,state.cfg.show,state.cfg.corner,state.cameras.map(c=>[c.id,c.type,c.iframeCss,c.url])]);
+    if(st._previewSig!==previewSig) renderPreview(false);
+    const ms=Math.max(2,state.cfg.prevSec)*1000, elapsed=Date.now()-prevLast;
+    $('prevFill').style.width=Math.min(100,elapsed/ms*100)+'%';
+    if(elapsed>=ms){
       prevLast=Date.now();
-      const tile=st.querySelector('.camtile');
-      if(tile&&cam.type==='image') refreshTileImage(tile,cam);
+      st.querySelectorAll('.camtile').forEach(tile=>{
+        const cam=cams.find(c=>c.id===tile.dataset.camid);
+        if(cam&&cam.type==='image') refreshTileImage(tile,cam);
+      });
     }
   },250);
-  $('prevNow').onclick=()=>{ const cam=activeCam(); if(!cam) return; const tile=$('prevStage').querySelector('.camtile'); if(tile&&cam.type==='image') refreshTileImage(tile,cam); prevLast=Date.now(); };
-  $('prevFull').onclick=()=>{
+  $('prevNow').onclick=()=>{
     const st=$('prevStage');
-    if(document.fullscreenElement) document.exitFullscreen();
-    else st.requestFullscreen().catch(()=>{});
+    st.querySelectorAll('.camtile').forEach(tile=>{
+      const cam=state.cameras.find(c=>c.id===tile.dataset.camid);
+      if(cam&&cam.type==='image') refreshTileImage(tile,cam);
+    });
+    prevLast=Date.now();
   };
+  $('prevFull').onclick=()=>{
+    const frame=$('prevStage');
+    if(document.fullscreenElement) document.exitFullscreen();
+    else frame.requestFullscreen().catch(()=>{});
+  };
+  const previewMoved=[];
+  $('prevStage').addEventListener('click',e=>{
+    if(document.fullscreenElement&&previewMoved.length) return;
+    const button=e.target.closest('[data-fs]');
+    if(!button) return;
+    const tile=button.closest('.camtile'); if(!tile) return;
+    if(document.fullscreenElement) document.exitFullscreen();
+    else tile.requestFullscreen().catch(()=>{});
+  });
+  document.addEventListener('fullscreenchange',()=>{
+    const st=$('prevStage'), fs=document.fullscreenElement;
+    const ownsFullscreen=fs===st||!!(fs&&st.contains(fs));
+    const previewOwns=ownsFullscreen||previewMoved.length>0;
+    if(previewOwns&&previewMoved.length&&(!fs||fs===st)){
+      previewMoved.forEach(el=>st.appendChild(el)); previewMoved.length=0;
+      st._fullscreenTile=null;
+      if(!fs){ renderPreview(false); return; }
+    }
+    if(!previewOwns) return;
+    if(fs&&fs!==st&&fs.classList.contains('camtile')){
+      const cam=state.cameras.find(c=>c.id===fs.dataset.camid);
+      if(cam){
+        st._ctx={cam,wx:(wxCache[cam.id]&&wxCache[cam.id].data)||null,alerts:(alCache[cam.id]&&alCache[cam.id].data)||[],next:null};
+        renderWidgets(st);
+      }
+      ['--tickh','--btop'].forEach(name=>fs.style.setProperty(name,getComputedStyle(st).getPropertyValue(name)||'0px'));
+      fs.style.setProperty('--camh','100vh');
+      previewMoved.splice(0,previewMoved.length,...[...st.children].filter(el=>el.classList.contains('wl')||el.classList.contains('pagestrip')||el.classList.contains('tickbar')));
+      previewMoved.forEach(el=>fs.appendChild(el));
+      st._fullscreenTile=fs;
+    } else if(previewMoved.length){
+      previewMoved.forEach(el=>st.appendChild(el)); previewMoved.length=0;
+      st._fullscreenTile=null;
+      if(st.isConnected) renderWidgets(st);
+    }
+    if(st._radarEl) requestAnimationFrame(()=>fitRadar(st._radarEl));
+  });
   $('prevSec').onchange=()=>{ let v=parseInt($('prevSec').value)||5; v=Math.min(120,Math.max(2,v)); state.cfg.prevSec=v; $('prevSec').value=v; saveState(); };
-  $('prevOverlay').onchange=()=>{ state.cfg.prevOverlay=$('prevOverlay').checked; saveState(); renderPreview(false); };
+  $('prevStage').addEventListener('dblclick',e=>{
+    const tile=e.target.closest('.camtile'); if(!tile||document.fullscreenElement) return;
+    tile.requestFullscreen().catch(()=>{});
+  });
+  const previewStage=$('prevStage');
+  document.addEventListener('keydown',e=>{
+    const fs=document.fullscreenElement;
+    if(!previewMoved.length||!fs||!fs.classList.contains('camtile')||!previewStage.contains(fs)) return;
+    if((e.key==='o'||e.key==='O')&&previewMoved.length){
+      state.cfg.widgetsOn=state.cfg.widgetsOn===false; previewStage._showWidgets=state.cfg.widgetsOn;
+      $('widgetsOn').checked=state.cfg.widgetsOn;
+      saveState(); rerenderWidgets(); e.preventDefault();
+    }
+  });
 
   /* ---- thumbnails strip ---- */
   function renderThumbs(){
@@ -1760,11 +2047,7 @@ if(mode==='control'){
       return `<div class="thumb${c.id===state.activeId?' on':''}" data-th="${c.id}" title="${esc(c.name)}">${inner}${al?`<span class="ab">⚠ ${al}</span>`:''}<span class="tl">${esc(c.name)}</span></div>`;
     }).join('')+(enabledCameras().length>24?`<div class="hint">Showing 24 of ${enabledCameras().length} active cameras. Search or choose a group in the camera manager.</div>`:'');
     box.querySelectorAll('[data-th]').forEach(el=>{
-      el.onclick=()=>{
-        if(!cameraActive(state.cameras.find(c=>c.id===el.dataset.th))) return;
-        state.activeId=el.dataset.th; saveState();
-        renderThumbs(); renderCamList(); renderPreview(true); renderAlerts();
-      };
+      el.onclick=()=>selectCam(el.dataset.th);
     });
     box.querySelectorAll('[data-thumb2]').forEach(img=>{
       img._t=Date.now();
@@ -1774,15 +2057,17 @@ if(mode==='control'){
 
   /* ---- dashboard: live-feed grid + camera map ---- */
   function selectCam(id){
-    const cam=state.cameras.find(c=>c.id===id); if(!cam||!cameraActive(cam)) return;
-    if(state.activeId!==id){
-      state.activeId=id; saveState();
-      renderCamList(); renderThumbs(); renderPreview(true); renderAlerts();
-      fetchAlerts(cam).then(renderAlerts);
-    }
-    dashSyncActive();
+    const cam=state.cameras.find(c=>c.id===id); if(!cam) return;
+    const wasOutput=state.multiIds.includes(id)&&cameraActive(cam);
+    cam.active=true;
+    if(!state.multiIds.includes(id)) state.multiIds.push(id);
+    const changed=state.activeId!==id;
+    state.activeId=id;
+    saveState();
+    renderCamList(); if(!wasOutput) renderGroupList(); renderThumbs(); renderPreview(true); renderAlerts(); dashSyncActive();
+    if(changed) fetchAlerts(cam).then(renderAlerts);
   }
-  let dashSig='',dashPage=0,showInactiveDash=false,selectedFolderId=null;
+  let dashSig='',dashPage=0,selectedFolderId=null;
   const collapsedFolders=new Set();
   const DASH_PAGE_SIZE=18;
   function dashMatches(){
@@ -1790,7 +2075,6 @@ if(mode==='control'){
     const gid=selectedFolderId;
     const folderIds=gid?descendantsOf(gid):null;
     return state.cameras.filter(c=>{
-      if(!showInactiveDash&&!cameraActive(c)) return false;
       if(folderIds&&!folderIds.has(c.groupId)) return false;
       return !q||[c.name,c.url,c.lat,c.lon].join(' ').toLowerCase().includes(q);
     });
@@ -1798,10 +2082,10 @@ if(mode==='control'){
   function renderDash(){
     const box=$('dashGrid'); if(!box) return;
     const matches=dashMatches();
-    const signature=JSON.stringify([matches.map(c=>[c.id,c.name,c.url,c.type,c.active,c.groupId]),state.cameras.map(c=>[c.id,c.name,c.lat,c.lon,c.active,c.groupId]),state.groups,state.activeId,state.multiIds,state.cfg.showBadge,showInactiveDash,selectedFolderId]);
-    const di=$('dashInfo'); if(di) di.textContent=matches.length+' cameras · '+enabledCameras().length+' active';
+    const signature=JSON.stringify([matches.map(c=>[c.id,c.name,c.url,c.type,c.active,c.groupId]),state.cameras.map(c=>[c.id,c.name,c.lat,c.lon,c.active,c.groupId]),state.groups,state.multiIds,state.cfg.showBadge,selectedFolderId]);
+    const di=$('dashInfo'); if(di) di.textContent=matches.length+' cameras · '+outputCameras().length+' in output';
     const path=$('folderPath'); if(path) path.textContent=selectedFolderId?(groupPath(state.groups.find(g=>g.id===selectedFolderId))||'All cameras'):'All cameras';
-    const allCount=$('folderAllCount'); if(allCount) allCount.textContent=state.cameras.length+' · '+enabledCameras().length+' active';
+    const allCount=$('folderAllCount'); if(allCount) allCount.textContent=state.cameras.length+' cameras · '+outputCameras().length+' in output';
     $('folderAll').classList.toggle('on',!selectedFolderId);
     const pages=Math.max(1,Math.ceil(matches.length/DASH_PAGE_SIZE));
     dashPage=Math.min(dashPage,pages-1);
@@ -1809,37 +2093,29 @@ if(mode==='control'){
     if(signature===dashSig){ dashSyncActive(); return; }
     dashSig=signature;
     box.innerHTML='';
-    if(!matches.length){ box.innerHTML='<div class="hint">No cameras match this folder or search. Add a camera, choose another folder, or show inactive cameras.</div>'; return; }
+    if(!matches.length){ box.innerHTML='<div class="hint">No cameras match this folder or search. Add a camera or choose another folder.</div>'; return; }
     matches.slice(dashPage*DASH_PAGE_SIZE,(dashPage+1)*DASH_PAGE_SIZE).forEach(c=>{
       const card=document.createElement('article');
-      card.className='camera-card'+(c.id===state.activeId?' selected':'')+(cameraActive(c)?'':' inactive');
+      card.className='camera-card'+(c.id===state.activeId?' selected':'');
       const tile=buildTile(c);
-      tile.classList.toggle('inactive-tile',!cameraActive(c));
       tile.addEventListener('click',e=>{ if(e.target.closest('[data-fs]')) return; selectCam(c.id); });
       card.appendChild(tile);
       const info=document.createElement('div'); info.className='camera-card-info';
       const titles=document.createElement('div'); titles.className='camera-card-titles';
-      titles.innerHTML=`<strong title="${esc(c.name)}">${esc(c.name)}</strong><span title="${esc(groupPath(state.groups.find(g=>g.id===c.groupId))||'Unsorted')}">📁 ${esc(groupPath(state.groups.find(g=>g.id===c.groupId))||'Unsorted')}</span>`;
+      const folderName=groupPath(state.groups.find(g=>g.id===c.groupId))||'No folder';
+      titles.innerHTML=`<strong title="${esc(c.name)}">${esc(c.name)}</strong><span title="${esc(folderName)}">📁 ${esc(folderName)}</span>`;
       const actions=document.createElement('div'); actions.className='camera-card-actions';
-      const activeLabel=document.createElement('label'); activeLabel.title='Include this camera in the station output';
-      activeLabel.innerHTML=`<input type="checkbox" data-card-active="${esc(c.id)}"${c.active?' checked':''}> On`;
-      const gridLabel=document.createElement('label'); gridLabel.title='Include this camera in multi-view layouts';
-      gridLabel.innerHTML=`<input type="checkbox" data-card-grid="${esc(c.id)}"${state.multiIds.includes(c.id)?' checked':''}> Grid`;
-      actions.append(activeLabel,gridLabel); info.append(titles,actions); card.appendChild(info); box.appendChild(card);
-    });
-    box.querySelectorAll('[data-card-active]').forEach(input=>input.onchange=()=>{
-      const cam=state.cameras.find(c=>c.id===input.dataset.cardActive); if(!cam) return;
-      const wasActive=cameraActive(cam); cam.active=input.checked;
-      if(!wasActive&&cameraActive(cam)&&!state.multiIds.includes(cam.id)) state.multiIds.push(cam.id);
-      if(!cameraActive(cam)) state.multiIds=state.multiIds.filter(id=>id!==cam.id);
-      syncActive(); saveState(); renderGroupList(); renderGroupControls(); renderCamList(); renderDash(); renderThumbs(); renderPreview(true); renderAlerts();
+      const gridLabel=document.createElement('label'); gridLabel.title='Include this camera in the output; folders do not limit camera selection';
+      gridLabel.innerHTML=`<input type="checkbox" data-card-grid="${esc(c.id)}"${state.multiIds.includes(c.id)?' checked':''}> Output`;
+      actions.append(gridLabel); info.append(titles,actions); card.appendChild(info); box.appendChild(card);
     });
     box.querySelectorAll('[data-card-grid]').forEach(input=>input.onchange=()=>{
       const cam=state.cameras.find(c=>c.id===input.dataset.cardGrid); if(!cam) return;
-      if(input.checked&&!cameraActive(cam)){input.checked=false;alert('Activate this camera and its folder before adding it to the output grid.');return;}
-      if(input.checked&&!state.multiIds.includes(cam.id)) state.multiIds.push(cam.id);
-      if(!input.checked) state.multiIds=state.multiIds.filter(id=>id!==cam.id);
-      saveState(); renderCamList();
+      if(input.checked){ cam.active=true; if(!state.multiIds.includes(cam.id)) state.multiIds.push(cam.id); }
+      else state.multiIds=state.multiIds.filter(id=>id!==cam.id);
+      if(input.checked&&(!state.activeId||!outputCameras().some(c=>c.id===state.activeId))) state.activeId=cam.id;
+      if(state.activeId===cam.id&&!input.checked) state.activeId=outputCameras()[0]?.id||null;
+      saveState(); renderCamList(); renderDash(); renderGroupList(); renderPreview(true);
     });
     dashSyncActive();
   }
@@ -1847,7 +2123,7 @@ if(mode==='control'){
     selectedFolderId=id||null;
     let parent=state.groups.find(g=>g.id===selectedFolderId);
     while(parent&&parent.parentId){ collapsedFolders.delete(parent.parentId); parent=state.groups.find(g=>g.id===parent.parentId); }
-    $('dashGroup').value=selectedFolderId||'all'; $('camGroupFilter').value=selectedFolderId||'all'; $('newCamGroup').value=selectedFolderId||state.groups[0]?.id||''; $('newGroupParent').value=selectedFolderId||'';
+    $('dashGroup').value=selectedFolderId||'all'; $('camGroupFilter').value=selectedFolderId||'all'; $('newCamGroup').value=selectedFolderId||''; $('newGroupParent').value=selectedFolderId||'';
     $('dashSearch').value=''; $('camSearch').value='';
     dashFilterChanged(); renderGroupList();
   }
@@ -1855,24 +2131,23 @@ if(mode==='control'){
   $('dashSearch').oninput=()=>{ $('camSearch').value=$('dashSearch').value; dashFilterChanged(); };
   $('dashGroup').onchange=()=>{ selectedFolderId=$('dashGroup').value==='all'?null:$('dashGroup').value; $('camGroupFilter').value=$('dashGroup').value; dashFilterChanged(); renderGroupList(); };
   $('folderAll').onclick=()=>selectFolder(null);
-  $('finderAddCamera').onclick=()=>{ $('cameraTools').open=true; $('newCamGroup').value=selectedFolderId||state.groups[0]?.id||''; $('addCameraPanel').scrollIntoView({behavior:'smooth',block:'start'}); };
+  $('finderAddCamera').onclick=()=>{ $('cameraTools').open=true;  $('newCamGroup').value=selectedFolderId||''; $('addCameraPanel').scrollIntoView({behavior:'smooth',block:'start'}); };
   $('finderManageBtn').onclick=()=>{ $('cameraManager').open=!$('cameraManager').open; if($('cameraManager').open) $('cameraManager').scrollIntoView({behavior:'smooth',block:'start'}); };
   $('camSearch').oninput=()=>{ $('dashSearch').value=$('camSearch').value; if($('camGroupFilter').value!=='all') selectedFolderId=$('camGroupFilter').value; dashFilterChanged(); };
   $('camGroupFilter').onchange=()=>{ $('dashGroup').value=$('camGroupFilter').value; selectedFolderId=$('camGroupFilter').value==='all'?null:$('camGroupFilter').value; $('dashSearch').value=$('camSearch').value; dashFilterChanged(); renderGroupList(); };
   $('clearGroupFilter').onclick=()=>{ $('camGroupFilter').value='all'; $('dashGroup').value='all'; $('dashSearch').value=''; $('camSearch').value=''; selectFolder(null); };
   $('dashSearch').addEventListener('input',()=>{ $('camSearch').value=$('dashSearch').value; });
   $('finderAddCamera').setAttribute('aria-controls','addCameraPanel'); $('finderManageBtn').setAttribute('aria-controls','cameraManager');
-  $('showInactive').onclick=()=>{ showInactiveDash=!showInactiveDash; $('showInactive').classList.toggle('on',showInactiveDash); $('showInactive').textContent=showInactiveDash?'Hide inactive':'Show inactive'; dashFilterChanged(); };
   $('dashPrev').onclick=()=>{dashPage=Math.max(0,dashPage-1);dashSig='';renderDash();};
   $('dashNext').onclick=()=>{dashPage++;dashSig='';renderDash();};
   function renderDashGroups(){
     const sel=$('dashGroup'); if(!sel) return;
     const val=sel.value||'all';
-    sel.innerHTML='<option value="all">All folders</option>'+state.groups.map(g=>`<option value="${esc(g.id)}">${esc(groupPath(g))}${g.active?'':' (inactive)'}</option>`).join('');
+    sel.innerHTML='<option value="all">All folders</option>'+state.groups.map(g=>`<option value="${esc(g.id)}">${esc(groupPath(g))}</option>`).join('');
     sel.value=state.groups.some(g=>g.id===val)?val:'all';
     if(selectedFolderId&&!state.groups.some(g=>g.id===selectedFolderId)) selectedFolderId=null;
     sel.value=selectedFolderId||'all';
-    const cameraFolder=$('newCamGroup'); if(cameraFolder&&selectedFolderId) cameraFolder.value=selectedFolderId;
+    const cameraFolder=$('newCamGroup'); if(cameraFolder) cameraFolder.value=selectedFolderId||'';
   }
   function dashSyncActive(){
     document.querySelectorAll('#dashGrid .camera-card').forEach(card=>{
@@ -1935,8 +2210,16 @@ if(mode==='control'){
   setInterval(()=>{ const cam=activeCam(); if(cam) fetchAlerts(cam).then(()=>{renderAlerts();updateAlertPill(cam);}); },2*60*1000);
 
   /* ---- output & layout settings ---- */
-  bindSel('multiView','multiView',v=>{});
+  bindSel('multiView','multiView',()=>renderPreview(true));
   bindChk('autoRotate','autoRotate');
+  bindChk('widgetsOn','cfg.widgetsOn',()=>rerenderWidgets());
+  bindChk('clockWidgetOn','cfg.show.clock',()=>{ renderWidgetGrid(); rerenderWidgets(); renderPreview(false); });
+  bindChk('clock24','cfg.clock24',()=>rerenderWidgets());
+  bindChk('showDate','cfg.showDate',()=>rerenderWidgets());
+  $('quickWidgetSettings').onclick=()=>{
+    $('pageSettings').click();
+    $('widgetSettingsPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  };
   bindNum('rotateSec','rotateSec',3,600);
   bindSel('rotateOrder','rotateOrder');
   bindSel('transition','transition',()=>{ $('fadeWrap').style.display=state.transition==='fade'?'inline':'none'; });
@@ -1972,13 +2255,9 @@ if(mode==='control'){
   bindImage('bgFile','bgData','bgClear');
 
   /* ---- display options ---- */
-  bindChk('clock24','cfg.clock24',()=>rerenderWidgets());
-  bindChk('showDate','cfg.showDate',()=>rerenderWidgets());
   bindChk('showName','cfg.showName',()=>{ rerenderWidgets(); renderPreview(true); });
   bindChk('showCoords','cfg.showCoords',()=>{ rerenderWidgets(); renderPreview(true); });
   bindChk('wxDetail','cfg.wxDetail',()=>rerenderWidgets());
-  bindChk('fsWidgets','cfg.fsWidgets');
-  bindChk('fsChrome','cfg.fsChrome');
   bindChk('edgeMode','cfg.edgeMode');
   bindSel('camHeight','cfg.camHeight');
   function bindRange(id,k,valId,suffix,reflow){
@@ -1993,6 +2272,10 @@ if(mode==='control'){
   bindRange('blurAmt','cfg.blur','blurAmtVal','px',true);
   bindRange('tickerSec','cfg.tickerSec','tickerSecVal','s',false);
   bindRange('radarOvW','cfg.radarOvW','radarOvWVal','px',true);
+  $('radarOvW').oninput=()=>{
+    const val=parseInt($('radarOvW').value); state.cfg.radarOvW=val; $('radarOvWVal').textContent=val+'px';
+    saveState(); scopes.forEach(scope=>{ if(scope.isConnected) renderWidgets(scope); }); renderPreview(true);
+  };
 
   /* ---- radar map: which camera it follows, and how far out ---- */
   function renderRadarCamSel(){
@@ -2001,15 +2284,15 @@ if(mode==='control'){
       +state.cameras.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
     sel.value=state.cfg.radarCam||'';
   }
-  $('radarCam').onchange=()=>{ state.cfg.radarCam=$('radarCam').value;    saveState(); rerenderWidgets(); renderPreview(false);
-  };
+  $('radarCam').onchange=()=>{ state.cfg.radarCam=$('radarCam').value; saveState(); rerenderWidgets(); renderPreview(true); };
   $('radarZoom').value=state.cfg.radarZoom;
   $('radarZoom').onchange=()=>{
     let v=parseFloat($('radarZoom').value); if(isNaN(v)) v=defaultCfg().radarZoom;
     v=Math.min(7,Math.max(4,v)); state.cfg.radarZoom=v; $('radarZoom').value=v;
-    saveState(); rerenderWidgets(); renderPreview(false);
+    saveState(); rerenderWidgets(); renderPreview(true);
   };
   function renderWidgetGrid(){
+    $('clockWidgetOn').checked=!!state.cfg.show.clock;
     $('widgetGrid').innerHTML=WIDGETS.map(w=>
       `<div><label style="margin:0"><input type="checkbox" data-wchk="${w.k}"${state.cfg.show[w.k]?' checked':''}> ${w.t}</label>
         <select data-wcor="${w.k}" title="Screen corner">${CORNERS.map(c=>`<option value="${c}"${state.cfg.corner[w.k]===c?' selected':''}>${c.toUpperCase()}</option>`).join('')}</select></div>`
@@ -2044,7 +2327,7 @@ if(mode==='control'){
     const t=THEMES[key]; if(!t) return;
     state.cfg.colors={...t}; state.cfg.theme=key;
     applyStyle(); saveState(); renderThemeUI();
-    if(state.cameras.length) renderPreview(false);
+    if(state.cameras.length) renderPreview(true);
   }
   $('themeSel').onchange=()=>{ if($('themeSel').value!=='custom') applyPreset($('themeSel').value); };
 
@@ -2124,6 +2407,14 @@ if(mode==='control'){
 
   /* ---- boot ---- */
   updateOsmLink(NaN,NaN);
+  $('newType').onchange();
+  $('autoRotate').checked=!!state.autoRotate;
+  $('rotateSec').value=state.rotateSec;
+  $('widgetsOn').checked=state.cfg.widgetsOn!==false;
+  $('clockWidgetOn').checked=!!state.cfg.show.clock;
+  $('clock24').checked=!!state.cfg.clock24;
+  $('showDate').checked=!!state.cfg.showDate;
+  $('prevSec').value=state.cfg.prevSec;
   renderThemeUI();
   renderWidgetGrid();
   renderGroupControls();
@@ -2143,17 +2434,24 @@ if(mode==='control'){
     if(e.key!==KEY) return;
     state=loadState();
     applyStyle();
-    if(settingsSig()===lastSig){ renderGroupControls(); renderGroupList(); renderCamList();renderDash(); renderPreview(true); renderThumbs(); updateAlertPill(activeCam()); return; }
+    const changed=settingsSig()!==lastSig;
     lastSig=settingsSig();
-    renderThemeUI(); renderWidgetGrid(); renderGroupControls(); renderGroupList(); renderCamList(); renderThumbs(); renderPreview(true); renderAlerts(); bindCustomOverlay();
+    if(changed){ renderThemeUI(); renderWidgetGrid(); renderGroupControls(); bindCustomOverlay(); }
+    $('widgetsOn').checked=state.cfg.widgetsOn!==false;
+    $('clockWidgetOn').checked=!!state.cfg.show.clock;
+    $('clock24').checked=!!state.cfg.clock24;
+    $('showDate').checked=!!state.cfg.showDate;
+    $('autoRotate').checked=!!state.autoRotate;
+    $('rotateSec').value=state.rotateSec;
+    renderGroupList(); renderCamList(); renderDash(); renderPreview(true); renderThumbs(); renderAlerts();
   });
 }
 
 /* ================= OUTPUT MODE ================= */
 if(mode==='output'){
   const grid=$('viewerGrid'), oWrap=$('oWrap'), view=$('outputView');
-  const currentCam=()=>state.cameras.find(c=>c.id===state.activeId&&cameraActive(c))||enabledCameras()[0]||null;
-  const gridCams=()=>enabledCameras().filter(c=>state.multiIds.includes(c.id)).slice(0,state.multiView);
+  const currentCam=()=>outputCameras().find(c=>c.id===state.activeId)||outputCameras()[0]||null;
+  const gridCams=()=>outputCameras().slice(0,state.multiView);
 
   /* ---- tile alert badges ---- */
   function applyTileAlerts(){
@@ -2187,6 +2485,7 @@ if(mode==='output'){
   function nextThumb(cam){ return cam&&cam.type==='image'?stamp(cam):''; }
   function nextCtx(){ const n=peekNextCam(); return n?{name:n.name,id:n.id,thumb:nextThumb(n)}:null; }
   function updateNextWidget(){
+    if(mode==='output'&&document.fullscreenElement===oWrap) return;
     if(!rotationActive()||paused||hoverPause){
       const w=oWrap.querySelector('.w.next'); if(w) w.style.display='none';
       return;
@@ -2210,14 +2509,14 @@ if(mode==='output'){
   /* ---- rotation engine ---- */
   let paused=false,hoverPause=false,lastRotate=Date.now(),hoverRemain=null,shuffleBag=[];
   const rotationMs=()=>Math.max(3,state.rotateSec)*1000;
-  const rotationActive=()=>state.autoRotate&&state.multiView===1&&enabledCameras().length>1;
+  const rotationActive=()=>state.autoRotate&&state.multiView===1&&outputCameras().length>1;
   function refillBag(excludeId){
-    const ids=enabledCameras().filter(c=>c.id!==excludeId).map(c=>c.id);
+    const ids=outputCameras().filter(c=>c.id!==excludeId).map(c=>c.id);
     for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=ids[i];ids[i]=ids[j];ids[j]=t;}
     shuffleBag=ids;
   }
   function nextId(dir){
-    const ids=enabledCameras().map(c=>c.id);
+    const ids=outputCameras().map(c=>c.id);
     if(!ids.length) return null;
     if(state.rotateOrder==='shuffle'){
       if(!shuffleBag.length) refillBag(state.activeId);
@@ -2227,7 +2526,7 @@ if(mode==='output'){
     return ids[(i+(dir||1)+ids.length)%ids.length];
   }
   function peekNextCam(){
-    const ids=enabledCameras().map(c=>c.id);
+    const ids=outputCameras().map(c=>c.id);
     if(!ids.length) return null;      let id;
     if(state.rotateOrder==='shuffle'){
       id=shuffleBag.length?shuffleBag[shuffleBag.length-1]:ids.filter(x=>x!==state.activeId)[0];
@@ -2240,7 +2539,7 @@ if(mode==='output'){
 
   /* ---- rendering ---- */
   function showCamera(c,fade){
-    if(!c||!cameraActive(c)){ c=currentCam(); if(!c){grid.innerHTML='<div class="hint" style="padding:20px">No active cameras. Activate a group in Control → Cameras.</div>';return;} }
+    if(!c||!cameraActive(c)||!state.multiIds.includes(c.id)){ c=currentCam(); if(!c){grid.innerHTML='<div class="hint" style="padding:20px">No cameras are selected for the output. Choose “Output” on any camera in Control.</div>';return;} }
     grid.className='grid g1'+(state.cfg.bgData?' hasbg':'');
     const old=grid.querySelector('.camtile:not(.leaving)');
     const tile=buildTile(c);
@@ -2252,7 +2551,7 @@ if(mode==='output'){
       setTimeout(()=>{old.remove();tile.classList.remove('entering');},state.fadeMs+60);
     } else { grid.innerHTML=''; }
     grid.appendChild(tile);
-    $('rotIdx').textContent='Cam '+(enabledCameras().indexOf(c)+1)+' / '+enabledCameras().length;
+    $('rotIdx').textContent='Cam '+(outputCameras().findIndex(x=>x.id===c.id)+1)+' / '+outputCameras().length;
     $('rotName').textContent=c.name;
     ['btnPrev','btnPlay','btnNext'].forEach(id=>{ const b=$(id); if(b) b.disabled=!rotationActive(); });
     fetchWx(c).then(d=>{ setScope(c,d,oWrap._ctx.alerts,nextCtx()); });
@@ -2265,7 +2564,7 @@ if(mode==='output'){
     grid.className='grid g'+state.multiView+(state.cfg.bgData?' hasbg':'');
     grid.innerHTML='';
     if(!cams.length){
-      grid.innerHTML='<div class="hint" style="padding:20px">No active cameras selected for this grid. Activate cameras/groups and choose “In grid” in Control.</div>';
+      grid.innerHTML='<div class="hint" style="padding:20px">No cameras are selected for the output. Choose “Output” on any camera in Control, regardless of its folder.</div>';
       setScope(null,null,[],null); return;
     }
     cams.forEach(c=>grid.appendChild(buildTile(c)));
@@ -2275,8 +2574,8 @@ if(mode==='output'){
     loadAlertsFor(cams,list=>setScope(null,null,list,null));
   }
   function renderOutput(rebuild){
-    const eligible=enabledCameras();
-    if(!eligible.length){ state.activeId=null; state.multiView=1; }
+    const eligible=outputCameras();
+    if(!eligible.length) state.activeId=null;
     else if(!eligible.some(c=>c.id===state.activeId)) state.activeId=eligible[0].id;
     applyStyle();
     oWrap.classList.toggle('fill',state.cfg.camHeight!=='auto');
@@ -2314,7 +2613,7 @@ if(mode==='output'){
 
   /* ---- rotation ticker ---- */
   setInterval(()=>{
-    if(!rotationActive()){ $('cdownFill').style.width='0'; $('paused').textContent=''; return; }
+    if(!rotationActive()||document.fullscreenElement){ $('cdownFill').style.width='0'; $('paused').textContent=''; return; }
     const ms=rotationMs(), now=Date.now();
     if(!paused&&!hoverPause&&now-lastRotate>=ms){
       lastRotate=now;
@@ -2331,19 +2630,19 @@ if(mode==='output'){
 
   /* ---- controls ---- */
   function togglePause(){ if(!rotationActive()) return; paused=!paused; if(!paused) lastRotate=Date.now(); updatePauseVisuals(); }
-  function step(dir){ if(enabledCameras().length<2||state.multiView!==1) return; state.activeId=nextId(dir); if(!state.activeId) return; saveState(); showCamera(state.cameras.find(c=>c.id===state.activeId),true); }
+  function step(dir){ if(outputCameras().length<2||state.multiView!==1) return; state.activeId=nextId(dir); if(!state.activeId) return; saveState(); showCamera(state.cameras.find(c=>c.id===state.activeId),true); }
   $('btnPlay').onclick=e=>{togglePause();e.currentTarget.blur();};
   $('btnNext').onclick=e=>{step(1);e.currentTarget.blur();};
   $('btnPrev').onclick=e=>{step(-1);e.currentTarget.blur();};
   $('btnUpdate').onclick=e=>{forceRefresh();e.currentTarget.blur();};
   $('btnFull').onclick=e=>{
     if(document.fullscreenElement) document.exitFullscreen();
-    else document.documentElement.requestFullscreen().catch(()=>{});
+    else oWrap.requestFullscreen().catch(()=>{});
     e.currentTarget.blur();
   };
   $('btnTV').onclick=e=>{ location.href=tvUrl(); };
   $('btnSecond').onclick=e=>{ openTVWindow(true); e.currentTarget.blur(); };
-  $('btnOverlay').onclick=e=>{ oWrap._showWidgets=!oWrap._showWidgets; renderWidgets(oWrap); e.currentTarget.blur(); };
+  $('btnOverlay').onclick=e=>{ state.cfg.widgetsOn=state.cfg.widgetsOn===false; saveState(); rerenderWidgets(); e.currentTarget.blur(); };
   grid.addEventListener('click',e=>{
     const b=e.target.closest('[data-fs]'); if(!b) return;
     const tile=b.closest('.camtile'); if(!tile) return;
@@ -2357,20 +2656,39 @@ if(mode==='output'){
   /* overlays live outside the tile, so move them into it to keep widgets on screen in fullscreen */
   let movedOut=[];
   function overlaysInScope(){ return [...oWrap.children].filter(el=>el.classList.contains('wl')||el.classList.contains('pagestrip')||el.classList.contains('tickbar')); }
-  function restoreOverlays(){ movedOut.forEach(n=>oWrap.appendChild(n)); movedOut=[]; }
+  function restoreOverlays(){ movedOut.forEach(n=>oWrap.appendChild(n)); movedOut=[]; oWrap._fullscreenTile=null; }
   document.addEventListener('fullscreenchange',()=>{
     const fs=document.fullscreenElement;
     $('btnFull').textContent=fs?'⛶ Exit':'⛶ Fullscreen';
-    const tileFs=!!(fs&&fs.classList&&fs.classList.contains('camtile'));
+    const tileFs=!!(fs&&oWrap.contains(fs)&&fs.classList&&fs.classList.contains('camtile'));
     view.classList.toggle('fsbarhide',!!fs&&state.cfg.fsBarHide);
     oWrap.classList.toggle('fsframe',!!fs&&!tileFs);
     restoreOverlays();
     if(tileFs){
-      fs.classList.toggle('fsnocap',!state.cfg.fsChrome);
+      fs.classList.remove('fsnocap');
       ['--tickh','--btop'].forEach(v=>fs.style.setProperty(v,getComputedStyle(oWrap).getPropertyValue(v)||'0px'));
-      if(state.cfg.fsWidgets&&oWrap._showWidgets){ movedOut=overlaysInScope(); movedOut.forEach(n=>fs.appendChild(n)); }
+      fs.style.setProperty('--camh','100vh');
+      if(state.cfg.widgetsOn!==false){
+        const cam=state.cameras.find(c=>c.id===fs.dataset.camid);
+        if(cam){
+          const wx=(wxCache[cam.id]&&wxCache[cam.id].data)||null;
+          const alerts=(alCache[cam.id]&&alCache[cam.id].data)||[];
+          setScope(cam,wx,alerts,null);
+        }
+        movedOut=overlaysInScope(); movedOut.forEach(n=>fs.appendChild(n));
+        oWrap._fullscreenTile=fs;
+        requestAnimationFrame(()=>{ if(oWrap._radarEl) fitRadar(oWrap._radarEl); });
+      }
       hoverPause=true;
-    } else { hoverPause=false; lastRotate=Date.now(); }
+    } else {
+      hoverPause=false; lastRotate=Date.now();
+      if((!fs||fs===oWrap)&&oWrap._ctx){
+        const cam=currentCam(), wx=cam&&(wxCache[cam.id]&&wxCache[cam.id].data)||null;
+        const alerts=cam&&(alCache[cam.id]&&alCache[cam.id].data)||[];
+        setScope(cam,wx,alerts,nextCtx());
+      }
+      if(oWrap._radarEl) requestAnimationFrame(()=>fitRadar(oWrap._radarEl));
+    }
   });
   grid.addEventListener('mouseenter',()=>{ if(!rotationActive()||paused) return; hoverRemain=rotationMs()-(Date.now()-lastRotate); hoverPause=true; });
   grid.addEventListener('mouseleave',()=>{ if(!hoverPause) return; hoverPause=false; if(!document.fullscreenElement) lastRotate=Date.now()-Math.max(0,rotationMs()-(hoverRemain||rotationMs())); });
@@ -2420,15 +2738,15 @@ if(mode==='output'){
     document.body.appendChild(sp);
     sp.querySelector('#tvStart').onclick=()=>{
       sp.remove();
-      const el=document.documentElement;
-      if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+      const el=$('oWrap');
+      if(el&&el.requestFullscreen) el.requestFullscreen().catch(()=>{});
       wakeLock();
     };
   }
 
   /* ---- remote control: commands in, status out ---- */
   function sendStatus(){
-    syncSend({t:'status',activeId:state.activeId,multiView:state.multiView,paused:!!paused,rotating:rotationActive(),n:enabledCameras().length});
+    syncSend({t:'status',activeId:state.activeId,multiView:state.multiView,paused:!!paused,rotating:rotationActive(),n:outputCameras().length});
   }
   onSync((msg,via)=>{
     if(msg.t==='hello'){ sendStatus(); syncSend({t:'state',state}); return; }
@@ -2447,7 +2765,7 @@ if(mode==='output'){
     else if(c==='refresh') forceRefresh();
     else if(c==='widgets') $('btnOverlay').click();
     else if(c==='fullscreen') $('btnFull').click();
-    else if(c==='show'&&v&&state.cameras.some(cam=>cam.id===v&&cameraActive(cam))){ state.activeId=v; state.multiView=1; saveState(); renderOutput(true); }
+    else if(c==='show'&&v&&state.cameras.some(cam=>cam.id===v&&cameraActive(cam))){ if(!state.multiIds.includes(v)) state.multiIds.push(v); state.activeId=v; state.multiView=1; saveState(); renderOutput(true); }
     else if(c==='layout'){ state.multiView=[1,4,6].includes(+v)?+v:1; saveState(); renderOutput(true); }
     else if(c==='auto'){ state.autoRotate=!!v; saveState(); renderOutput(true); }
     else if(c==='speed'){ state.rotateSec=Math.min(600,Math.max(3,parseInt(v)||10)); saveState(); }
