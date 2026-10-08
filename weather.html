@@ -58,10 +58,8 @@ a.lnk{color:var(--accent2);text-decoration:none;font-size:12px;border-bottom:1px
 .stage{position:relative;background:#000;border:1px solid var(--line);border-radius:6px;overflow:hidden;aspect-ratio:var(--stage-ratio,16/9);}
 .stage.output-stage{isolation:isolate}
 .stage.output-stage:fullscreen{width:100vw;height:100vh;max-height:none;aspect-ratio:auto;border:0;border-radius:0}
-.stage.output-stage>.grid{position:absolute;inset:0;width:100%;height:100%;min-height:0;grid-auto-rows:minmax(0,1fr);grid-template-rows:repeat(2,minmax(0,1fr))}
+.stage.output-stage>.grid{position:absolute;inset:0;width:100%;height:100%;min-height:0;grid-auto-rows:minmax(0,1fr);grid-template-columns:repeat(var(--gcols,2),minmax(0,1fr));grid-template-rows:repeat(var(--grows,2),minmax(0,1fr))}
 .stage.output-stage>.grid.g1{grid-template-columns:1fr;grid-template-rows:1fr;grid-auto-rows:auto}
-.stage.output-stage>.grid.g4{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
-.stage.output-stage>.grid.g6{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
 .stage.output-stage .camtile{min-height:0;aspect-ratio:auto}
 .stage img,.stage video,.stage iframe{width:100%;height:100%;object-fit:cover;display:block;border:0;background:#000;}
 .stage.contain img,.stage.contain video{object-fit:contain;}
@@ -117,6 +115,11 @@ a.lnk{color:var(--accent2);text-decoration:none;font-size:12px;border-bottom:1px
 .folder-open .folder-icon{margin-right:5px}
 .groupitem .folder-depth{font-size:9px;color:var(--muted)}
 .groupitem>.pill{align-self:center}
+.folder-output{display:flex;align-items:center;gap:5px;align-self:center;font:600 10px var(--mono);color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:2px 8px;cursor:pointer;transition:.15s;white-space:nowrap}
+.folder-output:hover{border-color:var(--accent2)}
+.folder-output .fo-dot{width:7px;height:7px;border-radius:50%;background:transparent;border:1px solid var(--muted);flex:0 0 auto}
+.folder-output.all{color:var(--accent2);border-color:var(--accent2)}
+.folder-output.all .fo-dot{background:var(--accent2);border-color:var(--accent2)}
 .folder-actions{grid-column:1/-1;position:relative}
 .folder-actions>summary{cursor:pointer;color:var(--muted);font-size:10px;list-style:none;text-align:right}
 .folder-actions>summary::-webkit-details-marker{display:none}
@@ -132,6 +135,15 @@ a.lnk{color:var(--accent2);text-decoration:none;font-size:12px;border-bottom:1px
 .dashbar input{min-width:160px;flex:1}
 .dashbar select{min-width:160px}
 .dashgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:14px;align-content:start}
+.dashgrid.list-view{grid-template-columns:1fr;gap:8px}
+.dashgrid.list-view .camera-card{display:grid;grid-template-columns:minmax(180px,27%) minmax(0,1fr);align-items:stretch}
+.dashgrid.list-view .camera-card .camtile{width:100%;min-width:0;height:100%;min-height:130px;aspect-ratio:16/9}
+.dashgrid.list-view .camera-card-info{min-width:0;min-height:0;padding:12px 14px}
+.dashgrid.list-view .camera-card-titles{min-width:0;overflow:hidden}
+.dashgrid.list-view .camera-card-actions{max-width:100%}
+.dash-view-tools{display:flex;align-items:center;gap:5px;margin-left:auto}
+.dash-view-tools button.on{border-color:var(--accent);color:var(--accent)}
+.dash-view-tools select{font-size:11px;padding:5px 7px}
 .camera-card{min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:8px;background:var(--panel2);transition:border-color .15s,box-shadow .15s}
 .camera-card:hover{border-color:var(--accent2)}
 .camera-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
@@ -140,21 +152,74 @@ a.lnk{color:var(--accent2);text-decoration:none;font-size:12px;border-bottom:1px
 .camera-card .camtile .cap{font-size:11px}
 .camera-card .camtile .cap button{display:block}
 .camera-card .camera-card-info{min-height:76px}
+.camera-card .camtile{overflow:visible}
 .camera-card-actions input{accent-color:var(--accent2)}
 .finder-tool-grid .finder-detail{margin:0}
 .camera-card-info{padding:10px 11px 9px;display:flex;justify-content:space-between;gap:8px;align-items:center}
 .camera-card-titles{min-width:0}
 .camera-card-titles strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .camera-card-titles span{display:block;margin-top:3px;font:10px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.camera-card-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.camera-card-actions{display:flex;align-items:center;gap:7px;flex-shrink:0}
 .camera-card-actions label{display:flex;align-items:center;gap:4px;margin:0;font-size:10px;white-space:nowrap}  .camera-card-actions button{font-size:10px;padding:4px 7px}
-.quick-controls{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;padding:9px 12px;background:var(--panel);border:1px solid var(--line);border-radius:8px}
-.quick-control{display:flex;align-items:center;gap:10px;padding:2px 10px;border-right:1px solid var(--line);flex-wrap:wrap}
+.camera-card-tools{display:flex;align-items:center;gap:7px;padding:0 11px 10px}
+.camera-card-tools label{margin:0;white-space:nowrap;font-size:10px}
+.camera-card-tools select{min-width:0;flex:1;padding:5px 7px;font-size:10px}
+.camera-card-tools .edit-camera{flex:0 0 auto}
+.camera-editor-overlay[hidden]{display:none!important}
+.camera-editor-overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(3,8,13,.78);backdrop-filter:blur(6px)}
+.camera-editor-window{width:min(920px,96vw);max-height:min(880px,94vh);display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.55);overflow:hidden}
+.camera-editor-head,.camera-editor-foot{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.camera-editor-head h2{margin:0;color:var(--text);font-size:15px;text-transform:none;letter-spacing:0}
+.camera-editor-head .sub{color:var(--muted);font-size:11px;margin-top:4px}
+.camera-editor-head .close-editor{margin-left:auto;font-size:18px;padding:4px 10px}
+.camera-editor-body{display:grid;grid-template-columns:220px minmax(0,1fr);gap:0;min-height:0;overflow:hidden}
+.camera-editor-sidebar{padding:13px 10px;background:var(--panel2);border-right:1px solid var(--line);overflow:auto}
+.editor-section-label{padding:4px 7px 7px;font:600 10px var(--mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.editor-folder,.editor-camera{display:flex;align-items:center;gap:7px;width:100%;padding:7px 8px;border:0;background:transparent;text-align:left;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.editor-folder{color:var(--muted)}
+.editor-folder.on,.editor-camera.on{background:var(--accent);color:#10161d;border-radius:5px;font-weight:600}
+.editor-cameras-label{margin-top:14px;display:flex;justify-content:space-between}
+.editor-camera-list{display:flex;flex-direction:column;gap:2px}
+.editor-camera-icon{flex:0 0 17px;color:var(--accent2)}
+.editor-camera-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.editor-disabled{margin-left:auto;font-size:9px;color:var(--muted)}
+.editor-empty{padding:8px;color:var(--muted);font-size:11px}
+.camera-editor-main{min-width:0;overflow:auto}
+.camera-editor-file-head{display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.camera-editor-file-head .camera-editor-preview{flex:0 0 180px}
+.camera-editor-file-summary{min-width:0}
+.camera-editor-file-summary h3{margin:0 0 5px;font-size:15px}
+.camera-editor-file-summary .editor-loc{font:10px var(--mono);color:var(--muted)}
+.camera-editor-file-summary .editor-note{max-width:500px;margin-top:8px;font-size:11px;line-height:1.45;color:var(--muted)}
+.camera-editor-preview{position:relative;aspect-ratio:16/10;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#080d12}
+.camera-editor-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.camera-editor-preview .preview-empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:13px}
+.camera-editor-preview [hidden]{display:none!important}
+.camera-editor-form{padding:16px 20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-content:start}
+.camera-editor-form .full{grid-column:1/-1}
+.camera-editor-form label{font-size:11px}
+.camera-editor-form input,.camera-editor-form select,.camera-editor-form textarea{width:100%}
+.camera-editor-form textarea{min-height:76px;resize:vertical}
+.camera-editor-options{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}
+.camera-editor-options label{display:flex;align-items:center;gap:6px;margin:0;color:var(--text)}
+.camera-editor-foot{border-top:1px solid var(--line);border-bottom:0;justify-content:flex-end}
+.camera-editor-foot .hint{margin-right:auto}
+.rc-source{display:flex;align-items:center;gap:5px;padding:0 7px 7px;font-size:10px;color:var(--muted)}
+.rc-source label{margin:0;font-size:10px;white-space:nowrap}
+.rc-source select{flex:1;min-width:0;padding:4px 6px;font-size:10px}
+@media(max-width:700px){.camera-editor-overlay{padding:8px}.camera-editor-window{max-height:96vh}.camera-editor-body{grid-template-columns:150px minmax(0,1fr)}.camera-editor-file-head{padding:10px;gap:10px}.camera-editor-file-head .camera-editor-preview{flex-basis:110px}.camera-editor-form{padding:12px;gap:9px}.camera-card-tools{flex-wrap:wrap}}
+@media(max-width:480px){.camera-editor-body{grid-template-columns:110px minmax(0,1fr)}.camera-editor-sidebar{padding:8px 5px}.editor-folder,.editor-camera{font-size:10px;padding:6px 4px}.camera-editor-file-head .camera-editor-preview{flex-basis:78px}.camera-editor-file-summary .editor-note{font-size:9px}.camera-editor-form{grid-template-columns:1fr}.camera-editor-form .full{grid-column:1}.camera-editor-foot{padding:10px;gap:6px}.camera-editor-foot .hint{display:none}}
+.camera-card-tools label{display:inline!important}
+.quick-controls{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:11px 24px;background:var(--panel2);border-bottom:1px solid var(--line)}
+.quick-control{display:flex;align-items:center;gap:9px;padding:0;border-right:1px solid var(--line);flex-wrap:wrap}
 .quick-control:last-child{border-right:0}
-.quick-title{font:600 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent2)}
-.quick-control label{display:flex;align-items:center;gap:4px;margin:0;white-space:nowrap;font-size:11px}
-.quick-control input[type=number]{padding:3px 5px}
+.quick-title{font:600 9px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.quick-control label{display:flex;align-items:center;gap:5px;margin:0;white-space:nowrap;font-size:11px}
+.quick-control input[type=number]{padding:3px 5px;width:52px}
+.quick-control select{padding:4px 7px;font-size:11px;border-radius:5px}
 .quick-control button{white-space:nowrap}
+.quick-hint{margin-left:auto;font-size:10px;color:var(--muted);white-space:nowrap}
+.quick-hint kbd{font:10px var(--mono);background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:1px 5px;margin:0 1px;color:var(--text)}
 .cam-iframe-css{margin:5px 0 8px}
 textarea.cam-iframe-editor{width:100%;min-height:110px;font-size:11px}  .cam-css-note{font-size:10px;color:var(--muted);line-height:1.45;margin:4px 0 8px}
 .iframe-view-controls{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
@@ -226,11 +291,9 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 #outputView.edge .owrap{border-radius:0;border-left:0;border-right:0;margin-bottom:0}
 #outputView.fsbarhide #outBar{display:none}
 .owrap{position:relative;background:#000;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:12px;}
-.grid{display:grid;gap:var(--gap,2px);background:#000;}
+.grid{display:grid;gap:var(--gap,2px);background:#000;grid-template-columns:repeat(var(--gcols,2),minmax(0,1fr));grid-template-rows:repeat(var(--grows,2),minmax(0,1fr))}
 .grid.hasbg{background:var(--stbg) center/cover no-repeat;}
-.grid.g1{grid-template-columns:1fr}
-.grid.g4{grid-template-columns:1fr 1fr}
-.grid.g6{grid-template-columns:1fr 1fr 1fr}
+.grid.g1{grid-template-columns:1fr;grid-template-rows:1fr}
 .camtile{position:relative;background:#000;overflow:hidden;aspect-ratio:16/9;}
 .camtile.nofeed{background:var(--stbg,#0b0f14) center/cover no-repeat;}
 .camtile.nofeed img{opacity:0}
@@ -251,15 +314,16 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .camtile .cap .rt{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .camtile .cap .st{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:10px}
 .camtile .cap .alerttag{display:none;background:var(--sev,#e8590c);color:#fff;border-radius:3px;padding:1px 6px;font-size:10px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.camwx{position:absolute;top:10px;right:10px;z-index:4;display:flex;align-items:center;gap:6px;max-width:calc(100% - 20px);padding:6px 9px;border:1px solid rgba(255,255,255,.2);border-radius:7px;background:rgba(8,12,16,.76);backdrop-filter:blur(8px);color:#fff;font-family:var(--mono);text-shadow:0 1px 2px #000;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.camwx .camwx-icon{font-size:18px;line-height:1}
-.camwx b{font-size:16px;font-weight:700;white-space:nowrap;letter-spacing:-.03em}
-.camwx .camwx-cond{min-width:0;font-size:10px;color:#d9e3ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.camwx.unavailable .camwx-cond{color:var(--muted)}
-.camtile:fullscreen .camwx{position:absolute!important;top:10px!important;right:10px!important;display:flex!important;max-width:min(420px,46vw)}
-.camera-card .camwx{top:8px;right:8px;padding:4px 7px;gap:5px}
-.camera-card .camwx b{font-size:14px}
-.camera-card .camwx .camwx-cond{font-size:9px}
+.camwx{position:absolute;top:10px;right:10px;z-index:4;display:flex;align-items:stretch;max-width:calc(100% - 20px);border:1px solid rgba(255,255,255,.14);border-left:3px solid var(--accent2,#3fa7a0);border-radius:4px;background:rgba(9,15,23,.9);backdrop-filter:blur(8px) saturate(1.1);color:#fff;font-family:var(--sans);pointer-events:none;box-shadow:0 3px 12px rgba(0,0,0,.34);overflow:hidden}
+.camwx .camwx-icon{display:flex;align-items:center;padding:5px 9px;background:linear-gradient(135deg,#2b8f92,#2b6c9c);font-size:15px;line-height:1}
+.camwx b{font-size:15px;font-weight:700;white-space:nowrap;letter-spacing:-.02em;padding:5px 8px 5px 10px;align-self:center}
+.camwx .camwx-cond{min-width:0;font-size:10px;font-weight:500;color:#cddbe6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:5px 11px 5px 0;align-self:center;max-width:130px}
+.camwx.unavailable .camwx-cond{color:#8ca0b3}
+.camtile:fullscreen .camwx{position:absolute!important;top:10px!important;right:10px!important;display:flex!important;max-width:min(300px,42vw)}
+.camera-card .camwx{top:8px;right:8px}
+.camera-card .camwx .camwx-icon{font-size:12px;padding:4px 7px}
+.camera-card .camwx b{font-size:13px;padding:4px 6px 4px 8px}
+.camera-card .camwx .camwx-cond{font-size:9px;max-width:90px;padding:4px 8px 4px 0}
 .camtile .cap button{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.22);color:#fff;padding:1px 7px;font-size:12px;opacity:.3;transition:.15s}
 .camtile:hover .cap button{opacity:1}
 .pagestrip{position:absolute;top:0;left:0;right:0;z-index:7;display:flex;flex-direction:column;gap:4px}
@@ -278,7 +342,8 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .wl[data-c=tr]{top:calc(10px + var(--btop,0px));right:10px;align-items:flex-end}
 .wl[data-c=bl]{bottom:calc(40px + var(--tickh,0px));left:10px}
 .wl[data-c=br]{bottom:calc(40px + var(--tickh,0px));right:10px;align-items:flex-end}
-.w{background:rgba(8,12,16,var(--ovbg));backdrop-filter:blur(var(--blur,3px));border-radius:5px;padding:var(--ovpad,4px) calc(var(--ovpad,4px) * 2);color:#fff;font-family:var(--mono);font-size:.86em;display:flex;gap:7px;align-items:center;pointer-events:auto}
+.w{background:linear-gradient(180deg,rgba(16,24,33,.94),rgba(9,15,23,.94));backdrop-filter:blur(var(--blur,6px)) saturate(1.1);border:1px solid rgba(255,255,255,.1);border-left:3px solid var(--accent2,#3fa7a0);border-radius:4px;padding:calc(var(--ovpad,4px) + 2px) calc(var(--ovpad,4px) * 2 + 2px);color:#fff;font-family:var(--sans);font-size:.82em;display:flex;gap:9px;align-items:center;pointer-events:auto;box-shadow:0 4px 18px rgba(0,0,0,.42)}
+.w .kicker{font-size:.58em;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#7fe3d8}
 .w.custom{max-width:100%;white-space:pre-wrap;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .w.custom.badge{border-radius:999px}
 .w.custom.strip{border-radius:2px;width:max-content;max-width:min(80vw,680px)}
@@ -292,13 +357,25 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .qrnote{font-size:11px;max-width:300px;line-height:1.5}
 
 .w.name{font-family:var(--sans);font-weight:600;font-size:1.02em}
-.w.wx{gap:9px}
-.w.wx .big{font-size:1.25em;color:#fff}
+/* weather lower-third: accent panel + data body, like a live news weather bug */
+.w.wx{gap:0;align-items:stretch;padding:0;border-left:none;overflow:hidden;border-radius:4px;max-width:min(360px,86vw)}
+.w.wx .wx-accent{display:flex;align-items:center;padding:9px 12px;background:linear-gradient(135deg,#2b8f92,#2b6c9c);color:#fff}
+.w.wx .wx-icon{font-size:1.5em;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+.w.wx .wx-body{display:flex;flex-direction:column;justify-content:center;padding:7px 13px;background:rgba(9,15,23,.94);min-width:0;flex:1}
+.w.wx .wx-loc{font-size:.58em;letter-spacing:.16em;text-transform:uppercase;color:#8fb0c6;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w.wx .wx-row{display:flex;align-items:baseline;gap:8px;margin:1px 0}
+.w.wx .wx-temp{font-size:1.75em;font-weight:700;letter-spacing:-.02em;line-height:1.02}
+.w.wx .wx-cond{font-size:.74em;color:#d7e2ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w.wx .wx-detail{display:flex;flex-wrap:wrap;gap:2px 12px;margin-top:2px;font-size:.62em;color:#a9bccd}
+.w.wx .wx-detail b{color:#fff;font-weight:600}
 .w.chips{flex-wrap:wrap;gap:6px;font-size:.8em;color:#dfe7ee}
-.w.chips i{font-style:normal;border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:1px 7px}
-.w.clock{flex-direction:column;align-items:flex-end;gap:0}
-.w.clock .t{font-size:1.35em;font-weight:600;letter-spacing:.02em}
-.w.clock .d{font-size:.72em;color:#cbd6e0}
+.w.chips i{font-style:normal;border:1px solid rgba(255,255,255,.18);border-radius:3px;padding:1px 7px;background:rgba(255,255,255,.06)}
+/* broadcast time bug with LIVE strip */
+.w.clock{gap:0;padding:0;border-left:none;align-items:stretch;overflow:hidden}
+.w.clock .cbadge{background:#d5202f;color:#fff;font-size:.56em;font-weight:700;letter-spacing:.18em;padding:6px 9px;text-transform:uppercase;display:flex;align-items:center}
+.w.clock .clock-main{display:flex;flex-direction:column;padding:5px 12px;background:rgba(9,15,23,.94)}
+.w.clock .t{font-size:1.5em;font-weight:700;letter-spacing:.01em;line-height:1.05}
+.w.clock .d{font-size:.64em;color:#b7c6d4;letter-spacing:.04em}
 .w.logo{background:transparent;padding:0}
 .w.logo img{height:calc(46px * var(--ovscale));display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
 /* compact on-camera radar: distinct from the other widgets, with readable status + intensity key */
@@ -321,20 +398,19 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .radarov .rovlegend{display:none}
 .radarov .rovattr{flex:0 0 auto;color:rgba(255,255,255,.8)}
 @media(max-width:560px){.radarov .rovhead{top:5px;left:5px;right:5px;padding:4px 6px}.radarov .rovfoot{left:5px;right:5px;bottom:5px}}
-.w.next{gap:8px;padding:4px 8px 4px 4px}
-.w.next img{width:76px;height:43px;object-fit:cover;border-radius:3px;display:block;background:#0b0f14}
-.w.next .nx{display:flex;flex-direction:column;line-height:1.25}
-.w.next .nx b{font-size:.85em;font-weight:500}
-.w.next .nx span{font-size:.72em;color:#cbd6e0}
+.w.next{gap:0;padding:0;border-left:none;align-items:stretch;overflow:hidden}
+.w.next .nx-thumb{width:82px;height:47px;object-fit:cover;display:block;background:#0b0f14;flex:0 0 auto}
+.w.next .nx{display:flex;flex-direction:column;justify-content:center;line-height:1.15;padding:5px 12px;background:rgba(9,15,23,.94);min-width:0}
+.w.next .nx b{font-size:.58em;font-weight:700;letter-spacing:.18em;color:#7fe3d8;text-transform:uppercase}
+.w.next .nx span{font-size:.82em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .abanner{display:flex;gap:8px;align-items:center;background:var(--sev,#e8590c);color:#fff;border-radius:5px;padding:5px 10px;font-family:var(--mono);font-size:.84em;pointer-events:auto;max-width:100%}
 .abanner b{font-family:var(--sans)}
 .owrap.fsframe .wl,.owrap.fsframe .pagestrip,.owrap.fsframe .tickbar{display:flex}
 .owrap.fsframe .camtile .cap{display:flex}
 .owrap:fullscreen{width:100vw;height:100vh;max-width:none;margin:0;border:0;border-radius:0;display:flex;flex-direction:column}
-.owrap:fullscreen>#viewerGrid{width:100%;height:100%;min-height:0;flex:1;grid-auto-rows:minmax(0,1fr)}
-.owrap:fullscreen>#viewerGrid.g4,.owrap:fullscreen>#viewerGrid.g6{grid-template-rows:repeat(2,minmax(0,1fr))}
+.owrap:fullscreen>#viewerGrid{width:100%;height:100%;min-height:0;flex:1;grid-auto-rows:minmax(0,1fr);grid-template-rows:repeat(var(--grows,2),minmax(0,1fr))}
 .owrap:fullscreen>#viewerGrid.g1 .camtile{height:100%;min-height:100%;aspect-ratio:auto}
-.owrap:fullscreen>#viewerGrid.g4 .camtile,.owrap:fullscreen>#viewerGrid.g6 .camtile{height:100%;min-height:0;aspect-ratio:auto}
+.owrap:fullscreen>#viewerGrid:not(.g1) .camtile{height:100%;min-height:0;aspect-ratio:auto}
 .owrap:fullscreen>.wl,.owrap:fullscreen>.pagestrip,.owrap:fullscreen>.tickbar{display:flex!important}
 .owrap:fullscreen>.wl{max-width:min(48vw,520px);max-height:calc(100vh - var(--btop,0px) - var(--tickh,0px) - 48px);overflow:visible}
 .owrap:fullscreen>.wl[data-c=tl],.owrap:fullscreen>.wl[data-c=tr]{top:calc(10px + var(--btop,0px))}
@@ -362,6 +438,9 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
 
 /* phone remote */
 #remoteView{max-width:520px;margin:0 auto;padding:12px}
+.rmcam-tools{display:flex;gap:7px;margin-top:12px}
+.rmcam-tools input{min-width:0;flex:1}
+.rmcam-tools select{max-width:45%}
 .rmstatus{display:flex;gap:12px;align-items:center;margin-bottom:12px}
 .rmstatus img{width:128px;height:72px;object-fit:cover;border-radius:6px;background:#0b0f14;flex:0 0 auto;border:1px solid var(--line)}
 .rmstatus .nm{font-size:15px;font-weight:600}
@@ -380,9 +459,9 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
 .rmcams .rc.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .rmcams .rc img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#0b0f14}
 .rmcams .rc b{display:block;font-size:11px;font-weight:500;padding:6px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media(max-width:900px){#controlView{grid-template-columns:1fr}#dashRow{grid-template-columns:230px minmax(0,1fr)}.grid.g4,.grid.g6{grid-template-columns:1fr}}
-@media(max-width:650px){#dashRow{grid-template-columns:1fr}.finder-sidebar{position:static;max-height:42vh}.dashgrid{grid-template-columns:1fr}.finder-heading{align-items:flex-start;flex-direction:column}}
-@media(max-width:650px){.quick-controls{gap:4px;padding:8px}.quick-control{flex:1 1 100%;justify-content:space-between;border-right:0;border-bottom:1px solid var(--line);padding:5px 2px}.quick-control:last-child{border-bottom:0}}
+@media(max-width:900px){#controlView{grid-template-columns:1fr}#dashRow{grid-template-columns:230px minmax(0,1fr)}}
+@media(max-width:650px){#dashRow{grid-template-columns:1fr}.finder-sidebar{position:static;max-height:42vh}.dashgrid{grid-template-columns:1fr}.dashgrid.list-view .camera-card{grid-template-columns:minmax(110px,34%) minmax(0,1fr)}.finder-heading{align-items:flex-start;flex-direction:column}.dash-view-tools{margin-left:0}}
+@media(max-width:650px){.quick-controls{gap:9px;padding:9px 12px}.quick-control{flex:1 1 100%;justify-content:space-between;border-right:0;border-bottom:1px solid var(--line);padding:5px 2px}.quick-control:last-child{border-bottom:0}.quick-hint{display:none}}
 @media(max-width:430px){#controlView{padding:9px;gap:10px}.finder-sidebar,.finder-main{padding:10px}.controlnav button{flex:1;padding:9px 8px;font-size:12px}.camera-card-actions{gap:6px}.camera-card-actions label{font-size:9px}}
 @media(max-width:560px){
   header{flex-wrap:wrap;gap:8px;padding:10px 12px}
@@ -390,11 +469,112 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
   .modelinks a{margin-left:6px;padding:5px 8px;font-size:12px}
   .rmbig button{font-size:20px;padding:15px 0}
 }
+/* Finder workspace — one toolbar, one sidebar, one library. */
+body:has(#lnkControl.on),body:has(#lnkRemote.on){--bg:#fff;--panel:#f7f7f7;--panel2:#ededee;--line:#d8d8dc;--text:#242427;--muted:#707077;--accent:#087dff;--accent2:#087dff;--bad:#c73535;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--mono:ui-monospace,monospace;background:#ececef}
+body:has(#lnkControl.on)>header{background:linear-gradient(#f5f5f6,#e7e7e9);padding:14px 22px;border-bottom:1px solid #c8c8cc;box-shadow:0 1px 0 #fff inset}
+body:has(#lnkControl.on)>header h1{font-size:13px;font-weight:600;letter-spacing:0;text-transform:none}
+body:has(#lnkControl.on)>header h1:before{content:'';display:inline-block;width:12px;height:12px;background:#ff6058;border:1px solid #df514b;border-radius:50%;margin-right:48px;box-shadow:20px 0 #ffbd2e,40px 0 #28c840;vertical-align:-1px}
+body:has(#lnkControl.on) #clock{display:none}
+.modelinks a{border:0;background:transparent!important;color:var(--muted)!important}
+.modelinks a.on{color:var(--text)!important;font-weight:600}
+#controlView{padding:0;gap:0;max-width:none;min-height:calc(100vh - 50px);background:#fff;color:#242427;--bg:#fff;--panel:#f7f7f7;--panel2:#ededee;--line:#d8d8dc;--text:#242427;--muted:#707077;--accent:#087dff;--accent2:#087dff;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#controlView button.primary{color:white}
+#controlView h2{text-transform:none;letter-spacing:0}
+#controlView>.quick-controls{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin:0;padding:11px 24px;background:var(--panel2);border-bottom:1px solid var(--line)}
+#controlView.settings-page>.quick-controls{margin:20px;border:1px solid var(--line);border-radius:8px}
+#dashRow{grid-template-columns:215px minmax(0,1fr);gap:0;min-height:calc(100vh - 50px);align-items:stretch}
+.finder-sidebar{position:static;max-height:none;border:0;border-right:1px solid var(--line);border-radius:0;background:#f0f0f3;padding:20px 12px}
+.finder-sidebar h2{font-size:11px;font-weight:600;padding:8px;color:#777780}
+.finder-sidebar>.hint,.finder-main>.hint{display:none}
+.controlnav{flex-direction:column;gap:3px;margin:0 0 22px}
+.controlnav button,.finder-all{background:transparent;border:0;text-align:left;padding:8px 10px;font-size:13px;border-radius:5px;margin:0}
+.controlnav button.on,.finder-all.on{background:#d9d9df;color:#242427;font-weight:500}
+.group-tools{grid-template-columns:1fr auto;gap:5px}
+.group-tools input,.group-tools select{font-size:11px;background:#fff}
+#addGroupBtn{font-size:0;padding:5px 8px;background:transparent;color:var(--muted);border:0}
+#addGroupBtn:after{content:'+';font-size:17px}
+.groupitem{padding-top:3px;padding-bottom:3px;border:0}
+.groupitem.selected{box-shadow:none;background:#d9d9df}
+.folder-actions{grid-column:2;grid-row:1;align-self:center}
+.folder-actions-tools{position:absolute;right:0;top:20px;z-index:10;width:190px;box-shadow:0 5px 20px #0002}
+.groupitem>.pill{display:none}
+.folder-actions>summary{font-size:0}
+.folder-actions>summary:after{content:'···';font-size:13px}
+.finder-main{border:0;border-radius:0;background:#fff;padding:0;overflow:hidden}
+.finder-heading{padding:16px 24px 0;margin-bottom:12px}
+.finder-heading h2{font-size:15px;font-weight:600}
+.finder-heading .path{margin-left:12px;font-size:12px}
+#dashInfo{border:0;background:none;font:11px var(--sans)}
+.dashbar{padding:0 24px 14px;margin:0;border-bottom:1px solid var(--line);gap:8px;background:#fff}
+.dashbar input{max-width:320px;background:#f2f2f4;border:0;border-radius:6px;min-width:120px}
+#dashGroup,#finderManageBtn{display:none}
+.dash-view-tools button{background:transparent;border:0;font-size:16px;padding:3px 8px;color:#707077}
+.dash-view-tools button.on{background:#e5e5e9;color:#242427}
+.dash-view-tools select{min-width:100px;border:0;background:transparent;font-size:11px}
+#controlView #finderAddCamera{background:transparent;color:#242427;border:0;font-weight:400}
+#camCount,#folderAllCount{display:none}
+#folderAll{justify-content:flex-start;white-space:nowrap}
+#controlView #addGroupBtn{color:#707077}
+#controlView.settings-page #cameraManager,#controlView.settings-page #cameraTools{display:none!important}
+.dashpager:has(#dashPrev:disabled):has(#dashNext:disabled){display:none}
+#controlView input:focus-visible,#controlView select:focus-visible,#controlView textarea:focus-visible,#controlView button:focus-visible{outline:2px solid #087dff;outline-offset:2px}
+.dashgrid{padding:24px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:24px 18px}
+.camera-card{border:1px solid transparent;border-radius:6px;background:transparent;box-shadow:none!important}
+.camera-card:hover{background:#f5f5f7;border-color:transparent}
+.camera-card.selected{background:#e8f1ff;border-color:#b0d1ff}
+.camera-card .camtile{border-radius:5px;overflow:hidden;margin:8px;width:calc(100% - 16px);box-shadow:0 1px 4px #0002;aspect-ratio:16/10}
+.camera-card .camwx,.camera-card .cap{display:none!important}
+.camera-card-info{padding:2px 10px 7px;min-height:0!important;align-items:flex-start}
+.camera-card-titles strong{font-size:12px;font-weight:500}
+.camera-card-titles span{font:10px var(--sans);margin-top:3px}
+.camera-card-actions{gap:4px;flex-direction:column;align-items:flex-end}
+.camera-card-actions label{font-size:9px}
+.camera-card-actions button{background:transparent;border:0;color:#707077;padding:2px}
+.camera-card-tools{padding:0 10px 10px}
+.camera-card-tools label{display:none!important}
+.camera-card-tools select{border:0;background:transparent;color:#707077;padding:0;font-size:10px}
+.dashgrid.list-view{gap:0;padding:0 20px}
+.dashgrid.list-view .camera-card{grid-template-columns:70px minmax(0,1fr) 180px;border-radius:0;border:0;border-bottom:1px solid #eee;align-items:center}
+.dashgrid.list-view .camera-card .camtile{width:54px;height:36px;min-height:0;margin:8px}
+.dashgrid.list-view .camera-card-info{padding:10px;align-items:center}
+.dashgrid.list-view .camera-card-actions{flex-direction:row;gap:12px}
+.dashgrid.list-view .camera-card-tools{padding:10px;margin:0}
+.dashpager{padding:12px 24px;border-top:1px solid #eee;font-size:11px;justify-content:flex-end}
+.dashpager button{background:transparent;border:0}
+#controlView .finder-detail,#controlView .output-preview-panel{display:none}
+#controlView.preview-open .output-preview-panel{display:block;padding:20px;border:0;border-radius:0;max-width:1000px}
+#controlView.settings-page{max-width:1100px;background:#fff;padding:20px;gap:12px}
+#controlView.settings-page .controlnav{display:flex;flex-direction:row;margin:0}
+#controlView.settings-page #dashRow{display:block!important;min-height:0}
+#controlView.settings-page .finder-sidebar{padding:0;border:0;background:transparent}
+#controlView.settings-page .finder-sidebar>*:not(.controlnav),#controlView.settings-page .finder-main{display:none}
+#controlView.settings-page .finder-detail{display:block!important}
+#controlView.settings-page .panel{box-shadow:none;border-radius:6px}
+.camera-editor-overlay{background:#0003;backdrop-filter:blur(3px)}
+.camera-editor-window{background:#fff;border-color:#c7c7cb;box-shadow:0 22px 70px #0004;color:#242427}
+.camera-editor-head{background:linear-gradient(#f8f8f9,#eaeaed);padding:13px 18px}
+.camera-editor-head .sub,.camera-editor-file-summary .editor-note{display:none}
+.camera-editor-sidebar{background:#f0f0f3}
+.editor-folder.on,.editor-camera.on{background:#d9d9df;color:#242427}
+.editor-section-label{font:600 10px var(--sans);letter-spacing:0;text-transform:none}
+.camera-editor-preview{background:#e8e8ec}
+.camera-editor-options{border:0;background:#f6f6f8}
+.camera-editor-foot{background:#f6f6f8;padding:12px 18px}
+.source-section{min-width:0}
+.source-heading{display:flex;align-items:center;gap:8px;justify-content:space-between;font-size:12px;margin-bottom:8px}
+.source-heading select{width:110px;font-size:11px}
+.source-heading strong{margin-right:auto;font-weight:500}
+.source-row{padding:12px 0;border-bottom:1px solid #e5e5e8}
+.source-row label{margin:8px 0}
+.source-row details summary{font-size:11px;color:#707077;cursor:pointer;margin-top:8px}
+.source-row textarea{font:11px var(--mono);min-height:90px}
+#editorError{color:#c73535;font-size:12px}
+@media(max-width:650px){#dashRow{grid-template-columns:145px minmax(0,1fr)}.finder-sidebar{padding:12px 7px}.finder-heading{padding:14px 12px 0}.dashbar{padding:0 12px 12px}.dash-view-tools{margin-left:auto}.dashgrid{padding:12px;gap:12px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}.group-tools{grid-template-columns:1fr}.group-tools input{width:100%}.dashgrid.list-view .camera-card{grid-template-columns:55px 1fr}.dashgrid.list-view .camera-card-tools{grid-column:2;padding-top:0}.dashgrid.list-view .camera-card .camtile{width:42px}.controlnav button{font-size:11px;padding:8px 5px}.finder-all{font-size:11px;padding:8px 4px}.camera-card-info{flex-wrap:wrap}.camera-card-actions{flex-direction:row}.camera-editor-window{width:98vw}.camera-editor-body{grid-template-columns:110px 1fr}}
 </style>
 </head>
 <body>
 <header>
-  <h1>WEATHER CAM STATION <span id="clock"></span></h1>
+  <h1>Camera Library <span id="clock"></span></h1>
   <div class="modelinks">
     <a href="?mode=control" id="lnkControl">Control</a>
     <a href="?mode=output" id="lnkOutput" target="_blank">Output ↗</a>
@@ -403,30 +583,53 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
 </header>
 
 <div id="controlView">
-  <div class="controlnav">
-    <button id="pageDashboard" class="on">📷 Camera dashboard</button>
-    <button id="pageSettings">⚙ Settings &amp; overlays</button>
-  </div>
   <section class="quick-controls" aria-label="Essential output settings">
-    <div class="quick-control"><span class="quick-title">Rotation</span><label><input type="checkbox" id="autoRotate"> Rotate</label><label>Every <input type="number" id="rotateSec" value="10" min="3" style="width:58px"> sec</label></div>
+    <div class="quick-control"><span class="quick-title">Layout</span><select id="quickLayout" aria-label="Output multi-view layout"></select></div>
+    <div class="quick-control"><span class="quick-title">Rotation</span><label><input type="checkbox" id="autoRotate"> Rotate</label><label>Every <input type="number" id="rotateSec" value="10" min="3"> sec</label></div>
     <div class="quick-control"><span class="quick-title">Clock</span><label><input type="checkbox" id="clockWidgetOn"> Show clock</label><label><input type="checkbox" id="clock24"> 24-hour</label><label><input type="checkbox" id="showDate"> Date</label></div>
     <div class="quick-control"><span class="quick-title">Widgets</span><label><input type="checkbox" id="widgetsOn" checked> Show on output</label><button class="sm" id="quickWidgetSettings" type="button">Configure</button></div>
+    <div class="quick-hint"><kbd>←</kbd><kbd>→</kbd> camera &nbsp; <kbd>1</kbd>–<kbd>9</kbd> jump &nbsp; <kbd>L</kbd> layout &nbsp; <kbd>R</kbd> rotate &nbsp; <kbd>/</kbd> search</div>
   </section>
   <div id="dashRow">
     <aside class="finder-sidebar" aria-label="Camera folders">
-      <h2>Locations &amp; folders <b id="camCount"></b></h2>
+      <div class="controlnav"><button id="pageDashboard" class="on">▦ Cameras</button><button id="pageSettings">⚙ Preferences</button></div>
+      <h2>Folders <b id="camCount"></b></h2>
       <button id="folderAll" class="finder-all on"><span>📁 All cameras</span><span class="mono" id="folderAllCount"></span></button>
       <div class="group-tools"><input id="newGroupName" placeholder="New folder name" aria-label="New folder name"><select id="newGroupParent" aria-label="Create folder inside"></select><button class="sm primary" id="addGroupBtn">+ Create folder</button></div>
       <div id="groupList"></div>
-      <div class="hint">Folders are for organizing cameras only; they do not control which cameras appear in the output.</div>
+      <div class="hint">Click a folder’s selection count to add or remove the entire folder, including subfolders, from output.</div>
     </aside>
     <main class="finder-main">
       <div class="finder-heading"><h2>Camera library <span class="path" id="folderPath">All cameras</span></h2><b id="dashInfo" class="pill"></b></div>
-      <div class="dashbar"><input id="dashSearch" type="search" placeholder="Search cameras by name, URL, or location…" aria-label="Search cameras"><select id="dashGroup" aria-label="Filter by folder"><option value="all">All folders</option></select><button class="sm primary" id="finderAddCamera" type="button">+ Add camera</button><button class="sm" id="finderManageBtn" type="button">Manage</button></div>
+      <div class="dashbar"><input id="dashSearch" type="search" placeholder="Search cameras by name, URL, or location…" aria-label="Search cameras"><select id="dashGroup" aria-label="Filter by folder"><option value="all">All folders</option></select><div class="dash-view-tools" role="group" aria-label="Camera library view"><button class="sm on" id="dashGridView" type="button" title="Grid view" aria-pressed="true">▦</button><button class="sm" id="dashListView" type="button" title="List view" aria-pressed="false">☷</button><select id="dashSort" aria-label="Sort cameras"><option value="name">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="type">Feed type</option></select></div><button class="sm primary" id="finderAddCamera" type="button">+ Add camera</button><button class="sm" id="bulkOutputBtn" type="button" title="Toggle output for every camera currently shown (use a folder to select it whole)">☑ Select shown → output</button><button class="sm" id="finderPreviewBtn" type="button" aria-pressed="false">Quick Look</button><button class="sm" id="finderManageBtn" type="button">Manage</button></div>
       <div class="dashgrid" id="dashGrid"></div>
       <div class="dashpager"><button class="sm" id="dashPrev">← Prev</button><span class="mono" id="dashPageInfo"></span><button class="sm" id="dashNext">Next →</button></div>
       <div class="hint">Click a preview to make it the active camera and include it in output; use the Output checkbox for other cameras. Folders never limit output selection.</div>
     </main>
+  </div>
+  <div class="camera-editor-overlay" id="cameraEditor" hidden>
+    <section class="camera-editor-window" role="dialog" aria-modal="true" aria-labelledby="cameraEditorTitle">
+      <div class="camera-editor-head"><div><h2 id="cameraEditorTitle">Camera details</h2><div class="sub">Edit camera metadata, feed sources, and output selection</div></div><button class="close-editor" id="closeCameraEditor" type="button" aria-label="Close camera editor">×</button></div>
+      <div class="camera-editor-body">
+        <aside class="camera-editor-sidebar" aria-label="Camera library browser">
+          <div class="editor-section-label">Locations</div><button class="editor-folder on" data-editor-folder="all" type="button">📁 All cameras</button><div id="editorFolderList"></div>
+          <div class="editor-section-label editor-cameras-label">Cameras <span id="editorCameraCount"></span></div><div id="editorCameraList" class="editor-camera-list"></div>
+        </aside>
+        <section class="camera-editor-main" aria-label="Selected camera details">
+          <div class="camera-editor-file-head"><div class="camera-editor-preview" id="editCameraPreview"><span class="preview-empty">Camera preview</span></div><div class="camera-editor-file-summary"><h3 id="editCameraPreviewName"></h3><div class="editor-loc" id="editCameraPreviewLocation"></div><div class="editor-note">Select a feed source on the dashboard or phone remote to play that backup. Automatic failover can still move to another source if it fails.</div></div></div>
+          <div class="camera-editor-form">
+            <div><label for="editCamName">Camera name</label><input id="editCamName" type="text" maxlength="100"></div>
+            <div><label for="editCamGroup">Folder</label><select id="editCamGroup"></select></div>
+            <section class="full source-section" aria-label="Camera sources"><div class="source-heading"><strong>Sources</strong><button id="addEditorSource" type="button" class="sm">+ Backup</button></div><div id="editorSources"></div><p class="hint">Failover follows this order. Embedded players cannot report internal playback failures.</p><p id="editorError" role="alert" hidden></p></section>
+            <div><label for="editCamRefresh">Image refresh interval (seconds)</label><input id="editCamRefresh" type="number" min="0" max="3600"></div>
+            <div><label for="editCamLat">Latitude</label><input id="editCamLat" type="number" min="-90" max="90" step="any"></div>
+            <div><label for="editCamLon">Longitude</label><input id="editCamLon" type="number" min="-180" max="180" step="any"></div>
+            <div class="full camera-editor-options"><label><input id="editCamEnabled" type="checkbox"> Enabled</label><label><input id="editCamOutput" type="checkbox"> Include in output</label><label><span>Start with feed</span><select id="editCamStartFeed"></select></label></div>
+          </div>
+        </section>
+      </div>
+      <div class="camera-editor-foot"><span class="hint">Changes apply when saved.</span><button id="closeCameraEditorFooter" type="button">Cancel</button><button id="saveCameraEditor" class="primary" type="button">Save changes</button></div>
+    </section>
   </div>
   <div class="panel output-preview-panel">
     <h2>Current output preview <b id="prevType"></b></h2>
@@ -467,7 +670,8 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
         <div><label>Lat</label><input type="text" id="newLat" placeholder="39.5000"></div>
         <div><label>Lon</label><input type="text" id="newLon" placeholder="-98.3500"></div>
         <div class="full"><label>Folder / group</label><select id="newCamGroup"></select></div>
-        <div class="full"><label>Feed URL</label><input type="text" id="newUrl" placeholder="https://example.com/cam.jpg"></div>
+        <div class="full"><label>Primary feed URL</label><input type="text" id="newUrl" placeholder="https://example.com/cam.jpg"></div>
+        <div class="full"><label>Backup feed URLs (optional, one per line)</label><textarea id="newBackupUrls" rows="2" placeholder="https://backup.example.com/cam.jpg\nhttps://another-backup.example.com/cam.jpg"></textarea><span class="hint">Image and HLS feeds try backups in order on errors, then retry the primary every 30 seconds. Browsers cannot reliably detect failures inside embedded iframe players.</span></div>
         <div class="full"><label>Feed type</label>
           <select id="newType" style="width:100%">
             <option value="image">Image (refreshing JPG)</option>
@@ -542,7 +746,7 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
     <div class="panel settings-only">
       <h2>Output &amp; layout</h2>
       <div class="srow"><label>Multi-view layout</label>
-        <select id="multiView"><option value="1">Single (rotating)</option><option value="4">2×2 (4)</option><option value="6">3×2 (6)</option></select>
+        <select id="multiView"><option value="1">Single (rotating)</option><option value="4">2×2 (4)</option><option value="6">3×2 (6)</option><option value="8">4×2 (8)</option><option value="9">3×3 (9)</option><option value="12">4×3 (12)</option><option value="16">4×4 (16)</option><option value="18">3×6 (18)</option></select>
       </div>
       <div class="srow"><label>Rotate order</label>
         <select id="rotateOrder"><option value="seq">Sequential</option><option value="shuffle">Shuffle</option></select>
@@ -597,6 +801,7 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
         <button class="sm" id="btnSecondSettings">🖥 Open on second screen</button>
       </div>
       <div class="hint" style="margin-bottom:8px">The TV window runs in kiosk mode: edge-to-edge, no bars, auto-hiding cursor, screen stays awake. If your browser asks, allow fullscreen (and multi-screen if offered) — then drag the window to the TV with <b>Win</b>+<b>Shift</b>+<b>←/→</b>.</div>
+      <div class="hint"><b>AirPlay:</b> A browser page cannot initiate system-level AirPlay screen mirroring. To show the full dashboard on Apple TV, use macOS Control Center → Screen Mirroring, select your Apple TV, then open this station's Output in fullscreen. <a class="lnk" href="https://support.apple.com/en-us/102661" target="_blank" rel="noopener">Apple's mirroring guide ↗</a></div>
       <div class="srow"><label>Phone remote</label>
         <div class="ctl"><input type="text" id="remoteURL" readonly style="flex:1;min-width:0;font-family:var(--mono);font-size:11px"><button class="sm" id="copyRemote">Copy</button></div>
       </div>
@@ -622,6 +827,9 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
       <div class="srow"><label>Text / background</label><div class="ctl"><input type="color" id="customOverlayColor"><input type="color" id="customOverlayBg"></div></div>
       <div class="srow"><label>Background opacity</label><input type="range" id="customOverlayOpacity" min="0.1" max="1" step="0.05"><span class="mono" id="customOverlayOpacityVal"></span></div>
       <div class="srow"><label>Overlay type size</label><input type="range" id="overlayFont" min="9" max="32" step="1"><span class="mono" id="overlayFontVal"></span></div>
+      <div class="srow"><label>Message font</label><select id="customOverlayFont"><option value="mono">Weather station mono</option><option value="sans">Clean sans-serif</option></select></div>
+      <div class="srow"><label>Message alignment</label><select id="customOverlayAlign"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>
+      <div class="srow"><label>Message shadow</label><input type="checkbox" id="customOverlayShadow"></div>
       <div class="srow"><label>Overlay padding</label><input type="range" id="overlayPad" min="0" max="24" step="1"><span class="mono" id="overlayPadVal"></span></div>
       <div class="custom-widget-preview" id="customOverlayPreview">Example overlay message</div>
     </div>
@@ -701,6 +909,7 @@ body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
     </div>
     <div class="srow"><label>Rotate every</label><input type="range" id="rmSpeed" min="3" max="60" step="1" style="flex:1"><span class="mono" id="rmSpeedVal">10s</span></div>
     <div class="hint">Tap a camera to show it on the wall. Changes apply to every screen showing the output.</div>
+    <div class="rmcam-tools"><input type="search" id="rmSearch" placeholder="Find a camera…" aria-label="Find a camera"><select id="rmGroup" aria-label="Filter cameras by folder"><option value="all">All folders</option></select></div>
     <div class="rmcams" id="rmCams"></div>
   </div>
   <div class="panel">
@@ -757,7 +966,8 @@ function defaultCfg(){
     show:{alert:true,wx:true,clock:true,radar:true,ticker:true,logo:true,next:true,custom:true},
     corner:{wx:'br',clock:'tr',radar:'tl',logo:'tl',next:'bl',custom:'bl'},
     overlayFont:13, overlayPad:4,
-    customOverlay:{text:'',color:'#ffffff',bg:'#111820',opacity:.78,style:'card'},
+    customOverlay:{text:'',color:'#ffffff',bg:'#111820',opacity:.78,style:'card',font:'mono',align:'left',shadow:true},
+    dashboardView:'grid', dashboardSort:'name',
     showName:true, showCoords:true, camHeight:'56',
     tileGap:2, blur:3, tickerSec:26, bgData:'',
     remote:{on:true,code:genCode()}
@@ -803,8 +1013,13 @@ function loadState(){
     while(p){ if(seen.has(p.id)){ g.parentId=null; break; } seen.add(p.id); p=groupById(p.parentId); }
   });
   s.cameras.forEach(c=>{
-    if(!c.type) c.type='image'; if(!c.refresh) c.refresh=30;
+    if(!c.type) c.type='image'; if(!Number.isFinite(c.refresh)) c.refresh=30;
     if(typeof c.active!=='boolean') c.active=true;
+    if(!Array.isArray(c.backupUrls)) c.backupUrls=typeof c.backupUrls==='string'?c.backupUrls.split(/\r?\n/):[];
+    c.backupUrls=[...new Set(c.backupUrls.map(url=>String(url).trim()).filter(Boolean))].filter(url=>url!==String(c.url||'').trim()).slice(0,10);
+    if(!Array.isArray(c.backupSources))c.backupSources=c.backupUrls.map(url=>({type:c.type,url}));
+    c.backupSources=cameraSources(c).slice(1);
+    c.startFeedIndex=Math.max(0,Math.min(c.backupSources.length,Number.isInteger(+c.startFeedIndex)?+c.startFeedIndex:0));
     if(typeof c.iframeCss!=='string') c.iframeCss='';
     else c.iframeCss=c.iframeCss.slice(0,12000);
     c.iframeZoom=Math.max(100,Math.min(200,+c.iframeZoom||100));
@@ -816,6 +1031,11 @@ function loadState(){
   if(!isObj(s.cfg.customOverlay)) s.cfg.customOverlay=defaultCfg().customOverlay;
   if(typeof s.cfg.customOverlay.opacity!=='number') s.cfg.customOverlay.opacity=.78;
   if(!['card','badge','strip'].includes(s.cfg.customOverlay.style)) s.cfg.customOverlay.style='card';
+  if(!['mono','sans'].includes(s.cfg.customOverlay.font)) s.cfg.customOverlay.font='mono';
+  if(!['left','center','right'].includes(s.cfg.customOverlay.align)) s.cfg.customOverlay.align='left';
+  if(typeof s.cfg.customOverlay.shadow!=='boolean') s.cfg.customOverlay.shadow=true;
+  if(!['grid','list'].includes(s.cfg.dashboardView)) s.cfg.dashboardView='grid';
+  if(!['name','name-desc','type'].includes(s.cfg.dashboardSort)) s.cfg.dashboardSort='name';
   if(!isFinite(+s.cfg.overlayFont)) s.cfg.overlayFont=13;
   if(!isFinite(+s.cfg.overlayPad)) s.cfg.overlayPad=4;
   if(!s.activeId||!s.cameras.some(c=>c.id===s.activeId)) s.activeId=s.cameras[0]?.id||null;
@@ -823,21 +1043,28 @@ function loadState(){
   s.multiIds=s.multiIds.filter(id=>s.cameras.some(c=>c.id===id));
   const selected=s.cameras.filter(c=>s.multiIds.includes(c.id)&&cameraActive(c,s));
   if(!selected.some(c=>c.id===s.activeId)) s.activeId=selected[0]?.id||null;
-  s.multiView=[1,4,6].includes(+s.multiView)?+s.multiView:1;
+  s.multiView=LAYOUT_ORDER.includes(+s.multiView)?+s.multiView:1;
   ['rotateSec','fadeMs'].forEach(k=>{ const v=parseInt(s[k]); s[k]=isNaN(v)?defaultState()[k]:v; });
   ['alertMax','prevSec','wxScale','wxBg','radarZoom','radarOvW'].forEach(k=>{ const v=parseFloat(s.cfg[k]); s.cfg[k]=isNaN(v)?defaultCfg()[k]:v; });
   s.cfg.radarOvW=Math.max(220,Math.min(420,s.cfg.radarOvW));
   s.cfg.radarZoom=Math.max(4,Math.min(7,s.cfg.radarZoom));
   if(s.cfg.camHeight==='fill'||!s.cfg.camHeight) s.cfg.camHeight='56';
   if(!['embed','off'].includes(s.cfg.radarMode)) s.cfg.radarMode='embed';
-  if(!isObj(s.cfg.remote)) s.cfg.remote={on:true,code:genCode()};
-  if(typeof s.cfg.remote.on!=='boolean') s.cfg.remote.on=true;
+  if(!isObj(s.cfg.remote)) s.cfg.remote={on:true,code:genCode()};  if(typeof s.cfg.remote.on!=='boolean') s.cfg.remote.on=true;
   if(!s.cfg.remote.code) s.cfg.remote.code=genCode();
+  if(!Array.isArray(s.groups))s.groups=[];
+    if(!Array.isArray(s.groups))s.groups=[];
   ['tileGap','blur','tickerSec'].forEach(k=>{ const v=parseInt(s.cfg[k]); s.cfg[k]=isNaN(v)?defaultCfg()[k]:v; });
   delete s.cfg.corner.alert; delete s.cfg.corner.ticker;   /* alerts + ticker are fixed regions now */
   WIDGETS.forEach(w=>{ if(!CORNERS.includes(s.cfg.corner[w.k])) s.cfg.corner[w.k]=defaultCfg().corner[w.k]; });
   return s;
 }
+/* multi-view layouts: tile count -> [cols, rows]. Extends the old 1/4/6 set. */
+const LAYOUTS={1:[1,1],4:[2,2],6:[3,2],8:[4,2],9:[3,3],12:[4,3],16:[4,4],18:[3,6]};
+const LAYOUT_ORDER=[1,4,6,8,9,12,16,18];
+function layoutLabel(n){const d=layoutDims(n);return n===1?'Single (rotating)':`${d[0]}×${d[1]} (${n})`;}
+function layoutDims(n){return LAYOUTS[n]||[Math.ceil(Math.sqrt(n))||1,Math.ceil((n)/(Math.ceil(Math.sqrt(n))||1))];}
+function applyGridDims(grid,n){const d=layoutDims(n);grid.style.setProperty('--gcols',d[0]);grid.style.setProperty('--grows',d[1]);return grid;}
 function saveState(){
   try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){ console.error('save failed',e); }
   if(mode!=='remote') syncSend({t:'state',state});   /* remote is a controller only — never overwrites the station */
@@ -1043,10 +1270,91 @@ function updateOsmLink(lat,lon){
 }
 
 /* ---------------- tile + widget builders (shared by output & preview) ---------------- */
-function mediaHTML(cam){
-  if(cam.type==='iframe') return `<iframe src="${esc(cam.url)}" allow="autoplay; fullscreen" loading="lazy"></iframe>`;
-  if(cam.type==='hls') return `<video autoplay muted playsinline></video>`;
-  const src=cam.url+(cam.url.includes('?')?'&':'?')+'t='+Date.now();
+// Primary fields remain compatible with older station exports; backups carry their own type.
+function cameraSources(cam){
+  const primary={type:cam.type||'image',url:String(cam.url||'').trim(),playlist:cam.playlist||'',baseUrl:cam.baseUrl||''};
+  const backups=Array.isArray(cam.backupSources)?cam.backupSources:(cam.backupUrls||[]).map(url=>({type:primary.type,url}));
+  return [primary,...backups.slice(0,10).map(s=>({type:['image','hls','iframe'].includes(s.type)?s.type:primary.type,url:String(s.url||'').trim(),playlist:s.playlist||'',baseUrl:s.baseUrl||''}))];
+}
+function cameraSource(cam,tile){const sources=cameraSources(cam);return sources[Math.max(0,Math.min(sources.length-1,tile?tile._feedIndex:Number(cam.startFeedIndex)||0))];}
+function cameraFeedUrls(cam){return cameraSources(cam).map(s=>s.url);}
+function sourceLabel(s,index){return (index?'Backup '+index:'Primary')+' · '+({image:'Image',hls:'HLS',iframe:'Embed'}[s.type])+(s.playlist?' · pasted':'');}
+function resolvePlaylist(text,base){
+  text=String(text).trim();
+  if(!text.startsWith('#EXTM3U'))throw new Error('Playlist must start with #EXTM3U.');
+  if(text.length>500000)throw new Error('Playlist must be smaller than 500 KB.');
+  const resolve=value=>{
+    if(value.includes('{$'))throw new Error('Playlist variables are not supported; paste resolved URLs.');
+    let url;try{url=new URL(value,base||undefined);}catch(e){throw new Error('Enter the original playlist URL as the base URL for relative links.');}
+    if(!['http:','https:'].includes(url.protocol))throw new Error('Playlist links must use HTTP or HTTPS.');
+    return url.href;
+  };
+  return text.split(/\r?\n/).map(line=>{line=line.trim();return !line||line.startsWith('#')?line.replace(/URI="([^"]+)"/g,(_,uri)=>'URI="'+resolve(uri)+'"'):resolve(line);}).join('\n');
+}
+function releaseTileMedia(tile){
+  clearTimeout(tile._feedTimer);
+  const media=tile.querySelector(':scope > img,:scope > video,:scope > iframe');
+  if(media){media.onload=null;media.onerror=null;if(media._hls)media._hls.destroy();if(media.tagName==='VIDEO'){media.pause();media.removeAttribute('src');media.load();}media.remove();}
+  if(tile._playlistBlob){URL.revokeObjectURL(tile._playlistBlob);tile._playlistBlob=null;}
+  tile._mediaVersion=(tile._mediaVersion||0)+1;
+}
+function mountTileMedia(tile,cam){
+  releaseTileMedia(tile);
+  const source=cameraSource(cam,tile);
+  tile.insertAdjacentHTML('afterbegin',mediaHTML(cam,tile));
+  const img=tile.querySelector(':scope > img'),frame=tile.querySelector(':scope > iframe');
+  if(img){tile._last=Date.now();wireImg(tile,cam,img);}
+  if(frame){frame.addEventListener('error',()=>advanceFeed(tile,cam,'embed request failed'));applyIframeCss(frame,cam);applyIframeView(frame,cam);}
+  if(source.type==='hls')attachMedia(tile,cam);
+}
+const mediaCleanup=new MutationObserver(records=>{
+  records.forEach(record=>record.removedNodes.forEach(node=>{
+    if(node.nodeType!==1)return;
+    const tiles=[...(node.matches('.camtile')?[node]:[]),...node.querySelectorAll('.camtile')];
+    tiles.forEach(tile=>{if(!tile.isConnected)releaseTileMedia(tile);});
+  }));
+});
+mediaCleanup.observe(document.body,{childList:true,subtree:true});
+window.addEventListener('pagehide',()=>document.querySelectorAll('.camtile').forEach(releaseTileMedia));
+function playlistMediaUrl(cam,tile){
+  const source=cameraSource(cam,tile);
+  if(!source.playlist)return source.url;
+  if(!tile._playlistBlob)tile._playlistBlob=URL.createObjectURL(new Blob([resolvePlaylist(source.playlist,source.baseUrl||source.url)],{type:'application/vnd.apple.mpegurl'}));
+  return tile._playlistBlob;
+}
+function cameraFeedUrl(cam,tile){
+  const urls=cameraFeedUrls(cam);
+  const index=tile&&Number.isInteger(tile._feedIndex)?tile._feedIndex:Number(cam.startFeedIndex)||0;
+  return urls[Math.max(0,Math.min(index,urls.length-1))]||cam.url;
+}
+function setTileFeedIndex(tile,index){
+  const cam=state.cameras.find(c=>c.id===tile.dataset.camid); if(!cam) return false;
+  const urls=cameraFeedUrls(cam), next=Math.max(0,Math.min(urls.length-1,Number(index)||0));
+  tile._feedIndex=next;
+  tile._feedAttempts=new Set([next]);
+  cam.startFeedIndex=next;
+  tile._feedWaiting=false;
+  clearTimeout(tile._feedTimer);
+  const old=tile.querySelector('.offline'); if(old) old.remove();
+  tile.classList.remove('nofeed');
+  const dot=tile.querySelector('[data-dot]'); if(dot) dot.className='tdot loading';
+  mountTileMedia(tile,cam);
+  return true;
+}
+function selectCameraFeed(id,index){
+  const cam=state.cameras.find(c=>c.id===id); if(!cam) return false;
+  const urls=cameraFeedUrls(cam); if(!urls.length) return false;
+  const next=Math.max(0,Math.min(urls.length-1,Number(index)||0));
+  cam.startFeedIndex=next;
+  document.querySelectorAll('.camtile').forEach(tile=>{if(tile.dataset.camid===id)setTileFeedIndex(tile,next);});
+  saveState();
+  return true;
+}
+function mediaHTML(cam,tile){
+  const source=cameraSource(cam,tile);
+  if(source.type==='iframe') return `<iframe title="${esc(cam.name)}" src="${esc(source.url)}" allow="autoplay; fullscreen" loading="lazy"></iframe>`;
+  if(source.type==='hls') return `<video autoplay muted playsinline></video>`;
+  const src=stamp(cam,source.url);
   return `<img src="${esc(src)}" alt="">`;
 }
 /* ---------------- HLS playback ----------------
@@ -1077,45 +1385,56 @@ function loadHls(){
   return hlsLoader;
 }
 function hlsOk(tile){
-  tile._hlsRetries=0;
+  tile._feedWaiting=false; tile._last=Date.now();
+  tile._feedAttempts=new Set([Number(tile._feedIndex)||0]);
+  clearTimeout(tile._feedTimer);
   tile.classList.remove('nofeed');
   const o=tile.querySelector('.offline'); if(o) o.remove();
   const dot=tile.querySelector('[data-dot]'); if(dot) dot.className='tdot';
-  const ts=tile.querySelector('[data-ts]'); if(ts) ts.textContent='LIVE';
+  const ts=tile.querySelector('[data-ts]'); if(ts) ts.textContent=tile._feedIndex?'backup '+tile._feedIndex:'LIVE';
 }
-function hlsFail(tile,cam,reason){
-  const dot=tile.querySelector('[data-dot]'); if(dot) dot.className='tdot error';
-  const ts=tile.querySelector('[data-ts]'); if(ts) ts.textContent='offline';
+function advanceFeed(tile,cam,reason){
+  if(tile._feedWaiting) return;
+  const urls=cameraFeedUrls(cam), current=Number(tile._feedIndex)||0;
+  if(!tile._feedAttempts) tile._feedAttempts=new Set([current]);
+  const candidate=Array.from({length:urls.length},(_,offset)=>(current+offset+1)%urls.length).find(index=>!tile._feedAttempts.has(index));
+  const hasBackup=candidate!==undefined;
+  tile._feedWaiting=true;
   tile.classList.add('nofeed');
-  const o=tile.querySelector('.offline'); if(o) o.remove();   /* keep the reason current */
-  tile.insertAdjacentHTML('beforeend',offlineNote(cam,reason));
-}
-function hlsRetry(tile,cam){
-  const tries=(tile._hlsRetries=(tile._hlsRetries||0)+1);
-  if(!tile.isConnected||tries>20) return;
-  setTimeout(()=>{
+  const dot=tile.querySelector('[data-dot]'); if(dot) dot.className='tdot error';
+  const ts=tile.querySelector('[data-ts]'); if(ts) ts.textContent=hasBackup?(candidate===0?'trying primary':'trying backup '+candidate):'retrying selected feed';
+  const note=hasBackup?`trying ${candidate===0?'primary':'backup '+candidate}`:'all feeds tried · retrying selected source in 30s';
+  const old=tile.querySelector('.offline'); if(old) old.remove();
+  tile.insertAdjacentHTML('beforeend',offlineNote(cam,[reason,note].filter(Boolean).join(' · ')));
+  clearTimeout(tile._feedTimer);
+  tile._feedTimer=setTimeout(()=>{
     if(!tile.isConnected) return;
-    const v=tile.querySelector('video'); if(!v) return;
-    if(v._hls){ try{ v._hls.destroy(); }catch(e){} v._hls=null; }
-    v._hlsNative=false;
-    attachMedia(tile,cam);
-  },30000);
+    if(hasBackup){tile._feedIndex=candidate;tile._feedAttempts.add(candidate);}
+    else {tile._feedIndex=Math.max(0,Math.min(urls.length-1,Number(cam.startFeedIndex)||0));tile._feedAttempts=new Set([tile._feedIndex]);}
+    tile._feedWaiting=false;
+    mountTileMedia(tile,cam);
+  },hasBackup?900:30000);
 }
+function hlsFail(tile,cam,reason){ advanceFeed(tile,cam,reason); }
 function attachMedia(tile,cam){
-  if(cam.type!=='hls') return;
+  if(cameraSource(cam,tile).type!=='hls') return;
   const v=tile.querySelector('video');
-  if(!v) return;
+  if(!v||tile._feedWaiting) return;
   if(v._hls||v._hlsNative) return;
   v.muted=true;
   const play=()=>{ const p=v.play&&v.play(); if(p&&p.catch) p.catch(()=>{}); };
+  const version=tile._mediaVersion;
+  let sourceUrl;try{sourceUrl=playlistMediaUrl(cam,tile);}catch(e){hlsFail(tile,cam,e.message);return;}
   loadHls().then(HlsCtor=>{
+    if(!tile.isConnected||tile._feedWaiting||tile._mediaVersion!==version) return;
     if(HlsCtor&&HlsCtor.isSupported()){
       const h=new HlsCtor({manifestLoadingMaxRetry:2,levelLoadingMaxRetry:4,fragLoadingMaxRetry:6});
       v._hls=h;
       let fatal=0;
-      h.on(HlsCtor.Events.MANIFEST_PARSED,()=>{ hlsOk(tile); play(); });
+      h.on(HlsCtor.Events.MANIFEST_PARSED,()=>{if(tile._mediaVersion===version)play();});
+      v.addEventListener('playing',()=>{if(tile._mediaVersion===version)hlsOk(tile);});
       h.on(HlsCtor.Events.ERROR,(ev,data)=>{
-        if(!data||!data.fatal) return;
+        if(tile._mediaVersion!==version||!data||!data.fatal) return;
         fatal++;
         if(fatal<3&&data.type===HlsCtor.ErrorTypes.NETWORK_ERROR){ h.startLoad(); return; }
         if(fatal<3&&data.type===HlsCtor.ErrorTypes.MEDIA_ERROR){ h.recoverMediaError(); return; }
@@ -1125,15 +1444,14 @@ function attachMedia(tile,cam){
         try{ h.destroy(); }catch(e){}
         v._hls=null;
         hlsFail(tile,cam,reason);
-        hlsRetry(tile,cam);
       });
-      h.loadSource(cam.url);
+      h.loadSource(sourceUrl);
       h.attachMedia(v);
     } else if(v.canPlayType('application/vnd.apple.mpegurl')){
       v._hlsNative=true;
       v.addEventListener('loadedmetadata',()=>{ hlsOk(tile); play(); },{once:true});
-      v.addEventListener('error',()=>{ v._hlsNative=false; hlsFail(tile,cam,'stream error'); hlsRetry(tile,cam); },{once:true});
-      v.src=cam.url;
+      v.addEventListener('error',()=>{ v._hlsNative=false; hlsFail(tile,cam,'stream error'); },{once:true});
+      v.src=sourceUrl;
       play();
     } else {
       hlsFail(tile,cam,'HLS not supported in this browser');
@@ -1149,27 +1467,25 @@ function tileChrome(cam){
   return `<div class="camwx" data-camwx role="status" aria-label="Loading current weather for ${esc(cam.name)}" title="Current local weather"><span class="camwx-icon" data-wxicon>…</span><b data-wxtemp>—°</b><span class="camwx-cond" data-wxcond>Loading weather</span></div><div class="cap"><span class="lt">${alert}${name}${coords}</span>
     <span class="rt">${status}<button data-fs title="Fullscreen this camera">⛶</button></span></div>`;
 }
-function stamp(cam){ return cam.url+(cam.url.includes('?')?'&':'?')+'t='+Date.now(); }
+function stamp(cam,url=cameraFeedUrl(cam,null)){ return url+(url.includes('?')?'&':'?')+'t='+Date.now(); }
 function offlineNote(cam,reason){
-  return `<div class="offline">📡 feed unavailable<div style="opacity:.8;font-size:10.5px">${esc(cam.name)} · retrying every 30s${reason?' · '+esc(reason):''}</div></div>`;
+  return `<div class="offline">📡 feed unavailable<div style="opacity:.8;font-size:10.5px">${esc(cam.name)} · ${esc(reason||'retrying primary in 30s')}</div></div>`;
 }
 function wireImg(tile,cam,img){
   const dot=tile.querySelector('[data-dot]'), ts=tile.querySelector('[data-ts]');
   const ok=()=>{
-    tile._last=Date.now();
+    tile._last=Date.now(); tile._feedWaiting=false;
+    tile._feedAttempts=new Set([Number(tile._feedIndex)||0]);
+    clearTimeout(tile._feedTimer);
     tile.classList.remove('nofeed');
     const o=tile.querySelector('.offline'); if(o) o.remove();
     if(dot) dot.className='tdot';
-    if(ts) ts.textContent='upd '+new Date().toLocaleTimeString();
+    if(ts) ts.textContent=tile._feedIndex?'backup '+tile._feedIndex:'upd '+new Date().toLocaleTimeString();
   };
-  const bad=()=>{
-    if(dot) dot.className='tdot error';
-    if(ts) ts.textContent='offline';
-    tile.classList.add('nofeed');
-    if(!tile.querySelector('.offline')) tile.insertAdjacentHTML('beforeend',offlineNote(cam));
-  };
+  const bad=()=>advanceFeed(tile,cam,'feed request failed');
   img.onload=ok; img.onerror=bad;
   if(img.complete&&img.naturalWidth>0) ok();
+  else if(img.complete&&img.naturalWidth===0) bad();
 }
 function updateTileWeather(tile,cam){
   fetchWx(cam).then(wx=>{
@@ -1264,20 +1580,18 @@ function applyIframeView(frame,cam){
 function buildTile(cam){
   const tile=document.createElement('div');
   tile.className='camtile'; tile.dataset.camid=cam.id;
-  tile.innerHTML=mediaHTML(cam)+tileChrome(cam);
-  const frame=tile.querySelector('iframe');
-  if(frame){ applyIframeCss(frame,cam); applyIframeView(frame,cam); }
-  attachMedia(tile,cam);
-  const img=tile.querySelector('img');
-  if(img){ tile._last=Date.now(); wireImg(tile,cam,img); }
+  tile._feedIndex=Math.max(0,Math.min(cameraFeedUrls(cam).length-1,Number(cam.startFeedIndex)||0));
+  tile._feedAttempts=new Set([tile._feedIndex]);
+  tile.innerHTML=tileChrome(cam);
+  mountTileMedia(tile,cam);
   updateTileWeather(tile,cam);
   return tile;
 }
 function refreshTileImage(tile,cam){
-  const img=tile.querySelector('img'); if(!img) return;
+  const img=tile.querySelector('img'); if(!img||tile._feedWaiting) return;
   const dot=tile.querySelector('[data-dot]'); if(dot) dot.className='tdot loading';
   tile._last=Date.now();
-  img.src=stamp(cam);
+  img.src=stamp(cam,cameraFeedUrl(cam,tile));
 }
 function bannerHTML(a){
   const color=sevColor(a.sev);
@@ -1307,29 +1621,29 @@ function bannerHTML(a){
     scope.style.setProperty('--btop',bannerHeight); root.style.setProperty('--btop',bannerHeight);
   }
   if(cfg.show.wx&&wx){
-    put('wx',`<div class="w wx"><span class="big">${wxIcon(wx.code,wx.isDay)}</span><b>${Math.round(wx.temp)}°F</b><span>${esc(WX_COND[wx.code]||'—')}</span></div>`);
+    const wxLoc=cam&&cam.name?cam.name:'Current conditions';
+    let detail='';
     if(cfg.wxDetail){
-      let chips=chip('Feels',Math.round(wx.feels)+'°F')+chip('Wind',Math.round(wx.wind)+' mph')+chip('Hum',wx.hum+'%');
-      if(wx.rain!=null) chips+=chip('Rain',wx.rain+'%');
-      if(wx.pres!=null) chips+=chip('Pres',Math.round(wx.pres)+' hPa');
-      if(wx.sunrise) chips+=chip('↑',fmtT(wx.sunrise));
-      if(wx.sunset) chips+=chip('↓',fmtT(wx.sunset));
-      put('wx',`<div class="w chips">${chips}</div>`);
+      detail+=`<span>Feels <b>${Math.round(wx.feels)}°</b></span><span>Wind <b>${Math.round(wx.wind)} mph</b></span><span>Hum <b>${wx.hum}%</b></span>`;
+      if(wx.rain!=null) detail+=`<span>Rain <b>${wx.rain}%</b></span>`;
+      if(wx.pres!=null) detail+=`<span>Pres <b>${Math.round(wx.pres)}</b></span>`;
     }
+    put('wx',`<div class="w wx"><div class="wx-accent"><span class="wx-icon">${wxIcon(wx.code,wx.isDay)}</span></div><div class="wx-body"><div class="wx-loc">${esc(wxLoc)}</div><div class="wx-row"><span class="wx-temp">${Math.round(wx.temp)}°</span><span class="wx-cond">${esc(WX_COND[wx.code]||'—')}</span></div>${detail?`<div class="wx-detail">${detail}</div>`:''}</div></div>`);
   }
   if(cfg.show.clock){
-    put('clock',`<div class="w clock"><span class="t" data-wclock>${fmtClock()}</span>${cfg.showDate?`<span class="d" data-wdate>${new Date().toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'})}</span>`:''}</div>`);
+    put('clock',`<div class="w clock"><span class="cbadge">Live</span><div class="clock-main"><span class="t" data-wclock>${fmtClock()}</span>${cfg.showDate?`<span class="d" data-wdate>${new Date().toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'})}</span>`:''}</div></div>`);
   }
   if(cfg.show.custom&&cfg.customOverlay&&cfg.customOverlay.text){
     const co=cfg.customOverlay, alpha=Math.max(.1,Math.min(1,+co.opacity||.78));
     const bg=co.bg||'#111820', rgb=parseInt(bg.slice(1),16), rr=(rgb>>16)&255,gg=(rgb>>8)&255,bb=rgb&255;
-    put('custom',`<div class="w custom ${esc(co.style||'card')}" style="font-size:${+cfg.overlayFont||13}px;padding:${+cfg.overlayPad||0}px;color:${esc(co.color||'#fff')};background:rgba(${rr},${gg},${bb},${alpha})">${esc(co.text)}</div>`);
+    const shadow=co.shadow===false?'none':'0 2px 8px rgba(0,0,0,.35)';
+    put('custom',`<div class="w custom ${esc(co.style||'card')}" style="font-family:${co.font==='sans'?'var(--sans)':'var(--mono)'};text-align:${esc(co.align||'left')};box-shadow:${shadow};font-size:${+cfg.overlayFont||13}px;padding:${+cfg.overlayPad||0}px;color:${esc(co.color||'#fff')};background:rgba(${rr},${gg},${bb},${alpha})">${esc(co.text)}</div>`);
   }
   if(cfg.show.logo&&cfg.logoData){
     put('logo',`<div class="w logo"><img src="${esc(cfg.logoData)}" alt="logo"></div>`);
   }
   if(cfg.show.next&&next){
-    put('next',`<div class="w next" data-camid="${esc(next.id||'')}">${next.thumb?`<img src="${esc(next.thumb)}" alt="">`:''}<span class="nx"><b>NEXT</b><span data-wnext>${esc(next.name)}</span></span></div>`);
+    put('next',`<div class="w next" data-camid="${esc(next.id||'')}">${next.thumb?`<img class="nx-thumb" src="${esc(next.thumb)}" alt="">`:''}<span class="nx"><b>Up next</b><span data-wnext>${esc(next.name)}</span></span></div>`);
   }
   if(cfg.show.ticker&&tb){
     const parts=[cfg.tickerText].concat(alerts.map(a=>`⚠ ${a.event}${a.ends?' until '+fmtT(a.ends):''}`));
@@ -1629,12 +1943,13 @@ if(mode==='control'){
     const url=$('newUrl').value.trim(), type=$('newType').value;
     const refresh=parseInt($('newRefresh').value)||30;
     if(!name||isNaN(lat)||isNaN(lon)||!url){alert('Need a name, coordinates (paste them above) and a feed URL.');return;}
-    const cam={id:uid(),name,lat,lon,url,type,refresh,active:true,groupId:$('newCamGroup').value||null,iframeCss:type==='iframe'?$('newIframeCss').value.slice(0,12000).trim():'',iframeZoom:+$('newIframeZoom').value||100,iframeOffsetX:+$('newIframeOffsetX').value||0,iframeOffsetY:+$('newIframeOffsetY').value||0};
+    const backupUrls=[...new Set($('newBackupUrls').value.split(/\r?\n/).map(value=>value.trim()).filter(value=>value&&value!==url))].slice(0,10);
+    const cam={id:uid(),name,lat,lon,url,backupUrls,type,refresh,active:true,groupId:$('newCamGroup').value||null,iframeCss:type==='iframe'?$('newIframeCss').value.slice(0,12000).trim():'',iframeZoom:+$('newIframeZoom').value||100,iframeOffsetX:+$('newIframeOffsetX').value||0,iframeOffsetY:+$('newIframeOffsetY').value||0};
     state.cameras.push(cam);
     state.multiIds.push(cam.id);
     state.activeId=cam.id;
     saveState();
-    ['newName','newLat','newLon','newUrl','pasteCoords','newIframeCss'].forEach(id=>$(id).value='');
+    ['newName','newLat','newLon','newUrl','newBackupUrls','pasteCoords','newIframeCss'].forEach(id=>$(id).value='');
     $('newIframeZoom').value=100; $('newIframeOffsetX').value=0; $('newIframeOffsetY').value=0;
     updateOsmLink(NaN,NaN);
     renderGroupControls();
@@ -1677,7 +1992,7 @@ if(mode==='control'){
     const folderIds=gid==='all'?null:descendantsOf(gid);
     return state.cameras.filter(c=>{
       if(folderIds&&!folderIds.has(c.groupId)) return false;
-      return !q||[c.name,c.url,c.lat,c.lon].join(' ').toLowerCase().includes(q);
+      return !q||[c.name,c.url,...(c.backupUrls||[]),c.lat,c.lon].join(' ').toLowerCase().includes(q);
     });
   }
   function renderGroupControls(){
@@ -1703,7 +2018,7 @@ if(mode==='control'){
         const folderIds=descendantsOf(g.id), cameras=state.cameras.filter(c=>folderIds.has(c.groupId));
         const inOutput=selectedOutputCameras().filter(c=>folderIds.has(c.groupId)).length, n=cameras.length;
         const childFolders=children.get(g.id)||[],hasChildren=childFolders.length>0;
-        rows.push(`<div class="groupitem${selectedFolderId===g.id?' selected':''}" data-group="${esc(g.id)}" style="--depth:${Math.min(depth,8)}"><div class="folder-title"><button class="folder-caret" type="button" data-folder-toggle="${esc(g.id)}" aria-label="${collapsedFolders.has(g.id)?'Expand':'Collapse'} ${esc(g.name)}" ${hasChildren?'':'disabled'}>${hasChildren?(collapsedFolders.has(g.id)?'▸':'▾'):'·'}</button><button class="folder-open" type="button" data-folder-open="${esc(g.id)}" title="Browse ${esc(groupPath(g))}"><span class="folder-icon">${selectedFolderId===g.id?'📂':'📁'}</span>${esc(g.name)}</button></div><span class="pill" title="Selected for output / total cameras in this folder and its subfolders">${inOutput}/${n}</span><details class="folder-actions"><summary aria-label="Folder actions">•••</summary><div class="folder-actions-tools"><input class="gname" value="${esc(g.name)}" aria-label="Rename folder" title="Rename folder"><select class="gparent" aria-label="Move ${esc(g.name)} folder" title="Move folder under another folder"><option value="">Top level</option>${state.groups.filter(x=>x.id!==g.id&&!descendantsOf(g.id).has(x.id)).map(x=>`<option value="${esc(x.id)}"${g.parentId===x.id?' selected':''}>${esc(groupPath(x))}</option>`).join('')}</select><button class="sm" data-gact="del">Delete folder</button></div></details></div>`);
+        rows.push(`<div class="groupitem${selectedFolderId===g.id?' selected':''}" data-group="${esc(g.id)}" style="--depth:${Math.min(depth,8)}"><div class="folder-title"><button class="folder-caret" type="button" data-folder-toggle="${esc(g.id)}" aria-label="${collapsedFolders.has(g.id)?'Expand':'Collapse'} ${esc(g.name)}" ${hasChildren?'':'disabled'}>${hasChildren?(collapsedFolders.has(g.id)?'▸':'▾'):'·'}</button><button class="folder-open" type="button" data-folder-open="${esc(g.id)}" title="Browse ${esc(groupPath(g))}"><span class="folder-icon">${selectedFolderId===g.id?'📂':'📁'}</span>${esc(g.name)}</button></div><button type="button" class="folder-output${n>0&&inOutput>=n?' all':''}" data-folder-output="${esc(g.id)}" title="Toggle all cameras in this folder (and subfolders) for output — ${inOutput}/${n} selected"><span class="fo-dot"></span>${inOutput}/${n}</button><details class="folder-actions"><summary aria-label="Folder actions">•••</summary><div class="folder-actions-tools"><input class="gname" value="${esc(g.name)}" aria-label="Rename folder" title="Rename folder"><select class="gparent" aria-label="Move ${esc(g.name)} folder" title="Move folder under another folder"><option value="">Top level</option>${state.groups.filter(x=>x.id!==g.id&&!descendantsOf(g.id).has(x.id)).map(x=>`<option value="${esc(x.id)}"${g.parentId===x.id?' selected':''}>${esc(groupPath(x))}</option>`).join('')}</select><button class="sm" data-gact="del">Delete folder</button></div></details></div>`);
         if(!collapsedFolders.has(g.id)) draw(g.id,depth+1);
       });
     }
@@ -1711,6 +2026,15 @@ if(mode==='control'){
     box.querySelectorAll('[data-group]').forEach(row=>{
       const g=state.groups.find(x=>x.id===row.dataset.group); if(!g) return;
       row.querySelector('[data-folder-open]').onclick=()=>selectFolder(g.id);
+      row.querySelector('[data-folder-output]').onclick=()=>{
+        const ids=descendantsOf(g.id);
+        const cams=state.cameras.filter(c=>ids.has(c.groupId));
+        const allSelected=cams.length>0&&cams.every(c=>state.multiIds.includes(c.id));
+        if(allSelected) state.multiIds=state.multiIds.filter(id=>!cams.some(c=>c.id===id));
+        else cams.forEach(c=>{ c.active=true; if(!state.multiIds.includes(c.id)) state.multiIds.push(c.id); });
+        if(!outputCameras().some(c=>c.id===state.activeId)) syncActive();
+        saveState(); renderGroupControls(); renderGroupList(); renderCamList(); renderDash(); renderThumbs(); renderPreview(true); renderAlerts();
+      };
       row.querySelector('[data-folder-toggle]').onclick=()=>{ if(collapsedFolders.has(g.id)) collapsedFolders.delete(g.id); else collapsedFolders.add(g.id); renderGroupList(); };
       const rename=row.querySelector('.gname');
       rename.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();rename.blur();}};
@@ -1771,6 +2095,7 @@ if(mode==='control'){
               <button class="sm" data-act="preview">👁 preview</button>
               <a class="lnk" target="_blank" href="https://www.openstreetmap.org/#map=10/${c.lat}/${c.lon}">map ↗</a></div>
             <input type="text" value="${esc(c.url)}" data-f="url" style="width:100%;font-family:var(--mono);font-size:11px;margin-bottom:6px">
+            <label>Backup feed URLs · one per line</label><textarea data-f="backupUrls" rows="2" aria-label="Backup feed URLs for ${esc(c.name)}" placeholder="https://backup.example.com/cam.jpg">${esc((c.backupUrls||[]).join('\n'))}</textarea>
             ${c.type==='iframe'?`<details class="cam-iframe-css"><summary>Custom iframe CSS</summary><p class="cam-css-note">This CSS targets elements inside the camera page. It can only be injected into a same-origin iframe, and the camera site's CSP may still block it. Most third-party feeds are cross-origin, so this editor cannot hide their internal logo. To try your CSS manually, click <b>Copy DevTools console snippet</b>, open the camera page's DevTools Console, select the camera iframe in the execution-context dropdown, paste, and run it. The change is temporary and may still be blocked by the camera site's CSP. In your example, change <code>hieght</code> to <code>height</code> (and use <code>105vh</code> for viewport height).</p><textarea class="cam-iframe-editor" data-f="iframeCss" maxlength="12000" aria-label="Custom CSS for ${esc(c.name)}" placeholder=".vjs-bug.vjs-bug-tl.no-link img { opacity: 0; }\nhtml, body { overflow: hidden !important; width: 110%; height: 105vh; margin: -10px; }\n::-webkit-scrollbar { display: none !important; }">${esc(c.iframeCss||'')}</textarea><div class="row"><button type="button" class="sm" data-act="copy-iframe-css">Copy DevTools console snippet</button><span class="cam-css-note" data-css-copy-status aria-live="polite"></span></div><span class="iframe-css-status" data-iframe-css-status data-iframe-css-status-for="${esc(c.id)}">Waiting for iframe…</span><label>Viewport crop (works with third-party feeds)</label><div class="iframe-view-controls"><label>Zoom % <input type="number" data-f="iframeZoom" min="100" max="200" value="${Math.max(100,Math.min(200,+c.iframeZoom||100))}"></label><label>Pan X % <input type="number" data-f="iframeOffsetX" min="-50" max="50" value="${Math.max(-50,Math.min(50,+c.iframeOffsetX||0))}"></label><label>Pan Y % <input type="number" data-f="iframeOffsetY" min="-50" max="50" value="${Math.max(-50,Math.min(50,+c.iframeOffsetY||0))}"></label></div><span class="cam-css-note">Zoom first, then pan. Positive X/Y moves the image right/down; use negative values to move it left/up (for a top-left logo). Cropping may hide other edge content too.</span></details>`:''}
             <div class="camrow-actions">
               <select data-f="groupId" style="font-size:11px;padding:3px 5px"><option value=""${c.groupId?'':' selected'}>No folder</option>${state.groups.map(g=>`<option value="${esc(g.id)}"${c.groupId===g.id?' selected':''}>${'　'.repeat(Math.min(groupDepth(g),8))}${esc(g.name)}</option>`).join('')}</select>
@@ -1796,8 +2121,13 @@ if(mode==='control'){
         inp.addEventListener('change',()=>{
           const f=inp.dataset.f;
           const wasSelected=c.id===state.activeId;
-          c[f]=inp.type==='checkbox'?inp.checked:inp.type==='number'?(parseFloat(inp.value)||0):inp.value;
-          if(f==='url'&&c.type==='iframe'){
+          c[f]=inp.type==='checkbox'?inp.checked:inp.type==='number'?(parseFloat(inp.value)||0):f==='backupUrls'?[...new Set(inp.value.split(/\r?\n/).map(value=>value.trim()).filter(value=>value&&value!==c.url))].slice(0,10):inp.value;
+          if(f==='backupUrls') inp.value=(c.backupUrls||[]).join('\n');
+          if((f==='url'||f==='backupUrls')&&c.type==='iframe'){
+            saveState(); renderCamList(); renderDash(); renderPreview(true); renderThumbs(); renderAlerts();
+            return;
+          }
+          if(f==='backupUrls'||f==='url'||f==='type'){
             saveState(); renderCamList(); renderDash(); renderPreview(true); renderThumbs(); renderAlerts();
             return;
           }
@@ -1875,6 +2205,80 @@ if(mode==='control'){
     if(!state.multiIds.includes(state.activeId)) state.activeId=state.multiIds[0]||null;
     saveState(); renderDash(); renderCamList(); renderGroupList(); renderPreview(true);
   };
+  let editingCameraId=null,editorFolderId,editorDirty=false,editorDraft=[];
+  function updateEditorSourceOptions(){
+    const selected=+$('editCamStartFeed').value||0;
+    $('editCamStartFeed').innerHTML=editorDraft.map((s,i)=>`<option value="${i}">${esc(sourceLabel(s,i))}</option>`).join('');
+    $('editCamStartFeed').value=Math.min(selected,editorDraft.length-1);
+  }
+  function renderEditorSources(){
+    $('editorSources').innerHTML=editorDraft.map((s,i)=>`<div class="source-row" data-source-index="${i}"><div class="source-heading"><strong>${i?'Backup '+i:'Primary'}</strong><select data-source-field="type" aria-label="${i?'Backup '+i:'Primary'} source type">${['image','hls','iframe'].map(type=>`<option value="${type}"${type===s.type?' selected':''}>${{image:'Image',hls:'HLS',iframe:'Embed'}[type]}</option>`).join('')}</select>${i?'<button type="button" class="sm" data-remove-source="'+i+'" aria-label="Remove backup '+i+'">−</button>':''}</div><label>Source URL<input data-source-field="url" type="url" value="${esc(s.url)}" placeholder="https://…" aria-label="${i?'Backup '+i:'Primary'} URL"></label>${s.type==='hls'?`<details${s.playlist?' open':''}><summary>Paste M3U8 contents</summary><label>Original playlist URL / base URL<input data-source-field="baseUrl" type="url" value="${esc(s.baseUrl)}" placeholder="https://host/path/playlist.m3u8"></label><label>Playlist contents<textarea data-source-field="playlist" maxlength="500000" rows="5" spellcheck="false" placeholder="#EXTM3U">${esc(s.playlist)}</textarea></label><p class="hint">Relative segment, variant, and key links use the base URL. A pasted media playlist is a snapshot; use a URL for a continuously updating live playlist. Streams still require CORS permission.</p></details>`:''}</div>`).join('');
+    $('addEditorSource').disabled=editorDraft.length>=11;
+    updateEditorSourceOptions();
+  }
+  $('editorSources').oninput=e=>{const field=e.target.dataset.sourceField,row=e.target.closest('[data-source-index]');if(!field||!row)return;editorDraft[+row.dataset.sourceIndex][field]=e.target.value;editorDirty=true;updateEditorSourceOptions();};
+  $('editorSources').onchange=e=>{if(e.target.dataset.sourceField==='type')renderEditorSources();};
+  $('editorSources').onclick=e=>{const button=e.target.closest('[data-remove-source]');if(!button)return;editorDraft.splice(+button.dataset.removeSource,1);editorDirty=true;renderEditorSources();};
+  $('addEditorSource').onclick=()=>{if(editorDraft.length<11){editorDraft.push({type:'image',url:'',playlist:'',baseUrl:''});editorDirty=true;renderEditorSources();}};
+  function renderCameraEditorBrowser(){
+    const folders=$('editorFolderList');
+    folders.innerHTML=state.groups.map(g=>`<button class="editor-folder${editorFolderId===g.id?' on':''}" data-editor-folder="${esc(g.id)}" type="button" title="${esc(groupPath(g))}">📁 ${esc(groupPath(g))}</button>`).join('');
+    $('cameraEditor').querySelectorAll('[data-editor-folder="all"]').forEach(button=>button.classList.toggle('on',!editorFolderId));
+    const visible=state.cameras.filter(cam=>!editorFolderId||descendantsOf(editorFolderId).has(cam.groupId));$('editorCameraCount').textContent=visible.length;
+    $('editorCameraList').innerHTML=visible.map(cam=>`<button class="editor-camera${cam.id===editingCameraId?' on':''}" data-editor-camera="${esc(cam.id)}" type="button"><span class="editor-camera-icon">${cam.type==='iframe'?'▣':cam.type==='hls'?'▶':'▧'}</span><span class="editor-camera-name">${esc(cam.name)}</span>${cameraActive(cam)?'':'<span class="editor-disabled">Off</span>'}</button>`).join('')||'<div class="editor-empty">No cameras in this folder.</div>';
+  }
+  function openCameraEditor(id,show=true){
+    const cam=id?state.cameras.find(c=>c.id===id):{id:null,name:'',type:'image',url:'',lat:'',lon:'',refresh:30,active:true,groupId:selectedFolderId}; if(!cam) return;
+    if(editingCameraId&&editingCameraId!==id&&editorDirty&&!confirm('Discard unsaved changes to this camera?')) return;
+    if(editingCameraId===id&&editorDirty)return;
+    editingCameraId=id; editorDirty=false;
+    $('editCamName').value=cam.name||'';
+    editorDraft=cameraSources(cam);renderEditorSources();$('editorError').hidden=true;
+    $('editCamRefresh').value=cam.refresh||0;
+    $('editCamLat').value=cam.lat; $('editCamLon').value=cam.lon;
+    $('editCamEnabled').checked=cameraActive(cam); $('editCamOutput').checked=state.multiIds.includes(id);
+    $('editCamGroup').innerHTML='<option value="">No folder</option>'+state.groups.map(g=>`<option value="${esc(g.id)}">${esc(groupPath(g))}</option>`).join('');
+    $('editCamGroup').value=cam.groupId||'';
+    const urls=cameraFeedUrls(cam);
+    const selected=Math.max(0,Math.min(urls.length-1,Number(cam.startFeedIndex)||0));
+    updateEditorSourceOptions();
+    $('editCamStartFeed').value=selected; $('cameraEditorTitle').textContent=cam.name||'Camera details';
+    $('editCameraPreviewName').textContent=cam.name||''; $('editCameraPreviewLocation').textContent=`${(+cam.lat).toFixed(4)}, ${(+cam.lon).toFixed(4)}`;
+    const preview=$('editCameraPreview');
+    preview.innerHTML=cam.url&&cameraSource(cam).type==='image'?`<img src="${esc(stamp(cam,urls[selected]))}" alt="Preview of ${esc(cam.name)}"><span class="preview-empty" hidden>Camera preview</span>`:`<span class="preview-empty">${cam.type==='hls'?'HLS stream':'Embedded player'} · source ${selected===0?'Primary':'Backup '+selected}</span>`;
+    const group=$('editCamGroup').selectedOptions[0]; $('editCameraPreviewName').textContent=cam.name||''; $('editCameraPreviewLocation').textContent=[group&&group.value?group.textContent:'No folder',`${(+cam.lat).toFixed(4)}, ${(+cam.lon).toFixed(4)}`].join(' · ');
+    if(show||editorFolderId===undefined) editorFolderId=cam.groupId||null;
+    renderCameraEditorBrowser();
+    if(show){$('cameraEditor').hidden=false; document.body.style.overflow='hidden'; $('editCamName').focus();}
+  }
+  $('editorFolderList').onclick=e=>{const button=e.target.closest('[data-editor-folder]');if(!button)return;editorFolderId=button.dataset.editorFolder==='all'?null:button.dataset.editorFolder;renderCameraEditorBrowser();};
+  $('cameraEditor').querySelector('[data-editor-folder="all"]').onclick=()=>{editorFolderId=null;renderCameraEditorBrowser();};
+  $('editorCameraList').onclick=e=>{const button=e.target.closest('[data-editor-camera]');if(button)openCameraEditor(button.dataset.editorCamera,false);};
+  document.querySelectorAll('.camera-editor-form input,.camera-editor-form select,.camera-editor-form textarea').forEach(control=>control.addEventListener('input',()=>{editorDirty=true;}));
+  document.querySelectorAll('.camera-editor-form input[type=checkbox],.camera-editor-form select').forEach(control=>control.addEventListener('change',()=>{editorDirty=true;}));
+  function closeCameraEditor(){ $('cameraEditor').hidden=true; document.body.style.overflow=''; editingCameraId=null; editorDirty=false; }
+  $('closeCameraEditor').onclick=closeCameraEditor; $('closeCameraEditorFooter').onclick=closeCameraEditor;
+  $('cameraEditor').addEventListener('click',e=>{if(e.target===$('cameraEditor'))closeCameraEditor();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('cameraEditor').hidden)closeCameraEditor();});
+  $('saveCameraEditor').onclick=()=>{
+    const cam=state.cameras.find(c=>c.id===editingCameraId)||{id:uid()};
+    const name=$('editCamName').value.trim(),lat=Number($('editCamLat').value),lon=Number($('editCamLon').value);
+    try{
+      if(!name||!$('editCamLat').value.trim()||!$('editCamLon').value.trim()||!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)throw new Error('Enter a name and valid latitude / longitude.');
+      editorDraft.forEach((s,i)=>{s.url=s.url.trim();s.baseUrl=s.baseUrl.trim();if(s.type==='hls'&&s.playlist.trim())resolvePlaylist(s.playlist,s.baseUrl||s.url);else{let u;try{u=new URL(s.url);}catch(e){throw new Error(sourceLabel(s,i)+': enter a valid URL.');}if(!['http:','https:'].includes(u.protocol))throw new Error('Sources must use HTTP or HTTPS.');}});
+    }catch(e){$('editorError').textContent=e.message;$('editorError').hidden=false;return;}
+    cam.name=name;cam.url=editorDraft[0].url;cam.type=editorDraft[0].type;cam.playlist=editorDraft[0].playlist;cam.baseUrl=editorDraft[0].baseUrl;cam.lat=lat;cam.lon=lon;cam.refresh=Math.min(3600,Math.max(0,Number($('editCamRefresh').value)||0));
+    cam.backupSources=editorDraft.slice(1).map(s=>({...s}));cam.backupUrls=cam.backupSources.map(s=>s.url);
+    if(!state.cameras.includes(cam))state.cameras.push(cam);
+    cam.groupId=$('editCamGroup').value||null;cam.active=$('editCamEnabled').checked;
+    if(cam.type==='iframe'&&!cam.iframeCss)cam.iframeCss='';
+    const output=$('editCamOutput').checked;
+    if(output&&!state.multiIds.includes(cam.id))state.multiIds.push(cam.id);else if(!output)state.multiIds=state.multiIds.filter(id=>id!==cam.id);
+    const startIndex=Math.max(0,Math.min(cameraFeedUrls(cam).length-1,+$('editCamStartFeed').value||0));cam.startFeedIndex=startIndex;
+    if(cam.active&&output){state.activeId=cam.id;}else if(state.activeId===cam.id)state.activeId=outputCameras()[0]?.id||null;
+    saveState();renderGroupControls();renderGroupList();renderCamList();renderDash();renderThumbs();renderPreview(true);renderAlerts();
+    closeCameraEditor();
+  };
   function setFilteredActive(on){
     const matches=cameraMatches();
     matches.forEach(c=>{ c.active=on; });
@@ -1893,7 +2297,7 @@ if(mode==='control'){
     document.querySelectorAll('[data-thumb],[data-thumb2]').forEach(img=>{
       const id=img.dataset.thumb||img.dataset.thumb2;
       const cam=state.cameras.find(c=>c.id===id);
-      if(!cam||!cameraActive(cam)||cam.type!=='image') return;
+      if(!cam||!cameraActive(cam)||cameraSource(cam).type!=='image'||cam.refresh===0) return;
       if(!img._t||Date.now()-img._t>=(cam.refresh||30)*1000){
         img._t=Date.now();
         img.src=cam.url+(cam.url.includes('?')?'&':'?')+'t='+Date.now();
@@ -1909,9 +2313,10 @@ if(mode==='control'){
     const outputs=outputCameras();
     const active=outputs.find(c=>c.id===state.activeId)||outputs[0]||null;
     const cams=state.multiView===1?(active?[active]:[]):outputs.slice(0,state.multiView);
-    st._previewSig=JSON.stringify([cams.map(c=>c.id),active&&active.id,state.multiView,state.cfg.widgetsOn,state.cfg.show,state.cfg.corner,state.cameras.map(c=>[c.id,c.type,c.iframeCss,c.url])]);
+    st._previewSig=JSON.stringify([cams.map(c=>c.id),active&&active.id,state.multiView,state.cfg.widgetsOn,state.cfg.show,state.cfg.corner,state.cameras.map(c=>[c.id,c.type,c.iframeCss,c.url,c.backupSources,c.playlist,c.baseUrl,c.startFeedIndex])]);
     if(reset) prevLast=Date.now();
     st.innerHTML='';
+    if(!$('controlView').classList.contains('preview-open'))return;
     st.classList.add('output-stage');
     st.classList.toggle('contain',state.cfg.fit==='contain');
     st.style.setProperty('--gap',(state.cfg.tileGap||0)+'px');
@@ -1923,7 +2328,7 @@ if(mode==='control'){
       return;
     }
     const layout=state.multiView===1?1:state.multiView;
-    const grid=document.createElement('div'); grid.className='grid g'+layout+(state.cfg.bgData?' hasbg':'');
+    const grid=document.createElement('div'); grid.className='grid g'+layout+(state.cfg.bgData?' hasbg':''); applyGridDims(grid,layout);
     cams.forEach(c=>grid.appendChild(buildTile(c)));
     st.appendChild(grid);
     st.insertAdjacentHTML('beforeend','<div class="pagestrip"></div>');
@@ -1931,13 +2336,13 @@ if(mode==='control'){
     st.insertAdjacentHTML('beforeend','<div class="tickbar"></div>');
     st._outputPreview=true; st._showWidgets=state.cfg.widgetsOn!==false;
     const cam=active&&cams.some(c=>c.id===active.id)?active:cams[0];
-    const previewSig=JSON.stringify([cams.map(c=>c.id),active&&active.id,state.multiView,state.cfg.widgetsOn,state.cfg.show,state.cfg.corner,state.cameras.map(c=>[c.id,c.type,c.iframeCss,c.url])]);
+    const previewSig=JSON.stringify([cams.map(c=>c.id),active&&active.id,state.multiView,state.cfg.widgetsOn,state.cfg.show,state.cfg.corner,state.cameras.map(c=>[c.id,c.type,c.iframeCss,c.url,c.backupSources,c.playlist,c.baseUrl,c.startFeedIndex])]);
     st._previewSig=previewSig;
     const alerts=cams.flatMap(c=>(alCache[c.id]&&alCache[c.id].data)||[]);
     const wx=(wxCache[cam.id]&&wxCache[cam.id].data)||null;
     registerScope(st,{cam,wx,alerts,next:null});
     st.querySelectorAll('.camtile').forEach(tile=>{ ['--tickh','--btop'].forEach(name=>tile.style.setProperty(name,getComputedStyle(st).getPropertyValue(name)||'0px')); });
-    $('prevName').textContent=state.multiView===1?cam.name:(cams.length+' cameras in '+(layout===4?'2×2':'3×2')+' output');
+    $('prevName').textContent=state.multiView===1?cam.name:(cams.length+' cameras in '+layoutLabel(layout)+' output');
     $('prevType').textContent=state.multiView===1?'· '+({image:'still image',iframe:'embedded player',hls:'HLS stream'}[cam.type]||cam.type):'· live output layout';
     updateAlertPill(cam);
     Promise.all(cams.map(fetchWx)).then(()=>{
@@ -1955,7 +2360,7 @@ if(mode==='control'){
     const outputs=outputCameras();
     const active=outputs.find(c=>c.id===state.activeId)||outputs[0]||null;
     const cams=state.multiView===1?(active?[active]:[]):outputs.slice(0,state.multiView);
-    const previewSig=JSON.stringify([cams.map(c=>c.id),active&&active.id,state.multiView,state.cfg.widgetsOn,state.cfg.show,state.cfg.corner,state.cameras.map(c=>[c.id,c.type,c.iframeCss,c.url])]);
+    const previewSig=JSON.stringify([cams.map(c=>c.id),active&&active.id,state.multiView,state.cfg.widgetsOn,state.cfg.show,state.cfg.corner,state.cameras.map(c=>[c.id,c.type,c.iframeCss,c.url,c.backupSources,c.playlist,c.baseUrl,c.startFeedIndex])]);
     if(st._previewSig!==previewSig) renderPreview(false);
     const ms=Math.max(2,state.cfg.prevSec)*1000, elapsed=Date.now()-prevLast;
     $('prevFill').style.width=Math.min(100,elapsed/ms*100)+'%';
@@ -1963,7 +2368,7 @@ if(mode==='control'){
       prevLast=Date.now();
       st.querySelectorAll('.camtile').forEach(tile=>{
         const cam=cams.find(c=>c.id===tile.dataset.camid);
-        if(cam&&cam.type==='image') refreshTileImage(tile,cam);
+        if(cam&&cameraSource(cam,tile).type==='image') refreshTileImage(tile,cam);
       });
     }
   },250);
@@ -1971,7 +2376,7 @@ if(mode==='control'){
     const st=$('prevStage');
     st.querySelectorAll('.camtile').forEach(tile=>{
       const cam=state.cameras.find(c=>c.id===tile.dataset.camid);
-      if(cam&&cam.type==='image') refreshTileImage(tile,cam);
+      if(cam&&cameraSource(cam,tile).type==='image') refreshTileImage(tile,cam);
     });
     prevLast=Date.now();
   };
@@ -2067,6 +2472,22 @@ if(mode==='control'){
     renderCamList(); if(!wasOutput) renderGroupList(); renderThumbs(); renderPreview(true); renderAlerts(); dashSyncActive();
     if(changed) fetchAlerts(cam).then(renderAlerts);
   }
+  /* ---- keyboard shortcuts: camera switching, layout, rotation ---- */
+  document.addEventListener('keydown',e=>{
+    const t=e.target;
+    if(e.ctrlKey||e.metaKey||e.altKey||e.defaultPrevented) return;
+    if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable)) return;
+    const ed=$('cameraEditor'); if(ed&&!ed.hidden) return;
+    const k=e.key;
+    if(k==='/'){ const s=$('dashSearch'); if(s){ s.focus(); s.select(); e.preventDefault(); } return; }
+    if(k==='l'||k==='L'){ const i=LAYOUT_ORDER.indexOf(state.multiView); state.multiView=LAYOUT_ORDER[(i+1+(i<0?1:0))%LAYOUT_ORDER.length]; syncLayoutSelects(); saveState(); renderPreview(true); e.preventDefault(); return; }
+    if(k==='r'||k==='R'){ const cb=$('autoRotate'); if(cb){ cb.checked=!cb.checked; cb.dispatchEvent(new Event('change')); } e.preventDefault(); return; }
+    const outputs=outputCameras(); if(!outputs.length) return;
+    let idx=outputs.findIndex(c=>c.id===state.activeId);
+    if(k==='ArrowRight'||k==='n'||k==='N'||k==='ArrowDown'){ idx=(idx+1)%outputs.length; selectCam(outputs[idx].id); e.preventDefault(); }
+    else if(k==='ArrowLeft'||k==='p'||k==='P'||k==='ArrowUp'){ idx=(idx-1+outputs.length)%outputs.length; selectCam(outputs[idx].id); e.preventDefault(); }
+    else if(/^[1-9]$/.test(k)){ const n=+k-1; if(outputs[n]) selectCam(outputs[n].id); e.preventDefault(); }
+  });
   let dashSig='',dashPage=0,selectedFolderId=null;
   const collapsedFolders=new Set();
   const DASH_PAGE_SIZE=18;
@@ -2082,14 +2503,21 @@ if(mode==='control'){
   function renderDash(){
     const box=$('dashGrid'); if(!box) return;
     const matches=dashMatches();
-    const signature=JSON.stringify([matches.map(c=>[c.id,c.name,c.url,c.type,c.active,c.groupId]),state.cameras.map(c=>[c.id,c.name,c.lat,c.lon,c.active,c.groupId]),state.groups,state.multiIds,state.cfg.showBadge,selectedFolderId]);
+    const signature=JSON.stringify([matches.map(c=>[c.id,c.name,c.url,c.backupSources,c.playlist,c.baseUrl,c.type,c.refresh,c.lat,c.lon,c.active,c.groupId,c.startFeedIndex]),state.cameras.map(c=>[c.id,c.name,c.lat,c.lon,c.active,c.groupId]),state.groups,state.multiIds,state.cfg.showBadge,selectedFolderId,state.cfg.dashboardView,state.cfg.dashboardSort]);
     const di=$('dashInfo'); if(di) di.textContent=matches.length+' cameras · '+outputCameras().length+' in output';
+    const bulk=$('bulkOutputBtn'); if(bulk){ const allShown=matches.length>0&&matches.every(c=>state.multiIds.includes(c.id)); bulk.textContent=allShown?'☑ Clear shown from output':'☐ Select shown → output'; }
     const path=$('folderPath'); if(path) path.textContent=selectedFolderId?(groupPath(state.groups.find(g=>g.id===selectedFolderId))||'All cameras'):'All cameras';
     const allCount=$('folderAllCount'); if(allCount) allCount.textContent=state.cameras.length+' cameras · '+outputCameras().length+' in output';
     $('folderAll').classList.toggle('on',!selectedFolderId);
+    matches.sort((a,b)=>state.cfg.dashboardSort==='name-desc'?b.name.localeCompare(a.name):state.cfg.dashboardSort==='type'?a.type.localeCompare(b.type)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
+    box.classList.toggle('list-view',state.cfg.dashboardView==='list');
+    $('dashGridView').classList.toggle('on',state.cfg.dashboardView!=='list'); $('dashGridView').setAttribute('aria-pressed',state.cfg.dashboardView!=='list');
+    $('dashListView').classList.toggle('on',state.cfg.dashboardView==='list'); $('dashListView').setAttribute('aria-pressed',state.cfg.dashboardView==='list');
+    $('dashSort').value=state.cfg.dashboardSort;
     const pages=Math.max(1,Math.ceil(matches.length/DASH_PAGE_SIZE));
     dashPage=Math.min(dashPage,pages-1);
     const info=$('dashPageInfo'); if(info) info.textContent=(dashPage+1)+' / '+pages;
+    $('dashPrev').disabled=dashPage===0;$('dashNext').disabled=dashPage>=pages-1;
     if(signature===dashSig){ dashSyncActive(); return; }
     dashSig=signature;
     box.innerHTML='';
@@ -2107,7 +2535,17 @@ if(mode==='control'){
       const actions=document.createElement('div'); actions.className='camera-card-actions';
       const gridLabel=document.createElement('label'); gridLabel.title='Include this camera in the output; folders do not limit camera selection';
       gridLabel.innerHTML=`<input type="checkbox" data-card-grid="${esc(c.id)}"${state.multiIds.includes(c.id)?' checked':''}> Output`;
-      actions.append(gridLabel); info.append(titles,actions); card.appendChild(info); box.appendChild(card);
+      const edit=document.createElement('button'); edit.type='button'; edit.className='sm edit-camera'; edit.textContent='Details'; edit.setAttribute('aria-label','Edit '+c.name);
+      edit.onclick=()=>openCameraEditor(c.id);
+      actions.append(gridLabel,edit); info.append(titles,actions); card.appendChild(info);
+      const tools=document.createElement('div'); tools.className='camera-card-tools';
+      const feedLabel=document.createElement('label'); feedLabel.textContent='Play feed';
+      const feedSelect=document.createElement('select'); feedSelect.setAttribute('aria-label','Play feed source for '+c.name);
+      const urls=cameraFeedUrls(c), selected=Math.max(0,Math.min(urls.length-1,Number(c.startFeedIndex)||0));
+      feedSelect.innerHTML=urls.map((url,index)=>`<option value="${index}"${index===selected?' selected':''}>${esc(sourceLabel(cameraSources(c)[index],index))}</option>`).join('');
+      feedSelect.disabled=urls.length<2;
+      feedSelect.onchange=()=>{if(selectCameraFeed(c.id,+feedSelect.value)){selectCam(c.id);}};
+      tools.append(feedLabel,feedSelect); card.appendChild(tools); box.appendChild(card);
     });
     box.querySelectorAll('[data-card-grid]').forEach(input=>input.onchange=()=>{
       const cam=state.cameras.find(c=>c.id===input.dataset.cardGrid); if(!cam) return;
@@ -2131,15 +2569,27 @@ if(mode==='control'){
   $('dashSearch').oninput=()=>{ $('camSearch').value=$('dashSearch').value; dashFilterChanged(); };
   $('dashGroup').onchange=()=>{ selectedFolderId=$('dashGroup').value==='all'?null:$('dashGroup').value; $('camGroupFilter').value=$('dashGroup').value; dashFilterChanged(); renderGroupList(); };
   $('folderAll').onclick=()=>selectFolder(null);
-  $('finderAddCamera').onclick=()=>{ $('cameraTools').open=true;  $('newCamGroup').value=selectedFolderId||''; $('addCameraPanel').scrollIntoView({behavior:'smooth',block:'start'}); };
+  $('finderAddCamera').onclick=()=>openCameraEditor(null);
+  $('bulkOutputBtn').onclick=()=>{
+    const cams=dashMatches();
+    const allSelected=cams.length>0&&cams.every(c=>state.multiIds.includes(c.id));
+    if(allSelected) state.multiIds=state.multiIds.filter(id=>!cams.some(c=>c.id===id));
+    else cams.forEach(c=>{ c.active=true; if(!state.multiIds.includes(c.id)) state.multiIds.push(c.id); });
+    if(!outputCameras().some(c=>c.id===state.activeId)) syncActive();
+    saveState(); renderGroupControls(); renderGroupList(); renderCamList(); renderDash(); renderThumbs(); renderPreview(true); renderAlerts();
+  };
+  $('finderPreviewBtn').onclick=()=>{const on=$('controlView').classList.toggle('preview-open');$('finderPreviewBtn').setAttribute('aria-pressed',String(on));renderPreview(true);if(on)$('prevStage').scrollIntoView({behavior:'smooth',block:'center'});};
   $('finderManageBtn').onclick=()=>{ $('cameraManager').open=!$('cameraManager').open; if($('cameraManager').open) $('cameraManager').scrollIntoView({behavior:'smooth',block:'start'}); };
   $('camSearch').oninput=()=>{ $('dashSearch').value=$('camSearch').value; if($('camGroupFilter').value!=='all') selectedFolderId=$('camGroupFilter').value; dashFilterChanged(); };
   $('camGroupFilter').onchange=()=>{ $('dashGroup').value=$('camGroupFilter').value; selectedFolderId=$('camGroupFilter').value==='all'?null:$('camGroupFilter').value; $('dashSearch').value=$('camSearch').value; dashFilterChanged(); renderGroupList(); };
   $('clearGroupFilter').onclick=()=>{ $('camGroupFilter').value='all'; $('dashGroup').value='all'; $('dashSearch').value=''; $('camSearch').value=''; selectFolder(null); };
   $('dashSearch').addEventListener('input',()=>{ $('camSearch').value=$('dashSearch').value; });
-  $('finderAddCamera').setAttribute('aria-controls','addCameraPanel'); $('finderManageBtn').setAttribute('aria-controls','cameraManager');
+  $('finderAddCamera').setAttribute('aria-controls','cameraEditor'); $('finderManageBtn').setAttribute('aria-controls','cameraManager');
   $('dashPrev').onclick=()=>{dashPage=Math.max(0,dashPage-1);dashSig='';renderDash();};
   $('dashNext').onclick=()=>{dashPage++;dashSig='';renderDash();};
+  $('dashGridView').onclick=()=>{state.cfg.dashboardView='grid';saveState();dashSig='';renderDash();};
+  $('dashListView').onclick=()=>{state.cfg.dashboardView='list';saveState();dashSig='';renderDash();};
+  $('dashSort').onchange=()=>{state.cfg.dashboardSort=$('dashSort').value;dashPage=0;saveState();dashSig='';renderDash();};
   function renderDashGroups(){
     const sel=$('dashGroup'); if(!sel) return;
     const val=sel.value||'all';
@@ -2159,7 +2609,7 @@ if(mode==='control'){
   setInterval(()=>{   /* keep visible still-image feeds ticking */
     document.querySelectorAll('#dashGrid .camtile').forEach(tile=>{
       const cam=state.cameras.find(c=>c.id===tile.dataset.camid);
-      if(!cam||!cameraActive(cam)||cam.type!=='image') return;
+      if(!cam||!cameraActive(cam)||cameraSource(cam,tile).type!=='image'||cam.refresh===0) return;
       const ms=Math.max(5,cam.refresh||30)*1000;
       if(Date.now()-(tile._last||0)>=ms) refreshTileImage(tile,cam);
     });
@@ -2210,7 +2660,14 @@ if(mode==='control'){
   setInterval(()=>{ const cam=activeCam(); if(cam) fetchAlerts(cam).then(()=>{renderAlerts();updateAlertPill(cam);}); },2*60*1000);
 
   /* ---- output & layout settings ---- */
-  bindSel('multiView','multiView',()=>renderPreview(true));
+  const quickLayout=$('quickLayout');
+  const syncLayoutSelects=()=>{ const ql=$('quickLayout'), mv=$('multiView'); if(ql) ql.value=String(state.multiView); if(mv) mv.value=String(state.multiView); };
+  if(quickLayout){
+    quickLayout.innerHTML=LAYOUT_ORDER.map(n=>`<option value="${n}">${layoutLabel(n)}</option>`).join('');
+    quickLayout.onchange=()=>{ state.multiView=LAYOUT_ORDER.includes(+quickLayout.value)?+quickLayout.value:1; syncLayoutSelects(); saveState(); renderPreview(true); };
+  }
+  bindSel('multiView','multiView',()=>{ syncLayoutSelects(); renderPreview(true); });
+  syncLayoutSelects();
   bindChk('autoRotate','autoRotate');
   bindChk('widgetsOn','cfg.widgetsOn',()=>rerenderWidgets());
   bindChk('clockWidgetOn','cfg.show.clock',()=>{ renderWidgetGrid(); rerenderWidgets(); renderPreview(false); });
@@ -2355,7 +2812,7 @@ if(mode==='control'){
     const u=new URL(location.href); u.search='?mode=remote&code='+encodeURIComponent(code);
     $('remoteURL').value=u.href;
   }
-  bindChk('remoteOn','cfg.remote.on',()=>{
+bindChk('remoteOn','cfg.remote.on',()=>{
     if(state.cfg.remote.on) relayConnect();
     else{ try{ if(relay.ws) relay.ws.close(); }catch(e){} relay.ws=null; relay.st='off'; }
   });
@@ -2384,21 +2841,24 @@ if(mode==='control'){
     $('customOverlayText').value=c.text||''; $('customOverlayStyle').value=c.style||'card';
     $('customOverlayColor').value=c.color||'#ffffff'; $('customOverlayBg').value=c.bg||'#111820';
     $('customOverlayOpacity').value=c.opacity||.78; $('overlayFont').value=state.cfg.overlayFont||13; $('overlayPad').value=state.cfg.overlayPad||4;
+    $('customOverlayFont').value=c.font||'mono'; $('customOverlayAlign').value=c.align||'left'; $('customOverlayShadow').checked=c.shadow!==false;
     function paint(){
       $('customOverlayOpacityVal').textContent=(+$('customOverlayOpacity').value).toFixed(2);
       $('overlayFontVal').textContent=$('overlayFont').value+'px'; $('overlayPadVal').textContent=$('overlayPad').value+'px';
       const preview=$('customOverlayPreview');
       preview.textContent=$('customOverlayText').value||'Example overlay message';
-      preview.style.cssText=`color:${$('customOverlayColor').value};background:${$('customOverlayBg').value};opacity:${$('customOverlayOpacity').value};font-size:${$('overlayFont').value}px;padding:${$('overlayPad').value}px;border-radius:${$('customOverlayStyle').value==='badge'?'999px':$('customOverlayStyle').value==='strip'?'2px':'5px'}`;
+      const bg=$('customOverlayBg').value,rgb=parseInt(bg.slice(1),16),rr=(rgb>>16)&255,gg=(rgb>>8)&255,bb=rgb&255;
+      preview.style.cssText=`color:${$('customOverlayColor').value};background:rgba(${rr},${gg},${bb},${$('customOverlayOpacity').value});font:${$('overlayFont').value}px ${$('customOverlayFont').value==='sans'?'var(--sans)':'var(--mono)'};text-align:${$('customOverlayAlign').value};box-shadow:${$('customOverlayShadow').checked?'0 2px 8px rgba(0,0,0,.35)':'none'};padding:${$('overlayPad').value}px;border-radius:${$('customOverlayStyle').value==='badge'?'999px':$('customOverlayStyle').value==='strip'?'2px':'5px'}`;
     }
     const save=()=>{
       c.text=$('customOverlayText').value.trim(); c.style=$('customOverlayStyle').value;
       c.color=$('customOverlayColor').value; c.bg=$('customOverlayBg').value; c.opacity=+$('customOverlayOpacity').value;
+      c.font=$('customOverlayFont').value; c.align=$('customOverlayAlign').value; c.shadow=$('customOverlayShadow').checked;
       state.cfg.overlayFont=+$('overlayFont').value; state.cfg.overlayPad=+$('overlayPad').value;
       applyStyle(); saveState(); rerenderWidgets(); paint();
     };
     let saveTimer;
-    ['customOverlayText','customOverlayStyle','customOverlayColor','customOverlayBg','customOverlayOpacity','overlayFont','overlayPad'].forEach(id=>{
+    ['customOverlayText','customOverlayStyle','customOverlayColor','customOverlayBg','customOverlayOpacity','customOverlayFont','customOverlayAlign','customOverlayShadow','overlayFont','overlayPad'].forEach(id=>{
       const el=$(id); el.oninput=()=>{paint(); clearTimeout(saveTimer); saveTimer=setTimeout(save,350);}; el.onchange=()=>{clearTimeout(saveTimer);save();};
     });
     customOverlaySave=save; paint();
@@ -2410,6 +2870,7 @@ if(mode==='control'){
   $('newType').onchange();
   $('autoRotate').checked=!!state.autoRotate;
   $('rotateSec').value=state.rotateSec;
+  syncLayoutSelects();
   $('widgetsOn').checked=state.cfg.widgetsOn!==false;
   $('clockWidgetOn').checked=!!state.cfg.show.clock;
   $('clock24').checked=!!state.cfg.clock24;
@@ -2437,12 +2898,14 @@ if(mode==='control'){
     const changed=settingsSig()!==lastSig;
     lastSig=settingsSig();
     if(changed){ renderThemeUI(); renderWidgetGrid(); renderGroupControls(); bindCustomOverlay(); }
+    $('dashSort').value=state.cfg.dashboardSort; $('dashGrid').classList.toggle('list-view',state.cfg.dashboardView==='list');
     $('widgetsOn').checked=state.cfg.widgetsOn!==false;
     $('clockWidgetOn').checked=!!state.cfg.show.clock;
     $('clock24').checked=!!state.cfg.clock24;
     $('showDate').checked=!!state.cfg.showDate;
     $('autoRotate').checked=!!state.autoRotate;
     $('rotateSec').value=state.rotateSec;
+    syncLayoutSelects();
     renderGroupList(); renderCamList(); renderDash(); renderPreview(true); renderThumbs(); renderAlerts();
   });
 }
@@ -2540,7 +3003,7 @@ if(mode==='output'){
   /* ---- rendering ---- */
   function showCamera(c,fade){
     if(!c||!cameraActive(c)||!state.multiIds.includes(c.id)){ c=currentCam(); if(!c){grid.innerHTML='<div class="hint" style="padding:20px">No cameras are selected for the output. Choose “Output” on any camera in Control.</div>';return;} }
-    grid.className='grid g1'+(state.cfg.bgData?' hasbg':'');
+    grid.className='grid g1'+(state.cfg.bgData?' hasbg':''); applyGridDims(grid,1);
     const old=grid.querySelector('.camtile:not(.leaving)');
     const tile=buildTile(c);
     if(fade&&state.transition==='fade'&&old){
@@ -2561,7 +3024,7 @@ if(mode==='output'){
   }
   function renderGrid(){
     const cams=gridCams();
-    grid.className='grid g'+state.multiView+(state.cfg.bgData?' hasbg':'');
+    grid.className='grid g'+state.multiView+(state.cfg.bgData?' hasbg':''); applyGridDims(grid,state.multiView);
     grid.innerHTML='';
     if(!cams.length){
       grid.innerHTML='<div class="hint" style="padding:20px">No cameras are selected for the output. Choose “Output” on any camera in Control, regardless of its folder.</div>';
@@ -2591,7 +3054,7 @@ if(mode==='output'){
 
   /* ---- per-camera refresh + force refresh ---- */
   function refreshTile(tile,cam,force){
-    if(!cam||cam.type!=='image') return;
+    if(!cam||cameraSource(cam,tile).type!=='image'||(!force&&cam.refresh===0)) return;
     const every=Math.max(5,cam.refresh||30)*1000;
     if(!force&&Date.now()-(tile._last||0)<every) return;
     refreshTileImage(tile,cam);
@@ -2634,6 +3097,21 @@ if(mode==='output'){
   $('btnPlay').onclick=e=>{togglePause();e.currentTarget.blur();};
   $('btnNext').onclick=e=>{step(1);e.currentTarget.blur();};
   $('btnPrev').onclick=e=>{step(-1);e.currentTarget.blur();};
+  /* keyboard switcher for the broadcast wall */
+  document.addEventListener('keydown',e=>{
+    const t=e.target;
+    if(e.ctrlKey||e.metaKey||e.altKey||e.defaultPrevented) return;
+    if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable)) return;
+    const k=e.key;
+    if(k===' '){ togglePause(); e.preventDefault(); return; }
+    if(k==='f'||k==='F'){ $('btnFull').click(); return; }
+    if(k==='o'||k==='O'){ $('btnOverlay').click(); return; }
+    if(k==='r'||k==='R'){ forceRefresh(); return; }
+    if(k==='l'||k==='L'){ const i=LAYOUT_ORDER.indexOf(state.multiView); state.multiView=LAYOUT_ORDER[(i+1+(i<0?1:0))%LAYOUT_ORDER.length]; saveState(); renderOutput(true); e.preventDefault(); return; }
+    if(k==='ArrowRight'||k==='n'||k==='N'){ step(1); e.preventDefault(); return; }
+    if(k==='ArrowLeft'||k==='p'||k==='P'){ step(-1); e.preventDefault(); return; }
+    if(/^[1-9]$/.test(k)){ const c=outputCameras()[+k-1]; if(c&&state.multiView===1){ state.activeId=c.id; saveState(); showCamera(c,true); } e.preventDefault(); }
+  });
   $('btnUpdate').onclick=e=>{forceRefresh();e.currentTarget.blur();};
   $('btnFull').onclick=e=>{
     if(document.fullscreenElement) document.exitFullscreen();
@@ -2692,16 +3170,6 @@ if(mode==='output'){
   });
   grid.addEventListener('mouseenter',()=>{ if(!rotationActive()||paused) return; hoverRemain=rotationMs()-(Date.now()-lastRotate); hoverPause=true; });
   grid.addEventListener('mouseleave',()=>{ if(!hoverPause) return; hoverPause=false; if(!document.fullscreenElement) lastRotate=Date.now()-Math.max(0,rotationMs()-(hoverRemain||rotationMs())); });
-  document.addEventListener('keydown',e=>{
-    const t=(e.target.tagName||'').toLowerCase();
-    if(t==='input'||t==='select'||t==='textarea') return;
-    if(e.code==='Space'){e.preventDefault();togglePause();}
-    else if(e.key==='ArrowRight') step(1);
-    else if(e.key==='ArrowLeft') step(-1);
-    else if(e.key==='f'||e.key==='F') $('btnFull').click();
-    else if(e.key==='r'||e.key==='R') forceRefresh();
-    else if(e.key==='o'||e.key==='O') $('btnOverlay').click();
-  });
 
   /* ---- alerts refresh loop (active cam / grid cams) ---- */
   setInterval(()=>{
@@ -2766,7 +3234,15 @@ if(mode==='output'){
     else if(c==='widgets') $('btnOverlay').click();
     else if(c==='fullscreen') $('btnFull').click();
     else if(c==='show'&&v&&state.cameras.some(cam=>cam.id===v&&cameraActive(cam))){ if(!state.multiIds.includes(v)) state.multiIds.push(v); state.activeId=v; state.multiView=1; saveState(); renderOutput(true); }
-    else if(c==='layout'){ state.multiView=[1,4,6].includes(+v)?+v:1; saveState(); renderOutput(true); }
+    else if(c==='feed'&&v&&typeof v.id==='string'&&Number.isInteger(+v.index)){
+      const cam=state.cameras.find(item=>item.id===v.id&&cameraActive(item));
+      if(cam&&+v.index>=0&&+v.index<cameraFeedUrls(cam).length){
+        if(!state.multiIds.includes(cam.id)) state.multiIds.push(cam.id);
+        state.activeId=cam.id; state.multiView=1;
+        selectCameraFeed(cam.id,+v.index); renderOutput(true);
+      }
+    }
+    else if(c==='layout'){ state.multiView=LAYOUT_ORDER.includes(+v)?+v:1; saveState(); renderOutput(true); }
     else if(c==='auto'){ state.autoRotate=!!v; saveState(); renderOutput(true); }
     else if(c==='speed'){ state.rotateSec=Math.min(600,Math.max(3,parseInt(v)||10)); saveState(); }
     sendStatus();
@@ -2851,14 +3327,23 @@ if(mode==='remote'){
   $('rmAuto').onclick=()=>cmd('auto',!(RS&&RS.autoRotate));
   document.querySelectorAll('.rmlay').forEach(b=>b.onclick=()=>cmd('layout',+b.dataset.lay));
   $('rmSpeed').oninput=()=>{ $('rmSpeedVal').textContent=$('rmSpeed').value+'s'; };
+  let rmSig='';
   $('rmSpeed').onchange=()=>cmd('speed',+$('rmSpeed').value);
+  $('rmSearch').oninput=()=>{rmSig='';renderRemote();};
+  $('rmGroup').onchange=()=>{rmSig='';renderRemote();};
+  function paintRemoteGroups(){
+    const select=$('rmGroup'); if(!select)return;
+    const current=select.value||'all', groups=RS&&Array.isArray(RS.groups)?RS.groups:[];
+    const path=group=>{const parts=[],seen=new Set();while(group&&!seen.has(group.id)){seen.add(group.id);parts.unshift(group.name);group=groups.find(item=>item.id===group.parentId);}return parts.join(' / ');};
+    select.innerHTML='<option value="all">All folders</option>'+groups.map(group=>`<option value="${esc(group.id)}">${esc(path(group))}</option>`).join('');
+    select.value=groups.some(group=>group.id===current)?current:'all';
+  }
 
   /* live weather + animated mini radar for whatever is playing on the wall */
-  let rmSig='';
   function renderRemote(){
     const badge=$('rmConn');
     const fresh=!!RS&&Date.now()-RSTAT.seen<15000;
-    /* state + status echo back and forth across tabs — only touch the DOM when something really changed */    const sig=JSON.stringify([relay.st,relay.code,RS&&RS.activeId,RS&&RS.multiView,RS&&RS.autoRotate,RS&&RS.rotateSec,RSTAT.paused,fresh,RS&&RS.groups,RS&&RS.cameras&&RS.cameras.map(c=>[c.id,c.name,c.active,c.groupId])]);
+    /* state + status echo back and forth across tabs — only touch the DOM when something really changed */    const sig=JSON.stringify([relay.st,relay.code,RS&&RS.activeId,RS&&RS.multiView,RS&&RS.autoRotate,RS&&RS.rotateSec,RSTAT.paused,fresh,RS&&RS.groups,RS&&RS.cameras&&RS.cameras.map(c=>[c.id,c.name,c.url,c.backupSources,c.playlist,c.type,c.startFeedIndex,c.active,c.groupId]),$('rmSearch').value,$('rmGroup').value]);
     if(sig===rmSig) return;
     rmSig=sig;
     if(relay.st==='on'){ badge.className='conn on'; badge.textContent='RELAY ONLINE'; }
@@ -2869,11 +3354,12 @@ if(mode==='remote'){
       $('rmMeta').textContent='Open ?mode=output on the TV computer';
       $('rmThumb').removeAttribute('src');
       $('rmCams').innerHTML='';
+      paintRemoteGroups();
       return;
     }
     const activeRemote=(RS.cameras||[]).filter(x=>cameraActive(x,RS));
     const cam=activeRemote.find(x=>x.id===RS.activeId)||activeRemote[0]||null;
-    if(cam&&cam.type==='image') $('rmThumb').src=cam.url+(cam.url.includes('?')?'&':'?')+'t='+Math.floor(Date.now()/60000);
+    if(cam&&cameraSource(cam).type==='image'){const urls=cameraFeedUrls(cam),src=urls[Math.max(0,Math.min(urls.length-1,Number(cam.startFeedIndex)||0))]||cam.url;$('rmThumb').src=src+(src.includes('?')?'&':'?')+'t='+Math.floor(Date.now()/60000);}
     else $('rmThumb').removeAttribute('src');
     $('rmName').textContent=cam?cam.name:'—';
     $('rmMeta').textContent=(RSTAT.paused?'⏸ paused':(RS.autoRotate?'▶ rotating':'▶ manual'))+' · '+(fresh?'output connected':'waiting for output');
@@ -2881,15 +3367,27 @@ if(mode==='remote'){
     $('rmSpeed').value=RS.rotateSec||10; $('rmSpeedVal').textContent=(RS.rotateSec||10)+'s';
     document.querySelectorAll('.rmlay').forEach(b=>b.classList.toggle('on',+b.dataset.lay===+RS.multiView));
     $('rmAuto').classList.toggle('on',!!RS.autoRotate);
-    const remoteCams=(RS.cameras||[]).filter(x=>cameraActive(x,RS));
-    $('rmCams').innerHTML=remoteCams.map(x=>`
-      <div class="rc${x.id===RS.activeId?' on':''}" data-cam="${x.id}">
-        ${x.type==='image'?`<img src="${esc(x.url)}" loading="lazy" alt="">`:'<div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:22px">📹</div>'}
+    paintRemoteGroups();
+    const query=$('rmSearch').value.trim().toLowerCase(), groupId=$('rmGroup').value;
+    const groupIds=new Set(groupId&&groupId!=='all'?[groupId]:[]);
+    if(groupIds.size){let changed=true;while(changed){changed=false;(RS.groups||[]).forEach(g=>{if(groupIds.has(g.parentId)&&!groupIds.has(g.id)){groupIds.add(g.id);changed=true;}});}}
+    const remoteCams=(RS.cameras||[]).filter(x=>cameraActive(x,RS)&&(!groupIds.size||groupIds.has(x.groupId))&&(!query||[x.name,x.url,...(x.backupUrls||[]),x.lat,x.lon].join(' ').toLowerCase().includes(query)));
+    $('rmCams').innerHTML=remoteCams.length?remoteCams.map(x=>`
+      <div class="rc${x.id===RS.activeId?' on':''}" data-cam="${esc(x.id)}">
+        ${cameraSource(x).type==='image'?`<img src="${esc((cameraFeedUrls(x)[Math.max(0,Math.min(cameraFeedUrls(x).length-1,Number(x.startFeedIndex)||0))]||x.url))}" loading="lazy" alt="">`:'<div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:22px">📹</div>'}
         <b>${esc(x.name)}</b>
-      </div>`).join('');
+        <div class="rc-source"><label for="remote-feed-${esc(x.id)}">Play feed</label><select id="remote-feed-${esc(x.id)}" data-feed-camera="${esc(x.id)}" aria-label="Play feed source for ${esc(x.name)}">${cameraFeedUrls(x).map((url,index)=>`<option value="${index}"${index===Math.max(0,Math.min(cameraFeedUrls(x).length-1,Number(x.startFeedIndex)||0))?' selected':''}>${esc(sourceLabel(cameraSources(x)[index],index))}</option>`).join('')}</select></div>
+      </div>`).join(''):'<div class="hint" style="grid-column:1/-1">No cameras match this search or folder.</div>';
     $('rmCams').querySelectorAll('[data-cam]').forEach(el=>el.onclick=()=>{
       cmd('show',el.dataset.cam);
       RS.activeId=el.dataset.cam; RS.multiView=1; renderRemote();   /* instant feedback */
+    });
+    $('rmCams').querySelectorAll('[data-feed-camera]').forEach(select=>{
+      select.onclick=e=>e.stopPropagation();
+      select.onchange=e=>{
+        e.stopPropagation(); const cam=(RS.cameras||[]).find(c=>c.id===select.dataset.feedCamera); if(!cam)return;
+        const index=+select.value; cmd('feed',{id:cam.id,index}); cam.startFeedIndex=index; RS.activeId=cam.id; RS.multiView=1; rmSig=''; renderRemote();
+      };
     });
   }
   setInterval(()=>{
@@ -2901,11 +3399,11 @@ if(mode==='remote'){
   },60000);   /* weather refresh (fetchWx caches 10 min) */
 
   onSync(msg=>{
-    if(msg.t==='state'){ RS=msg.state; renderRemote(); }
+    if(msg.t==='state'){ RS=msg.state; rmSig=''; renderRemote(); }
     else if(msg.t==='status'){ RSTAT={paused:!!msg.paused,seen:Date.now()}; renderRemote(); }
     /* never answer hello with hello — two remotes would ping-pong forever */
   });
-  window.addEventListener('storage',e=>{ if(e.key===KEY){ RS=loadState(); renderRemote(); } });
+  window.addEventListener('storage',e=>{ if(e.key===KEY){ RS=loadState(); rmSig=''; renderRemote(); } });
   if(!RS&&hadStation) RS=loadState();
   renderRemote();
   setInterval(renderRemote,5000);
