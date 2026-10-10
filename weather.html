@@ -570,19 +570,225 @@ body:has(#lnkControl.on) #clock{display:none}
 .source-row textarea{font:11px var(--mono);min-height:90px}
 #editorError{color:#c73535;font-size:12px}
 @media(max-width:650px){#dashRow{grid-template-columns:145px minmax(0,1fr)}.finder-sidebar{padding:12px 7px}.finder-heading{padding:14px 12px 0}.dashbar{padding:0 12px 12px}.dash-view-tools{margin-left:auto}.dashgrid{padding:12px;gap:12px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}.group-tools{grid-template-columns:1fr}.group-tools input{width:100%}.dashgrid.list-view .camera-card{grid-template-columns:55px 1fr}.dashgrid.list-view .camera-card-tools{grid-column:2;padding-top:0}.dashgrid.list-view .camera-card .camtile{width:42px}.controlnav button{font-size:11px;padding:8px 5px}.finder-all{font-size:11px;padding:8px 4px}.camera-card-info{flex-wrap:wrap}.camera-card-actions{flex-direction:row}.camera-editor-window{width:98vw}.camera-editor-body{grid-template-columns:110px 1fr}}
+.queue-help{margin:0;padding:12px 24px;color:#64748b;font-size:12px;background:#f4f8ff;border-bottom:1px solid #dce8fa}.queue-help[hidden]{display:none}.queue-order{display:flex;align-items:center;gap:8px;padding:8px 10px;font:600 10px var(--mono);color:#64748b}.queue-order span{flex:1}.queue-order button{padding:3px 7px;background:transparent;border:1px solid #d8d8dc;color:#475569}.drag-handle{cursor:grab;font-size:18px}.camera-card.dragging{opacity:.4}.camera-card.drop-target{outline:2px dashed #087dff;outline-offset:4px}.camera-card-actions .output-membership{background:#e8f1ff;color:#0868d3;border-radius:5px;padding:5px 8px;font-weight:600}.camera-empty{grid-column:1/-1;padding:40px 20px;color:#64748b;text-align:center}.dashgrid.list-view .queue-order{grid-column:1/-1;border-bottom:1px solid #eee}
+.overlay-section{border:1px solid var(--line);border-radius:10px;padding:16px;margin:16px 0;background:var(--panel)}.overlay-section h3{margin:0 0 6px;font-size:14px}.overlay-section p{font-size:12px;color:var(--muted);margin:0 0 14px}.field-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.field-options label{display:flex;align-items:center;gap:7px;margin:0;padding:9px;background:var(--panel2);border-radius:6px;font-size:11px}.overlay-demo{position:relative;min-height:300px;overflow:hidden;border-radius:10px;background:linear-gradient(155deg,#316078,#0b1629 70%);--ovscale:1;--ovfont:13px;--ovpad:4px;--tickh:26px;margin-top:12px}.overlay-demo:before{content:'SAMPLE CONDITIONS · NOT LIVE';position:absolute;left:16px;top:65px;color:#c2d5e6;font:10px var(--mono)}.overlay-demo .wl{max-width:70%}.overlay-demo .wl[data-c=br],.overlay-demo .wl[data-c=bl]{bottom:40px}.overlay-demo .tickbar{height:26px}.overlay-demo .tickbar .run{padding-left:12px;animation:none}
+.w.wx.wx-glass{border:1px solid #ffffff30;border-radius:14px;background:rgba(16,30,48,.68)}.w.wx.wx-glass .wx-body{background:transparent}.w.wx.wx-glass .wx-accent{background:transparent}.w.wx.wx-minimal{border:0;border-left:3px solid var(--weather-accent);box-shadow:none;border-radius:2px}.w.wx.wx-minimal .wx-accent{display:none}.w.wx.wx-broadcast .wx-accent{background:var(--weather-accent,#2b8f92)}.w.wx .wx-detail{flex-wrap:wrap;gap:5px 9px}.w.wx .wx-body{min-width:0}.abanner{flex-wrap:wrap;line-height:1.4;min-height:34px;box-sizing:border-box;overflow-wrap:anywhere}.abanner .alert-copy{flex:1;min-width:100px}.abanner .alert-meta{font-size:.8em;opacity:.9}.abanner.alert-card{margin:6px 10px 0;border-radius:8px;background:#0f1b2eee;border:1px solid var(--sev);border-left:5px solid var(--sev);box-shadow:0 5px 20px #0004}.abanner.alert-compact{width:fit-content;max-width:calc(100% - 20px);margin:6px 10px 0;border-radius:999px;padding:5px 14px}.alert-instruction{display:block;font-size:.85em;max-height:3em;overflow:auto}.alert-summary{font-size:11px;color:#fff;padding:4px 12px;background:#111d2a}
+@media(max-width:650px){.field-options{grid-template-columns:repeat(2,minmax(0,1fr))}.overlay-section{padding:12px}.overlay-demo .wl{max-width:90%}}
+.output-workspace-head{display:none}
+#controlView.queue-page{background:#eef3f9;min-height:calc(100vh - 50px);display:block}
+#controlView.queue-page>.quick-controls{display:none}
+#controlView.queue-page .output-workspace-head{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:32px 36px;background:linear-gradient(120deg,#132b4a,#204e79);color:#fff}
+.workspace-eyebrow{font-size:10px;font-weight:700;letter-spacing:.18em;color:#8ecdf7}.output-workspace-head h2{font-size:30px!important;color:#fff;margin:10px 0}.output-workspace-head p{font-size:13px;line-height:1.6;margin:0;max-width:620px;color:#c6d8e9}.workspace-actions{display:flex;gap:10px;flex-shrink:0;align-items:center}.workspace-actions button{background:#58baff;color:#092c48;border:0;font-weight:700;padding:11px 16px;border-radius:8px}.workspace-actions a{color:#fff;text-decoration:none;border:1px solid #ffffff45;padding:10px 14px;border-radius:8px;font-size:12px}
+#controlView.queue-page #dashRow{display:block;min-height:0}
+#controlView.queue-page .finder-sidebar{padding:12px 36px;background:#fff;border-right:0;border-bottom:1px solid #dce4ee}
+#controlView.queue-page .finder-sidebar>*:not(.controlnav){display:none}
+#controlView.queue-page .controlnav{flex-direction:row;margin:0;gap:12px}
+#controlView.queue-page .controlnav button{padding:9px 14px;border-radius:8px;font-size:12px;color:#53657b}
+#controlView.queue-page .controlnav button.on{background:#e5f2ff;color:#1467ab;font-weight:700}
+#controlView.queue-page .finder-main{background:transparent;max-width:1500px;margin:0 auto;padding:8px 16px 28px}
+#controlView.queue-page .finder-heading{padding:18px 20px 0;flex-direction:row;align-items:center}
+#controlView.queue-page .finder-heading h2{font-size:18px;color:#213b59}
+#controlView.queue-page #folderPath{display:none}
+#controlView.queue-page .dashbar{padding:0 20px 16px;background:transparent;border-bottom:0}
+#controlView.queue-page .dashbar input{background:#fff;border:1px solid #dae3ef;max-width:420px}
+#controlView.queue-page .queue-help{margin:0 20px;padding:12px 16px;border:1px solid #d6e4f4;border-radius:8px;background:#e7f0fc}
+#controlView.queue-page .dashgrid{padding:22px 20px;gap:20px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+#controlView.queue-page .camera-card{background:#fff;border:1px solid #dbe4ee;border-radius:12px;box-shadow:0 3px 12px #17375708!important;overflow:hidden}
+#controlView.queue-page .camera-card.selected{border-color:#269de9;box-shadow:0 0 0 2px #269de922!important}
+#controlView.queue-page .queue-order{padding:12px 14px;background:#f8fafd;border-bottom:1px solid #e6ecf4;color:#215780;font-size:11px;gap:9px}
+#controlView.queue-page .queue-order span{font-weight:800;letter-spacing:.08em}
+#controlView.queue-page .queue-order button{background:#fff;border-color:#dce5ef;border-radius:6px;min-width:28px;min-height:28px}
+#controlView.queue-page .camera-card .camtile{margin:0;width:100%;border-radius:0;box-shadow:none;aspect-ratio:16/9}
+#controlView.queue-page .camera-card-info{padding:14px;align-items:flex-start;gap:12px}
+#controlView.queue-page .camera-card-titles strong{font-size:14px;font-weight:650;color:#203b59}
+#controlView.queue-page .camera-card-titles span{font-size:11px;color:#7a8b9d;margin-top:5px}
+#controlView.queue-page .camera-card-actions{flex-direction:column;gap:8px}
+#controlView.queue-page .camera-card-actions .output-membership{background:#fff0ee;color:#bf5041;padding:6px 10px}
+#controlView.queue-page .camera-card-tools{padding:0 14px 14px}
+#controlView.queue-page .dashgrid.list-view{display:flex;flex-direction:column;gap:12px}
+#controlView.queue-page .dashgrid.list-view .camera-card{display:grid;grid-template-columns:180px 1fr 180px;align-items:center}
+#controlView.queue-page .dashgrid.list-view .queue-order{grid-column:1/-1}
+#controlView.queue-page .dashgrid.list-view .camera-card .camtile{height:100px;min-height:100px;width:180px;margin:0}
+#controlView.queue-page .dashgrid.list-view .camera-card-tools{padding:14px}
+@media(max-width:700px){#controlView.queue-page .output-workspace-head{padding:24px 20px;flex-direction:column;align-items:flex-start;gap:18px}.output-workspace-head h2{font-size:25px!important}#controlView.queue-page .finder-sidebar{padding:10px 12px}#controlView.queue-page .controlnav{gap:3px}#controlView.queue-page .controlnav button{padding:9px 8px}#controlView.queue-page .finder-main{padding:0 0 20px}#controlView.queue-page .finder-heading{padding:20px 16px 0}#controlView.queue-page .dashbar{padding:0 16px 16px}#controlView.queue-page .queue-help{margin:0 16px;font-size:11px}#controlView.queue-page .dashgrid{padding:18px 16px;grid-template-columns:1fr}#controlView.queue-page .dashgrid.list-view .camera-card{grid-template-columns:100px 1fr}#controlView.queue-page .dashgrid.list-view .camera-card .camtile{width:100px;height:80px;min-height:80px}#controlView.queue-page .dashgrid.list-view .camera-card-tools{grid-column:2;padding-top:0}}
+
+/* Unified operator console: independent of the broadcast's theme palette. */
+body.console,body.console #controlView{--bg:#0e131b;--panel:#151d28;--panel2:#1b2634;--line:#2a3748;--text:#e3eaf3;--muted:#93a4b9;--accent:#58a6ff;--accent2:#58a6ff;--bad:#f18d8d;--sans:'Inter',sans-serif;--mono:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text);font-family:var(--sans);color-scheme:dark}
+body.console:has(#lnkControl.on)>header{height:60px;padding:0 26px;background:#111923;border-bottom:1px solid var(--line);box-shadow:none;gap:16px}
+body.console:has(#lnkControl.on)>header h1{color:#e3eaf3;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:650;letter-spacing:-.02em;text-transform:none;white-space:nowrap}
+body.console:has(#lnkControl.on)>header h1:before{display:none}
+body.console:has(#lnkControl.on)>header h1 .station-mark{display:grid;place-items:center;background:#243c58;color:#8ebfff;border:1px solid #36577b;width:28px;height:28px;border-radius:6px;font-size:20px;margin:0}
+body.console:has(#lnkControl.on)>header h1 .station-label{color:#8295ac;font:9px var(--mono);letter-spacing:.16em;margin:0}
+body.console #clock{display:none}
+body.console .modelinks{display:flex;gap:6px;align-items:center}
+body.console .modelinks a{color:#99abc1!important;font-size:12px;padding:7px 10px;margin:0;border-radius:5px}
+body.console .modelinks a.on{color:#e3eaf3!important;background:#213047!important}
+body.console #controlView,body.console #controlView.queue-page,body.console #controlView.settings-page{display:flex;flex-direction:column;padding:0;gap:0;max-width:none;min-height:calc(100vh - 60px);background:var(--bg)}
+body.console .console-nav{display:flex;width:100%;align-items:center;justify-content:space-between;padding:0 26px;min-height:53px;background:#111923;border-bottom:1px solid var(--line);gap:20px;order:-3}
+body.console .controlnav{display:flex;flex-direction:row;gap:24px;margin:0;align-self:stretch}
+body.console #controlView .console-nav .controlnav button{position:relative;background:none;border:0;border-radius:0;padding:17px 0;font-size:12px;color:var(--muted);font-weight:500}
+body.console #controlView .console-nav .controlnav button.on{color:var(--text);background:none}
+body.console .controlnav button.on:after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent2)}
+body.console #navOutputCount{display:inline-block;padding:2px 5px;background:#243449;border-radius:4px;color:#9fc6f4;font:10px var(--mono);margin-left:6px}
+body.console .console-status{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px;white-space:nowrap}
+body.console .status-dot{width:6px;height:6px;border-radius:50%;background:#74c5a7}
+body.console .local-label{border-left:1px solid var(--line);padding-left:12px;margin-left:5px;font:9px var(--mono);letter-spacing:.07em;color:#667d98}
+body.console #controlView>.quick-controls{width:100%;padding:10px 26px;gap:18px;margin:0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:#131d29;order:-1}
+body.console #controlView.queue-page>.quick-controls{display:none}
+body.console .quick-control{padding:0 16px 0 0;gap:8px;border-color:var(--line);flex:none;border-bottom:0}
+body.console .quick-title{color:#8195ae;font:9px var(--mono);letter-spacing:.09em}
+body.console .quick-control label{font-size:11px;color:var(--muted)}
+body.console .quick-control select{font-size:11px;padding:5px 8px}
+body.console .quick-control input[type=number]{width:52px;padding:5px;font-size:11px}
+body.console .quick-hint{display:none}
+body.console #dashRow{width:100%;display:grid;grid-template-columns:215px minmax(0,1fr);min-height:calc(100vh - 160px);gap:0;background:var(--bg)}
+body.console .finder-sidebar{background:#111923;border:0;border-right:1px solid var(--line);border-radius:0;padding:24px 14px;position:static;max-height:none}
+body.console .finder-sidebar h2{padding:0 10px;margin:0 0 14px;font:10px var(--mono);text-transform:uppercase;letter-spacing:.12em;color:#7188a3}
+body.console .finder-all,body.console .groupitem{color:#9cafc5;font-size:11px;border-radius:5px}
+body.console .finder-all.on,body.console .groupitem.selected{background:#20324a;color:#d4e5fa}
+body.console .group-tools{padding:14px 0;border-top:1px solid var(--line);margin-top:18px;gap:8px}
+body.console #controlView #addGroupBtn{font-size:11px;color:#dcecff;padding:7px 10px}body.console #addGroupBtn:after{display:none}
+body.console .folder-actions-tools{background:var(--panel);border:1px solid var(--line)}
+body.console .folder-output{border-color:var(--line);background:#192637;color:#99b1cb}
+body.console .folder-output.all{color:#83baff;border-color:#395d87}
+body.console .finder-main{background:var(--bg);padding:0;border:0;min-width:0}
+body.console .finder-heading{padding:26px 26px 0;margin-bottom:16px;align-items:center;flex-direction:row}
+body.console .finder-heading h2{color:var(--text);font-size:20px;letter-spacing:-.03em;font-weight:600}
+body.console .finder-heading .path{display:none}
+body.console #dashInfo{font:11px var(--mono);color:var(--muted)}
+body.console .dashbar{padding:0 26px 18px;margin:0;gap:8px;background:transparent;border-bottom:1px solid #223043;flex-wrap:wrap}
+body.console .dashbar input{background:#151f2c;border:1px solid var(--line);border-radius:5px;max-width:360px;min-width:140px;flex:1;font-size:12px;padding:8px 10px}
+body.console .dash-view-tools{display:flex;align-items:center;gap:3px;margin-left:auto}
+body.console .dash-view-tools button{color:var(--muted);border:1px solid transparent;border-radius:4px;padding:5px 8px;font-size:16px}
+body.console .dash-view-tools button.on{background:#26374d;color:#c8d9ee}
+body.console .dash-view-tools select{color:var(--muted);font-size:11px}
+body.console #controlView button,body.console #controlView input,body.console #controlView select,body.console #controlView textarea{font-family:var(--sans)}
+body.console #controlView button:disabled{opacity:.4;cursor:default}
+body.console #controlView button.primary,body.console #controlView #finderAddCamera{background:#356fae;color:#fff;border:1px solid #4681bf;font-weight:600;border-radius:5px}
+body.console #controlView input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),body.console #controlView select,body.console #controlView textarea{color:var(--text);background:#101924;border-color:var(--line)}
+body.console #controlView input::placeholder,body.console #controlView textarea::placeholder{color:#7388a2}
+body.console #controlView input:focus-visible,body.console #controlView select:focus-visible,body.console #controlView textarea:focus-visible,body.console #controlView button:focus-visible{outline:2px solid #78b4ff;outline-offset:3px}
+body.console .dashgrid{padding:24px 26px;gap:16px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+body.console .camera-card,body.console #controlView.queue-page .camera-card{background:#151f2c;border:1px solid var(--line);border-radius:7px;box-shadow:none!important;overflow:hidden}
+body.console .camera-card:hover{border-color:#465e7a;background:#192636}
+body.console .camera-card.selected,body.console #controlView.queue-page .camera-card.selected{border-color:#568cc5;box-shadow:none!important}
+body.console .camera-card .camtile,body.console #controlView.queue-page .camera-card .camtile{margin:0;width:100%;border-radius:0;box-shadow:none;aspect-ratio:16/9}
+body.console .camera-card-info,body.console #controlView.queue-page .camera-card-info{padding:13px 14px;gap:12px;align-items:flex-start}
+body.console .camera-card-titles{flex:1}
+body.console .camera-card-titles strong,body.console #controlView.queue-page .camera-card-titles strong{font-size:12px;font-weight:600;color:var(--text)}
+body.console .camera-card-titles span,body.console #controlView.queue-page .camera-card-titles span{color:#8096af;font-size:10px;margin-top:5px}
+body.console .camera-card-actions,body.console #controlView.queue-page .camera-card-actions{flex-direction:column;align-items:flex-end;gap:7px}
+body.console .camera-card-actions button{color:#94acc8}
+body.console .camera-card-actions .output-membership,body.console #controlView.queue-page .camera-card-actions .output-membership{background:#253b54;color:#a9d1ff;font-size:10px;padding:5px 9px;border:1px solid #375576;border-radius:4px;white-space:nowrap}
+body.console #controlView.queue-page .camera-card-actions .output-membership{background:#32282d;color:#eba5aa;border-color:#563b45}
+body.console .camera-card-tools,body.console #controlView.queue-page .camera-card-tools{padding:0 14px 13px}
+body.console .camera-card-tools select{font-size:10px!important;color:#91a8c1!important;padding:5px 7px!important;border:1px solid var(--line)!important;border-radius:4px}
+body.console .camera-empty{color:var(--muted);padding:70px 24px;background:#131d29;border:1px dashed #34485f;border-radius:7px;font-size:12px;line-height:1.7}
+body.console .dashpager{border-color:var(--line);color:var(--muted)}
+body.console .output-workspace-head,body.console .preferences-head{display:none}
+body.console #controlView.queue-page .output-workspace-head,body.console #controlView.settings-page .preferences-head{display:flex;width:100%;justify-content:space-between;align-items:center;padding:24px 26px;background:var(--bg);gap:20px;border-bottom:1px solid var(--line)}
+body.console .workspace-eyebrow{font:9px var(--mono);letter-spacing:.13em;color:#7993b2}
+body.console .output-workspace-head h2,body.console .preferences-head h2{font-size:22px!important;font-weight:600;letter-spacing:-.03em;color:var(--text);margin:8px 0;text-transform:none}
+body.console .output-workspace-head p,body.console .preferences-head p{font-size:12px;line-height:1.5;color:var(--muted);margin:0;max-width:590px}
+body.console .workspace-actions{gap:8px}
+body.console .workspace-actions button{background:#356fae;color:#fff;border:1px solid #4681bf;font-size:11px;padding:8px 12px;border-radius:5px}
+body.console .workspace-actions a{color:#b9cbe0;border-color:var(--line);font-size:11px;padding:8px 12px;border-radius:5px}
+body.console #controlView.queue-page #dashRow{display:block;min-height:0}
+body.console #controlView.queue-page .finder-sidebar{display:none}
+body.console #controlView.queue-page .finder-main{background:var(--bg);max-width:none;padding:0}
+body.console #controlView.queue-page .finder-heading{padding:20px 26px 0;margin-bottom:14px}
+body.console #controlView.queue-page .finder-heading h2{font-size:13px;color:#b8c9dd;letter-spacing:0}
+body.console #controlView.queue-page .dashbar{background:none;padding:0 26px 16px;border-bottom:1px solid var(--line)}
+body.console #controlView.queue-page .queue-help{padding:10px 26px;margin:0;background:#111b28;color:#829ab7;border:0;border-bottom:1px solid #223043;border-radius:0;font-size:11px}
+body.console #controlView.queue-page .dashgrid{padding:22px 26px;gap:16px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+body.console #controlView.queue-page .queue-order{padding:9px 12px;background:#192637;border-color:var(--line);color:#8db9eb;font-size:10px}
+body.console #controlView.queue-page .queue-order span{font-weight:500;letter-spacing:.08em}
+body.console #controlView.queue-page .queue-order button{color:#a4b9d2;background:#1a2b3e;border-color:#324860;border-radius:4px;min-width:25px;min-height:25px}
+body.console .dashgrid.list-view,body.console #controlView.queue-page .dashgrid.list-view{display:flex;flex-direction:column;gap:10px;padding:20px 26px}
+body.console .dashgrid.list-view .camera-card,body.console #controlView.queue-page .dashgrid.list-view .camera-card{display:grid;grid-template-columns:130px minmax(0,1fr) 190px;border:1px solid var(--line);border-radius:6px;align-items:center}
+body.console .dashgrid.list-view .camera-card .camtile,body.console #controlView.queue-page .dashgrid.list-view .camera-card .camtile{width:130px;height:78px;min-height:78px;margin:0}
+body.console .dashgrid.list-view .camera-card-actions{flex-direction:row;gap:10px}
+body.console .dashgrid.list-view .camera-card-tools,body.console #controlView.queue-page .dashgrid.list-view .camera-card-tools{padding:12px}
+body.console .dashgrid.list-view .queue-order{grid-column:1/-1;border-bottom:1px solid var(--line)}
+body.console #controlView.preview-open .output-preview-panel{background:var(--panel);padding:20px 26px;max-width:1100px;margin:20px auto!important;border:1px solid var(--line);border-radius:7px}
+body.console .settings-tabs{display:none}
+body.console #controlView.settings-page .settings-tabs{display:flex;width:100%;gap:6px;padding:12px 26px;background:#111923;border-bottom:1px solid var(--line);overflow:auto}
+body.console .settings-tabs button{white-space:nowrap;padding:8px 12px;background:none;border:1px solid transparent;border-radius:5px;font-size:11px;color:var(--muted)}
+body.console .settings-tabs button.on{color:#bfdcff;background:#20334c;border-color:#35516f}
+body.console .saved-indicator{font:10px var(--mono);color:#81ab9d;white-space:nowrap}
+body.console #controlView.settings-page #dashRow,body.console #controlView.settings-page>.quick-controls{display:none!important}
+body.console #controlView.settings-page .panel.settings-only{width:calc(100% - 52px);max-width:1120px;margin:24px auto 0;padding:22px;background:var(--panel);border:1px solid var(--line);border-radius:7px}
+body.console #controlView.settings-page .panel.settings-only[hidden]{display:none!important}
+body.console #controlView.settings-page .panel h2{color:#d1ddeb;font-size:14px;font-weight:600;margin-bottom:20px}
+body.console .srow{padding:12px 0;border-color:var(--line);gap:16px}
+body.console .srow>label{color:#a8bad0;font-size:12px;line-height:1.5}
+body.console .srow .ctl{min-width:0;flex-wrap:wrap;gap:8px}
+body.console .srow select{max-width:100%}
+body.console .overlay-section{padding:18px;background:#111a26;border:1px solid var(--line);border-radius:6px;margin:16px 0}
+body.console .overlay-section h3{color:#c9d9ed;font-size:12px;font-weight:600;margin-bottom:8px}
+body.console .overlay-section p{font-size:11px;line-height:1.6;color:#8096af}
+body.console .field-options{gap:7px;grid-template-columns:repeat(3,minmax(0,1fr))}
+body.console .field-options label{border:1px solid #26374b;background:#192637;border-radius:4px;color:#9cb2ce;padding:9px;font-size:11px}
+body.console .overlay-demo{border:1px solid #30475f;border-radius:5px;background:linear-gradient(155deg,#203449,#101824);min-height:310px}
+body.console .wloc>div{background:#192637;border:1px solid var(--line);padding:10px;border-radius:5px}
+body.console .camera-editor-overlay{background:#050a12cc;backdrop-filter:blur(4px)}
+body.console .camera-editor-window{background:var(--panel);color:var(--text);border-color:#3b506a;box-shadow:0 24px 90px #0009;border-radius:9px}
+body.console .camera-editor-head{background:#192637;border-color:var(--line);padding:16px 20px}
+body.console .camera-editor-head h2{color:var(--text)}
+body.console .camera-editor-sidebar{background:#111b28;border-color:var(--line)}
+body.console .editor-folder.on,body.console .editor-camera.on{background:#253c56;color:#c4ddfa}
+body.console .editor-section-label{color:#6e87a6;font:10px var(--mono);letter-spacing:.07em}
+body.console .camera-editor-file-head{border-color:var(--line)}
+body.console .camera-editor-preview{background:#0b1420;border-color:var(--line)}
+body.console .camera-editor-options,body.console .camera-editor-foot{background:#111b28;border-color:var(--line)}
+body.console .source-row{border-color:var(--line)}
+body.console .source-row details summary{color:#83a5cb}
+body.console #editorError{color:#f18d8d}
+@media(min-width:1050px){body.console #controlView.settings-page #widgetSettingsPanel:not([hidden]){display:grid;grid-template-columns:1fr 1fr;gap:0 18px}body.console #widgetSettingsPanel>h2,body.console #widgetSettingsPanel>.srow,body.console #widgetSettingsPanel>.hint,body.console #widgetSettingsPanel>.wloc,body.console #widgetSettingsPanel>.custom-widget-preview{grid-column:1/-1}body.console #widgetSettingsPanel>.overlay-section:nth-of-type(3){grid-column:1/-1}}
+@media(max-width:800px){body.console .local-label{display:none}body.console #controlView>.quick-controls{gap:12px}.quick-control{border-right:0}body.console #dashRow{grid-template-columns:175px minmax(0,1fr)}body.console .dashgrid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}body.console .workspace-actions{flex-wrap:wrap}}
+@media(max-width:600px){body.console:has(#lnkControl.on)>header{padding:0 14px;height:56px}body.console>header .station-label{display:none}body.console .modelinks{gap:0}body.console .modelinks a{font-size:10px;padding:6px}body.console .console-nav{padding:0 14px;min-height:49px}.console-status .local-label{display:none}body.console .console-status{display:none}body.console .controlnav{gap:18px;width:100%}body.console #controlView .console-nav .controlnav button{font-size:11px;padding:15px 0;white-space:nowrap;flex:0 0 auto}body.console #controlView>.quick-controls{padding:10px 14px}body.console .quick-control{flex-wrap:wrap;padding:4px 0;justify-content:flex-start}body.console #dashRow{display:flex;flex-direction:column}body.console .finder-sidebar{width:100%;padding:14px;border-right:0;border-bottom:1px solid var(--line)}body.console .finder-sidebar h2{margin-bottom:10px}body.console .group-tools{display:none}body.console #groupList{max-height:150px;overflow:auto}body.console .finder-main{width:100%}body.console .finder-heading,body.console #controlView.queue-page .finder-heading{padding:20px 16px 0}body.console .dashbar,body.console #controlView.queue-page .dashbar{padding:0 16px 16px}.dashbar button{white-space:nowrap}body.console .dashbar input{max-width:none;flex-basis:100%}body.console .dash-view-tools{margin-left:0}body.console .dashgrid,body.console #controlView.queue-page .dashgrid{padding:16px;grid-template-columns:1fr}body.console #controlView.queue-page .output-workspace-head,body.console #controlView.settings-page .preferences-head{padding:22px 16px;align-items:flex-start;flex-direction:column;gap:16px}body.console .output-workspace-head h2,body.console .preferences-head h2{font-size:20px!important}body.console #controlView.queue-page .queue-help{padding:10px 16px}body.console .dashgrid.list-view,body.console #controlView.queue-page .dashgrid.list-view{padding:16px}body.console .dashgrid.list-view .camera-card,body.console #controlView.queue-page .dashgrid.list-view .camera-card{grid-template-columns:90px minmax(0,1fr)}body.console .dashgrid.list-view .camera-card .camtile,body.console #controlView.queue-page .dashgrid.list-view .camera-card .camtile{width:90px;height:78px}body.console .dashgrid.list-view .camera-card-tools{grid-column:2}body.console #controlView.settings-page .settings-tabs{padding:10px 16px}body.console #controlView.settings-page .panel.settings-only{width:calc(100% - 32px);padding:16px;margin-top:16px}body.console .field-options{grid-template-columns:repeat(2,minmax(0,1fr))}body.console .srow{flex-wrap:wrap;gap:8px}body.console .srow>label{flex-basis:100%}body.console .srow input[type=text]{width:100%!important}body.console .camera-editor-body{grid-template-columns:100px minmax(0,1fr)}body.console .camera-editor-form{grid-template-columns:1fr}body.console .camera-editor-file-head{flex-wrap:wrap}body.console .camera-editor-options{gap:10px;align-items:flex-start}body.console .camera-editor-window{width:100%}}
+
+/* Broadcast alert graphics: a consistent information hierarchy across designs. */
+.pagestrip .abanner{display:grid;grid-template-columns:76px minmax(0,1fr);align-items:stretch;gap:0;padding:0;min-height:0;color:#f2f6fc;background:rgba(12,20,31,.97);border:1px solid #ffffff20;border-top:3px solid var(--sev);border-radius:5px;font:calc(13px * var(--alert-scale,1)) var(--sans);box-shadow:0 5px 18px #0005;overflow:hidden;line-height:1.4;pointer-events:auto}
+.abanner .alert-rail{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:14px 8px;background:var(--sev);color:white;font:700 .65em var(--mono);letter-spacing:.05em}
+.abanner .alert-rail svg{width:25px;height:25px;flex-shrink:0}
+.abanner .alert-content{padding:12px 16px;min-width:0}
+.abanner .alert-title-row{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+.abanner .alert-kicker{color:#94a9c3;font:500 .64em var(--mono);letter-spacing:.15em}
+.abanner .alert-severity{padding:2px 7px;border:1px solid #ffffff30;border-radius:3px;color:#e4ecf7;font:500 .65em var(--mono);text-transform:uppercase;letter-spacing:.05em}
+.abanner .alert-title{display:block;font:700 1.25em var(--sans);letter-spacing:-.02em;line-height:1.25;color:#fff;overflow-wrap:anywhere}
+.abanner .alert-headline{font-size:.86em;color:#c2cede;margin:6px 0 0;line-height:1.5;overflow-wrap:anywhere}
+.abanner .alert-facts{display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid #ffffff18;margin-top:10px;padding-top:9px;font-size:.78em;color:#e1e9f4}
+.abanner .alert-facts>div{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1 1 140px}
+.abanner .alert-fact-label{display:block;color:#7f97b5;font:500 .72em var(--mono);letter-spacing:.1em}
+.abanner .alert-instruction{display:block;max-height:none;overflow:visible;font-size:.82em;line-height:1.55;color:#d1dcec;background:#ffffff06;border-left:2px solid var(--sev);padding:8px 10px;margin-top:10px;white-space:pre-line;overflow-wrap:anywhere}
+.abanner .alert-instruction .alert-fact-label{margin-bottom:4px}
+.pagestrip .alert-bulletin,.pagestrip .alert-card{width:calc(100% - 32px);max-width:760px;align-self:flex-start;margin:12px 16px 0}
+.pagestrip .alert-card{border-top-width:1px;border-left:3px solid var(--sev)}
+.pagestrip .alert-card .alert-rail{background:#ffffff08;color:var(--sev)}
+.pagestrip .alert-banner{width:100%;border-radius:0;border-left:0;border-right:0;grid-template-columns:90px minmax(0,1fr)}
+.pagestrip .alert-banner .alert-content{padding:9px 16px}
+.pagestrip .alert-banner .alert-facts{flex-wrap:wrap;gap:8px 30px;margin-top:7px;padding-top:7px}
+.pagestrip .alert-banner .alert-facts>div{flex:none;flex-direction:row;align-items:baseline;gap:8px}
+.pagestrip .alert-compact{width:calc(100% - 24px);max-width:540px;margin:8px 12px 0;border-radius:5px;grid-template-columns:60px minmax(0,1fr)}
+.pagestrip .alert-compact .alert-content{padding:8px 12px}.pagestrip .alert-compact .alert-rail{padding:8px 4px}.pagestrip .alert-compact .alert-rail svg{width:18px;height:18px}.pagestrip .alert-compact .alert-title{font-size:1em}.pagestrip .alert-compact .alert-kicker{display:none}.pagestrip .alert-compact .alert-title-row{margin-bottom:4px}.pagestrip .alert-compact .alert-headline{font-size:.78em}
+.pagestrip .alert-summary{align-self:flex-start;margin:0 16px 4px;padding:6px 10px;background:#111f30ed;border:1px solid #ffffff20;border-radius:4px;color:#a9bed7;font:10px var(--mono);box-shadow:0 3px 12px #0003}
+.overlay-demo{min-height:400px}.overlay-demo:before{top:auto;bottom:34px}.overlay-demo .pagestrip .abanner{font-size:calc(12px * var(--alert-scale,1))}.overlay-demo .wl[data-c=br],.overlay-demo .wl[data-c=bl]{bottom:55px}
+@media(max-width:600px){.pagestrip .abanner{grid-template-columns:58px minmax(0,1fr);font-size:calc(11px * var(--alert-scale,1))}.abanner .alert-rail{padding:10px 4px;font-size:.6em}.abanner .alert-content{padding:10px 12px}.abanner .alert-facts{gap:8px}.pagestrip .alert-bulletin,.pagestrip .alert-card{margin:8px 8px 0;width:calc(100% - 16px)}.pagestrip .alert-banner{grid-template-columns:58px minmax(0,1fr)}.overlay-demo{min-height:520px}.overlay-demo .pagestrip .abanner{font-size:calc(11px * var(--alert-scale,1))}}
 </style>
 </head>
 <body>
 <header>
-  <h1>Camera Library <span id="clock"></span></h1>
+  <h1><span class="station-mark" aria-hidden="true">▥</span> Weather Cam <span class="station-label">STATION</span><span id="clock"></span></h1>
   <div class="modelinks">
     <a href="?mode=control" id="lnkControl">Control</a>
     <a href="?mode=output" id="lnkOutput" target="_blank">Output ↗</a>
-    <a href="?mode=remote" id="lnkRemote">📱 Remote</a>
+    <a href="?mode=remote" id="lnkRemote">Remote</a>
   </div>
 </header>
 
 <div id="controlView">
+  <div class="console-nav"><nav class="controlnav" aria-label="Station workspace"><button id="pageDashboard" class="on">Camera library</button><button id="pageOnOutput">On output <span id="navOutputCount">0</span></button><button id="pageSettings">Preferences</button></nav><div class="console-status"><span class="status-dot"></span><span id="consoleStatus">Station ready</span><span class="local-label">LOCAL WORKSPACE</span></div></div>
   <section class="quick-controls" aria-label="Essential output settings">
     <div class="quick-control"><span class="quick-title">Layout</span><select id="quickLayout" aria-label="Output multi-view layout"></select></div>
     <div class="quick-control"><span class="quick-title">Rotation</span><label><input type="checkbox" id="autoRotate"> Rotate</label><label>Every <input type="number" id="rotateSec" value="10" min="3"> sec</label></div>
@@ -590,9 +796,11 @@ body:has(#lnkControl.on) #clock{display:none}
     <div class="quick-control"><span class="quick-title">Widgets</span><label><input type="checkbox" id="widgetsOn" checked> Show on output</label><button class="sm" id="quickWidgetSettings" type="button">Configure</button></div>
     <div class="quick-hint"><kbd>←</kbd><kbd>→</kbd> camera &nbsp; <kbd>1</kbd>–<kbd>9</kbd> jump &nbsp; <kbd>L</kbd> layout &nbsp; <kbd>R</kbd> rotate &nbsp; <kbd>/</kbd> search</div>
   </section>
+  <section class="output-workspace-head" aria-labelledby="outputWorkspaceTitle"><div><span class="workspace-eyebrow">OUTPUT MANAGEMENT</span><h2 id="outputWorkspaceTitle">Broadcast lineup</h2><p>Set the camera sequence used by the live output and automatic rotation.</p></div><div class="workspace-actions"><button type="button" id="queueAddCameras">+ Add cameras</button><a href="?mode=output" target="_blank" rel="noopener">Open output ↗</a></div></section>
+  <section class="preferences-head"><div><span class="workspace-eyebrow">STATION CONFIGURATION</span><h2>Preferences</h2><p>Configure your broadcast without leaving the operator workspace.</p></div><span class="saved-indicator">Saved locally</span></section>
+  <nav id="settingsTabs" class="settings-tabs" aria-label="Preference categories"></nav>
   <div id="dashRow">
     <aside class="finder-sidebar" aria-label="Camera folders">
-      <div class="controlnav"><button id="pageDashboard" class="on">▦ Cameras</button><button id="pageSettings">⚙ Preferences</button></div>
       <h2>Folders <b id="camCount"></b></h2>
       <button id="folderAll" class="finder-all on"><span>📁 All cameras</span><span class="mono" id="folderAllCount"></span></button>
       <div class="group-tools"><input id="newGroupName" placeholder="New folder name" aria-label="New folder name"><select id="newGroupParent" aria-label="Create folder inside"></select><button class="sm primary" id="addGroupBtn">+ Create folder</button></div>
@@ -600,11 +808,11 @@ body:has(#lnkControl.on) #clock{display:none}
       <div class="hint">Click a folder’s selection count to add or remove the entire folder, including subfolders, from output.</div>
     </aside>
     <main class="finder-main">
-      <div class="finder-heading"><h2>Camera library <span class="path" id="folderPath">All cameras</span></h2><b id="dashInfo" class="pill"></b></div>
-      <div class="dashbar"><input id="dashSearch" type="search" placeholder="Search cameras by name, URL, or location…" aria-label="Search cameras"><select id="dashGroup" aria-label="Filter by folder"><option value="all">All folders</option></select><div class="dash-view-tools" role="group" aria-label="Camera library view"><button class="sm on" id="dashGridView" type="button" title="Grid view" aria-pressed="true">▦</button><button class="sm" id="dashListView" type="button" title="List view" aria-pressed="false">☷</button><select id="dashSort" aria-label="Sort cameras"><option value="name">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="type">Feed type</option></select></div><button class="sm primary" id="finderAddCamera" type="button">+ Add camera</button><button class="sm" id="bulkOutputBtn" type="button" title="Toggle output for every camera currently shown (use a folder to select it whole)">☑ Select shown → output</button><button class="sm" id="finderPreviewBtn" type="button" aria-pressed="false">Quick Look</button><button class="sm" id="finderManageBtn" type="button">Manage</button></div>
-      <div class="dashgrid" id="dashGrid"></div>
+      <div class="finder-heading"><h2><span id="cameraPageTitle">Camera library</span> <span class="path" id="folderPath">All cameras</span></h2><b id="dashInfo" class="pill"></b></div>
+      <div class="dashbar"><input id="dashSearch" type="search" placeholder="Search cameras by name, URL, or location…" aria-label="Search cameras"><select id="dashGroup" aria-label="Filter by folder"><option value="all">All folders</option></select><div class="dash-view-tools" role="group" aria-label="Camera library view"><button class="sm on" id="dashGridView" type="button" title="Grid view" aria-pressed="true">▦</button><button class="sm" id="dashListView" type="button" title="List view" aria-pressed="false">☷</button><select id="dashSort" aria-label="Sort cameras"><option value="name">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="type">Feed type</option></select></div><button class="sm primary" id="finderAddCamera" type="button">+ Add camera</button><button class="sm" id="bulkOutputBtn" type="button" title="Toggle output for every camera currently shown (use a folder to select it whole)">+ Add shown to output</button><button class="sm" id="finderPreviewBtn" type="button" aria-pressed="false">Quick Look</button><button class="sm" id="finderManageBtn" type="button">Manage</button></div>
+      <p class="queue-help" id="queueHelp" hidden>Drag the ⠿ handle to set output and rotation order, or use the arrow buttons. Removing a camera returns it to the library.</p><div class="dashgrid" id="dashGrid"></div>
       <div class="dashpager"><button class="sm" id="dashPrev">← Prev</button><span class="mono" id="dashPageInfo"></span><button class="sm" id="dashNext">Next →</button></div>
-      <div class="hint">Click a preview to make it the active camera and include it in output; use the Output checkbox for other cameras. Folders never limit output selection.</div>
+      <div class="hint">Click a library preview for details; use + to add cameras and − to remove them on the On output page. Folders never limit output selection.</div>
     </main>
   </div>
   <div class="camera-editor-overlay" id="cameraEditor" hidden>
@@ -624,7 +832,7 @@ body:has(#lnkControl.on) #clock{display:none}
             <div><label for="editCamRefresh">Image refresh interval (seconds)</label><input id="editCamRefresh" type="number" min="0" max="3600"></div>
             <div><label for="editCamLat">Latitude</label><input id="editCamLat" type="number" min="-90" max="90" step="any"></div>
             <div><label for="editCamLon">Longitude</label><input id="editCamLon" type="number" min="-180" max="180" step="any"></div>
-            <div class="full camera-editor-options"><label><input id="editCamEnabled" type="checkbox"> Enabled</label><label><input id="editCamOutput" type="checkbox"> Include in output</label><label><span>Start with feed</span><select id="editCamStartFeed"></select></label></div>
+            <div class="full camera-editor-options"><label><input id="editCamEnabled" type="checkbox"> Enabled</label><button id="editCamOutput" type="button" aria-pressed="false">+ Add to output</button><label><span>Start with feed</span><select id="editCamStartFeed"></select></label></div>
           </div>
         </section>
       </div>
@@ -685,7 +893,7 @@ body:has(#lnkControl.on) #clock{display:none}
       </div>
       <button class="primary" id="addBtn" style="margin-top:10px;width:100%">+ Add camera</button>
       <button id="importObsBtn" style="margin-top:6px;width:100%">+ Import 15 cameras from OBS collection</button>
-      <div class="hint">Folders organize the library only. Choose any cameras for the output with their Output checkboxes, regardless of folder. Demo feeds use placeholder images.</div>
+      <div class="hint">Folders organize the library only. Choose any cameras for the output with their + Output buttons, regardless of folder. Demo feeds use placeholder images.</div>
     </div>
 
     <!-- LIVE PREVIEW -->
@@ -779,7 +987,6 @@ body:has(#lnkControl.on) #clock{display:none}
         <div class="ctl"><label><input type="checkbox" id="showName"> name</label>
           <label><input type="checkbox" id="showCoords"> coords</label></div>
       </div>
-      <div class="srow"><label>Weather detail chips (feels / wind / rain / sun)</label><input type="checkbox" id="wxDetail"></div>
       <div class="srow"><label>Single-camera height</label>
         <select id="camHeight">
           <option value="auto">Fit 16:9</option>
@@ -815,7 +1022,25 @@ body:has(#lnkControl.on) #clock{display:none}
 
     <!-- WIDGETS -->
     <div class="panel settings-only" id="widgetSettingsPanel">
-      <h2>Widgets &amp; overlays</h2>
+      <h2>Overlay studio</h2>
+      <section class="overlay-section"><h3>Weather card</h3><p>Choose the design and individual data fields. Missing measurements are omitted.</p>
+        <div class="srow"><label for="weatherStyle">Card design</label><select id="weatherStyle"><option value="broadcast">Broadcast lower third</option><option value="glass">Soft glass card</option><option value="minimal">Minimal data panel</option></select></div>
+        <div class="srow"><label for="weatherAccent">Weather accent</label><input id="weatherAccent" type="color"></div>
+        <div class="srow"><label for="wxDetail">Show detailed measurements</label><input type="checkbox" id="wxDetail"></div>
+        <div class="field-options" id="weatherFields"></div>
+      </section>
+      <section class="overlay-section"><h3>Current weather alerts</h3><p>Prioritize urgent alerts and control what appears in the output banners and ticker.</p>
+        <div class="srow"><label for="overlayAlertsOn">Show alert banners</label><input id="overlayAlertsOn" type="checkbox"></div>
+        <div class="srow"><label for="alertStyle">Alert design</label><select id="alertStyle"><option value="bulletin">Broadcast bulletin</option><option value="banner">Full-width warning bar</option><option value="card">Outlined bulletin card</option><option value="compact">Compact warning pill</option></select></div>
+        <div class="srow"><label for="alertGraphicScale">Alert graphic size</label><input id="alertGraphicScale" type="range" min="0.75" max="1.5" step="0.05"><span id="alertGraphicScaleValue" class="mono"></span></div>
+        <div class="srow"><label for="alertSeverity">Severity filter</label><select id="alertSeverity"><option value="all">All active alerts</option><option value="moderate">Moderate and above</option><option value="severe">Severe and extreme</option><option value="extreme">Extreme only</option></select></div>
+        <div class="srow"><label for="overlayAlertLimit">Visible alerts</label><input id="overlayAlertLimit" type="number" min="0" max="4"></div>
+        <div class="field-options" id="alertFields"></div>
+        <div class="srow"><label for="overlayTickerOn">Show ticker</label><input id="overlayTickerOn" type="checkbox"></div>
+        <div class="srow"><label for="tickerAlerts">Include filtered alerts in ticker</label><input id="tickerAlerts" type="checkbox"></div>
+        <div class="srow"><label for="tickerSun">Include sunrise / sunset in ticker</label><input id="tickerSun" type="checkbox"></div>
+      </section>
+      <section class="overlay-section"><h3>Design preview</h3><p>Sample weather and alerts, using your selected styles and fields. Quick Look shows the live output.</p><div id="overlayDesignPreview" class="overlay-demo"><div class="pagestrip"></div><div class="wl" data-c="tl"></div><div class="wl" data-c="tr"></div><div class="wl" data-c="bl"></div><div class="wl" data-c="br"></div><div class="tickbar"></div></div></section>
       <div class="srow"><label>Overlay scale</label><input type="range" id="wxScale" min="0.7" max="2" step="0.05" value="1" style="width:150px"><span class="mono" id="wxScaleVal">1.00</span></div>
       <div class="srow"><label>Widget background opacity</label><input type="range" id="wxBg" min="0" max="0.95" step="0.05" value="0.62" style="width:150px"></div>
       <div class="srow"><label>Ticker text</label><input type="text" id="tickerText" style="width:56%" placeholder="Station slogan or message"></div>
@@ -932,6 +1157,7 @@ document.body.style.display='none'; // avoid flash
 document.body.style.display='';
 document.getElementById('lnk'+mode.charAt(0).toUpperCase()+mode.slice(1)).classList.add('on');
 if(tv) document.body.classList.add('tv');
+if(mode==='control')document.body.classList.add('console');
 const $=id=>document.getElementById(id);
 
 /* ---------------- state ---------------- */
@@ -967,6 +1193,9 @@ function defaultCfg(){
     corner:{wx:'br',clock:'tr',radar:'tl',logo:'tl',next:'bl',custom:'bl'},
     overlayFont:13, overlayPad:4,
     customOverlay:{text:'',color:'#ffffff',bg:'#111820',opacity:.78,style:'card',font:'mono',align:'left',shadow:true},
+    weatherStyle:'broadcast',weatherAccent:'#2b8f92',
+    weatherFields:{location:true,icon:true,temp:true,condition:true,feels:true,wind:true,humidity:true,rain:true,pressure:true,precip:false,sunrise:false,sunset:false},
+    alertStyle:'bulletin',alertScale:1,alertSeverity:'all',alertFields:{headline:true,area:true,severity:true,expires:true,instruction:false},tickerAlerts:true,tickerSun:true,
     dashboardView:'grid', dashboardSort:'name',
     showName:true, showCoords:true, camHeight:'56',
     tileGap:2, blur:3, tickerSec:26, bgData:'',
@@ -1072,7 +1301,7 @@ function saveState(){
 let state=loadState();
 function cameraActive(cam){ return !!cam&&cam.active!==false; }
 function enabledCameras(s=state){ return (s.cameras||[]).filter(c=>cameraActive(c,s)); }
-function selectedOutputCameras(s=state){ return (s.cameras||[]).filter(c=>Array.isArray(s.multiIds)&&s.multiIds.includes(c.id)); }
+function selectedOutputCameras(s=state){ const cameras=new Map((s.cameras||[]).map(c=>[c.id,c])); return [...new Set(s.multiIds||[])].map(id=>cameras.get(id)).filter(Boolean); }
 function outputCameras(s=state){ return selectedOutputCameras(s).filter(c=>cameraActive(c,s)); }
 
 /* ---------------- cross-tab / cross-device sync ----------------
@@ -1222,7 +1451,7 @@ function fetchWx(cam){
     if(!c) throw new Error('no current');
     const data={temp:c.temperature_2m,feels:c.apparent_temperature,code:c.weather_code,wind:c.wind_speed_10m,
       hum:c.relative_humidity_2m,pres:c.surface_pressure,isDay:c.is_day===1,precip:c.precipitation,
-      rain:day.precipitation_probability_max,sunrise:day.sunrise&&day.sunrise[0],sunset:day.sunset&&day.sunset[0]};
+      rain:day.precipitation_probability_max&&day.precipitation_probability_max[0],sunrise:day.sunrise&&day.sunrise[0],sunset:day.sunset&&day.sunset[0]};
     wxCache[cam.id]={ts:Date.now(),data};
     return data;
   });
@@ -1593,14 +1822,36 @@ function refreshTileImage(tile,cam){
   tile._last=Date.now();
   img.src=stamp(cam,cameraFeedUrl(cam,tile));
 }
+function displayAlerts(alerts){
+  const ranks={extreme:0,severe:1,moderate:2};const threshold=ranks[state.cfg.alertSeverity];
+  const unique=new Map();
+  alerts.forEach(a=>{if(a.ends&&new Date(a.ends).getTime()<=Date.now())return;if(threshold!==undefined&&sevRank(a.sev)>threshold)return;const key=[a.event,a.head,a.area,a.ends].join('|');if(!unique.has(key))unique.set(key,a);});
+  return [...unique.values()].sort((a,b)=>sevRank(a.sev)-sevRank(b.sev));
+}
 function bannerHTML(a){
-  const color=sevColor(a.sev);
-  return `<div class="abanner" style="--sev:${color}" title="${esc(a.desc.slice(0,600))}">⚠ <b>${esc(a.event)}</b><span>${esc(a.head||a.area)}</span></div>`;
+  const cfg=state.cfg,fields=cfg.alertFields||{},color=sevColor(a.sev),style=['bulletin','banner','card','compact'].includes(cfg.alertStyle)?cfg.alertStyle:'bulletin';
+  const scale=Math.max(.75,Math.min(1.5,Number(cfg.alertScale)||1));
+  const event=a.event||'Weather alert',kind=/warning/i.test(event)?'WARNING':/watch/i.test(event)?'WATCH':/advisory/i.test(event)?'ADVISORY':'ALERT';
+  const icon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 22 21H2L12 3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9v5m0 3v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const ends=a.ends?new Date(a.ends):null,validEnd=ends&&!Number.isNaN(ends.getTime());
+  const expiry=validEnd?ends.toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}):'';
+  return `<div class="abanner alert-${style}" style="--sev:${color};--alert-scale:${scale}" title="${esc((a.desc||'').slice(0,600))}"><div class="alert-rail">${icon}<span>${kind}</span></div><div class="alert-content"><div class="alert-title-row"><span class="alert-kicker">WEATHER BULLETIN</span>${fields.severity?`<span class="alert-severity">${esc(a.sev||'Unknown')}</span>`:''}</div><strong class="alert-title">${esc(event)}</strong>${fields.headline&&a.head?`<p class="alert-headline">${esc(a.head)}</p>`:''}${fields.area&&a.area||fields.expires&&expiry?`<div class="alert-facts">${fields.area&&a.area?`<div class="alert-area"><span class="alert-fact-label">AFFECTED AREA</span><span>${esc(a.area)}</span></div>`:''}${fields.expires&&expiry?`<div class="alert-expiry"><span class="alert-fact-label">IN EFFECT UNTIL</span><span>${esc(expiry)}</span></div>`:''}</div>`:''}${fields.instruction&&a.instr?`<div class="alert-instruction"><span class="alert-fact-label">PROTECTIVE ACTION</span>${esc(a.instr)}</div>`:''}</div></div>`;
+}
+function weatherHTML(wx,cam){
+  const cfg=state.cfg,f=cfg.weatherFields||{},valid=v=>v!=null&&Number.isFinite(Number(v));
+  const measure=(key,label,value,suffix,round=true)=>f[key]&&valid(value)?`<span>${label} <b>${round?Math.round(value):Number(value)}${suffix}</b></span>`:'';
+  let detail='';
+  if(cfg.wxDetail){detail=[measure('feels','Feels',wx.feels,'°F'),measure('wind','Wind',wx.wind,' mph'),measure('humidity','Humidity',wx.hum,'%'),measure('rain','Rain chance',Array.isArray(wx.rain)?wx.rain[0]:wx.rain,'%'),measure('pressure','Pressure',wx.pres,' hPa'),measure('precip','Precip.',wx.precip,' mm',false),f.sunrise&&wx.sunrise?`<span>Sunrise <b>${esc(fmtT(wx.sunrise))}</b></span>`:'',f.sunset&&wx.sunset?`<span>Sunset <b>${esc(fmtT(wx.sunset))}</b></span>`:''].join('');}
+  const temp=f.temp&&valid(wx.temp)?`<span class="wx-temp">${Math.round(wx.temp)}°F</span>`:'',condition=f.condition?`<span class="wx-cond">${esc(WX_COND[wx.code]||'—')}</span>`:'';
+  const location=f.location?`<div class="wx-loc">${esc(cam?.name||'Current conditions')}</div>`:'';
+  if(!location&&!temp&&!condition&&!detail&&!f.icon)return '';
+  const style=['broadcast','glass','minimal'].includes(cfg.weatherStyle)?cfg.weatherStyle:'broadcast',accent=/^#[0-9a-f]{6}$/i.test(cfg.weatherAccent)?cfg.weatherAccent:'#2b8f92';
+  return `<div class="w wx wx-${style}" style="--weather-accent:${accent}">${f.icon?`<div class="wx-accent"><span class="wx-icon">${wxIcon(wx.code,wx.isDay)}</span></div>`:''}<div class="wx-body">${location}${temp||condition?`<div class="wx-row">${temp}${condition}</div>`:''}${detail?`<div class="wx-detail">${detail}</div>`:''}</div></div>`;
 }
 /* widgets render into a scope: element containing .wl[data-c] corner slots */function renderWidgets(scope){
   const root=scope._fullscreenTile&&scope._fullscreenTile.isConnected?scope._fullscreenTile:scope;
   const ctx=scope._ctx||{};
-  const cfg=state.cfg, cam=ctx.cam, wx=ctx.wx, alerts=ctx.alerts||[], next=ctx.next;
+  const cfg=state.cfg, cam=ctx.cam, wx=ctx.wx, alerts=displayAlerts(ctx.alerts||[]), next=ctx.next;
   /* wipe widget slots but keep the persistent radar element alive (no map reload on every redraw) */
   root.querySelectorAll('.wl[data-c]').forEach(el=>{
     [...el.children].forEach(ch=>{ if(ch!==scope._radarEl) ch.remove(); });
@@ -1615,21 +1866,13 @@ function bannerHTML(a){
   const slot=c=>{const el=root.querySelector(`.wl[data-c="${c}"]`); return el;};
   const put=(key,html)=>{const el=slot(cfg.corner[key]||'tl'); if(el) el.insertAdjacentHTML('beforeend',html);};
   if(cfg.show.alert&&alerts.length&&ps){
-    const max=Math.max(1,+cfg.alertMax||1);
+    const max=Math.max(0,Math.min(4,+cfg.alertMax||0));
     alerts.slice(0,max).forEach(a=>ps.insertAdjacentHTML('beforeend',bannerHTML(a)));
-    const bannerHeight=Math.min(alerts.length,max)*34+'px';
-    scope.style.setProperty('--btop',bannerHeight); root.style.setProperty('--btop',bannerHeight);
+    if(max&&alerts.length>max)ps.insertAdjacentHTML('beforeend',`<div class="alert-summary">+${alerts.length-max} more active alerts${cfg.tickerAlerts?' · see ticker':''}</div>`);
+    const setHeight=()=>{const h=ps.getBoundingClientRect().height+'px';scope.style.setProperty('--btop',h);root.style.setProperty('--btop',h);};
+    setHeight(); if(typeof ResizeObserver!=='undefined'&&scope._alertStrip!==ps){if(scope._alertResize)scope._alertResize.disconnect();scope._alertStrip=ps;scope._alertResize=new ResizeObserver(setHeight);scope._alertResize.observe(ps);}
   }
-  if(cfg.show.wx&&wx){
-    const wxLoc=cam&&cam.name?cam.name:'Current conditions';
-    let detail='';
-    if(cfg.wxDetail){
-      detail+=`<span>Feels <b>${Math.round(wx.feels)}°</b></span><span>Wind <b>${Math.round(wx.wind)} mph</b></span><span>Hum <b>${wx.hum}%</b></span>`;
-      if(wx.rain!=null) detail+=`<span>Rain <b>${wx.rain}%</b></span>`;
-      if(wx.pres!=null) detail+=`<span>Pres <b>${Math.round(wx.pres)}</b></span>`;
-    }
-    put('wx',`<div class="w wx"><div class="wx-accent"><span class="wx-icon">${wxIcon(wx.code,wx.isDay)}</span></div><div class="wx-body"><div class="wx-loc">${esc(wxLoc)}</div><div class="wx-row"><span class="wx-temp">${Math.round(wx.temp)}°</span><span class="wx-cond">${esc(WX_COND[wx.code]||'—')}</span></div>${detail?`<div class="wx-detail">${detail}</div>`:''}</div></div>`);
-  }
+  if(cfg.show.wx&&wx) put('wx',weatherHTML(wx,cam));
   if(cfg.show.clock){
     put('clock',`<div class="w clock"><span class="cbadge">Live</span><div class="clock-main"><span class="t" data-wclock>${fmtClock()}</span>${cfg.showDate?`<span class="d" data-wdate>${new Date().toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'})}</span>`:''}</div></div>`);
   }
@@ -1646,8 +1889,8 @@ function bannerHTML(a){
     put('next',`<div class="w next" data-camid="${esc(next.id||'')}">${next.thumb?`<img class="nx-thumb" src="${esc(next.thumb)}" alt="">`:''}<span class="nx"><b>Up next</b><span data-wnext>${esc(next.name)}</span></span></div>`);
   }
   if(cfg.show.ticker&&tb){
-    const parts=[cfg.tickerText].concat(alerts.map(a=>`⚠ ${a.event}${a.ends?' until '+fmtT(a.ends):''}`));
-    if(wx&&wx.sunrise) parts.push(`Sunrise ${fmtT(wx.sunrise)} · Sunset ${fmtT(wx.sunset)}`);
+    const parts=[cfg.tickerText].concat(cfg.tickerAlerts?alerts.map(a=>`⚠ ${a.event}${cfg.alertFields.expires&&a.ends?' until '+fmtT(a.ends):''}`):[]);
+    if(cfg.tickerSun&&wx&&wx.sunrise) parts.push(`Sunrise ${fmtT(wx.sunrise)} · Sunset ${fmtT(wx.sunset)}`);
     const txt=parts.filter(Boolean).join('   ·   ');
     tb.innerHTML=`<span class="run">${esc(txt)}</span>`;
   }
@@ -2106,7 +2349,7 @@ if(mode==='control'){
                 <option value="hls"${c.type==='hls'?' selected':''}>HLS</option>
               </select>
               <label><input type="radio" name="active"${c.id===state.activeId?' checked':''} data-act="active"> Show now</label>
-              <label><input type="checkbox"${state.multiIds.includes(c.id)?' checked':''} data-act="multi"> In output</label>
+              <button type="button" data-act="multi">${state.multiIds.includes(c.id)&&cameraActive(c)?'− Remove from output':'+ Add to output'}</button>
             </div>
           </div>
         </div>`;
@@ -2161,13 +2404,7 @@ if(mode==='control'){
         saveState();renderCamList();renderDash();renderGroupList();renderThumbs();renderPreview(true);renderAlerts();
         fetchAlerts(c).then(renderAlerts);
       };
-      row.querySelector('[data-act=multi]').onchange=e=>{
-        if(e.target.checked){ c.active=true; if(!state.multiIds.includes(c.id)) state.multiIds.push(c.id); }
-        else state.multiIds=state.multiIds.filter(id=>id!==c.id);
-        if(e.target.checked&&(!state.activeId||!outputCameras().some(x=>x.id===state.activeId))) state.activeId=c.id;
-        if(state.activeId===c.id&&!e.target.checked) state.activeId=outputCameras()[0]?.id||null;
-        saveState(); renderDash(); renderGroupList(); renderCamList(); renderPreview(true);
-      };
+      row.querySelector('[data-act=multi]').onclick=()=>toggleCameraOutput(c.id);
       row.querySelector('[data-act=preview]').onclick=()=>selectCam(c.id);
       row.querySelector('[data-act=del]').onclick=()=>{
         state.cameras=state.cameras.filter(x=>x.id!==c.id);
@@ -2236,7 +2473,7 @@ if(mode==='control'){
     editorDraft=cameraSources(cam);renderEditorSources();$('editorError').hidden=true;
     $('editCamRefresh').value=cam.refresh||0;
     $('editCamLat').value=cam.lat; $('editCamLon').value=cam.lon;
-    $('editCamEnabled').checked=cameraActive(cam); $('editCamOutput').checked=state.multiIds.includes(id);
+    $('editCamEnabled').checked=cameraActive(cam); $('editCamOutput').setAttribute('aria-pressed',String(state.multiIds.includes(id)&&cameraActive(cam))); $('editCamOutput').textContent=state.multiIds.includes(id)&&cameraActive(cam)?'− Remove from output':'+ Add to output';
     $('editCamGroup').innerHTML='<option value="">No folder</option>'+state.groups.map(g=>`<option value="${esc(g.id)}">${esc(groupPath(g))}</option>`).join('');
     $('editCamGroup').value=cam.groupId||'';
     const urls=cameraFeedUrls(cam);
@@ -2260,6 +2497,7 @@ if(mode==='control'){
   $('closeCameraEditor').onclick=closeCameraEditor; $('closeCameraEditorFooter').onclick=closeCameraEditor;
   $('cameraEditor').addEventListener('click',e=>{if(e.target===$('cameraEditor'))closeCameraEditor();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('cameraEditor').hidden)closeCameraEditor();});
+  $('editCamOutput').onclick=()=>{const button=$('editCamOutput'),on=button.getAttribute('aria-pressed')!=='true'; button.setAttribute('aria-pressed',String(on)); button.textContent=on?'− Remove from output':'+ Add to output'; if(on)$('editCamEnabled').checked=true; editorDirty=true;};
   $('saveCameraEditor').onclick=()=>{
     const cam=state.cameras.find(c=>c.id===editingCameraId)||{id:uid()};
     const name=$('editCamName').value.trim(),lat=Number($('editCamLat').value),lon=Number($('editCamLon').value);
@@ -2272,7 +2510,7 @@ if(mode==='control'){
     if(!state.cameras.includes(cam))state.cameras.push(cam);
     cam.groupId=$('editCamGroup').value||null;cam.active=$('editCamEnabled').checked;
     if(cam.type==='iframe'&&!cam.iframeCss)cam.iframeCss='';
-    const output=$('editCamOutput').checked;
+    const output=$('editCamOutput').getAttribute('aria-pressed')==='true'&&cam.active;
     if(output&&!state.multiIds.includes(cam.id))state.multiIds.push(cam.id);else if(!output)state.multiIds=state.multiIds.filter(id=>id!==cam.id);
     const startIndex=Math.max(0,Math.min(cameraFeedUrls(cam).length-1,+$('editCamStartFeed').value||0));cam.startFeedIndex=startIndex;
     if(cam.active&&output){state.activeId=cam.id;}else if(state.activeId===cam.id)state.activeId=outputCameras()[0]?.id||null;
@@ -2469,7 +2707,7 @@ if(mode==='control'){
     const changed=state.activeId!==id;
     state.activeId=id;
     saveState();
-    renderCamList(); if(!wasOutput) renderGroupList(); renderThumbs(); renderPreview(true); renderAlerts(); dashSyncActive();
+    renderCamList(); if(!wasOutput) renderGroupList(); renderThumbs(); renderPreview(true); renderAlerts(); renderDash(); dashSyncActive();
     if(changed) fetchAlerts(cam).then(renderAlerts);
   }
   /* ---- keyboard shortcuts: camera switching, layout, rotation ---- */
@@ -2489,13 +2727,28 @@ if(mode==='control'){
     else if(/^[1-9]$/.test(k)){ const n=+k-1; if(outputs[n]) selectCam(outputs[n].id); e.preventDefault(); }
   });
   let dashSig='',dashPage=0,selectedFolderId=null;
+  let cameraPage=params.get('view')==='on-output'?'on-output':'library';
+  function refreshCameraSelection(){
+    syncActive(); saveState(); dashSig=''; renderCamList(); renderDash(); renderGroupList(); renderThumbs(); renderPreview(true); renderAlerts();
+  }
+  function toggleCameraOutput(id){
+    const cam=state.cameras.find(c=>c.id===id); if(!cam)return;
+    if(state.multiIds.includes(id)&&cameraActive(cam)) state.multiIds=state.multiIds.filter(x=>x!==id);
+    else {cam.active=true; if(!state.multiIds.includes(id))state.multiIds.push(id);}
+    refreshCameraSelection();
+  }
+  function moveOutputCamera(id,targetId){
+    if(id===targetId||!state.multiIds.includes(id)||!state.multiIds.includes(targetId))return;
+    const order=state.multiIds.filter(x=>x!==id); order.splice(order.indexOf(targetId),0,id); state.multiIds=order; refreshCameraSelection();
+  }
   const collapsedFolders=new Set();
   const DASH_PAGE_SIZE=18;
   function dashMatches(){
     const q=($('dashSearch')&&$('dashSearch').value||'').trim().toLowerCase();
     const gid=selectedFolderId;
     const folderIds=gid?descendantsOf(gid):null;
-    return state.cameras.filter(c=>{
+    const cameras=cameraPage==='on-output'?outputCameras():state.cameras.filter(c=>!state.multiIds.includes(c.id)||!cameraActive(c));
+    return cameras.filter(c=>{
       if(folderIds&&!folderIds.has(c.groupId)) return false;
       return !q||[c.name,c.url,c.lat,c.lon].join(' ').toLowerCase().includes(q);
     });
@@ -2503,38 +2756,58 @@ if(mode==='control'){
   function renderDash(){
     const box=$('dashGrid'); if(!box) return;
     const matches=dashMatches();
-    const signature=JSON.stringify([matches.map(c=>[c.id,c.name,c.url,c.backupSources,c.playlist,c.baseUrl,c.type,c.refresh,c.lat,c.lon,c.active,c.groupId,c.startFeedIndex]),state.cameras.map(c=>[c.id,c.name,c.lat,c.lon,c.active,c.groupId]),state.groups,state.multiIds,state.cfg.showBadge,selectedFolderId,state.cfg.dashboardView,state.cfg.dashboardSort]);
-    const di=$('dashInfo'); if(di) di.textContent=matches.length+' cameras · '+outputCameras().length+' in output';
-    const bulk=$('bulkOutputBtn'); if(bulk){ const allShown=matches.length>0&&matches.every(c=>state.multiIds.includes(c.id)); bulk.textContent=allShown?'☑ Clear shown from output':'☐ Select shown → output'; }
+    const signature=JSON.stringify([matches.map(c=>[c.id,c.name,c.url,c.backupSources,c.playlist,c.baseUrl,c.type,c.refresh,c.lat,c.lon,c.active,c.groupId,c.startFeedIndex]),state.cameras.map(c=>[c.id,c.name,c.lat,c.lon,c.active,c.groupId]),state.groups,state.multiIds,state.cfg.showBadge,selectedFolderId,state.cfg.dashboardView,state.cfg.dashboardSort,cameraPage]);
+    const count=outputCameras().length;
+    $('navOutputCount').textContent=count; $('consoleStatus').textContent=count?count+' cameras on output':'No cameras on output';
+    const di=$('dashInfo'); if(di) di.textContent=matches.length+' camera'+(matches.length===1?'':'s');
+    const queued=cameraPage==='on-output';
+    $('cameraPageTitle').textContent=queued?'Broadcast sequence':'Camera library'; $('queueHelp').hidden=!queued;$('dashSort').hidden=queued; $('finderAddCamera').hidden=queued;
+    $('dashSearch').placeholder=queued?'Search output cameras…':'Search camera library…';
+    $('folderAll').querySelector('span').textContent=queued?'📁 All output cameras':'📁 Off-output cameras';
+    const bulk=$('bulkOutputBtn'); if(bulk){bulk.textContent=queued?'− Remove shown from output':'+ Add shown to output';bulk.disabled=!matches.length;bulk.title=queued?'Return shown cameras to the library':'Add shown cameras to output';}
     const path=$('folderPath'); if(path) path.textContent=selectedFolderId?(groupPath(state.groups.find(g=>g.id===selectedFolderId))||'All cameras'):'All cameras';
     const allCount=$('folderAllCount'); if(allCount) allCount.textContent=state.cameras.length+' cameras · '+outputCameras().length+' in output';
     $('folderAll').classList.toggle('on',!selectedFolderId);
-    matches.sort((a,b)=>state.cfg.dashboardSort==='name-desc'?b.name.localeCompare(a.name):state.cfg.dashboardSort==='type'?a.type.localeCompare(b.type)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
+    if(!queued) matches.sort((a,b)=>state.cfg.dashboardSort==='name-desc'?b.name.localeCompare(a.name):state.cfg.dashboardSort==='type'?a.type.localeCompare(b.type)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
     box.classList.toggle('list-view',state.cfg.dashboardView==='list');
     $('dashGridView').classList.toggle('on',state.cfg.dashboardView!=='list'); $('dashGridView').setAttribute('aria-pressed',state.cfg.dashboardView!=='list');
     $('dashListView').classList.toggle('on',state.cfg.dashboardView==='list'); $('dashListView').setAttribute('aria-pressed',state.cfg.dashboardView==='list');
     $('dashSort').value=state.cfg.dashboardSort;
-    const pages=Math.max(1,Math.ceil(matches.length/DASH_PAGE_SIZE));
+    const pageSize=queued?Math.max(1,matches.length):DASH_PAGE_SIZE;
+    const pages=Math.max(1,Math.ceil(matches.length/pageSize));
     dashPage=Math.min(dashPage,pages-1);
     const info=$('dashPageInfo'); if(info) info.textContent=(dashPage+1)+' / '+pages;
     $('dashPrev').disabled=dashPage===0;$('dashNext').disabled=dashPage>=pages-1;
     if(signature===dashSig){ dashSyncActive(); return; }
     dashSig=signature;
     box.innerHTML='';
-    if(!matches.length){ box.innerHTML='<div class="hint">No cameras match this folder or search. Add a camera or choose another folder.</div>'; return; }
-    matches.slice(dashPage*DASH_PAGE_SIZE,(dashPage+1)*DASH_PAGE_SIZE).forEach(c=>{
+    if(!matches.length){ box.innerHTML=`<div class="camera-empty">${queued?'No output cameras here. Add cameras with + in the Camera library.':'No off-output cameras here. Cameras already selected are organized on the On output page.'}</div>`; return; }
+    matches.slice(dashPage*pageSize,(dashPage+1)*pageSize).forEach(c=>{
       const card=document.createElement('article');
       card.className='camera-card'+(c.id===state.activeId?' selected':'');
       const tile=buildTile(c);
-      tile.addEventListener('click',e=>{ if(e.target.closest('[data-fs]')) return; selectCam(c.id); });
+      tile.addEventListener('click',e=>{ if(e.target.closest('[data-fs]')) return; if(queued)selectCam(c.id);else openCameraEditor(c.id); });
+      card.dataset.queueId=c.id;
+      if(queued){
+        const bar=document.createElement('div');bar.className='queue-order';
+        const handle=document.createElement('button');handle.type='button';handle.className='drag-handle';handle.draggable=true;handle.textContent='⠿';handle.setAttribute('aria-label','Drag to reorder '+c.name);
+        handle.ondragstart=e=>{e.dataTransfer.setData('text/plain',c.id);e.dataTransfer.effectAllowed='move';card.classList.add('dragging');};
+        handle.ondragend=()=>document.querySelectorAll('.camera-card').forEach(el=>el.classList.remove('dragging','drop-target'));
+        card.ondragover=e=>{e.preventDefault();e.dataTransfer.dropEffect='move';card.classList.add('drop-target');};
+        card.ondragleave=()=>card.classList.remove('drop-target');
+        card.ondrop=e=>{e.preventDefault();moveOutputCamera(e.dataTransfer.getData('text/plain'),c.id);};
+        const index=state.multiIds.indexOf(c.id),rank=document.createElement('span');rank.textContent='OUTPUT '+(outputCameras().findIndex(cam=>cam.id===c.id)+1);bar.append(handle,rank);
+        for(const [symbol,delta,label] of [['↑',-1,'Move earlier'],['↓',1,'Move later']]){const b=document.createElement('button');b.type='button';b.textContent=symbol;b.setAttribute('aria-label',label+' '+c.name);const ids=outputCameras().map(cam=>cam.id),position=ids.indexOf(c.id);b.disabled=position+delta<0||position+delta>=ids.length;b.onclick=()=>{const other=state.multiIds.indexOf(ids[position+delta]);[state.multiIds[index],state.multiIds[other]]=[state.multiIds[other],state.multiIds[index]];refreshCameraSelection();};bar.append(b);}
+        card.append(bar);
+      }
       card.appendChild(tile);
       const info=document.createElement('div'); info.className='camera-card-info';
       const titles=document.createElement('div'); titles.className='camera-card-titles';
       const folderName=groupPath(state.groups.find(g=>g.id===c.groupId))||'No folder';
       titles.innerHTML=`<strong title="${esc(c.name)}">${esc(c.name)}</strong><span title="${esc(folderName)}">📁 ${esc(folderName)}</span>`;
       const actions=document.createElement('div'); actions.className='camera-card-actions';
-      const gridLabel=document.createElement('label'); gridLabel.title='Include this camera in the output; folders do not limit camera selection';
-      gridLabel.innerHTML=`<input type="checkbox" data-card-grid="${esc(c.id)}"${state.multiIds.includes(c.id)?' checked':''}> Output`;
+      const gridLabel=document.createElement('button'); gridLabel.type='button'; gridLabel.className='output-membership';
+      gridLabel.textContent=queued?'− Remove':'+ Output'; gridLabel.setAttribute('aria-label',(queued?'Remove from output: ':'Add to output: ')+c.name); gridLabel.onclick=()=>toggleCameraOutput(c.id);
       const edit=document.createElement('button'); edit.type='button'; edit.className='sm edit-camera'; edit.textContent='Details'; edit.setAttribute('aria-label','Edit '+c.name);
       edit.onclick=()=>openCameraEditor(c.id);
       actions.append(gridLabel,edit); info.append(titles,actions); card.appendChild(info);
@@ -2546,14 +2819,6 @@ if(mode==='control'){
       feedSelect.disabled=urls.length<2;
       feedSelect.onchange=()=>{if(selectCameraFeed(c.id,+feedSelect.value)){selectCam(c.id);}};
       tools.append(feedLabel,feedSelect); card.appendChild(tools); box.appendChild(card);
-    });
-    box.querySelectorAll('[data-card-grid]').forEach(input=>input.onchange=()=>{
-      const cam=state.cameras.find(c=>c.id===input.dataset.cardGrid); if(!cam) return;
-      if(input.checked){ cam.active=true; if(!state.multiIds.includes(cam.id)) state.multiIds.push(cam.id); }
-      else state.multiIds=state.multiIds.filter(id=>id!==cam.id);
-      if(input.checked&&(!state.activeId||!outputCameras().some(c=>c.id===state.activeId))) state.activeId=cam.id;
-      if(state.activeId===cam.id&&!input.checked) state.activeId=outputCameras()[0]?.id||null;
-      saveState(); renderCamList(); renderDash(); renderGroupList(); renderPreview(true);
     });
     dashSyncActive();
   }
@@ -2572,7 +2837,7 @@ if(mode==='control'){
   $('finderAddCamera').onclick=()=>openCameraEditor(null);
   $('bulkOutputBtn').onclick=()=>{
     const cams=dashMatches();
-    const allSelected=cams.length>0&&cams.every(c=>state.multiIds.includes(c.id));
+    const allSelected=cameraPage==='on-output';
     if(allSelected) state.multiIds=state.multiIds.filter(id=>!cams.some(c=>c.id===id));
     else cams.forEach(c=>{ c.active=true; if(!state.multiIds.includes(c.id)) state.multiIds.push(c.id); });
     if(!outputCameras().some(c=>c.id===state.activeId)) syncActive();
@@ -2674,7 +2939,7 @@ if(mode==='control'){
   bindChk('clock24','cfg.clock24',()=>rerenderWidgets());
   bindChk('showDate','cfg.showDate',()=>rerenderWidgets());
   $('quickWidgetSettings').onclick=()=>{
-    $('pageSettings').click();
+    $('pageSettings').click(); showSettingsSection('overlays');
     $('widgetSettingsPanel').scrollIntoView({behavior:'smooth',block:'start'});
   };
   bindNum('rotateSec','rotateSec',3,600);
@@ -2686,7 +2951,7 @@ if(mode==='control'){
   bindSel('radarMode','cfg.radarMode',()=>{ rvLoad(); rerenderWidgets(); renderPreview(false); });
   bindChk('showBadge','showBadge');
   bindChk('alertsPerTile','cfg.alertsPerTile');
-  bindNum('alertMax','cfg.alertMax',0,4);
+  bindNum('alertMax','cfg.alertMax',0,4,()=>{bindOverlayStudio();rerenderWidgets();});
   bindChk('fsBarHide','cfg.fsBarHide');
   $('fadeWrap').style.display=state.transition==='fade'?'inline':'none';
 
@@ -2714,7 +2979,7 @@ if(mode==='control'){
   /* ---- display options ---- */
   bindChk('showName','cfg.showName',()=>{ rerenderWidgets(); renderPreview(true); });
   bindChk('showCoords','cfg.showCoords',()=>{ rerenderWidgets(); renderPreview(true); });
-  bindChk('wxDetail','cfg.wxDetail',()=>rerenderWidgets());
+  bindChk('wxDetail','cfg.wxDetail',()=>{rerenderWidgets();paintOverlayDesign();});
   bindChk('edgeMode','cfg.edgeMode');
   bindSel('camHeight','cfg.camHeight');
   function bindRange(id,k,valId,suffix,reflow){
@@ -2758,7 +3023,7 @@ if(mode==='control'){
       state.cfg.show[el.dataset.wchk]=el.checked; saveState(); rerenderWidgets(); renderPreview(false);
     });
     $('widgetGrid').querySelectorAll('[data-wcor]').forEach(el=>el.onchange=()=>{
-      state.cfg.corner[el.dataset.wcor]=el.value; saveState(); rerenderWidgets();
+      state.cfg.corner[el.dataset.wcor]=el.value; saveState(); rerenderWidgets(); paintOverlayDesign();
     });
   }
 
@@ -2832,9 +3097,32 @@ bindChk('remoteOn','cfg.remote.on',()=>{
     saveState(); renderRemoteUI(); renderPairQr(); relayConnect();
   };
   renderRemoteUI(); renderPairQr();
-  $('pageSettings').onclick=()=>{ $('controlView').classList.add('settings-page'); $('pageSettings').classList.add('on'); $('pageDashboard').classList.remove('on'); history.replaceState(null,'',location.pathname+'?mode=control&view=settings'); };
-  $('pageDashboard').onclick=()=>{ $('controlView').classList.remove('settings-page'); $('pageDashboard').classList.add('on'); $('pageSettings').classList.remove('on'); history.replaceState(null,'',location.pathname+'?mode=control'); };
-  if(params.get('view')==='settings') $('pageSettings').click();
+  function setControlPage(view){
+    $('controlView').classList.toggle('settings-page',view==='settings');
+    $('controlView').classList.toggle('queue-page',view==='on-output');
+    for(const [id,name] of [['pageDashboard','library'],['pageOnOutput','on-output'],['pageSettings','settings']])$(id).classList.toggle('on',view===name);
+    if(view!=='settings'){cameraPage=view;dashPage=0;dashSig='';renderDash();}
+    for(const [id,name] of [['pageDashboard','library'],['pageOnOutput','on-output'],['pageSettings','settings']])$(id).setAttribute('aria-current',view===name?'page':'false');
+    history.replaceState(null,'',location.pathname+'?mode=control'+(view==='library'?'':'&view='+view)+(view==='settings'?'&section='+settingsSection:''));
+  }
+  $('pageSettings').onclick=()=>setControlPage('settings');
+  $('pageDashboard').onclick=()=>setControlPage('library');
+  $('pageOnOutput').onclick=()=>setControlPage('on-output');
+  $('queueAddCameras').onclick=()=>{selectedFolderId=null;$('dashSearch').value='';setControlPage('library');};
+  const settingsSections=[['overlays','Overlay studio'],['output','Output & display'],['appearance','Appearance'],['connections','Screens & remote'],['backup','Backup & sharing']];
+  let settingsSection=settingsSections.some(([key])=>key===params.get('section'))?params.get('section'):'overlays';
+  const panelSections={'Theme & colors':'appearance','Backup & sharing':'backup','Output & layout':'output','Display options':'output','TV & remote':'connections','Overlay studio':'overlays','Custom images':'appearance'};
+  document.querySelectorAll('#controlView .panel.settings-only').forEach(panel=>{panel.dataset.settingsSection=panelSections[panel.querySelector('h2')?.textContent.trim()]||'output';});
+  function showSettingsSection(key){
+    settingsSection=key;
+    document.querySelectorAll('[data-settings-section]').forEach(panel=>panel.hidden=panel.dataset.settingsSection!==key);
+    $('settingsTabs').querySelectorAll('button').forEach(button=>{const on=button.dataset.section===key;button.classList.toggle('on',on);button.setAttribute('aria-pressed',String(on));});
+    if($('controlView').classList.contains('settings-page'))history.replaceState(null,'',location.pathname+'?mode=control&view=settings&section='+key);
+  }
+  $('settingsTabs').innerHTML=settingsSections.map(([key,label])=>`<button type="button" data-section="${key}">${label}</button>`).join('');
+  $('settingsTabs').querySelectorAll('button').forEach(button=>button.onclick=()=>showSettingsSection(button.dataset.section));
+  showSettingsSection(settingsSection);
+  setControlPage(['settings','on-output'].includes(params.get('view'))?params.get('view'):'library');
   let customOverlaySave;
   function bindCustomOverlay(){
     const c=state.cfg.customOverlay;
@@ -2864,6 +3152,31 @@ bindChk('remoteOn','cfg.remote.on',()=>{
     customOverlaySave=save; paint();
   }
   bindCustomOverlay();
+  function bindOverlayStudio(){
+    const refresh=()=>{saveState();rerenderWidgets();paintOverlayDesign();};
+    for(const [id,key] of [['weatherStyle','weatherStyle'],['weatherAccent','weatherAccent'],['alertStyle','alertStyle'],['alertSeverity','alertSeverity']]){const el=$(id);el.value=state.cfg[key];el.oninput=()=>{state.cfg[key]=el.value;refresh();};}
+    for(const [id,path,key] of [['overlayAlertsOn','show','alert'],['overlayTickerOn','show','ticker'],['tickerAlerts',null,'tickerAlerts'],['tickerSun',null,'tickerSun']]){const el=$(id);el.checked=!!(path?state.cfg[path]:state.cfg)[key];el.onchange=()=>{(path?state.cfg[path]:state.cfg)[key]=el.checked;refresh();};}
+    $('alertGraphicScale').value=state.cfg.alertScale||1;$('alertGraphicScaleValue').textContent=Math.round((state.cfg.alertScale||1)*100)+'%';
+    $('alertGraphicScale').oninput=()=>{state.cfg.alertScale=+$('alertGraphicScale').value;$('alertGraphicScaleValue').textContent=Math.round(state.cfg.alertScale*100)+'%';refresh();};
+    $('overlayAlertLimit').value=state.cfg.alertMax;$('overlayAlertLimit').onchange=()=>{state.cfg.alertMax=Math.max(0,Math.min(4,parseInt($('overlayAlertLimit').value)||0));$('overlayAlertLimit').value=state.cfg.alertMax;$('alertMax').value=state.cfg.alertMax;refresh();};
+    const fields=[['weatherFields',state.cfg.weatherFields,{location:'Camera location',icon:'Weather icon',temp:'Temperature',condition:'Conditions',feels:'Feels like',wind:'Wind speed',humidity:'Humidity',rain:'Rain chance',pressure:'Pressure',precip:'Precipitation',sunrise:'Sunrise',sunset:'Sunset'}],['alertFields',state.cfg.alertFields,{headline:'Headline',area:'Affected area',severity:'Severity',expires:'Expiration time',instruction:'Safety instructions'}]];
+    fields.forEach(([id,config,labels])=>{const box=$(id);box.innerHTML=Object.entries(labels).map(([key,label])=>`<label><input type="checkbox" data-field="${key}"${config[key]?' checked':''}>${label}</label>`).join('');box.querySelectorAll('input').forEach(el=>el.onchange=()=>{state.cfg[id][el.dataset.field]=el.checked;refresh();});});
+    paintOverlayDesign();
+  }
+  function paintOverlayDesign(){
+    const root=$('overlayDesignPreview');if(!root)return;
+    root.querySelectorAll('.wl').forEach(el=>el.innerHTML='');const cfg=state.cfg;
+    if(cfg.show.wx)root.querySelector(`[data-c="${cfg.corner.wx}"]`).innerHTML=weatherHTML({temp:72,feels:74,wind:12,hum:64,rain:40,pres:1014,precip:.4,code:2,isDay:true,sunrise:'2026-10-09T07:10',sunset:'2026-10-09T18:45'},{name:'Harbor camera · sample'});
+    const samples=displayAlerts([{event:'Severe Thunderstorm Warning',head:'Strong winds and heavy rain possible.',sev:'Severe',area:'Sample County',instr:'Move indoors and stay away from windows.',desc:'Sample alert for design preview.',ends:new Date(Date.now()+3600000).toISOString()}]);
+    root.querySelector('.pagestrip').innerHTML=cfg.show.alert?samples.slice(0,cfg.alertMax).map(bannerHTML).join(''):'';
+    const alertHeight=root.querySelector('.pagestrip').getBoundingClientRect().height;
+    root.style.setProperty('--btop',alertHeight+'px');
+    root.style.minHeight=Math.max(400,alertHeight+230)+'px';
+    root.querySelector('.tickbar').hidden=!cfg.show.ticker;root.querySelector('.tickbar').innerHTML=`<span class="run">${esc([cfg.tickerText,cfg.tickerAlerts&&samples.length?'⚠ '+samples[0].event:'',cfg.tickerSun?'Sunrise 7:10 AM · Sunset 6:45 PM':''].filter(Boolean).join(' · '))}</span>`;
+  }
+  bindOverlayStudio();
+  let overlayPreviewResize;
+  window.addEventListener('resize',()=>{clearTimeout(overlayPreviewResize);overlayPreviewResize=setTimeout(paintOverlayDesign,100);});
 
   /* ---- boot ---- */
   updateOsmLink(NaN,NaN);
@@ -2897,7 +3210,7 @@ bindChk('remoteOn','cfg.remote.on',()=>{
     applyStyle();
     const changed=settingsSig()!==lastSig;
     lastSig=settingsSig();
-    if(changed){ renderThemeUI(); renderWidgetGrid(); renderGroupControls(); bindCustomOverlay(); }
+    if(changed){ renderThemeUI(); renderWidgetGrid(); renderGroupControls(); bindCustomOverlay(); bindOverlayStudio(); }
     $('dashSort').value=state.cfg.dashboardSort; $('dashGrid').classList.toggle('list-view',state.cfg.dashboardView==='list');
     $('widgetsOn').checked=state.cfg.widgetsOn!==false;
     $('clockWidgetOn').checked=!!state.cfg.show.clock;
@@ -3002,7 +3315,7 @@ if(mode==='output'){
 
   /* ---- rendering ---- */
   function showCamera(c,fade){
-    if(!c||!cameraActive(c)||!state.multiIds.includes(c.id)){ c=currentCam(); if(!c){grid.innerHTML='<div class="hint" style="padding:20px">No cameras are selected for the output. Choose “Output” on any camera in Control.</div>';return;} }
+    if(!c||!cameraActive(c)||!state.multiIds.includes(c.id)){ c=currentCam(); if(!c){grid.innerHTML='<div class="hint" style="padding:20px">No cameras are selected for the output. Use + Output on any camera in the Camera library.</div>';return;} }
     grid.className='grid g1'+(state.cfg.bgData?' hasbg':''); applyGridDims(grid,1);
     const old=grid.querySelector('.camtile:not(.leaving)');
     const tile=buildTile(c);
