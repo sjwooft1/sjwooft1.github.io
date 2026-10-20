@@ -9,6 +9,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="weather-studio.js"></script>
 <style>
 :root{
   --bg:#10161d; --panel:#161f29; --panel2:#1c2733; --line:#263341;
@@ -291,6 +294,11 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 #outputView.edge .owrap{border-radius:0;border-left:0;border-right:0;margin-bottom:0}
 #outputView.fsbarhide #outBar{display:none}
 .owrap{position:relative;background:#000;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:12px;}
+.owrap.broadcast{position:relative;background:#05090e;border:1px solid #2a3a4a;border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px #0a1218 inset, 0 26px 70px #000b;}
+.owrap.broadcast.is-framed{border-radius:10px;box-shadow:0 0 0 1px #0a1218 inset, 0 30px 90px #000c, 0 0 0 1px #23303d}
+.owrap.broadcast.is-framed.corner-square{border-radius:6px}
+.owrap.broadcast::before{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px #0c1620, inset 0 0 80px rgba(0,0,0,.45);pointer-events:none;z-index:8;}
+.owrap.broadcast .stage-frame{position:absolute;inset:0;display:block;}
 .grid{display:grid;gap:var(--gap,2px);background:#000;grid-template-columns:repeat(var(--gcols,2),minmax(0,1fr));grid-template-rows:repeat(var(--grows,2),minmax(0,1fr))}
 .grid.hasbg{background:var(--stbg) center/cover no-repeat;}
 .grid.g1{grid-template-columns:1fr;grid-template-rows:1fr}
@@ -328,25 +336,51 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .camtile:hover .cap button{opacity:1}
 .pagestrip{position:absolute;top:0;left:0;right:0;z-index:7;display:flex;flex-direction:column;gap:4px}
 .pagestrip .abanner{border-radius:0}
-.tickbar{position:absolute;bottom:0;left:0;right:0;height:var(--tickh,0px);z-index:7;background:rgba(8,12,16,.75);color:#fff;font-family:var(--mono);font-size:11px;display:flex;align-items:center;overflow:hidden;white-space:nowrap;pointer-events:none}
-.tickbar .run{display:inline-block;white-space:nowrap;padding-left:100%;animation:tickmove var(--ticksec,26s) linear infinite}
+.tickbar{position:absolute;bottom:0;left:0;right:0;height:var(--tickh,0px);z-index:7;background:rgba(8,12,16,.75);color:#fff;font-family:var(--mono);font-size:max(11px, calc(13px * var(--ovscale,1) * var(--frameK,1)));display:flex;align-items:center;overflow:hidden;white-space:nowrap;pointer-events:none}
+.tickbar .run{display:inline-block;white-space:nowrap;padding-left:100%;animation:tickmove var(--ticksec,26s) linear infinite;will-change:transform}
 @keyframes tickmove{from{transform:translateX(0)}to{transform:translateX(-100%)}}
 .tdot{width:7px;height:7px;border-radius:50%;background:#3fa76a;display:inline-block}
 .tdot.loading{background:var(--accent);animation:pulse 1s infinite}
 .tdot.error{background:var(--bad);animation:none}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 
-/* widgets overlay */
-.wl{position:absolute;z-index:6;display:flex;flex-direction:column;gap:6px;pointer-events:none;max-width:48%;font-size:calc(var(--ovfont,13px) * var(--ovscale));}
-.wl[data-c=tl]{top:calc(10px + var(--btop,0px));left:10px}
-.wl[data-c=tr]{top:calc(10px + var(--btop,0px));right:10px;align-items:flex-end}
-.wl[data-c=bl]{bottom:calc(40px + var(--tickh,0px));left:10px}
-.wl[data-c=br]{bottom:calc(40px + var(--tickh,0px));right:10px;align-items:flex-end}
-.w{background:linear-gradient(180deg,rgba(16,24,33,.94),rgba(9,15,23,.94));backdrop-filter:blur(var(--blur,6px)) saturate(1.1);border:1px solid rgba(255,255,255,.1);border-left:3px solid var(--accent2,#3fa7a0);border-radius:4px;padding:calc(var(--ovpad,4px) + 2px) calc(var(--ovpad,4px) * 2 + 2px);color:#fff;font-family:var(--sans);font-size:.82em;display:flex;gap:9px;align-items:center;pointer-events:auto;box-shadow:0 4px 18px rgba(0,0,0,.42)}
-.w .kicker{font-size:.58em;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#7fe3d8}
-.w.custom{max-width:100%;white-space:pre-wrap;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+/* widgets overlay — boxes scale with the output frame and are capped in vw/vh,
+   so the same design reads correctly in the small preview and on a full TV wall */
+.wl{position:absolute;z-index:6;display:flex;flex-direction:column;gap:calc(4px + 4px * var(--frameK,1));pointer-events:none;max-width:min(92%, calc(820px * var(--ovscale,1) * var(--frameK,1)), 62vw);font-size:calc(var(--ovfont,13px) * var(--ovscale,1) * var(--frameK,1));}
+.wl[data-c=tl]{top:calc(var(--btop,0px) + 4px + 8px * var(--frameK,1));left:calc(4px + 8px * var(--frameK,1));align-items:flex-start}
+.wl[data-c=tr]{top:calc(var(--btop,0px) + 4px + 8px * var(--frameK,1));right:calc(4px + 8px * var(--frameK,1));align-items:flex-end}
+.wl[data-c=bl]{bottom:calc(var(--tickh,0px) + 16px + 20px * var(--frameK,1));left:calc(4px + 8px * var(--frameK,1));align-items:flex-start}
+.wl[data-c=br]{bottom:calc(var(--tickh,0px) + 16px + 20px * var(--frameK,1));right:calc(4px + 8px * var(--frameK,1));align-items:flex-end}
+
+/* ---- broadcast frame chrome ---- */
+.overlay-demo{position:relative;min-height:300px;overflow:hidden;border-radius:10px;background:#04080d;--ovscale:1;--ovfont:13px;--ovpad:4px;--tickh:26px;margin-top:12px;box-shadow:0 0 0 1px #2a3a4a inset, 0 26px 70px #000b;}
+.overlay-demo .stage-bg{position:absolute;inset:0;z-index:0;transform:translateZ(0);}
+.overlay-demo .stage-bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.86) contrast(.96) brightness(.88);}
+.overlay-demo .stage-vignette{position:absolute;inset:0;z-index:1;pointer-events:none;}
+.overlay-demo .stage-vignette:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,rgba(8,14,22,.18),rgba(3,7,11,.76) 92%)}
+.overlay-demo .stage-grain{position:absolute;inset:0;z-index:2;pointer-events:none;mix-blend-mode:overlay;opacity:.18;}
+.overlay-demo .stage-frame{position:absolute;inset:0;z-index:3;display:block;border-radius:inherit;}
+.overlay-demo:before{content:'SAMPLE CONDITIONS · NOT LIVE';position:absolute;left:16px;top:14px;color:#c2d5e6;font:10px var(--mono);z-index:9;opacity:.85;}
+.overlay-demo .wl[data-c=br],.overlay-demo .wl[data-c=bl]{bottom:36px}
+.overlay-demo .tickbar{height:var(--tickh,26px)}
+.overlay-demo .tickbar .run{padding-left:12px;animation:none}
+
+/* free-placed widgets sit at a stored % position; only the design preview accepts drags */
+.overlay-demo .wfree{pointer-events:auto;cursor:move;touch-action:none;outline:1px dashed rgba(255,255,255,.4);outline-offset:4px;border-radius:6px}
+.overlay-demo .wfree.dragging{cursor:grabbing;outline:1px solid #fff}
+.radar-ph{width:100%;height:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0c1a2b;border:1px solid #2b5277;border-radius:8px;color:#9cc4e4;font:600 12px var(--mono);text-align:center}
+.radar-ph small{font-weight:400;opacity:.7;font-size:10px}
+.widget-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.widget-size{display:flex;align-items:center;gap:6px;font-size:12px}.widget-size input{width:120px}
+.widget-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:10px}
+
+/* ---- base widget card ---- */
+.w{position:relative;background:linear-gradient(180deg,rgba(12,20,30,.92),rgba(6,12,18,.92));backdrop-filter:blur(var(--blur,8px)) saturate(1.25);-webkit-backdrop-filter:blur(var(--blur,8px)) saturate(1.25);border:1px solid rgba(255,255,255,.12);border-left:4px solid var(--accent2,#3fa7a0);border-radius:5px;padding:calc(var(--ovpad,4px) + 2px) calc(var(--ovpad,4px) * 2 + 2px) calc(var(--ovpad,4px) + 2px) calc(var(--ovpad,4px) + 5px);color:#fff;font-family:var(--sans);font-size:.82em;display:flex;gap:11px;align-items:center;pointer-events:auto;box-shadow:0 8px 30px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.05) inset;transition:box-shadow .15s}
+.w .w-inner{display:flex;flex-direction:column;gap:0;min-width:0;flex:1}
+.w .w-kicker{font-size:.58em;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#7fe3d8;padding-bottom:3px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:3px}
+.w.custom{max-width:100%;white-space:pre-wrap;line-height:1.35;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .w.custom.badge{border-radius:999px}
-.w.custom.strip{border-radius:2px;width:max-content;max-width:min(80vw,680px)}
+.w.custom.strip{border-radius:2px;width:max-content;max-width:min(100%, calc(680px * var(--ovscale,1) * var(--frameK,1)), 60vw)}
 .camrow.group-inactive{opacity:.5}
 .group-tools{display:grid;grid-template-columns:1fr auto auto;gap:6px;margin:8px 0}
 .group-tools input{min-width:0}
@@ -357,28 +391,69 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .qrnote{font-size:11px;max-width:300px;line-height:1.5}
 
 .w.name{font-family:var(--sans);font-weight:600;font-size:1.02em}
-/* weather lower-third: accent panel + data body, like a live news weather bug */
-.w.wx{gap:0;align-items:stretch;padding:0;border-left:none;overflow:hidden;border-radius:4px;max-width:min(360px,86vw)}
-.w.wx .wx-accent{display:flex;align-items:center;padding:9px 12px;background:linear-gradient(135deg,#2b8f92,#2b6c9c);color:#fff}
-.w.wx .wx-icon{font-size:1.5em;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
-.w.wx .wx-body{display:flex;flex-direction:column;justify-content:center;padding:7px 13px;background:rgba(9,15,23,.94);min-width:0;flex:1}
-.w.wx .wx-loc{font-size:.58em;letter-spacing:.16em;text-transform:uppercase;color:#8fb0c6;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.w.wx .wx-row{display:flex;align-items:baseline;gap:8px;margin:1px 0}
-.w.wx .wx-temp{font-size:1.75em;font-weight:700;letter-spacing:-.02em;line-height:1.02}
-.w.wx .wx-cond{font-size:.74em;color:#d7e2ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.w.wx .wx-detail{display:flex;flex-wrap:wrap;gap:2px 12px;margin-top:2px;font-size:.62em;color:#a9bccd}
-.w.wx .wx-detail b{color:#fff;font-weight:600}
-.w.chips{flex-wrap:wrap;gap:6px;font-size:.8em;color:#dfe7ee}
-.w.chips i{font-style:normal;border:1px solid rgba(255,255,255,.18);border-radius:3px;padding:1px 7px;background:rgba(255,255,255,.06)}
-/* broadcast time bug with LIVE strip */
-.w.clock{gap:0;padding:0;border-left:none;align-items:stretch;overflow:hidden}
-.w.clock .cbadge{background:#d5202f;color:#fff;font-size:.56em;font-weight:700;letter-spacing:.18em;padding:6px 9px;text-transform:uppercase;display:flex;align-items:center}
-.w.clock .clock-main{display:flex;flex-direction:column;padding:5px 12px;background:rgba(9,15,23,.94)}
-.w.clock .t{font-size:1.5em;font-weight:700;letter-spacing:.01em;line-height:1.05}
-.w.clock .d{font-size:.64em;color:#b7c6d4;letter-spacing:.04em}
-.w.logo{background:transparent;padding:0}
-.w.logo img{height:calc(46px * var(--ovscale));display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
-/* compact on-camera radar: distinct from the other widgets, with readable status + intensity key */
+
+/* ---- station brand / logo bug (top-left) ---- */
+.w.logo{position:relative;gap:0;background:transparent;padding:0;box-shadow:none;border:0;align-items:flex-start}
+.w.logo img{height:calc(120px * var(--ovscale,1) * var(--frameK,1));width:auto;display:block;border-radius:4px;filter:drop-shadow(0 6px 20px rgba(0,0,0,.65))}
+
+/* ---- current weather bug (newsroom vertical-rail card) ---- */
+.w.wx{font-size:1em;gap:0;align-items:stretch;padding:0;border:1px solid rgba(255,255,255,.1);border-left:none;overflow:hidden;border-radius:6px;max-width:min(100%, calc(430px * var(--ovscale,1) * var(--frameK,1)), 46vw);max-height:min(54vh, calc(430px * var(--ovscale,1) * var(--frameK,1)));background:rgba(9,16,25,.94);box-shadow:0 12px 40px rgba(0,0,0,.65)}
+.w.wx .wx-accent{display:flex;align-items:center;justify-content:center;padding:1.1em 1.25em;background:linear-gradient(180deg,var(--weather-accent,#1b5f92),#123e63);flex:0 0 auto;min-width:4.5em}
+.w.wx .wx-icon{font-size:2.6em;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.45))}
+.w.wx .wx-body{display:flex;flex-direction:column;justify-content:center;padding:.85em 1.25em .95em;background:rgba(8,14,22,.94);min-width:0;flex:1;gap:.15em}
+.w.wx .wx-loc{font-family:var(--mono);font-size:1.15em;letter-spacing:.03em;color:#8fb0c6;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.w.wx .wx-row{display:flex;align-items:baseline;gap:.4em;margin:.1em 0;flex-wrap:wrap}
+.w.wx .wx-temp{font-size:3.4em;font-weight:700;letter-spacing:-.03em;line-height:.96;color:#fff;white-space:nowrap}
+.w.wx .wx-cond{font-size:.95em;color:#d7e2ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;min-width:0}
+/* measurements flow inline (Feels 74°F · Wind 2 mph · Rain 22%) instead of stacking one per line;
+   the separator carries spaces so long field lists can still wrap instead of clipping */
+.w.wx .wx-detail{margin-top:.3em;font-size:1.08em;color:#a9bccd;line-height:1.5}
+.w.wx .wx-detail span{display:inline;white-space:nowrap}
+.w.wx .wx-detail span+span:before{content:" · ";opacity:.55;white-space:normal}
+.w.wx .wx-detail b{color:#fff;font-weight:700}
+.w.wx.wx-newsroom{border-left:4px solid #3a8ee6;background:#0a1522}
+.w.wx.wx-newsroom .wx-accent{background:linear-gradient(180deg,#1e669e,#13436b)}
+.w.wx.wx-contrast{background:#000!important;border:2px solid #fff;color:#fff}
+.w.wx.wx-contrast .wx-accent{background:#000}
+.w.wx.wx-pill{border-radius:999px;max-width:min(100%, calc(280px * var(--ovscale,1) * var(--frameK,1)), 42vw);overflow:hidden}
+.w.wx.wx-pill .wx-detail{display:none}
+.w.wx.wx-pill .wx-accent{border-radius:999px 0 0 999px}
+
+/* ---- 3-day outlook panel (bottom-left) ---- */
+.w.outlook{font-size:1em;display:flex;flex-direction:column;gap:0;align-items:stretch;padding:0;border:1px solid rgba(255,255,255,.1);border-left:none;overflow:hidden;border-radius:7px;width:calc(520px * var(--ovscale,1) * var(--frameK,1));max-width:min(100%, 52vw);max-height:58vh;background:rgba(11,26,42,.94);box-shadow:0 12px 40px rgba(0,0,0,.62)}
+.w.outlook .outlook-head{display:flex;align-items:center;justify-content:space-between;padding:.7em 1.1em;background:linear-gradient(90deg,#17568d,#134674);color:#fff;gap:.8em}
+.w.outlook .outlook-head .outlook-title{font-size:.92em;letter-spacing:.02em;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.w.outlook .outlook-head .outlook-eyebrow{font:.62em var(--mono);letter-spacing:.16em;color:#cde3f5;white-space:nowrap;text-transform:uppercase}
+.w.outlook .outlook-days{display:flex;border-top:1px solid rgba(255,255,255,.08)}
+.w.outlook .outlook-day{flex:1;padding:.95em .5em .85em;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.45em;min-width:0;border-right:1px solid rgba(255,255,255,.08)}
+.w.outlook .outlook-day:last-child{border-right:0}
+.w.outlook .outlook-day b{font-size:.82em;letter-spacing:.14em;text-transform:uppercase;color:#fff;font-weight:700}
+.w.outlook .outlook-day .day-icon{font-size:1.85em;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+.w.outlook .outlook-day .day-temps{display:flex;align-items:baseline;justify-content:center;gap:.3em;line-height:1.05;white-space:nowrap}
+.w.outlook .outlook-day .day-high{font-size:1.45em;font-weight:700;color:#fff;letter-spacing:-.02em}
+.w.outlook .outlook-day .day-low{font-size:.9em;color:#9fb4c9;font-weight:600}
+.w.outlook .outlook-day .day-sub{font-size:.68em;color:#bcd6ec;font-family:var(--mono);letter-spacing:.04em}
+.w.outlook .outlook-foot{padding:.55em .95em;font:.65em var(--mono);letter-spacing:.04em;color:#9fb4c9;border-top:1px solid rgba(255,255,255,.07);background:rgba(7,14,22,.45)}
+
+/* ---- broadcast time bug with LIVE strip (top-right adjacent) ---- */
+.w.clock{font-size:1em;gap:0;padding:0;border-left:none;align-items:stretch;overflow:hidden;border-radius:6px;background:rgba(11,24,38,.94);box-shadow:0 10px 32px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08) inset;display:flex;flex-direction:row}
+.w.clock .cbadge{background:#d5202f;color:#fff;font-size:.62em;font-weight:700;letter-spacing:.18em;padding:.5em .8em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.w.clock .clock-main{display:flex;flex-direction:column;justify-content:center;padding:.45em .95em;background:rgba(9,15,23,.85);gap:.1em}
+.w.clock .t{font-size:1.5em;font-weight:700;letter-spacing:.01em;line-height:1.05;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}
+.w.clock .d{font-size:.66em;color:#b7c6d4;letter-spacing:.04em;font-weight:500;white-space:nowrap}
+
+/* ---- ticker strip ---- */
+.tickbar{position:absolute;bottom:0;left:0;right:0;height:var(--tickh,0px);z-index:7;background:rgba(8,12,16,.84);color:#e9f1f7;font-family:var(--mono);font-size:max(11px, calc(13px * var(--ovscale,1) * var(--frameK,1)));display:flex;align-items:center;overflow:hidden;white-space:nowrap;pointer-events:none;box-shadow:0 -1px 0 rgba(255,255,255,.08)}
+.tickbar .run{display:inline-block;white-space:nowrap;padding-left:100%;animation:tickmove var(--ticksec,26s) linear infinite;color:#7fe3d8;will-change:transform}
+.tickbar .run .tdot,.tickbar .run .tdot.loading,.tickbar .run .tdot.error{display:inline-block;margin-right:8px;vertical-align:middle;width:7px;height:7px;border-radius:50%;background:#3fa76a;position:relative;top:1px}
+.tickbar .run .tdot.loading{background:var(--accent);animation:pulse 1s infinite}
+.tickbar .run .tdot.error{background:var(--bad)}
+.tickbar .run .livepill{display:inline-flex;align-items:center;gap:6px;color:#7fe3d8;font-weight:600;letter-spacing:.02em;margin-right:10px}
+.tickbar .run .livepill:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#3fa76a;box-shadow:0 0 8px #3fa76a}
+@keyframes tickmove{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ---- compact on-camera radar ---- */
 .radarov{position:relative;flex:0 1 auto;width:320px;height:auto;aspect-ratio:1;border-radius:9px;overflow:hidden;background:#111923;border:1px solid rgba(255,255,255,.42);box-shadow:0 5px 18px rgba(0,0,0,.5);isolation:isolate}
 .radarov[hidden]{display:none}
 .radarov .rovmap{position:absolute;inset:0;overflow:hidden;background:#111923}
@@ -398,13 +473,20 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .radarov .rovlegend{display:none}
 .radarov .rovattr{flex:0 0 auto;color:rgba(255,255,255,.8)}
 @media(max-width:560px){.radarov .rovhead{top:5px;left:5px;right:5px;padding:4px 6px}.radarov .rovfoot{left:5px;right:5px;bottom:5px}}
-.w.next{gap:0;padding:0;border-left:none;align-items:stretch;overflow:hidden}
-.w.next .nx-thumb{width:82px;height:47px;object-fit:cover;display:block;background:#0b0f14;flex:0 0 auto}
-.w.next .nx{display:flex;flex-direction:column;justify-content:center;line-height:1.15;padding:5px 12px;background:rgba(9,15,23,.94);min-width:0}
-.w.next .nx b{font-size:.58em;font-weight:700;letter-spacing:.18em;color:#7fe3d8;text-transform:uppercase}
-.w.next .nx span{font-size:.82em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.abanner{display:flex;gap:8px;align-items:center;background:var(--sev,#e8590c);color:#fff;border-radius:5px;padding:5px 10px;font-family:var(--mono);font-size:.84em;pointer-events:auto;max-width:100%}
+
+.w.next{gap:0;padding:0;border-left:none;align-items:stretch;overflow:hidden;border-radius:8px;background:#0b1826;box-shadow:0 10px 32px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08) inset}
+.w.next .nx-thumb{width:8em;height:4.5em;object-fit:cover;display:block;background:#0b0f14;flex:0 0 auto;border-radius:3px;margin:.65em;border:1px solid rgba(255,255,255,.12)}
+.w.next .nx{display:flex;flex-direction:column;justify-content:center;line-height:1.15;padding:9px 13px;background:rgba(9,15,23,.58);min-width:0;gap:3px;border-left:1px solid rgba(255,255,255,.05)}
+.w.next .nx b{font-size:.6em;font-weight:700;letter-spacing:.2em;color:#7fe3d8;text-transform:uppercase}
+.w.next .nx span{font-size:.85em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.abanner{display:flex;gap:8px;align-items:center;background:var(--sev,#e8590c);color:#fff;border-radius:5px;padding:5px 10px;font-family:var(--mono);font-size:.84em;pointer-events:auto;max-width:100%;box-shadow:0 4px 14px rgba(232,89,12,.35)}
 .abanner b{font-family:var(--sans)}
+
+/* ---- stage / grid: keep TV layout, add subtle framed feel ---- */
+.stage{position:relative;background:#000;border:1px solid var(--line);border-radius:8px;overflow:hidden;aspect-ratio:var(--stage-ratio,16/9);box-shadow:0 0 0 1px #16202b inset}
+.stage.output-stage.is-framed{border-color:#23303d;box-shadow:0 0 0 1px #0b1218 inset, 0 24px 70px #000c}
+.stage.output-stage.fullscreen-frame{border-radius:0;box-shadow:none}
+
 .owrap.fsframe .wl,.owrap.fsframe .pagestrip,.owrap.fsframe .tickbar{display:flex}
 .owrap.fsframe .camtile .cap{display:flex}
 .owrap:fullscreen{width:100vw;height:100vh;max-width:none;margin:0;border:0;border-radius:0;display:flex;flex-direction:column}
@@ -412,7 +494,7 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 .owrap:fullscreen>#viewerGrid.g1 .camtile{height:100%;min-height:100%;aspect-ratio:auto}
 .owrap:fullscreen>#viewerGrid:not(.g1) .camtile{height:100%;min-height:0;aspect-ratio:auto}
 .owrap:fullscreen>.wl,.owrap:fullscreen>.pagestrip,.owrap:fullscreen>.tickbar{display:flex!important}
-.owrap:fullscreen>.wl{max-width:min(48vw,520px);max-height:calc(100vh - var(--btop,0px) - var(--tickh,0px) - 48px);overflow:visible}
+.owrap:fullscreen>.wl{max-width:min(92%, calc(820px * var(--ovscale,1) * var(--frameK,1)), 62vw);max-height:calc(100vh - var(--btop,0px) - var(--tickh,0px) - 24px)}
 .owrap:fullscreen>.wl[data-c=tl],.owrap:fullscreen>.wl[data-c=tr]{top:calc(10px + var(--btop,0px))}
 .owrap:fullscreen>.wl[data-c=bl],.owrap:fullscreen>.wl[data-c=br]{bottom:calc(40px + var(--tickh,0px))}
 .owrap:fullscreen .camtile .cap{display:flex!important}
@@ -427,7 +509,7 @@ textarea{width:100%;font-family:var(--mono);font-size:11px;min-height:80px;}
 #paused{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.1em}
 
 /* TV / kiosk mode */
-body.tv header,body.tv #outBar{display:none}
+body.tv>header,body.tv #outBar{display:none}
 body.tv #outputView{padding:0;max-width:none;margin:0}
 body.tv .owrap{border:0;border-radius:0;margin:0}
 body.tv.tvcursor,body.tv.tvcursor *{cursor:none!important}
@@ -474,7 +556,12 @@ body:has(#lnkControl.on),body:has(#lnkRemote.on){--bg:#fff;--panel:#f7f7f7;--pan
 body:has(#lnkControl.on)>header{background:linear-gradient(#f5f5f6,#e7e7e9);padding:14px 22px;border-bottom:1px solid #c8c8cc;box-shadow:0 1px 0 #fff inset}
 body:has(#lnkControl.on)>header h1{font-size:13px;font-weight:600;letter-spacing:0;text-transform:none}
 body:has(#lnkControl.on)>header h1:before{content:'';display:inline-block;width:12px;height:12px;background:#ff6058;border:1px solid #df514b;border-radius:50%;margin-right:48px;box-shadow:20px 0 #ffbd2e,40px 0 #28c840;vertical-align:-1px}
-body:has(#lnkControl.on) #clock{display:none}
+header .brand-strip{display:flex;align-items:center;gap:10px;font-family:var(--mono);color:#c2d5e6;font-size:12px}
+header .brand-strip .live-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;font-family:var(--sans);font-weight:700;font-size:13px;letter-spacing:.01em}
+header .brand-strip .live-pill:before{content:"";display:inline-block;width:7px;height:7px;background:#3fa7a0;border-radius:1px;box-shadow:0 0 8px #3fa7a0}
+header .brand-strip .clock-tag{color:#3fa7a0;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.03em}
+body:has(#lnkControl.on) #clock{display:inline}
+body.console:has(#lnkControl.on)>header{height:44px;padding:0 18px;background:#0e151d;border-bottom:1px solid #1f2d3d;box-shadow:none;gap:16px}
 .modelinks a{border:0;background:transparent!important;color:var(--muted)!important}
 .modelinks a.on{color:var(--text)!important;font-weight:600}
 #controlView{padding:0;gap:0;max-width:none;min-height:calc(100vh - 50px);background:#fff;color:#242427;--bg:#fff;--panel:#f7f7f7;--panel2:#ededee;--line:#d8d8dc;--text:#242427;--muted:#707077;--accent:#087dff;--accent2:#087dff;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -571,9 +658,9 @@ body:has(#lnkControl.on) #clock{display:none}
 #editorError{color:#c73535;font-size:12px}
 @media(max-width:650px){#dashRow{grid-template-columns:145px minmax(0,1fr)}.finder-sidebar{padding:12px 7px}.finder-heading{padding:14px 12px 0}.dashbar{padding:0 12px 12px}.dash-view-tools{margin-left:auto}.dashgrid{padding:12px;gap:12px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}.group-tools{grid-template-columns:1fr}.group-tools input{width:100%}.dashgrid.list-view .camera-card{grid-template-columns:55px 1fr}.dashgrid.list-view .camera-card-tools{grid-column:2;padding-top:0}.dashgrid.list-view .camera-card .camtile{width:42px}.controlnav button{font-size:11px;padding:8px 5px}.finder-all{font-size:11px;padding:8px 4px}.camera-card-info{flex-wrap:wrap}.camera-card-actions{flex-direction:row}.camera-editor-window{width:98vw}.camera-editor-body{grid-template-columns:110px 1fr}}
 .queue-help{margin:0;padding:12px 24px;color:#64748b;font-size:12px;background:#f4f8ff;border-bottom:1px solid #dce8fa}.queue-help[hidden]{display:none}.queue-order{display:flex;align-items:center;gap:8px;padding:8px 10px;font:600 10px var(--mono);color:#64748b}.queue-order span{flex:1}.queue-order button{padding:3px 7px;background:transparent;border:1px solid #d8d8dc;color:#475569}.drag-handle{cursor:grab;font-size:18px}.camera-card.dragging{opacity:.4}.camera-card.drop-target{outline:2px dashed #087dff;outline-offset:4px}.camera-card-actions .output-membership{background:#e8f1ff;color:#0868d3;border-radius:5px;padding:5px 8px;font-weight:600}.camera-empty{grid-column:1/-1;padding:40px 20px;color:#64748b;text-align:center}.dashgrid.list-view .queue-order{grid-column:1/-1;border-bottom:1px solid #eee}
-.overlay-section{border:1px solid var(--line);border-radius:10px;padding:16px;margin:16px 0;background:var(--panel)}.overlay-section h3{margin:0 0 6px;font-size:14px}.overlay-section p{font-size:12px;color:var(--muted);margin:0 0 14px}.field-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.field-options label{display:flex;align-items:center;gap:7px;margin:0;padding:9px;background:var(--panel2);border-radius:6px;font-size:11px}.overlay-demo{position:relative;min-height:300px;overflow:hidden;border-radius:10px;background:linear-gradient(155deg,#316078,#0b1629 70%);--ovscale:1;--ovfont:13px;--ovpad:4px;--tickh:26px;margin-top:12px}.overlay-demo:before{content:'SAMPLE CONDITIONS · NOT LIVE';position:absolute;left:16px;top:65px;color:#c2d5e6;font:10px var(--mono)}.overlay-demo .wl{max-width:70%}.overlay-demo .wl[data-c=br],.overlay-demo .wl[data-c=bl]{bottom:40px}.overlay-demo .tickbar{height:26px}.overlay-demo .tickbar .run{padding-left:12px;animation:none}
-.w.wx.wx-glass{border:1px solid #ffffff30;border-radius:14px;background:rgba(16,30,48,.68)}.w.wx.wx-glass .wx-body{background:transparent}.w.wx.wx-glass .wx-accent{background:transparent}.w.wx.wx-minimal{border:0;border-left:3px solid var(--weather-accent);box-shadow:none;border-radius:2px}.w.wx.wx-minimal .wx-accent{display:none}.w.wx.wx-broadcast .wx-accent{background:var(--weather-accent,#2b8f92)}.w.wx .wx-detail{flex-wrap:wrap;gap:5px 9px}.w.wx .wx-body{min-width:0}.abanner{flex-wrap:wrap;line-height:1.4;min-height:34px;box-sizing:border-box;overflow-wrap:anywhere}.abanner .alert-copy{flex:1;min-width:100px}.abanner .alert-meta{font-size:.8em;opacity:.9}.abanner.alert-card{margin:6px 10px 0;border-radius:8px;background:#0f1b2eee;border:1px solid var(--sev);border-left:5px solid var(--sev);box-shadow:0 5px 20px #0004}.abanner.alert-compact{width:fit-content;max-width:calc(100% - 20px);margin:6px 10px 0;border-radius:999px;padding:5px 14px}.alert-instruction{display:block;font-size:.85em;max-height:3em;overflow:auto}.alert-summary{font-size:11px;color:#fff;padding:4px 12px;background:#111d2a}
-@media(max-width:650px){.field-options{grid-template-columns:repeat(2,minmax(0,1fr))}.overlay-section{padding:12px}.overlay-demo .wl{max-width:90%}}
+.overlay-section{border:1px solid var(--line);border-radius:10px;padding:16px;margin:16px 0;background:var(--panel)}.overlay-section h3{margin:0 0 6px;font-size:14px}.overlay-section p{font-size:12px;color:var(--muted);margin:0 0 14px}.field-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.field-options label{display:flex;align-items:center;gap:7px;margin:0;padding:9px;background:var(--panel2);border-radius:6px;font-size:11px}
+.w.wx.wx-glass{border:1px solid #ffffff30;border-radius:14px;background:rgba(16,30,48,.68)}.w.wx.wx-glass .wx-body{background:transparent}.w.wx.wx-glass .wx-accent{background:transparent}.w.wx.wx-minimal{border:0;border-left:3px solid var(--weather-accent);box-shadow:none;border-radius:2px}.w.wx.wx-minimal .wx-accent{display:none}.w.wx.wx-broadcast .wx-accent{background:linear-gradient(180deg,var(--weather-accent,#1b5f92),#123e63)}.w.wx .wx-body{min-width:0}.abanner{flex-wrap:wrap;line-height:1.4;min-height:34px;box-sizing:border-box;overflow-wrap:anywhere}.abanner .alert-copy{flex:1;min-width:100px}.abanner .alert-meta{font-size:.8em;opacity:.9}.abanner.alert-card{margin:6px 10px 0;border-radius:8px;background:#0f1b2eee;border:1px solid var(--sev);border-left:5px solid var(--sev);box-shadow:0 5px 20px #0004}.abanner.alert-compact{width:fit-content;max-width:calc(100% - 20px);margin:6px 10px 0;border-radius:999px;padding:5px 14px}.alert-instruction{display:block;font-size:.85em;max-height:3em;overflow:auto}.alert-summary{font-size:11px;color:#fff;padding:4px 12px;background:#111d2a}
+@media(max-width:650px){.field-options{grid-template-columns:repeat(2,minmax(0,1fr))}.overlay-section{padding:12px}}
 .output-workspace-head{display:none}
 #controlView.queue-page{background:#eef3f9;min-height:calc(100vh - 50px);display:block}
 #controlView.queue-page>.quick-controls{display:none}
@@ -773,22 +860,58 @@ body.console #editorError{color:#f18d8d}
 .pagestrip .alert-compact{width:calc(100% - 24px);max-width:540px;margin:8px 12px 0;border-radius:5px;grid-template-columns:60px minmax(0,1fr)}
 .pagestrip .alert-compact .alert-content{padding:8px 12px}.pagestrip .alert-compact .alert-rail{padding:8px 4px}.pagestrip .alert-compact .alert-rail svg{width:18px;height:18px}.pagestrip .alert-compact .alert-title{font-size:1em}.pagestrip .alert-compact .alert-kicker{display:none}.pagestrip .alert-compact .alert-title-row{margin-bottom:4px}.pagestrip .alert-compact .alert-headline{font-size:.78em}
 .pagestrip .alert-summary{align-self:flex-start;margin:0 16px 4px;padding:6px 10px;background:#111f30ed;border:1px solid #ffffff20;border-radius:4px;color:#a9bed7;font:10px var(--mono);box-shadow:0 3px 12px #0003}
-.overlay-demo{min-height:400px}.overlay-demo:before{top:auto;bottom:34px}.overlay-demo .pagestrip .abanner{font-size:calc(12px * var(--alert-scale,1))}.overlay-demo .wl[data-c=br],.overlay-demo .wl[data-c=bl]{bottom:55px}
+.overlay-demo{min-height:0;aspect-ratio:16/9}.overlay-demo:before{top:auto;bottom:34px}.overlay-demo .pagestrip .abanner{font-size:calc(12px * var(--alert-scale,1))}.overlay-demo .wl[data-c=br],.overlay-demo .wl[data-c=bl]{bottom:55px}
 @media(max-width:600px){.pagestrip .abanner{grid-template-columns:58px minmax(0,1fr);font-size:calc(11px * var(--alert-scale,1))}.abanner .alert-rail{padding:10px 4px;font-size:.6em}.abanner .alert-content{padding:10px 12px}.abanner .alert-facts{gap:8px}.pagestrip .alert-bulletin,.pagestrip .alert-card{margin:8px 8px 0;width:calc(100% - 16px)}.pagestrip .alert-banner{grid-template-columns:58px minmax(0,1fr)}.overlay-demo{min-height:520px}.overlay-demo .pagestrip .abanner{font-size:calc(11px * var(--alert-scale,1))}}
+
+/* ---- minimalist mode: flat type-first graphics, no card chrome, gradients or blur ---- */
+.ov-minimal .w{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border:0!important;border-radius:2px;padding:.25em .55em;box-shadow:none!important;text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 18px rgba(0,0,0,.5)}
+.ov-minimal .w .w-kicker{border-bottom:0;padding-bottom:0;margin-bottom:2px;opacity:.85}
+.ov-minimal .w.wx .wx-accent{display:none}
+.ov-minimal .w.wx .wx-body{background:transparent;padding:.3em .55em}
+.ov-minimal .w.wx .wx-loc{color:#dce8f3}
+.ov-minimal .w.wx .wx-detail{color:#c8d5e1;font-size:1em}
+.ov-minimal .w.clock .clock-main{background:transparent;padding:.3em .55em}
+.ov-minimal .w.clock .cbadge{background:transparent;color:#ff6b6b;padding:.2em .1em .2em 0;letter-spacing:.22em}
+.ov-minimal .w.outlook{border:0}
+.ov-minimal .w.outlook .outlook-head{background:transparent;padding:.35em .55em}
+.ov-minimal .w.outlook .outlook-eyebrow{opacity:.8}
+.ov-minimal .w.outlook .outlook-days{border-top:1px solid rgba(255,255,255,.18)}
+.ov-minimal .w.outlook .outlook-day{background:transparent;border-right:0}
+.ov-minimal .w.outlook .outlook-foot{background:transparent;opacity:.75}
+.ov-minimal .w.next .nx{background:transparent;border-left:0;padding:.25em .55em}
+.ov-minimal .w.custom{background:transparent!important;color:#fff!important}
+.ov-minimal .tickbar{background:linear-gradient(transparent,rgba(0,0,0,.45));box-shadow:none}
+.ov-minimal .studio-graphics{--pkg-alpha:.5;text-shadow:0 1px 3px rgba(0,0,0,.8),0 0 18px rgba(0,0,0,.5)}
+.ov-minimal .studio-brand,.ov-minimal .studio-bulletin,.ov-minimal .studio-closing{box-shadow:none;border-left-width:2px;border-top-width:2px}
+.ov-minimal .studio-forecast{background:rgba(7,14,22,.55);border:0}
+.ov-minimal .studio-forecast header{background:transparent;padding:.5em .9em}
+.ov-minimal .studio-days>div{background:transparent;border-right:0}
+.ov-minimal .studio-forecast footer{background:transparent}
+.ov-minimal .abanner{box-shadow:none}
+
+@media (prefers-reduced-motion: reduce){
+  .w,.camtile .cap,.tickbar .run,.radarov .rovlay{transition:none!important}
+  /* a paused crawl would strand the text off-screen, so pin it in place instead */
+  .tickbar .run{animation:none!important;padding-left:12px}
+}
 </style>
+<link rel="stylesheet" href="weather-studio.css">
 </head>
 <body>
 <header>
-  <h1><span class="station-mark" aria-hidden="true">▥</span> Weather Cam <span class="station-label">STATION</span><span id="clock"></span></h1>
+  <div class="brand-strip">
+    <span class="live-pill">Weather Cam</span>
+    <span class="clock-tag" id="clock"></span>
+  </div>
   <div class="modelinks">
     <a href="?mode=control" id="lnkControl">Control</a>
-    <a href="?mode=output" id="lnkOutput" target="_blank">Output ↗</a>
+    <a href="?mode=output" id="lnkOutput" target="_blank" class="output-link">Output <span aria-hidden="true">↗</span></a>
     <a href="?mode=remote" id="lnkRemote">Remote</a>
   </div>
 </header>
 
 <div id="controlView">
-  <div class="console-nav"><nav class="controlnav" aria-label="Station workspace"><button id="pageDashboard" class="on">Camera library</button><button id="pageOnOutput">On output <span id="navOutputCount">0</span></button><button id="pageSettings">Preferences</button></nav><div class="console-status"><span class="status-dot"></span><span id="consoleStatus">Station ready</span><span class="local-label">LOCAL WORKSPACE</span></div></div>
+  <div class="console-nav"><nav class="controlnav" aria-label="Station workspace"><button id="pageDashboard" class="on">Camera library</button><button id="pageOnOutput">On output <span id="navOutputCount">0</span></button><button id="pageSettings">Broadcast studio</button></nav><div class="console-status"><span class="status-dot"></span><span id="consoleStatus">Station ready</span><span class="local-label">LOCAL WORKSPACE</span></div></div>
   <section class="quick-controls" aria-label="Essential output settings">
     <div class="quick-control"><span class="quick-title">Layout</span><select id="quickLayout" aria-label="Output multi-view layout"></select></div>
     <div class="quick-control"><span class="quick-title">Rotation</span><label><input type="checkbox" id="autoRotate"> Rotate</label><label>Every <input type="number" id="rotateSec" value="10" min="3"> sec</label></div>
@@ -809,7 +932,7 @@ body.console #editorError{color:#f18d8d}
     </aside>
     <main class="finder-main">
       <div class="finder-heading"><h2><span id="cameraPageTitle">Camera library</span> <span class="path" id="folderPath">All cameras</span></h2><b id="dashInfo" class="pill"></b></div>
-      <div class="dashbar"><input id="dashSearch" type="search" placeholder="Search cameras by name, URL, or location…" aria-label="Search cameras"><select id="dashGroup" aria-label="Filter by folder"><option value="all">All folders</option></select><div class="dash-view-tools" role="group" aria-label="Camera library view"><button class="sm on" id="dashGridView" type="button" title="Grid view" aria-pressed="true">▦</button><button class="sm" id="dashListView" type="button" title="List view" aria-pressed="false">☷</button><select id="dashSort" aria-label="Sort cameras"><option value="name">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="type">Feed type</option></select></div><button class="sm primary" id="finderAddCamera" type="button">+ Add camera</button><button class="sm" id="bulkOutputBtn" type="button" title="Toggle output for every camera currently shown (use a folder to select it whole)">+ Add shown to output</button><button class="sm" id="finderPreviewBtn" type="button" aria-pressed="false">Quick Look</button><button class="sm" id="finderManageBtn" type="button">Manage</button></div>
+      <div class="dashbar"><input id="dashSearch" type="search" placeholder="Search cameras by name, URL, or location…" aria-label="Search cameras"><select id="dashGroup" aria-label="Filter by folder"><option value="all">All folders</option></select><div class="dash-view-tools" role="group" aria-label="Camera library view"><button class="sm on" id="dashGridView" type="button" title="Grid view" aria-pressed="true">▦</button><button class="sm" id="dashListView" type="button" title="List view" aria-pressed="false">☷</button><select id="dashSort" aria-label="Sort cameras"><option value="name">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="type">Feed type</option></select></div><button class="sm primary" id="discoverCameras" type="button">Discover cameras</button><button class="sm" id="finderAddCamera" type="button">+ Custom camera</button><button class="sm" id="bulkOutputBtn" type="button" title="Toggle output for every camera currently shown (use a folder to select it whole)">+ Add shown to output</button><button class="sm" id="finderPreviewBtn" type="button" aria-pressed="false">Quick Look</button><button class="sm" id="finderManageBtn" type="button">Manage</button></div>
       <p class="queue-help" id="queueHelp" hidden>Drag the ⠿ handle to set output and rotation order, or use the arrow buttons. Removing a camera returns it to the library.</p><div class="dashgrid" id="dashGrid"></div>
       <div class="dashpager"><button class="sm" id="dashPrev">← Prev</button><span class="mono" id="dashPageInfo"></span><button class="sm" id="dashNext">Next →</button></div>
       <div class="hint">Click a library preview for details; use + to add cameras and − to remove them on the On output page. Folders never limit output selection.</div>
@@ -968,7 +1091,7 @@ body.console #editorError{color:#f18d8d}
           <select id="fitFs"><option value="contain">Contain</option><option value="cover">Cover</option></select></div>
       </div>
       <div class="srow"><label>Output radar overlay</label>
-        <select id="radarMode"><option value="embed">RainViewer</option><option value="off">Off</option></select>
+        <select id="radarMode"><option value="embed">Animated precipitation radar</option><option value="street">Street / location map</option><option value="satellite">Satellite basemap (not live clouds)</option><option value="off">Off</option></select>
       </div>
       <div class="srow"><label>Radar follows</label>
         <div class="ctl"><select id="radarCam"></select>
@@ -1023,8 +1146,9 @@ body.console #editorError{color:#f18d8d}
     <!-- WIDGETS -->
     <div class="panel settings-only" id="widgetSettingsPanel">
       <h2>Overlay studio</h2>
+      <div class="srow"><label for="minimalMode">Minimalist mode — flat, type-first graphics (no card chrome, gradients or blur)</label><input id="minimalMode" type="checkbox"></div>
       <section class="overlay-section"><h3>Weather card</h3><p>Choose the design and individual data fields. Missing measurements are omitted.</p>
-        <div class="srow"><label for="weatherStyle">Card design</label><select id="weatherStyle"><option value="broadcast">Broadcast lower third</option><option value="glass">Soft glass card</option><option value="minimal">Minimal data panel</option></select></div>
+        <div class="srow"><label for="weatherStyle">Card design</label><select id="weatherStyle"><option value="broadcast">Broadcast lower third</option><option value="glass">Soft glass card</option><option value="minimal">Minimal data panel</option><option value="newsroom">Newsroom blue</option><option value="contrast">High contrast</option><option value="pill">Compact capsule</option></select></div>
         <div class="srow"><label for="weatherAccent">Weather accent</label><input id="weatherAccent" type="color"></div>
         <div class="srow"><label for="wxDetail">Show detailed measurements</label><input type="checkbox" id="wxDetail"></div>
         <div class="field-options" id="weatherFields"></div>
@@ -1040,14 +1164,16 @@ body.console #editorError{color:#f18d8d}
         <div class="srow"><label for="tickerAlerts">Include filtered alerts in ticker</label><input id="tickerAlerts" type="checkbox"></div>
         <div class="srow"><label for="tickerSun">Include sunrise / sunset in ticker</label><input id="tickerSun" type="checkbox"></div>
       </section>
-      <section class="overlay-section"><h3>Design preview</h3><p>Sample weather and alerts, using your selected styles and fields. Quick Look shows the live output.</p><div id="overlayDesignPreview" class="overlay-demo"><div class="pagestrip"></div><div class="wl" data-c="tl"></div><div class="wl" data-c="tr"></div><div class="wl" data-c="bl"></div><div class="wl" data-c="br"></div><div class="tickbar"></div></div></section>
-      <div class="srow"><label>Overlay scale</label><input type="range" id="wxScale" min="0.7" max="2" step="0.05" value="1" style="width:150px"><span class="mono" id="wxScaleVal">1.00</span></div>
+      <section class="overlay-section"><h3>Design preview</h3><p>Sample weather and alerts, using your selected styles and fields. Quick Look shows the live output.</p><div id="overlayDesignPreview" class="overlay-demo"><div class="stage-bg"><img src="https://picsum.photos/seed/wcam-bridge/1280/720" alt=""></div><div class="stage-vignette"></div><div class="stage-grain"></div><div class="stage-frame"><div class="pagestrip"></div><div class="wl" data-c="tl"></div><div class="wl" data-c="tr"></div><div class="wl" data-c="bl"></div><div class="wl" data-c="br"></div><div class="tickbar"></div></div></div></section>
+      <div class="srow"><label>Overlay scale</label><input type="range" id="wxScale" min="0.1" max="20" step="0.05" value="1" style="width:150px"><span class="mono" id="wxScaleVal">1.00</span></div>
       <div class="srow"><label>Widget background opacity</label><input type="range" id="wxBg" min="0" max="0.95" step="0.05" value="0.62" style="width:150px"></div>
       <div class="srow"><label>Ticker text</label><input type="text" id="tickerText" style="width:56%" placeholder="Station slogan or message"></div>
       <div class="srow"><label>Radar overlay width</label><input type="range" id="radarOvW" min="220" max="420" step="20" style="width:150px"><span class="mono" id="radarOvWVal">320px</span></div>
       <div class="hint" style="margin-bottom:8px">Use the essentials bar on the dashboard for rotation, clock, and widget visibility. The preview below mirrors the selected output layout.</div>
       <div class="wloc" id="widgetGrid"></div>
-      <div class="srow"><label>Custom message</label><input id="customOverlayText" type="text" maxlength="120" placeholder="Add your own on-screen message" style="width:58%"></div>
+      <div class="srow"><label>Custom overlay</label><div class="ctl"><select id="customPick" aria-label="Choose custom overlay"></select><button type="button" class="sm" id="customNew">+ New overlay</button><button type="button" class="sm" id="customDelete">Delete</button></div></div>
+      <div class="srow"><label>Overlay name</label><input id="customOverlayName" type="text" maxlength="60" style="width:58%"></div>
+      <div class="srow"><label>Message text</label><input id="customOverlayText" type="text" maxlength="120" placeholder="Add your own on-screen message" style="width:58%"></div>
       <div class="srow"><label>Message style</label><select id="customOverlayStyle"><option value="card">Glass card</option><option value="badge">Rounded badge</option><option value="strip">Wide strip</option></select></div>
       <div class="srow"><label>Text / background</label><div class="ctl"><input type="color" id="customOverlayColor"><input type="color" id="customOverlayBg"></div></div>
       <div class="srow"><label>Background opacity</label><input type="range" id="customOverlayOpacity" min="0.1" max="1" step="0.05"><span class="mono" id="customOverlayOpacityVal"></span></div>
@@ -1171,30 +1297,37 @@ const THEMES={
 };
 const THEME_KEYS=['bg','panel','panel2','line','text','muted','accent','accent2'];
 const CORNERS=['tl','tr','bl','br'];
+/* starting spot when a widget is switched to free placement (% of the output frame) */
+const FREE_SPOT={tl:{x:2,y:8},tr:{x:58,y:8},bl:{x:2,y:70},br:{x:58,y:70}};
 const WIDGETS=[
-  {k:'wx',   t:'Weather'},
-  {k:'clock',t:'Clock / date'},
-  {k:'radar',t:'On-camera radar'},
-  {k:'logo', t:'Logo image'},
-  {k:'next', t:'Next camera'},
-  {k:'custom',t:'Custom message'}
+  {k:'wx',    t:'Weather'},
+  {k:'clock', t:'Clock / date'},
+  {k:'radar', t:'On-camera radar'},
+  {k:'logo',  t:'Logo image'},
+  {k:'next',  t:'Next camera'},
+  {k:'outlook',t:'3-day outlook'}
 ];
+/* built-in widgets plus each custom overlay (keyed c:<id>) */
+const widgetList=()=>[...WIDGETS,...(state.cfg.customs||[]).map(c=>({k:'c:'+c.id,t:c.name||'Custom overlay'}))];
 function defaultCfg(){
   return {
     theme:'midnight', colors:{...THEMES.midnight},
     fit:'cover', fitFs:'contain',
     wxScale:1, wxBg:.62, wxDetail:true, clock24:false, showDate:true,
-    tickerText:'LIVE WEATHER CAMS · CONDITIONS UPDATE IN REAL TIME',
+    tickerText:'[WOO] US-50 @ Dupont Rd Blennerhassett island bridge',
     logoData:'',
-    radarMode:'embed', radarZoom:6, radarCam:'', radarOvW:320, widgetsOn:true,
+    radarMode:'embed', radarZoom:6, radarCam:'', radarOvW:320, widgetsOn:true, minimal:false,
     alertMax:2, alertsPerTile:true, fsBarHide:true, edgeMode:false,
     prevSec:5, rowThumbs:true,
-    show:{alert:true,wx:true,clock:true,radar:true,ticker:true,logo:true,next:true,custom:true},
-    corner:{wx:'br',clock:'tr',radar:'tl',logo:'tl',next:'bl',custom:'bl'},
+    show:{alert:true,wx:true,clock:true,radar:true,ticker:true,logo:true,next:true,outlook:true,custom:true},
+    corner:{wx:'tr',clock:'tr',radar:'bl',logo:'tl',next:'br',outlook:'bl',custom:'bl'},
+    layout:{}, wsize:{},
     overlayFont:13, overlayPad:4,
     customOverlay:{text:'',color:'#ffffff',bg:'#111820',opacity:.78,style:'card',font:'mono',align:'left',shadow:true},
-    weatherStyle:'broadcast',weatherAccent:'#2b8f92',
-    weatherFields:{location:true,icon:true,temp:true,condition:true,feels:true,wind:true,humidity:true,rain:true,pressure:true,precip:false,sunrise:false,sunset:false},
+    customs:[],
+    weatherStyle:'newsroom',weatherAccent:'#1b5f92',
+    studio:{station:'Woofter Weather',tagline:'Live cameras all day',style:'newsroom',forecast:false,forecastDays:3,closingsOn:false,closings:[],bulletin:'',bulletinUntil:'',safeArea:3,hoverPause:false},
+    weatherFields:{location:true,icon:true,temp:true,condition:false,feels:true,wind:true,humidity:false,rain:true,pressure:false,precip:true,sunrise:false,sunset:false},
     alertStyle:'bulletin',alertScale:1,alertSeverity:'all',alertFields:{headline:true,area:true,severity:true,expires:true,instruction:false},tickerAlerts:true,tickerSun:true,
     dashboardView:'grid', dashboardSort:'name',
     showName:true, showCoords:true, camHeight:'56',
@@ -1217,6 +1350,17 @@ function defaultState(){
 }
 function uid(){return 'c'+Math.random().toString(36).slice(2,9);}
 function isObj(v){return v&&typeof v==='object'&&!Array.isArray(v);}
+const CUSTOM_DEFAULTS={name:'Message',text:'',color:'#ffffff',bg:'#111820',opacity:.78,style:'card',font:'mono',align:'left',shadow:true};
+function normCustom(c){
+  const o={...CUSTOM_DEFAULTS,...c};
+  o.id=String(o.id||uid()); o.name=String(o.name||'Message').slice(0,60); o.text=String(o.text||'').slice(0,120);
+  o.opacity=Math.max(.1,Math.min(1,+o.opacity||.78));
+  if(!['card','badge','strip'].includes(o.style)) o.style='card';
+  if(!['mono','sans'].includes(o.font)) o.font='mono';
+  if(!['left','center','right'].includes(o.align)) o.align='left';
+  o.shadow=o.shadow!==false;
+  return o;
+}
 function deepMerge(base,over){
   if(!isObj(over)) return base;
   for(const k of Object.keys(over)){
@@ -1257,12 +1401,13 @@ function loadState(){
     if(c.groupId&&!s.groups.some(g=>g.id===c.groupId)) c.groupId=null;
     if(!('groupId' in c)) c.groupId=null;
   });
-  if(!isObj(s.cfg.customOverlay)) s.cfg.customOverlay=defaultCfg().customOverlay;
-  if(typeof s.cfg.customOverlay.opacity!=='number') s.cfg.customOverlay.opacity=.78;
-  if(!['card','badge','strip'].includes(s.cfg.customOverlay.style)) s.cfg.customOverlay.style='card';
-  if(!['mono','sans'].includes(s.cfg.customOverlay.font)) s.cfg.customOverlay.font='mono';
-  if(!['left','center','right'].includes(s.cfg.customOverlay.align)) s.cfg.customOverlay.align='left';
-  if(typeof s.cfg.customOverlay.shadow!=='boolean') s.cfg.customOverlay.shadow=true;
+  /* custom overlays: migrate the old single message into the list, then normalise every entry */
+  if(!Array.isArray(s.cfg.customs)){
+    const o=isObj(s.cfg.customOverlay)?s.cfg.customOverlay:{};
+    s.cfg.customs=o.text?[{...o,id:'legacy',name:'Message 1'}]:[];
+    if(o.text){ s.cfg.corner['c:legacy']=s.cfg.corner.custom||'bl'; s.cfg.show['c:legacy']=s.cfg.show.custom!==false; }
+  }
+  s.cfg.customs=s.cfg.customs.filter(isObj).slice(0,12).map(normCustom);
   if(!['grid','list'].includes(s.cfg.dashboardView)) s.cfg.dashboardView='grid';
   if(!['name','name-desc','type'].includes(s.cfg.dashboardSort)) s.cfg.dashboardSort='name';
   if(!isFinite(+s.cfg.overlayFont)) s.cfg.overlayFont=13;
@@ -1278,7 +1423,11 @@ function loadState(){
   s.cfg.radarOvW=Math.max(220,Math.min(420,s.cfg.radarOvW));
   s.cfg.radarZoom=Math.max(4,Math.min(7,s.cfg.radarZoom));
   if(s.cfg.camHeight==='fill'||!s.cfg.camHeight) s.cfg.camHeight='56';
-  if(!['embed','off'].includes(s.cfg.radarMode)) s.cfg.radarMode='embed';
+  if(!['embed','street','satellite','off'].includes(s.cfg.radarMode)) s.cfg.radarMode='embed';
+  s.rotateSec=Math.max(3,Math.min(600,s.rotateSec));
+  s.fadeMs=Math.max(150,Math.min(3000,s.fadeMs));
+  s.cfg.studio=deepMerge(defaultCfg().studio,isObj(s.cfg.studio)?s.cfg.studio:{});
+  s.cfg.studio.closings=Array.isArray(s.cfg.studio.closings)?s.cfg.studio.closings.filter(isObj).slice(0,100):[];
   if(!isObj(s.cfg.remote)) s.cfg.remote={on:true,code:genCode()};  if(typeof s.cfg.remote.on!=='boolean') s.cfg.remote.on=true;
   if(!s.cfg.remote.code) s.cfg.remote.code=genCode();
   if(!Array.isArray(s.groups))s.groups=[];
@@ -1286,6 +1435,7 @@ function loadState(){
   ['tileGap','blur','tickerSec'].forEach(k=>{ const v=parseInt(s.cfg[k]); s.cfg[k]=isNaN(v)?defaultCfg()[k]:v; });
   delete s.cfg.corner.alert; delete s.cfg.corner.ticker;   /* alerts + ticker are fixed regions now */
   WIDGETS.forEach(w=>{ if(!CORNERS.includes(s.cfg.corner[w.k])) s.cfg.corner[w.k]=defaultCfg().corner[w.k]; });
+  s.cfg.customs.forEach(c=>{ const k='c:'+c.id; if(!CORNERS.includes(s.cfg.corner[k])) s.cfg.corner[k]='bl'; if(typeof s.cfg.show[k]!=='boolean') s.cfg.show[k]=true; });
   return s;
 }
 /* multi-view layouts: tile count -> [cols, rows]. Extends the old 1/4/6 set. */
@@ -1403,6 +1553,7 @@ function applyStyle(){
   THEME_KEYS.forEach(k=>r.setProperty('--'+k,c[k]||THEMES.midnight[k]));
   r.setProperty('--ovscale',state.cfg.wxScale);
   r.setProperty('--ovbg',state.cfg.wxBg);
+  document.documentElement.classList.toggle('ov-minimal',!!state.cfg.minimal);
   r.setProperty('--ovfont',(+state.cfg.overlayFont||13)+'px');
   r.setProperty('--ovpad',(+state.cfg.overlayPad||0)+'px');
   r.setProperty('--fit',state.cfg.fit);
@@ -1444,14 +1595,14 @@ function fetchWx(cam){
   if(hit&&Date.now()-hit.ts<10*60*1000) return Promise.resolve(hit.data);
   const u=`https://api.open-meteo.com/v1/forecast?latitude=${cam.lat}&longitude=${cam.lon}`
     +`&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m,surface_pressure,is_day,precipitation`
-    +`&daily=sunrise,sunset,precipitation_probability_max&forecast_days=1&timezone=auto`
+    +`&daily=sunrise,sunset,precipitation_probability_max,temperature_2m_max,temperature_2m_min,weather_code&forecast_days=7&timezone=auto`
     +`&temperature_unit=fahrenheit&wind_speed_unit=mph`;
   return fetch(u).then(r=>{ if(!r.ok) throw new Error('weather request failed'); return r.json(); }).then(d=>{
     const c=d.current, day=d.daily||{};
     if(!c) throw new Error('no current');
     const data={temp:c.temperature_2m,feels:c.apparent_temperature,code:c.weather_code,wind:c.wind_speed_10m,
       hum:c.relative_humidity_2m,pres:c.surface_pressure,isDay:c.is_day===1,precip:c.precipitation,
-      rain:day.precipitation_probability_max&&day.precipitation_probability_max[0],sunrise:day.sunrise&&day.sunrise[0],sunset:day.sunset&&day.sunset[0]};
+      rain:day.precipitation_probability_max&&day.precipitation_probability_max[0],sunrise:day.sunrise&&day.sunrise[0],sunset:day.sunset&&day.sunset[0],forecast:(day.time||[]).map((date,i)=>({date,high:day.temperature_2m_max?.[i],low:day.temperature_2m_min?.[i],code:day.weather_code?.[i],rain:day.precipitation_probability_max?.[i]})),updated:Date.now()};
     wxCache[cam.id]={ts:Date.now(),data};
     return data;
   });
@@ -1837,15 +1988,33 @@ function bannerHTML(a){
   const expiry=validEnd?ends.toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}):'';
   return `<div class="abanner alert-${style}" style="--sev:${color};--alert-scale:${scale}" title="${esc((a.desc||'').slice(0,600))}"><div class="alert-rail">${icon}<span>${kind}</span></div><div class="alert-content"><div class="alert-title-row"><span class="alert-kicker">WEATHER BULLETIN</span>${fields.severity?`<span class="alert-severity">${esc(a.sev||'Unknown')}</span>`:''}</div><strong class="alert-title">${esc(event)}</strong>${fields.headline&&a.head?`<p class="alert-headline">${esc(a.head)}</p>`:''}${fields.area&&a.area||fields.expires&&expiry?`<div class="alert-facts">${fields.area&&a.area?`<div class="alert-area"><span class="alert-fact-label">AFFECTED AREA</span><span>${esc(a.area)}</span></div>`:''}${fields.expires&&expiry?`<div class="alert-expiry"><span class="alert-fact-label">IN EFFECT UNTIL</span><span>${esc(expiry)}</span></div>`:''}</div>`:''}${fields.instruction&&a.instr?`<div class="alert-instruction"><span class="alert-fact-label">PROTECTIVE ACTION</span>${esc(a.instr)}</div>`:''}</div></div>`;
 }
+function outlookHTML(wx,cam){
+  const days=wx&&wx.forecast?[].concat(wx.forecast).slice(0,3):[];
+  if(!days.length) return '';
+  const updated=wx&&wx.updated?new Date(wx.updated):new Date();
+  return `<div class="w outlook"><div class="outlook-head"><div class="outlook-title">${esc(cam?.name||state.cfg.studio.station||'Local forecast')}</div><div class="outlook-eyebrow">${days.length}-DAY OUTLOOK</div></div><div class="outlook-days">${days.map(d=>`<div class="outlook-day"><b>${esc(new Date(d.date+'T12:00:00').toLocaleDateString([],{weekday:'short'}))}</b><span class="day-icon">${wxIcon(d.code,true)}</span><div class="day-temps"><span class="day-high">${d.high==null?'—':Math.round(d.high)}°</span><span class="day-low">${d.low==null?'—':Math.round(d.low)}°</span></div><div class="day-sub">${d.rain==null?'—':Math.round(d.rain)+'% rain'}</div></div>`).join('')}</div><div class="outlook-foot">Weather data: Open-Meteo.com · Updated ${esc(updated.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}))} · °F</div></div>`;
+}
 function weatherHTML(wx,cam){
   const cfg=state.cfg,f=cfg.weatherFields||{},valid=v=>v!=null&&Number.isFinite(Number(v));
   const measure=(key,label,value,suffix,round=true)=>f[key]&&valid(value)?`<span>${label} <b>${round?Math.round(value):Number(value)}${suffix}</b></span>`:'';
+  const sun=key=>f[key]&&wx[key]?`<span>${key==='sunrise'?'Sunrise':'Sunset'} <b>${esc(fmtT(wx[key]))}</b></span>`:'';
   let detail='';
-  if(cfg.wxDetail){detail=[measure('feels','Feels',wx.feels,'°F'),measure('wind','Wind',wx.wind,' mph'),measure('humidity','Humidity',wx.hum,'%'),measure('rain','Rain chance',Array.isArray(wx.rain)?wx.rain[0]:wx.rain,'%'),measure('pressure','Pressure',wx.pres,' hPa'),measure('precip','Precip.',wx.precip,' mm',false),f.sunrise&&wx.sunrise?`<span>Sunrise <b>${esc(fmtT(wx.sunrise))}</b></span>`:'',f.sunset&&wx.sunset?`<span>Sunset <b>${esc(fmtT(wx.sunset))}</b></span>`:''].join('');}
-  const temp=f.temp&&valid(wx.temp)?`<span class="wx-temp">${Math.round(wx.temp)}°F</span>`:'',condition=f.condition?`<span class="wx-cond">${esc(WX_COND[wx.code]||'—')}</span>`:'';
+  if(cfg.wxDetail){
+    detail=[
+      measure('feels','Feels',wx.feels,'°F'),
+      measure('wind','Wind',wx.wind,' mph'),
+      measure('rain','Rain chance',Array.isArray(wx.rain)?wx.rain[0]:wx.rain,'%'),
+      measure('humidity','Humidity',wx.hum,'%'),
+      measure('pressure','Pressure',wx.pres,' hPa'),
+      measure('precip','Precip.',wx.precip,' mm',false),
+      sun('sunrise'),
+      sun('sunset')
+    ].join('');
+  }
+  const temp=f.temp&&valid(wx.temp)?`<span class="wx-temp">${Math.round(wx.temp)}°F</span>`:'',condition=f.condition&&valid(wx.temp)?`<span class="wx-cond">${esc(WX_COND[wx.code]||'—')}</span>`:'';
   const location=f.location?`<div class="wx-loc">${esc(cam?.name||'Current conditions')}</div>`:'';
   if(!location&&!temp&&!condition&&!detail&&!f.icon)return '';
-  const style=['broadcast','glass','minimal'].includes(cfg.weatherStyle)?cfg.weatherStyle:'broadcast',accent=/^#[0-9a-f]{6}$/i.test(cfg.weatherAccent)?cfg.weatherAccent:'#2b8f92';
+  const style=['broadcast','glass','minimal','newsroom','contrast','pill'].includes(cfg.weatherStyle)?cfg.weatherStyle:'broadcast',accent=/^#[0-9a-f]{6}$/i.test(cfg.weatherAccent)?cfg.weatherAccent:'#1b5f92';
   return `<div class="w wx wx-${style}" style="--weather-accent:${accent}">${f.icon?`<div class="wx-accent"><span class="wx-icon">${wxIcon(wx.code,wx.isDay)}</span></div>`:''}<div class="wx-body">${location}${temp||condition?`<div class="wx-row">${temp}${condition}</div>`:''}${detail?`<div class="wx-detail">${detail}</div>`:''}</div></div>`;
 }
 /* widgets render into a scope: element containing .wl[data-c] corner slots */function renderWidgets(scope){
@@ -1856,15 +2025,43 @@ function weatherHTML(wx,cam){
   root.querySelectorAll('.wl[data-c]').forEach(el=>{
     [...el.children].forEach(ch=>{ if(ch!==scope._radarEl) ch.remove(); });
   });
+  /* free-placed boxes are rebuilt each pass; the radar box survives so the map is not reloaded */
+  root.querySelectorAll('.wfree').forEach(el=>{
+    [...el.children].forEach(ch=>{ if(ch!==scope._radarEl) ch.remove(); });
+    if(!(el.dataset.free==='radar'&&cfg.layout&&cfg.layout.radar)) el.remove();
+  });
   const ps=root.querySelector('.pagestrip'); if(ps) ps.innerHTML='';
   const tb=root.querySelector('.tickbar');
   const on=!!scope._showWidgets&&cfg.widgetsOn!==false;
-  const tickHeight=(on&&cfg.show.ticker)?'26px':'0px';
+  /* text, boxes and the ticker scale with the frame's width AND height (1280x720 reference),
+     so widgets stay proportional in the preview and never outgrow a short or narrow TV wall */
+  const fk=Math.max(.25,Math.min(3,Math.min((root.clientWidth||1280)/1280,(root.clientHeight||720)/720))).toFixed(3);
+  const fkN=Math.max(.25,Math.min(3,parseFloat(fk)||1));
+  const tickHeight=(on&&cfg.show.ticker)?Math.round(Math.max(22,30*fkN))+'px':'0px';
+  scope.style.setProperty('--frameK',fk); root.style.setProperty('--frameK',fk);
   scope.style.setProperty('--tickh',tickHeight); root.style.setProperty('--tickh',tickHeight);
   scope.style.setProperty('--btop','0px'); root.style.setProperty('--btop','0px');
+  root.querySelectorAll('.studio-graphics').forEach(el=>el.remove());
   if(!on){ if(tb) tb.innerHTML=''; if(scope._radarEl) scope._radarEl.hidden=true; return; }
   const slot=c=>{const el=root.querySelector(`.wl[data-c="${c}"]`); return el;};
-  const put=(key,html)=>{const el=slot(cfg.corner[key]||'tl'); if(el) el.insertAdjacentHTML('beforeend',html);};
+  const layout=cfg.layout||{};
+  const freeBox=(key,pos)=>{
+    let box=root.querySelector(`.wfree[data-free="${key}"]`);
+    if(!box){ box=document.createElement('div'); box.className='wl wfree'; box.dataset.free=key; root.appendChild(box); }
+    box.style.left=Math.max(0,Math.min(95,+pos.x||0))+'%'; box.style.top=Math.max(0,Math.min(95,+pos.y||0))+'%';
+    return box;
+  };
+  const sizeWrap=(key,html)=>{
+    if(key==='radar') return html;
+    const s=Math.max(50,Math.min(200,+(cfg.wsize&&cfg.wsize[key])||100))/100;
+    return s===1?html:`<div class="wsz" style="zoom:${s}">${html}</div>`;
+  };
+  /* a widget goes into its free box when placed by hand, otherwise into its corner slot */
+  const put=(key,html)=>{
+    if(!html) return;
+    if(layout[key]){ freeBox(key,layout[key]).insertAdjacentHTML('beforeend',sizeWrap(key,html)); return; }
+    const el=slot(cfg.corner[key]||'tl'); if(el) el.insertAdjacentHTML('beforeend',sizeWrap(key,html));
+  };
   if(cfg.show.alert&&alerts.length&&ps){
     const max=Math.max(0,Math.min(4,+cfg.alertMax||0));
     alerts.slice(0,max).forEach(a=>ps.insertAdjacentHTML('beforeend',bannerHTML(a)));
@@ -1872,32 +2069,42 @@ function weatherHTML(wx,cam){
     const setHeight=()=>{const h=ps.getBoundingClientRect().height+'px';scope.style.setProperty('--btop',h);root.style.setProperty('--btop',h);};
     setHeight(); if(typeof ResizeObserver!=='undefined'&&scope._alertStrip!==ps){if(scope._alertResize)scope._alertResize.disconnect();scope._alertStrip=ps;scope._alertResize=new ResizeObserver(setHeight);scope._alertResize.observe(ps);}
   }
-  if(cfg.show.wx&&wx) put('wx',weatherHTML(wx,cam));
-  if(cfg.show.clock){
-    put('clock',`<div class="w clock"><span class="cbadge">Live</span><div class="clock-main"><span class="t" data-wclock>${fmtClock()}</span>${cfg.showDate?`<span class="d" data-wdate>${new Date().toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'})}</span>`:''}</div></div>`);
-  }
-  if(cfg.show.custom&&cfg.customOverlay&&cfg.customOverlay.text){
-    const co=cfg.customOverlay, alpha=Math.max(.1,Math.min(1,+co.opacity||.78));
-    const bg=co.bg||'#111820', rgb=parseInt(bg.slice(1),16), rr=(rgb>>16)&255,gg=(rgb>>8)&255,bb=rgb&255;
-    const shadow=co.shadow===false?'none':'0 2px 8px rgba(0,0,0,.35)';
-    put('custom',`<div class="w custom ${esc(co.style||'card')}" style="font-family:${co.font==='sans'?'var(--sans)':'var(--mono)'};text-align:${esc(co.align||'left')};box-shadow:${shadow};font-size:${+cfg.overlayFont||13}px;padding:${+cfg.overlayPad||0}px;color:${esc(co.color||'#fff')};background:rgba(${rr},${gg},${bb},${alpha})">${esc(co.text)}</div>`);
-  }
+  WeatherStudio.render(root,cfg.studio,wx,cam,esc,wxIcon);
   if(cfg.show.logo&&cfg.logoData){
     put('logo',`<div class="w logo"><img src="${esc(cfg.logoData)}" alt="logo"></div>`);
+  }
+  if(cfg.show.wx&&wx) put('wx',weatherHTML(wx,cam));
+  if(cfg.show.clock){
+    put('clock',`<div class="w clock"><span class="cbadge">LIVE</span><div class="clock-main"><span class="t" data-wclock>${fmtClock()}</span>${cfg.showDate?`<span class="d" data-wdate>${new Date().toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'})}</span>`:''}</div></div>`);
+  }
+  if((cfg.show.outlook||scope._designPreview)&&wx&&!cfg.studio?.forecast){
+    put('outlook',outlookHTML(wx,cam));
+  }
+  for(const co of (cfg.customs||[])){
+    const key='c:'+co.id; if(!co.text||cfg.show[key]===false) continue;
+    const alpha=Math.max(.1,Math.min(1,+co.opacity||.78));
+    const bg=co.bg||'#111820', rgb=parseInt(bg.slice(1),16), rr=(rgb>>16)&255,gg=(rgb>>8)&255,bb=rgb&255;
+    const shadow=co.shadow===false?'none':'0 2px 8px rgba(0,0,0,.35)';
+    put(key,`<div class="w custom ${esc(co.style||'card')}" style="font-family:${co.font==='sans'?'var(--sans)':'var(--mono)'};text-align:${esc(co.align||'left')};box-shadow:${shadow};font-size:${(+cfg.overlayFont||13)/13}em;padding:${(+cfg.overlayPad||0)/13}em;color:${esc(co.color||'#fff')};background:rgba(${rr},${gg},${bb},${alpha})">${esc(co.text)}</div>`);
   }
   if(cfg.show.next&&next){
     put('next',`<div class="w next" data-camid="${esc(next.id||'')}">${next.thumb?`<img class="nx-thumb" src="${esc(next.thumb)}" alt="">`:''}<span class="nx"><b>Up next</b><span data-wnext>${esc(next.name)}</span></span></div>`);
   }
   if(cfg.show.ticker&&tb){
-    const parts=[cfg.tickerText].concat(cfg.tickerAlerts?alerts.map(a=>`⚠ ${a.event}${cfg.alertFields.expires&&a.ends?' until '+fmtT(a.ends):''}`):[]);
+    const parts=[cfg.tickerText,...WeatherStudio.closingTicker(cfg.studio)].concat(cfg.tickerAlerts?alerts.map(a=>`⚠ ${a.event}${cfg.alertFields.expires&&a.ends?' until '+fmtT(a.ends):''}`):[]);
     if(cfg.tickerSun&&wx&&wx.sunrise) parts.push(`Sunrise ${fmtT(wx.sunrise)} · Sunset ${fmtT(wx.sunset)}`);
     const txt=parts.filter(Boolean).join('   ·   ');
+    /* even crawl speed: the scroll-time setting is the floor; longer text or a wider frame scrolls proportionally slower */
+    const base=Math.max(8,+cfg.tickerSec||26);
+    tb.style.setProperty('--ticksec',Math.min(base*3,Math.max(base,Math.round(txt.length*0.18*fkN)))+'s');
     tb.innerHTML=`<span class="run">${esc(txt)}</span>`;
   }
   /* on-camera radar: kept as one persistent node so the map re-centres instead of reloading */
-  if(cfg.show.radar){
+  if(cfg.show.radar&&!cfg.show.outlook&&!cfg.studio?.forecast){
     const rEl=syncRadarOverlay(scope,ctx.cam);
-    const rSlot=slot(cfg.corner.radar||'tl');
+    /* the design preview has no live map, so it shows a sized placeholder in the same spot */
+    if(scope._designPreview) put('radar',`<div class="w radar-ph" style="width:calc(${Math.round(rovSize().w*.5)}px * var(--ovscale,1) * var(--frameK,1));height:calc(${Math.round(rovSize().w*.5)}px * var(--ovscale,1) * var(--frameK,1))">RADAR MAP<small>sample · live on output</small></div>`);
+    const rSlot=layout.radar?freeBox('radar',layout.radar):slot(cfg.corner.radar||'tl');
     if(rEl&&rSlot&&rEl.parentNode!==rSlot) rSlot.appendChild(rEl);
     if(rEl&&rSlot) requestAnimationFrame(()=>fitRadar(rEl));
   } else if(scope._radarEl) scope._radarEl.hidden=true;
@@ -1905,6 +2112,34 @@ function weatherHTML(wx,cam){
 const scopes=[];
 function registerScope(el,ctx){ el._ctx=ctx; if(typeof el._showWidgets!=='boolean') el._showWidgets=state.cfg.widgetsOn!==false; if(!scopes.includes(el)) scopes.push(el); renderWidgets(el); }
 function rerenderWidgets(){ scopes.forEach(el=>{ if(el.isConnected){ el._showWidgets=state.cfg.widgetsOn!==false; renderWidgets(el); } }); }
+/* drag a widget in the design preview to place it; the position is saved as % of the frame */
+let layoutDrag=null;
+const clampPct=v=>Math.max(0,Math.min(95,v));
+document.addEventListener('pointerdown',e=>{
+  const box=e.target.closest&&e.target.closest('.overlay-demo .wfree');
+  if(!box||e.button!==0) return;
+  const host=box.parentElement;
+  layoutDrag={box,host,key:box.dataset.free,dx:e.clientX-box.getBoundingClientRect().left,dy:e.clientY-box.getBoundingClientRect().top,x:box.offsetLeft/host.offsetWidth*100,y:box.offsetTop/host.offsetHeight*100};
+  try{ box.setPointerCapture(e.pointerId); }catch(err){ /* capture is optional */ }
+  box.classList.add('dragging'); e.preventDefault();
+});
+document.addEventListener('pointermove',e=>{
+  if(!layoutDrag) return;
+  const d=layoutDrag, hr=d.host.getBoundingClientRect();
+  d.x=clampPct((e.clientX-d.dx-hr.left)/hr.width*100); d.y=clampPct((e.clientY-d.dy-hr.top)/hr.height*100);
+  d.box.style.left=d.x+'%'; d.box.style.top=d.y+'%';
+});
+const endLayoutDrag=()=>{
+  if(!layoutDrag) return;
+  const d=layoutDrag; layoutDrag=null; d.box.classList.remove('dragging');
+  state.cfg.layout=state.cfg.layout||{};
+  state.cfg.layout[d.key]={x:+d.x.toFixed(2),y:+d.y.toFixed(2)};
+  saveState(); rerenderWidgets(); document.dispatchEvent(new Event('widgetlayoutchange'));
+};
+document.addEventListener('pointerup',endLayoutDrag);
+document.addEventListener('pointercancel',endLayoutDrag);
+let frameRaf=0;
+window.addEventListener('resize',()=>{cancelAnimationFrame(frameRaf); frameRaf=requestAnimationFrame(()=>rerenderWidgets());});
 /* live clock text + next-camera label updates */
 setInterval(()=>{
   scopes.forEach(el=>{
@@ -1956,7 +2191,12 @@ function fracTile(lat,lon,z){
   const n=Math.pow(2,z), r=lat*Math.PI/180;
   return {x:(lon+180)/360*n, y:(1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n};
 }
-function rovSize(){ const w=Math.max(220,Math.min(420,+state.cfg.radarOvW||320)); return {w:w,h:w}; }
+function rovSize(){
+  const base=Math.max(220,Math.min(420,+state.cfg.radarOvW||320));
+  const s=Math.max(50,Math.min(200,+(state.cfg.wsize&&state.cfg.wsize.radar)||100))/100;
+  const w=Math.round(Math.max(120,Math.min(640,base*s)));
+  return {w:w,h:w};
+}
 function makeRadarEl(){
   const d=document.createElement('div');
   d.className='radarov'; d.hidden=true;
@@ -1976,7 +2216,13 @@ function rovBuild(el,cam){
   if(time) time.textContent='LOADING';
   el._z=z; el._ti=-1; el._busy=false;
   el._requestId=(el._requestId||0)+1;
-  el.dataset.loc=[cam.lat,cam.lon,z,s.w,s.h].join(',');
+  el.dataset.loc=[cam.lat,cam.lon,z,s.w,state.cfg.radarMode].join(',');
+  el.dataset.mapMode=state.cfg.radarMode;
+  const radar=state.cfg.radarMode==='embed';
+  el.querySelector('.rovhead b').textContent=radar?'RADAR':state.cfg.radarMode==='satellite'?'SATELLITE':'LOCATION';
+  el.querySelector('[data-rovkind]').textContent=radar?'OBS':'MAP';
+  if(!radar){if(dot)dot.className='tdot';if(time)time.textContent='BASEMAP';}
+  el.querySelector('.rovfoot').innerHTML=radar?'<span>PRECIPITATION · UNIVERSAL BLUE</span><span>ESRI · RAINVIEWER</span>':`<span>${state.cfg.radarMode==='satellite'?'STATIC IMAGERY · NOT LIVE':'CAMERA LOCATION'}</span><span>${state.cfg.radarMode==='street'?'© OpenStreetMap':'ESRI'}</span>`;
   const n=Math.pow(2,z), tileSize=256;
   for(let ty=Math.floor(f.y)-1;ty<=Math.floor(f.y)+1;ty++)
     for(let tx=Math.floor(f.x)-1;tx<=Math.floor(f.x)+1;tx++){
@@ -1990,14 +2236,14 @@ function rovBuild(el,cam){
   tiles.forEach(t=>{
     const im=new Image(); im.alt=''; im.decoding='async';
     im.style.left=t.left+'px'; im.style.top=t.top+'px';
-    im.src=RV.base(z,t.tx,t.ty);
+    im.src=state.cfg.radarMode==='satellite'?`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${t.ty}/${t.tx}`:state.cfg.radarMode==='street'?`https://tile.openstreetmap.org/${z}/${t.tx}/${t.ty}.png`:RV.base(z,t.tx,t.ty);
     im.onerror=()=>im.remove();
     base.appendChild(im);
     const labels=new Image(); labels.alt=''; labels.decoding='async'; labels.className='rovlabels';
     labels.style.left=t.left+'px'; labels.style.top=t.top+'px';
     labels.src=RV.labels(z,t.tx,t.ty);
     labels.onerror=()=>labels.remove();
-    base.appendChild(labels);
+    if(state.cfg.radarMode==='embed')base.appendChild(labels);
   });
   el._radarTileCount=tiles.length;
   ['rovlay a','rovlay b'].forEach(cls=>{
@@ -2047,7 +2293,7 @@ function rovFrame(el,idx){
 }
 function rovTick(){
   if(document.hidden) return;
-  const els=[...document.querySelectorAll('.radarov:not([hidden])')];
+  const els=[...document.querySelectorAll('.radarov:not([hidden])')].filter(el=>el.dataset.mapMode==='embed');
   if(!els.length) return;
   if(Date.now()-RV.at>=5*60*1000) rvLoad();
   if(!rvFrames().length){
@@ -2071,17 +2317,22 @@ function rovTick(){
 function fitRadar(el){
   const slot=el&&el.parentElement;
   if(!slot) return;
-  const natural=el._baseWidth||rovSize().w, rect=slot.getBoundingClientRect();
-  const available=Math.min(rect.width||natural,innerWidth*.48,600);
-  const scale=available>0?Math.min(1,available/natural):1;
+  const natural=el._baseWidth||rovSize().w;
+  /* the map is one persistent node, so it scales by transform: grow and shrink with the
+     output frame (bounded by the viewport) instead of staying a fixed pixel size */
+  const host=slot.parentElement||slot;
+  const frameW=host.getBoundingClientRect().width||innerWidth;
+  const fk=Math.max(.35,Math.min(3,parseFloat(getComputedStyle(el).getPropertyValue('--frameK'))||1));
+  const target=Math.min(frameW*.42,innerWidth*.48,natural*fk);
+  const scale=target>0?Math.max(.25,Math.min(2.4,target/natural)):1;
   el.style.width=natural+'px'; el.style.height=natural+'px';
-  el.style.transform=scale<1?`scale(${scale})`:'';
+  el.style.transform=scale===1?'':`scale(${scale})`;
   el.style.transformOrigin=(slot.dataset.c==='tr'||slot.dataset.c==='br'?'right ':'left ')+(slot.dataset.c==='bl'||slot.dataset.c==='br'?'bottom':'top');
 }  window.addEventListener('resize',()=>scopes.forEach(scope=>{ if(scope.isConnected&&scope._radarEl) fitRadar(scope._radarEl); }));
   window.addEventListener('fullscreenchange',()=>requestAnimationFrame(()=>scopes.forEach(scope=>{ if(scope.isConnected&&scope._radarEl) fitRadar(scope._radarEl); })));
 /* shared by the output wall and the control preview */
 function syncRadarOverlay(scope,fallback){
-  const cfg=state.cfg, on=(mode==='output'||scope._outputPreview)&&!!scope._showWidgets&&!!cfg.show.radar&&cfg.radarMode==='embed';
+  const cfg=state.cfg, on=(mode==='output'||scope._outputPreview)&&!!scope._showWidgets&&!!cfg.show.radar&&['embed','street','satellite'].includes(cfg.radarMode);
   let el=scope._radarEl;
   if(!on||!radarCam(fallback)){ if(el) el.hidden=true; return null; }
   if(!el){ el=makeRadarEl(); scope._radarEl=el; }
@@ -2091,8 +2342,7 @@ function syncRadarOverlay(scope,fallback){
   if(!RV.meta&&Date.now()<RV.retryAt){
     const dot=el.querySelector('.rovhead .tdot'), time=el.querySelector('[data-rovtime]');
     if(dot) dot.className='tdot error';
-    if(time) time.textContent='RADAR UNAVAILABLE';  }
-  const loc=[cam.lat,cam.lon,Math.round(radarZoom()),rovSize().w].join(',');
+    if(time) time.textContent='RADAR UNAVAILABLE';  }    const loc=[cam.lat,cam.lon,Math.round(radarZoom()),rovSize().w,cfg.radarMode].join(',');
   if(el.dataset.loc!==loc){
     el._top='b';
     el.querySelectorAll('.rovlay').forEach(layer=>layer.classList.remove('on'));
@@ -2650,7 +2900,7 @@ if(mode==='control'){
       }
       ['--tickh','--btop'].forEach(name=>fs.style.setProperty(name,getComputedStyle(st).getPropertyValue(name)||'0px'));
       fs.style.setProperty('--camh','100vh');
-      previewMoved.splice(0,previewMoved.length,...[...st.children].filter(el=>el.classList.contains('wl')||el.classList.contains('pagestrip')||el.classList.contains('tickbar')));
+      previewMoved.splice(0,previewMoved.length,...[...st.children].filter(el=>el.classList.contains('wl')||el.classList.contains('pagestrip')||el.classList.contains('tickbar')||el.classList.contains('studio-graphics')));
       previewMoved.forEach(el=>fs.appendChild(el));
       st._fullscreenTile=fs;
     } else if(previewMoved.length){
@@ -2980,6 +3230,7 @@ if(mode==='control'){
   bindChk('showName','cfg.showName',()=>{ rerenderWidgets(); renderPreview(true); });
   bindChk('showCoords','cfg.showCoords',()=>{ rerenderWidgets(); renderPreview(true); });
   bindChk('wxDetail','cfg.wxDetail',()=>{rerenderWidgets();paintOverlayDesign();});
+  bindChk('minimalMode','cfg.minimal',()=>{applyStyle();rerenderWidgets();paintOverlayDesign();});
   bindChk('edgeMode','cfg.edgeMode');
   bindSel('camHeight','cfg.camHeight');
   function bindRange(id,k,valId,suffix,reflow){
@@ -3015,17 +3266,32 @@ if(mode==='control'){
   };
   function renderWidgetGrid(){
     $('clockWidgetOn').checked=!!state.cfg.show.clock;
-    $('widgetGrid').innerHTML=WIDGETS.map(w=>
-      `<div><label style="margin:0"><input type="checkbox" data-wchk="${w.k}"${state.cfg.show[w.k]?' checked':''}> ${w.t}</label>
-        <select data-wcor="${w.k}" title="Screen corner">${CORNERS.map(c=>`<option value="${c}"${state.cfg.corner[w.k]===c?' selected':''}>${c.toUpperCase()}</option>`).join('')}</select></div>`
-    ).join('');
+    $('widgetGrid').innerHTML=widgetList().map(w=>{
+      const pct=Math.round(Math.max(50,Math.min(200,+(state.cfg.wsize&&state.cfg.wsize[w.k])||100)));
+      return `<div class="widget-row"><label style="margin:0"><input type="checkbox" data-wchk="${w.k}"${state.cfg.show[w.k]?' checked':''}> ${w.t}</label>
+        <select data-wcor="${w.k}" title="Screen corner" aria-label="${w.t} corner">${CORNERS.map(c=>`<option value="${c}"${state.cfg.corner[w.k]===c?' selected':''}>${c.toUpperCase()}</option>`).join('')}</select>
+        <label style="margin:0"><input type="checkbox" data-wfree="${w.k}"${state.cfg.layout&&state.cfg.layout[w.k]?' checked':''}> Free position</label>
+        <label class="widget-size">Size <input type="range" min="50" max="200" step="5" value="${pct}" data-wsz="${w.k}" aria-label="${w.t} size"><span class="mono" data-wszv>${pct}%</span></label></div>`;
+    }).join('')+`<div class="widget-actions"><button type="button" class="sm" id="widgetReset">Reset positions &amp; sizes</button><span class="hint">Tick “Free position” or drag a widget in the design preview to place it. Alerts and the ticker stay fixed.</span></div>`;
     $('widgetGrid').querySelectorAll('[data-wchk]').forEach(el=>el.onchange=()=>{
       state.cfg.show[el.dataset.wchk]=el.checked; saveState(); rerenderWidgets(); renderPreview(false);
     });
     $('widgetGrid').querySelectorAll('[data-wcor]').forEach(el=>el.onchange=()=>{
       state.cfg.corner[el.dataset.wcor]=el.value; saveState(); rerenderWidgets(); paintOverlayDesign();
     });
+    $('widgetGrid').querySelectorAll('[data-wfree]').forEach(el=>el.onchange=()=>{
+      const k=el.dataset.wfree; state.cfg.layout=state.cfg.layout||{};
+      if(el.checked) state.cfg.layout[k]={...(FREE_SPOT[state.cfg.corner[k]]||FREE_SPOT.tl)}; else delete state.cfg.layout[k];
+      saveState(); rerenderWidgets(); renderWidgetGrid();
+    });
+    $('widgetGrid').querySelectorAll('[data-wsz]').forEach(el=>el.oninput=()=>{
+      const k=el.dataset.wsz; state.cfg.wsize=state.cfg.wsize||{}; state.cfg.wsize[k]=+el.value;
+      el.parentElement.querySelector('[data-wszv]').textContent=el.value+'%';
+      saveState(); rerenderWidgets();
+    });
+    const reset=$('widgetReset'); if(reset) reset.onclick=()=>{ state.cfg.layout={}; state.cfg.wsize={}; saveState(); rerenderWidgets(); renderWidgetGrid(); };
   }
+  document.addEventListener('widgetlayoutchange',()=>{ if($('widgetGrid')) renderWidgetGrid(); });
 
   /* ---- theme ---- */
   function renderThemeUI(){
@@ -3109,7 +3375,7 @@ bindChk('remoteOn','cfg.remote.on',()=>{
   $('pageDashboard').onclick=()=>setControlPage('library');
   $('pageOnOutput').onclick=()=>setControlPage('on-output');
   $('queueAddCameras').onclick=()=>{selectedFolderId=null;$('dashSearch').value='';setControlPage('library');};
-  const settingsSections=[['overlays','Overlay studio'],['output','Output & display'],['appearance','Appearance'],['connections','Screens & remote'],['backup','Backup & sharing']];
+  const settingsSections=[['overlays','Overlay studio'],['output','Output & display'],['appearance','Appearance'],['connections','Screens & remote'],['information','Broadcast information'],['backup','Backup & sharing']];
   let settingsSection=settingsSections.some(([key])=>key===params.get('section'))?params.get('section'):'overlays';
   const panelSections={'Theme & colors':'appearance','Backup & sharing':'backup','Output & layout':'output','Display options':'output','TV & remote':'connections','Overlay studio':'overlays','Custom images':'appearance'};
   document.querySelectorAll('#controlView .panel.settings-only').forEach(panel=>{panel.dataset.settingsSection=panelSections[panel.querySelector('h2')?.textContent.trim()]||'output';});
@@ -3123,13 +3389,10 @@ bindChk('remoteOn','cfg.remote.on',()=>{
   $('settingsTabs').querySelectorAll('button').forEach(button=>button.onclick=()=>showSettingsSection(button.dataset.section));
   showSettingsSection(settingsSection);
   setControlPage(['settings','on-output'].includes(params.get('view'))?params.get('view'):'library');
-  let customOverlaySave;
+  let customSel=null;
+  const curCustom=()=>{ let c=state.cfg.customs.find(x=>x.id===customSel); if(!c){ c=state.cfg.customs[0]||null; customSel=c?c.id:null; } return c; };
   function bindCustomOverlay(){
-    const c=state.cfg.customOverlay;
-    $('customOverlayText').value=c.text||''; $('customOverlayStyle').value=c.style||'card';
-    $('customOverlayColor').value=c.color||'#ffffff'; $('customOverlayBg').value=c.bg||'#111820';
-    $('customOverlayOpacity').value=c.opacity||.78; $('overlayFont').value=state.cfg.overlayFont||13; $('overlayPad').value=state.cfg.overlayPad||4;
-    $('customOverlayFont').value=c.font||'mono'; $('customOverlayAlign').value=c.align||'left'; $('customOverlayShadow').checked=c.shadow!==false;
+    const fields=['customOverlayName','customOverlayText','customOverlayStyle','customOverlayColor','customOverlayBg','customOverlayOpacity','customOverlayFont','customOverlayAlign','customOverlayShadow'];
     function paint(){
       $('customOverlayOpacityVal').textContent=(+$('customOverlayOpacity').value).toFixed(2);
       $('overlayFontVal').textContent=$('overlayFont').value+'px'; $('overlayPadVal').textContent=$('overlayPad').value+'px';
@@ -3138,18 +3401,53 @@ bindChk('remoteOn','cfg.remote.on',()=>{
       const bg=$('customOverlayBg').value,rgb=parseInt(bg.slice(1),16),rr=(rgb>>16)&255,gg=(rgb>>8)&255,bb=rgb&255;
       preview.style.cssText=`color:${$('customOverlayColor').value};background:rgba(${rr},${gg},${bb},${$('customOverlayOpacity').value});font:${$('overlayFont').value}px ${$('customOverlayFont').value==='sans'?'var(--sans)':'var(--mono)'};text-align:${$('customOverlayAlign').value};box-shadow:${$('customOverlayShadow').checked?'0 2px 8px rgba(0,0,0,.35)':'none'};padding:${$('overlayPad').value}px;border-radius:${$('customOverlayStyle').value==='badge'?'999px':$('customOverlayStyle').value==='strip'?'2px':'5px'}`;
     }
+    function paintPicker(){
+      const sel=$('customPick');
+      sel.innerHTML=state.cfg.customs.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')||'<option value="">No custom overlays yet</option>';
+      sel.value=customSel||''; $('customDelete').disabled=!state.cfg.customs.length; $('customNew').disabled=state.cfg.customs.length>=12;
+    }
+    function fill(){
+      const c=curCustom(); paintPicker();
+      fields.forEach(id=>$(id).disabled=!c);
+      $('overlayFont').value=state.cfg.overlayFont||13; $('overlayPad').value=state.cfg.overlayPad||4;
+      if(c){
+        $('customOverlayName').value=c.name||''; $('customOverlayText').value=c.text||''; $('customOverlayStyle').value=c.style||'card';
+        $('customOverlayColor').value=c.color||'#ffffff'; $('customOverlayBg').value=c.bg||'#111820';
+        $('customOverlayOpacity').value=c.opacity||.78; $('customOverlayFont').value=c.font||'mono'; $('customOverlayAlign').value=c.align||'left'; $('customOverlayShadow').checked=c.shadow!==false;
+      } else { $('customOverlayName').value=''; $('customOverlayText').value=''; }
+      paint();
+    }
+    const refresh=()=>document.dispatchEvent(new Event('widgetlayoutchange'));
     const save=()=>{
-      c.text=$('customOverlayText').value.trim(); c.style=$('customOverlayStyle').value;
-      c.color=$('customOverlayColor').value; c.bg=$('customOverlayBg').value; c.opacity=+$('customOverlayOpacity').value;
-      c.font=$('customOverlayFont').value; c.align=$('customOverlayAlign').value; c.shadow=$('customOverlayShadow').checked;
+      const c=curCustom();
+      if(c){
+        c.name=$('customOverlayName').value.trim()||'Message'; c.text=$('customOverlayText').value.trim(); c.style=$('customOverlayStyle').value;
+        c.color=$('customOverlayColor').value; c.bg=$('customOverlayBg').value; c.opacity=+$('customOverlayOpacity').value;
+        c.font=$('customOverlayFont').value; c.align=$('customOverlayAlign').value; c.shadow=$('customOverlayShadow').checked;
+      }
       state.cfg.overlayFont=+$('overlayFont').value; state.cfg.overlayPad=+$('overlayPad').value;
-      applyStyle(); saveState(); rerenderWidgets(); paint();
+      applyStyle(); saveState(); rerenderWidgets(); paint(); paintPicker(); refresh();
     };
     let saveTimer;
-    ['customOverlayText','customOverlayStyle','customOverlayColor','customOverlayBg','customOverlayOpacity','customOverlayFont','customOverlayAlign','customOverlayShadow','overlayFont','overlayPad'].forEach(id=>{
-      const el=$(id); el.oninput=()=>{paint(); clearTimeout(saveTimer); saveTimer=setTimeout(save,350);}; el.onchange=()=>{clearTimeout(saveTimer);save();};
+    [...fields,'overlayFont','overlayPad'].forEach(id=>{
+      const el=$(id); el.oninput=()=>{paint(); clearTimeout(saveTimer); saveTimer=setTimeout(save,350);};
+      el.onchange=()=>{clearTimeout(saveTimer); save();};
     });
-    customOverlaySave=save; paint();
+    $('customPick').onchange=()=>{ customSel=$('customPick').value||null; fill(); };
+    $('customNew').onclick=()=>{
+      if(state.cfg.customs.length>=12) return;
+      const c=normCustom({name:'Message '+(state.cfg.customs.length+1),text:'New message'});
+      state.cfg.customs.push(c); state.cfg.corner['c:'+c.id]='bl'; state.cfg.show['c:'+c.id]=true; customSel=c.id;
+      saveState(); rerenderWidgets(); refresh(); fill(); $('customOverlayText').focus();
+    };
+    $('customDelete').onclick=()=>{
+      const c=curCustom(); if(!c||!confirm(`Delete "${c.name}"?`)) return;
+      const k='c:'+c.id; state.cfg.customs=state.cfg.customs.filter(x=>x.id!==c.id);
+      delete state.cfg.corner[k]; delete state.cfg.show[k];
+      if(state.cfg.layout) delete state.cfg.layout[k]; if(state.cfg.wsize) delete state.cfg.wsize[k];
+      customSel=null; saveState(); rerenderWidgets(); refresh(); fill();
+    };
+    fill();
   }
   bindCustomOverlay();
   function bindOverlayStudio(){
@@ -3165,18 +3463,19 @@ bindChk('remoteOn','cfg.remote.on',()=>{
   }
   function paintOverlayDesign(){
     const root=$('overlayDesignPreview');if(!root)return;
-    root.querySelectorAll('.wl').forEach(el=>el.innerHTML='');const cfg=state.cfg;
-    if(cfg.show.wx)root.querySelector(`[data-c="${cfg.corner.wx}"]`).innerHTML=weatherHTML({temp:72,feels:74,wind:12,hum:64,rain:40,pres:1014,precip:.4,code:2,isDay:true,sunrise:'2026-10-09T07:10',sunset:'2026-10-09T18:45'},{name:'Harbor camera · sample'});
-    const samples=displayAlerts([{event:'Severe Thunderstorm Warning',head:'Strong winds and heavy rain possible.',sev:'Severe',area:'Sample County',instr:'Move indoors and stay away from windows.',desc:'Sample alert for design preview.',ends:new Date(Date.now()+3600000).toISOString()}]);
-    root.querySelector('.pagestrip').innerHTML=cfg.show.alert?samples.slice(0,cfg.alertMax).map(bannerHTML).join(''):'';
-    const alertHeight=root.querySelector('.pagestrip').getBoundingClientRect().height;
-    root.style.setProperty('--btop',alertHeight+'px');
-    root.style.minHeight=Math.max(400,alertHeight+230)+'px';
-    root.querySelector('.tickbar').hidden=!cfg.show.ticker;root.querySelector('.tickbar').innerHTML=`<span class="run">${esc([cfg.tickerText,cfg.tickerAlerts&&samples.length?'⚠ '+samples[0].event:'',cfg.tickerSun?'Sunrise 7:10 AM · Sunset 6:45 PM':''].filter(Boolean).join(' · '))}</span>`;
+    /* the design preview runs the real renderer on sample data, so placement, size and styling match the output */
+    root._designPreview=true; root._showWidgets=true;
+    const sampleWx={temp:68,feels:74,wind:2,hum:64,rain:22,pres:1014,precip:0,code:3,isDay:true,sunrise:'2026-10-09T07:10',sunset:'2026-10-09T18:45',updated:Date.now(),
+      forecast:[{date:'2026-10-15',high:70,low:61,code:3,rain:22},{date:'2026-10-16',high:73,low:51,code:61,rain:60},{date:'2026-10-17',high:55,low:39,code:3,rain:25}]};
+    registerScope(root,{cam:{id:'sample',name:'[WOO] US-50 @ Dupont Rd Blennerhassett island bridge',lat:0,lon:0},wx:sampleWx,next:null,
+      alerts:[{event:'Severe Thunderstorm Warning',head:'Strong winds and heavy rain possible.',sev:'Severe',area:'Sample County',instr:'Move indoors and stay away from windows.',desc:'Sample alert for design preview.',ends:new Date(Date.now()+3600000).toISOString()}]});
   }
   bindOverlayStudio();
   let overlayPreviewResize;
   window.addEventListener('resize',()=>{clearTimeout(overlayPreviewResize);overlayPreviewResize=setTimeout(paintOverlayDesign,100);});
+
+  WeatherStudio.init({getState:()=>state,save:saveState,catalog:OBS_CAMERAS,refresh:()=>{renderGroupControls();renderGroupList();renderCamList();renderDash();renderThumbs();renderPreview(true);},rerender:rerenderWidgets,edit:openCameraEditor,settings:()=>{setControlPage('settings');showSettingsSection('information');}});
+  showSettingsSection(settingsSection);
 
   /* ---- boot ---- */
   updateOsmLink(NaN,NaN);
@@ -3253,6 +3552,7 @@ if(mode==='output'){
     });
   }
   /* ---- widget scope ---- */
+  oWrap.classList.add('broadcast','is-framed');
   registerScope(oWrap,{cam:null,wx:null,alerts:[],next:null});
   function setScope(cam,wx,alerts,next){
     oWrap._ctx={cam,wx,alerts:alerts||[],next:next||null};
@@ -3261,7 +3561,6 @@ if(mode==='output'){
   function nextThumb(cam){ return cam&&cam.type==='image'?stamp(cam):''; }
   function nextCtx(){ const n=peekNextCam(); return n?{name:n.name,id:n.id,thumb:nextThumb(n)}:null; }
   function updateNextWidget(){
-    if(mode==='output'&&document.fullscreenElement===oWrap) return;
     if(!rotationActive()||paused||hoverPause){
       const w=oWrap.querySelector('.w.next'); if(w) w.style.display='none';
       return;
@@ -3295,6 +3594,7 @@ if(mode==='output'){
     const ids=outputCameras().map(c=>c.id);
     if(!ids.length) return null;
     if(state.rotateOrder==='shuffle'){
+      shuffleBag=shuffleBag.filter(id=>ids.includes(id)&&id!==state.activeId);
       if(!shuffleBag.length) refillBag(state.activeId);
       return shuffleBag.pop()||state.activeId;
     }
@@ -3305,7 +3605,9 @@ if(mode==='output'){
     const ids=outputCameras().map(c=>c.id);
     if(!ids.length) return null;      let id;
     if(state.rotateOrder==='shuffle'){
-      id=shuffleBag.length?shuffleBag[shuffleBag.length-1]:ids.filter(x=>x!==state.activeId)[0];
+      shuffleBag=shuffleBag.filter(id=>ids.includes(id)&&id!==state.activeId);
+      if(!shuffleBag.length)refillBag(state.activeId);
+      id=shuffleBag[shuffleBag.length-1];
     } else {
       let i=ids.indexOf(state.activeId); if(i<0) i=0;
       id=ids[(i+1)%ids.length];
@@ -3314,8 +3616,11 @@ if(mode==='output'){
   }
 
   /* ---- rendering ---- */
+  let sceneVersion=0;
   function showCamera(c,fade){
-    if(!c||!cameraActive(c)||!state.multiIds.includes(c.id)){ c=currentCam(); if(!c){grid.innerHTML='<div class="hint" style="padding:20px">No cameras are selected for the output. Use + Output on any camera in the Camera library.</div>';return;} }
+    const version=++sceneVersion;
+    lastRotate=Date.now();
+    if(!c||!cameraActive(c)||!state.multiIds.includes(c.id)){ c=currentCam(); if(!c){grid.innerHTML='<div class="hint" style="padding:20px">No cameras are selected for the output. Use + Output on any camera in the Camera library.</div>';setScope(null,null,[],null);return;} }
     grid.className='grid g1'+(state.cfg.bgData?' hasbg':''); applyGridDims(grid,1);
     const old=grid.querySelector('.camtile:not(.leaving)');
     const tile=buildTile(c);
@@ -3330,12 +3635,14 @@ if(mode==='output'){
     $('rotIdx').textContent='Cam '+(outputCameras().findIndex(x=>x.id===c.id)+1)+' / '+outputCameras().length;
     $('rotName').textContent=c.name;
     ['btnPrev','btnPlay','btnNext'].forEach(id=>{ const b=$(id); if(b) b.disabled=!rotationActive(); });
-    fetchWx(c).then(d=>{ setScope(c,d,oWrap._ctx.alerts,nextCtx()); });
-    loadAlertsFor([c],list=>{ setScope(c,oWrap._ctx.wx,list,nextCtx()); });
+    setScope(c,wxCache[c.id]?.data||null,alCache[c.id]?.data||[],nextCtx());
+    fetchWx(c).then(d=>{if(version===sceneVersion)setScope(c,d,oWrap._ctx.alerts,nextCtx());}).catch(()=>{if(version===sceneVersion)setScope(c,null,oWrap._ctx.alerts,nextCtx());});
+    loadAlertsFor([c],list=>{if(version===sceneVersion)setScope(c,oWrap._ctx.wx,list,nextCtx());});
 
     updatePauseVisuals();
   }
   function renderGrid(){
+    const version=++sceneVersion;
     const cams=gridCams();
     grid.className='grid g'+state.multiView+(state.cfg.bgData?' hasbg':''); applyGridDims(grid,state.multiView);
     grid.innerHTML='';
@@ -3347,7 +3654,10 @@ if(mode==='output'){
     $('rotIdx').textContent='Grid · '+cams.length+' cams';
     $('rotName').textContent='';
     ['btnPrev','btnPlay','btnNext'].forEach(id=>{ const b=$(id); if(b) b.disabled=true; });
-    loadAlertsFor(cams,list=>setScope(null,null,list,null));
+    const primary=cams[0];
+    setScope(primary,wxCache[primary.id]?.data||null,[],null);
+    loadAlertsFor(cams,list=>{if(version===sceneVersion)setScope(primary,oWrap._ctx.wx,list,null);});
+    fetchWx(primary).then(wx=>{if(version===sceneVersion)setScope(primary,wx,oWrap._ctx.alerts,null);}).catch(()=>{});
   }
   function renderOutput(rebuild){
     const eligible=outputCameras();
@@ -3389,7 +3699,7 @@ if(mode==='output'){
 
   /* ---- rotation ticker ---- */
   setInterval(()=>{
-    if(!rotationActive()||document.fullscreenElement){ $('cdownFill').style.width='0'; $('paused').textContent=''; return; }
+    if(!rotationActive()||oWrap._fullscreenTile){ $('cdownFill').style.width='0'; $('paused').textContent=''; return; }
     const ms=rotationMs(), now=Date.now();
     if(!paused&&!hoverPause&&now-lastRotate>=ms){
       lastRotate=now;
@@ -3419,6 +3729,7 @@ if(mode==='output'){
     if(k===' '){ togglePause(); e.preventDefault(); return; }
     if(k==='f'||k==='F'){ $('btnFull').click(); return; }
     if(k==='o'||k==='O'){ $('btnOverlay').click(); return; }
+    if(k==='m'||k==='M'){ state.cfg.minimal=!state.cfg.minimal; const mm=$('minimalMode'); if(mm) mm.checked=state.cfg.minimal; applyStyle(); saveState(); rerenderWidgets(); e.preventDefault(); return; }
     if(k==='r'||k==='R'){ forceRefresh(); return; }
     if(k==='l'||k==='L'){ const i=LAYOUT_ORDER.indexOf(state.multiView); state.multiView=LAYOUT_ORDER[(i+1+(i<0?1:0))%LAYOUT_ORDER.length]; saveState(); renderOutput(true); e.preventDefault(); return; }
     if(k==='ArrowRight'||k==='n'||k==='N'){ step(1); e.preventDefault(); return; }
@@ -3446,7 +3757,7 @@ if(mode==='output'){
   });
   /* overlays live outside the tile, so move them into it to keep widgets on screen in fullscreen */
   let movedOut=[];
-  function overlaysInScope(){ return [...oWrap.children].filter(el=>el.classList.contains('wl')||el.classList.contains('pagestrip')||el.classList.contains('tickbar')); }
+  function overlaysInScope(){ return [...oWrap.children].filter(el=>el.classList.contains('wl')||el.classList.contains('pagestrip')||el.classList.contains('tickbar')||el.classList.contains('studio-graphics')); }
   function restoreOverlays(){ movedOut.forEach(n=>oWrap.appendChild(n)); movedOut=[]; oWrap._fullscreenTile=null; }
   document.addEventListener('fullscreenchange',()=>{
     const fs=document.fullscreenElement;
@@ -3481,15 +3792,21 @@ if(mode==='output'){
       if(oWrap._radarEl) requestAnimationFrame(()=>fitRadar(oWrap._radarEl));
     }
   });
-  grid.addEventListener('mouseenter',()=>{ if(!rotationActive()||paused) return; hoverRemain=rotationMs()-(Date.now()-lastRotate); hoverPause=true; });
-  grid.addEventListener('mouseleave',()=>{ if(!hoverPause) return; hoverPause=false; if(!document.fullscreenElement) lastRotate=Date.now()-Math.max(0,rotationMs()-(hoverRemain||rotationMs())); });
+  grid.addEventListener('mouseenter',()=>{ if(tv||document.fullscreenElement||!state.cfg.studio.hoverPause||!rotationActive()||paused) return; hoverRemain=rotationMs()-(Date.now()-lastRotate); hoverPause=true; });
+  grid.addEventListener('mouseleave',()=>{ if(!hoverPause) return; hoverPause=false; if(!oWrap._fullscreenTile) lastRotate=Date.now()-Math.max(0,rotationMs()-(hoverRemain||rotationMs())); });
 
   /* ---- alerts refresh loop (active cam / grid cams) ---- */
   setInterval(()=>{
     const cams=state.multiView===1?[currentCam()].filter(Boolean):gridCams();
     if(!cams.length) return;
-    loadAlertsFor(cams);
-  },2*60*1000);  window.addEventListener('storage',e=>{
+    const alertVersion=sceneVersion;
+    loadAlertsFor(cams,list=>{if(alertVersion===sceneVersion)setScope(oWrap._ctx.cam,oWrap._ctx.wx,list,nextCtx());});
+    const version=sceneVersion;
+    const cam=cams[0];
+    fetchWx(cam).then(wx=>{if(version===sceneVersion)setScope(cam,wx,oWrap._ctx.alerts,nextCtx());}).catch(()=>{});
+  },2*60*1000);
+  setInterval(()=>{if(oWrap.isConnected)renderWidgets(oWrap);},8000);
+  window.addEventListener('storage',e=>{
     if(e.key!==KEY) return;
     state=loadState();
     if(currentCam()) state.activeId=currentCam().id;
@@ -3501,7 +3818,7 @@ if(mode==='output'){
   /* ---- TV / kiosk mode: wake lock, idle cursor, one-tap fullscreen start ---- */
   let wakeObj=null;
   function wakeLock(){
-    if(!('wakeLock' in navigator)) return;
+    if(wakeObj||!('wakeLock' in navigator)||document.visibilityState!=='visible') return;
     navigator.wakeLock.request('screen').then(l=>{ wakeObj=l; l.addEventListener('release',()=>{ wakeObj=null; }); }).catch(()=>{});
   }
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&!wakeObj) wakeLock(); });
@@ -3514,15 +3831,16 @@ if(mode==='output'){
     const sp=document.createElement('div');
     sp.id='tvSplash';
     sp.innerHTML=`<div class="big">WEATHER CAM STATION</div>
-      <button id="tvStart">⛶ Start TV mode</button>
-      <div class="hint">Fullscreen + screen wake-lock keep the wall up all day.<br>Keyboard: Space · ← / → · R · O · F &nbsp;—&nbsp; or use the 📱 phone remote.</div>`;
+      <button id="tvStart">⛶ Start TV mode</button><button id="tvContinue">Continue without fullscreen</button><a href="?mode=control">Back to control center</a>
+      <div class="hint">Fullscreen + screen wake-lock keep the wall up all day.<br>Keyboard: Space · ← / → · R · O · M · F &nbsp;—&nbsp; or use the 📱 phone remote.</div>`;
     document.body.appendChild(sp);
     sp.querySelector('#tvStart').onclick=()=>{
       sp.remove();
       const el=$('oWrap');
-      if(el&&el.requestFullscreen) el.requestFullscreen().catch(()=>{});
-      wakeLock();
+      if(el&&el.requestFullscreen) el.requestFullscreen().catch(()=>{console.info('Fullscreen unavailable; TV layout continues in this window.');});
+      hoverPause=false;lastRotate=Date.now();wakeLock();
     };
+    sp.querySelector('#tvContinue').onclick=()=>{sp.remove();hoverPause=false;lastRotate=Date.now();wakeLock();};
   }
 
   /* ---- remote control: commands in, status out ---- */
