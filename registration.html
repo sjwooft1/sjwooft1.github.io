@@ -4,636 +4,492 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Brighton Oaks 5K — Registration</title>
+  <meta name="description" content="Register for the Brighton Oaks 5K Thanksgiving Day run. Online registration with bib assignment, pace prediction and instant confirmation." />
   <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
   <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-title" content="BO 5k" />
   <link rel="manifest" href="/Favicon Generator/site.webmanifest" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    @font-face {
-      font-family: 'Oakhill';
-      src: url('fonts/Oakhill.ttf') format('truetype');
-    }
-    @font-face {
-      font-family: 'run';
-      src: url('fonts/RUNNING DEMO.otf') format('opentype');
-    }
-    :root {
-      --accent: #3b6e22;
-      --accent2: #ff7f11;
-      --bg: #0f1724;
-      --card: #131f33;
-      --text: #e6eef8;
-      --muted: #9ca3af;
-      --shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0; min-height: 100vh;
-      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
-    }
-    .navbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 24px;
-      background: linear-gradient(135deg, #131f33 0%, #0f1724 100%);
-      box-shadow: var(--shadow);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      border-bottom: 1px solid rgba(60, 110, 34, 0.1);
-    }
-    .navbar .logo {
-      display: flex;
-      align-items: center;
-      flex-shrink: 0;
-    }
-    .navbar .logo span {
-      font-family: 'Luckiest Guy', cursive;
-      font-size: 1.8rem;
-      color: var(--accent2);
-      letter-spacing: 1px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-    }
-    .navbar .nav-links {
-      font-family: 'run', sans-serif;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .navbar .nav-links a {
-      font-family: 'run', sans-serif;
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 16px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .navbar .nav-links a:hover {
-      color: var(--accent2);
-      background: rgba(255, 127, 17, 0.1);
-      transform: translateY(-1px);
-    }
-    .navbar .nav-links a.active {
-      background: var(--accent);
-      color: white;
-    }
-    .hero {
-      height: 40vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: url('images/road.jpeg') center/cover no-repeat;
-      position: relative;
-      color: white;
-      text-align: center;
-    }
-    .hero::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-    }
-    .hero-content {
-      position: relative;
-      z-index: 1;
-    }
-    .hero-content h1 {
-      font-size: 2.5rem;
-      margin: 0;
-      text-shadow: 0 4px 14px rgba(0,0,0,0.6);
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-    .header {
-      background: var(--card);
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      margin-bottom: 24px;
-      text-align: center;
-    }
-    .header h1 {
-      margin: 0;
-      color: var(--accent2);
-    }
-    .subtitle {
-      color: var(--muted);
-      margin-top: 8px;
-    }
-    .form-container {
-      background: var(--card);
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--text);
-    }
-    input, select {
-      width: 100%;
-      padding: 12px;
-      background: rgba(255,255,255,0.05);
-      border: 2px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      font-size: 16px;
-      color: var(--text);
-    }
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--accent2);
-    }
-    .btn {
-      background: var(--accent2);
-      color: #fff;
-      border: 0;
-      padding: 12px 24px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 600;
-      width: 100%;
-      transition: all 0.2s ease;
-    }
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255,127,17,0.3);
-    }
-    .btn:disabled {
-      background: var(--muted);
-      transform: none;
-      cursor: not-allowed;
-    }
-    .success {
-      background: rgba(59,110,34,0.2);
-      color: #4ade80;
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 15px;
-      display: none;
-      border: 1px solid rgba(74,222,128,0.2);
-    }
-    .error {
-      background: rgba(239,68,68,0.2);
-      color: #f87171;
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 15px;
-      display: none;
-      border: 1px solid rgba(248,113,113,0.2);
-    }
-    .registered-runners {
-      margin-top: 30px;
-      padding: 24px;
-      background: var(--card);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-    }
-    .registered-runners h3 {
-      color: var(--accent2);
-      margin-top: 0;
-    }
-    .runner-item {
-      padding: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    .runner-item:last-child {
-      border-bottom: none;
-    }
-    .runner-name {
-      color: var(--text);
-      font-weight: 600;
-    }
-    .runner-details {
-      color: var(--muted);
-      font-size: 0.9rem;
-      margin-top: 4px;
-    }
-    .footer {
-      background: #101b2f;
-      color: #aaa;
-      text-align: center;
-      padding: 30px 12px;
-      margin-top: 60px;
-      border-top: 1px solid rgba(255,255,255,0.05);
-    }
-    .footer-art {
-      height: 60px;
-      margin-bottom: 10px;
-    }
-    @media (max-width: 768px) {
-      .container { padding: 20px; }
-      .header, .form-container { padding: 20px; }
-      .hero-content h1 { font-size: 2rem; }
-    }
-
-    /* Mobile Optimizations */
-    @media screen and (max-width: 900px) {
-      .form-container {
-        width: 95%;
-        padding: 20px;
-      }
-      
-      .form-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-      }
-      
-      .input-group {
-        margin-bottom: 15px;
-      }
-      
-      input, select {
-        font-size: 16px; /* Prevents iOS zoom on focus */
-        padding: 12px;
-      }
-      
-      .submit-button {
-        width: 100%;
-        padding: 14px;
-        font-size: 16px;
-      }
-      
-      .hero {
-        min-height: 40vh;
-      }
-      
-      .hero h1 {
-        font-size: 2.2rem;
-      }
-    }
-
-    @media screen and (max-width: 480px) {
-      .navbar {
-        padding: 10px;
-      }
-      
-      .navbar .logo {
-        font-size: 1.2rem;
-      }
-      
-      .navbar .nav-links {
-        gap: 6px;
-      }
-      
-      .navbar a {
-        padding: 6px 10px;
-        font-size: 14px;
-      }
-      
-      .form-container {
-        padding: 15px;
-      }
-      
-      .hero h1 {
-        font-size: 1.8rem;
-      }
-      
-      label {
-        font-size: 14px;
-      }
-      
-      .form-note {
-        font-size: 13px;
-      }
-    }
-
-    /* Touch optimizations */
-    @media (hover: none) {
-      button, input[type="submit"], .navbar a {
-        -webkit-tap-highlight-color: transparent;
-        touch-action: manipulation;
-      }
-      
-      button:active, input[type="submit"]:active, .navbar a:active {
-        transform: scale(0.98);
-      }
-      
-      .submit-button:hover {
-        transform: none;
-      }
-      
-      .notification {
-        bottom: 20px;
-        top: auto;
-        left: 50%;
-        transform: translateX(-50%) translateY(100%);
-        width: 90%;
-        max-width: 400px;
-        text-align: center;
-      }
-      
-      .notification.show {
-        transform: translateX(-50%) translateY(0);
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="race.css" />
 </head>
 <body>
   <nav class="navbar">
-    <div class="logo">
-      <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
-    </div>
+    <a class="brand" href="index.html">
+      <div class="brand-mark">BO</div>
+      <div>
+        <span class="brand-name">Brighton Oaks 5K</span>
+        <span class="brand-sub">Thanksgiving Day Run</span>
+      </div>
+    </a>
     <div class="nav-links">
       <a href="index.html">Home</a>
       <a href="registration.html" class="active">Register</a>
       <a href="results.html">Results</a>
+      <a href="map.html">Course</a>
       <a href="bibprinter.html">Bib Printer</a>
     </div>
   </nav>
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Register for the Brighton Oaks 5k</h1>
-    </div>
-  </section>
-  <div class="container">
-    <div class="header">
+
+  <header class="hero" style="--hero-img:url('images/road.jpeg')">
+    <div class="hero-inner">
+      <div class="eyebrow">Entry Form</div>
       <h1>Race Registration</h1>
-      <div class="subtitle">Register for the Brighton 5K 2025</div>
-      <div id="countdownDisplay" style="font-size:20px; font-weight:600; margin-top:15px; padding:10px; background:rgba(255,255,255,0.9); border-radius:8px; display:none;">
-        <div id="countdownText">Countdown will appear here</div>
+      <p class="lede">Claim your bib for the Brighton Oaks 5K. Registration takes about a minute — you'll get your bib number and pace prediction instantly.</p>
+      <div class="hero-chips">
+        <span class="chip"><span class="dot"></span>Thu, Nov 26, 2026 · 8:30 AM</span>
+        <span class="chip"><span class="dot"></span>Brighton Oaks, South Carolina</span>
+        <span class="chip"><span class="dot"></span>5K · USATF-certified distance</span>
+        <span class="chip"><span class="dot"></span>Free entry · Shirt included</span>
       </div>
     </div>
-    <div class="form-container">
-      <form id="registrationForm">
-        <div class="form-group">
-          <label for="runnerName">Full Name *</label>
-          <input type="text" id="runnerName" name="name" required placeholder="Enter your full name">
-        </div>
-        <div class="form-group">
-          <label for="runnerSize">Shirt Size *</label>
-          <select id="runnerSize" name="size" required>
-            <option value="">-- Select a size --</option>
-            <option value="XS">Extra Small</option>
-            <option value="S">Small</option>
-            <option value="M">Medium</option>
-            <option value="L">Large</option>
-            <option value="XL">Extra Large</option>
-            <option value="XXL">Double Extra Large</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="estimatedTime">Estimated Finish Time *</label>
-          <div class="time-inputs">
-            <input type="number" id="minutes" name="minutes" min="0" max="59" placeholder="MM" required>
-            <input type="number" id="seconds" name="seconds" min="0" max="59" placeholder="SS" required>
-            <input type="number" id="milliseconds" name="milliseconds" min="0" max="999" placeholder="MS" required>
+  </header>
+
+  <main class="page">
+    <div class="grid grid-2">
+      <!-- ================= Registration form ================= -->
+      <section class="card" id="formCard">
+        <div class="card-head">
+          <div class="card-title">
+            <div>
+              <div class="eyebrow">Step 1 of 1</div>
+              <h2>Runner Information</h2>
+            </div>
           </div>
-          <div class="help-text">Enter your estimated finish time in MM:SS.MS format</div>
+          <span class="badge orange">Closes Nov 22</span>
         </div>
-        <button type="submit" class="btn" id="submitBtn">Register for Race</button>
-      </form>
-      <div class="success" id="successMessage">
-        Registration successful! Your bib number will be assigned based on your estimated time.
-      </div>
-      <div class="error" id="errorMessage">
-        Registration failed. Please try again.
-      </div>
-    </div>
-    <div class="registered-runners" id="registeredRunners" style="display:none">
-      <h3>Recently Registered Runners</h3>
-      <div id="runnersList"></div>
-    </div>
-    <div class="admin-link">
-      <a href="index.html">Go back home</a>
-    </div>
-  </div>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDUnAV-DL-Saw2ByPY6GF8aDaZbVCXDIH4",
-      authDomain: "the-race-organizer.firebaseapp.com",
-      databaseURL: "https://the-race-organizer-default-rtdb.firebaseio.com",
-      projectId: "the-race-organizer",
-      storageBucket: "the-race-organizer.firebasestorage.app",
-      messagingSenderId: "265977321479",
-      appId: "1:265977321479:web:23d3f3077e8e766323b2a2",
-      measurementId: "G-PKGPD78DYM"
-    };
+        <form id="registrationForm" novalidate>
+          <div class="form-section">
+            <h3>About you</h3>
+            <div class="section-note">Bib numbers are assigned by predicted finish time, so accuracy helps seeding.</div>
+            <div class="form-grid">
+              <div class="field span-2" id="f-name">
+                <label for="runnerName">Full name <span class="req">*</span></label>
+                <input type="text" id="runnerName" name="name" autocomplete="name" placeholder="e.g. Jordan Smith" maxlength="60" />
+                <div class="field-error">Please enter your full name (at least 2 characters).</div>
+              </div>
+              <div class="field" id="f-email">
+                <label for="runnerEmail">Email <span class="muted small">(optional)</span></label>
+                <input type="email" id="runnerEmail" name="email" autocomplete="email" placeholder="you@example.com" maxlength="80" />
+                <div class="help">Only used for race-day updates.</div>
+                <div class="field-error">That doesn't look like a valid email address.</div>
+              </div>
+              <div class="field" id="f-age">
+                <label for="runnerAge">Age <span class="muted small">(optional)</span></label>
+                <input type="number" id="runnerAge" name="age" min="1" max="100" placeholder="e.g. 34" inputmode="numeric" />
+                <div class="help">Used for age-group awards.</div>
+                <div class="field-error">Age must be between 1 and 100.</div>
+              </div>
+              <div class="field" id="f-division">
+                <label for="runnerDivision">Division</label>
+                <select id="runnerDivision" name="division">
+                  <option value="U">Prefer not to say</option>
+                  <option value="F">Women</option>
+                  <option value="M">Men</option>
+                  <option value="X">Non-binary</option>
+                </select>
+              </div>
+              <div class="field" id="f-size">
+                <label for="runnerSize">Shirt size <span class="req">*</span></label>
+                <select id="runnerSize" name="size">
+                  <option value="">Select a size…</option>
+                  <option value="XS">Youth Large / XS</option>
+                  <option value="S">Small</option>
+                  <option value="M">Medium</option>
+                  <option value="L">Large</option>
+                  <option value="XL">X-Large</option>
+                  <option value="XXL">XX-Large</option>
+                </select>
+                <div class="field-error">Please choose a shirt size.</div>
+              </div>
+            </div>
+          </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const form = document.getElementById('registrationForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const successMessage = document.getElementById('successMessage');
-    const errorMessage = document.getElementById('errorMessage');
-    const registeredRunners = document.getElementById('registeredRunners');
-    const runnersList = document.getElementById('runnersList');
-
-    function getTimeInMs() {
-      const minutes = parseInt(document.getElementById('minutes').value) || 0;
-      const seconds = parseInt(document.getElementById('seconds').value) || 0;
-      const milliseconds = parseInt(document.getElementById('milliseconds').value) || 0;
-      return (minutes * 60 + seconds) * 1000 + milliseconds;
-    }
-
-    function formatTime(ms) {
-      const totalMs = Math.max(0, Math.floor(ms));
-      const minutes = Math.floor(totalMs / 60000);
-      const seconds = Math.floor((totalMs % 60000) / 1000);
-      const msPart = totalMs % 1000;
-      return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(msPart).padStart(3,'0')}`;
-    }
-
-    function showSuccess() {
-      successMessage.style.display = 'block';
-      errorMessage.style.display = 'none';
-      form.reset();
-      setTimeout(() => {
-        successMessage.style.display = 'none';
-      }, 5000);
-    }
-
-    function showError(message) {
-      errorMessage.textContent = message;
-      errorMessage.style.display = 'block';
-      successMessage.style.display = 'none';
-      setTimeout(() => {
-        errorMessage.style.display = 'none';
-      }, 5000);
-    }
-
-    function loadRegisteredRunners() {
-      const runnersRef = ref(db, 'registrations');
-      onValue(runnersRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const runners = Object.values(data).sort((a, b) => a.estimatedTime - b.estimatedTime);
-          if (runners.length > 0) {
-            registeredRunners.style.display = 'block';
-            runnersList.innerHTML = '';
-            runners.forEach((runner, index) => {
-              const runnerDiv = document.createElement('div');
-              runnerDiv.className = 'runner-item';
-              runnerDiv.innerHTML = `
-                <div class="runner-info">
-                  <div class="runner-name">${runner.name}</div>
-                  <div class="runner-details">
-                    Shirt Size: ${runner.size} | 
-                    Estimated Time: ${formatTime(runner.estimatedTime)} | 
-                    Bib: ${String(index + 1).padStart(4, '0')} | 
-                    Registered: ${new Date(runner.registeredAt).toLocaleString()}
-                  </div>
+          <div class="form-section">
+            <h3>Race plan</h3>
+            <div class="section-note">Your estimate sets your starting corral and bib number.</div>
+            <div class="form-grid">
+              <div class="field" id="f-est">
+                <label for="estimatedTime">Estimated finish time <span class="req">*</span></label>
+                <input type="text" id="estimatedTime" name="estimatedTime" placeholder="MM:SS  e.g. 25:45" inputmode="numeric" autocomplete="off" />
+                <div class="help">Format <span class="kbd">MM:SS</span> — not sure? Guess; you can adjust later.</div>
+                <div class="field-error">Enter a valid time between 5:00 and 2:00:00 (e.g. 25:45).</div>
+              </div>
+              <div class="field">
+                <label>Projected pace</label>
+                <div class="stat" style="background:var(--bg-soft)">
+                  <div class="stat-value mono" id="pacePreview">— /mi</div>
+                  <div class="stat-sub" id="paceSub">Enter an estimate to see your pace</div>
                 </div>
-              `;
-              runnersList.appendChild(runnerDiv);
-            });
-          } else {
-            registeredRunners.style.display = 'none';
-          }
-        } else {
-          registeredRunners.style.display = 'none';
-        }
-      });
+              </div>
+              <div class="field span-2">
+                <label for="runnerExperience">Running experience <span class="muted small">(optional)</span></label>
+                <select id="runnerExperience" name="experience">
+                  <option value="">Prefer not to say</option>
+                  <option value="first">This is my first 5K</option>
+                  <option value="casual">I run for fun</option>
+                  <option value="regular">I race regularly</option>
+                  <option value="competitive">Competitive / chasing a PR</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Emergency contact <span class="muted small" style="font-weight:500">(optional)</span></h3>
+            <div class="section-note">Recommended for race-day safety.</div>
+            <div class="form-grid">
+              <div class="field">
+                <label for="emergencyName">Contact name</label>
+                <input type="text" id="emergencyName" placeholder="e.g. Alex Smith" maxlength="60" />
+              </div>
+              <div class="field">
+                <label for="emergencyPhone">Contact phone</label>
+                <input type="tel" id="emergencyPhone" placeholder="(555) 123-4567" maxlength="24" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="check-row" id="f-waiver">
+              <input type="checkbox" id="waiver" />
+              <label for="waiver">
+                I accept the race waiver: I am physically fit to run this event, I enter at my own risk, and I grant permission for free use of my name and likeness in race photos and results. <span class="req">*</span>
+              </label>
+            </div>
+            <div class="field-error" id="waiverError" style="margin-top:8px">Please accept the waiver to register.</div>
+          </div>
+
+          <div class="btn-row" style="margin-top:22px">
+            <button type="submit" class="btn lg" id="submitBtn">Complete Registration</button>
+            <a class="btn ghost lg" href="form.html">Email / paper entry</a>
+          </div>
+          <div class="notice error" id="formError" style="margin-top:14px"></div>
+        </form>
+
+        <!-- Success panel -->
+        <div id="successPanel" style="display:none">
+          <div class="notice success show" style="margin-bottom:18px">
+            <span>✓</span>
+            <div>You're registered! Your entry has been saved to the race roster.</div>
+          </div>
+          <div class="stat-strip" style="margin-bottom:18px">
+            <div class="stat">
+              <div class="stat-label">Your bib</div>
+              <div class="stat-value mono" id="successBib">0000</div>
+              <div class="stat-sub">Assigned by predicted time</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Predicted finish</div>
+              <div class="stat-value mono" id="successTime">—</div>
+              <div class="stat-sub" id="successPace">— /mi</div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <a class="btn primary" href="bibprinter.html">Print my bib</a>
+            <a class="btn ghost" href="results.html">View live results</a>
+            <button class="btn ghost" id="registerAnother">Register another runner</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= Sidebar ================= -->
+      <aside class="grid" style="align-content:start;gap:18px">
+        <div class="card">
+          <div class="eyebrow">Countdown to race day</div>
+          <div class="stat-value" id="countdownMain" style="font-size:2.1rem">—</div>
+          <div class="stat-sub" id="countdownSub">Thursday, November 26, 2026 · 8:30 AM</div>
+          <hr class="divider" />
+          <div class="small muted">Registration closes <b style="color:var(--text)">Nov 22</b> — late entries accepted via the <a href="form.html">email form</a>.</div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow">What's included</div>
+          <ul class="small muted" style="margin:6px 0 0; padding-left:18px; line-height:2">
+            <li>Chip-style timed results with live leaderboard</li>
+            <li>Custom race shirt (choose your size)</li>
+            <li>Printable bib from the Bib Printer</li>
+            <li>Age-group &amp; division awards</li>
+            <li>Post-race celebration at the fire pit</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow">Already registered?</div>
+          <p class="small muted">Find yourself on the roster below, or check the live leaderboard on race day.</p>
+          <div class="btn-row">
+            <a class="btn ghost sm" href="results.html">Live results</a>
+            <a class="btn ghost sm" href="map.html">Course map</a>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ================= Roster ================= -->
+    <section class="card" style="margin-top:22px">
+      <div class="card-head">
+        <div>
+          <div class="eyebrow">Race roster</div>
+          <h2>Registered Runners</h2>
+        </div>
+        <div class="toolbar" style="flex:1; max-width:520px">
+          <div class="search">
+            <input type="text" id="rosterSearch" placeholder="Search name or bib…" />
+          </div>
+          <span class="badge gray" id="rosterCount">0 runners</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data" id="rosterTable">
+          <thead>
+            <tr>
+              <th>Bib</th>
+              <th>Runner</th>
+              <th>Division</th>
+              <th>Age group</th>
+              <th>Shirt</th>
+              <th style="text-align:right">Est. finish</th>
+              <th style="text-align:right">Pace</th>
+              <th>Registered</th>
+            </tr>
+          </thead>
+          <tbody id="rosterBody">
+            <tr><td colspan="8" class="muted" style="text-align:center;padding:26px">Loading roster…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p><b style="color:var(--text)">Brighton Oaks 5K</b> · Thanksgiving Day Run · Brighton Oaks, South Carolina</p>
+    <p style="margin-top:8px">
+      <a href="index.html">Home</a> ·
+      <a href="results.html">Results</a> ·
+      <a href="map.html">Course Map</a> ·
+      <a href="javascript:void(0)" id="organizerLink">Race Organizer Access</a>
+    </p>
+    <p class="small" style="margin-top:10px">© 2025–2026 Brighton Oaks 5K — All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import {
+      EVENT, getDb, ref, set, push, subscribe,
+      formatClock, formatShort, pacePerMile, parseTimeInput,
+      computeBibs, divisionLabel, ageGroup, escapeHtml, fmtDateTime, countdownTo, toast
+    } from "./race-core.js";
+
+    /* ---------- Countdown (race clock if the timer is set, else published date) ---------- */
+    const countdownMain = document.getElementById("countdownMain");
+    const countdownSub = document.getElementById("countdownSub");
+    let raceTarget = EVENT.raceDate.getTime();
+
+    function renderCountdown() {
+      const c = countdownTo(raceTarget);
+      if (!c) {
+        countdownMain.textContent = "Race day!";
+        countdownSub.textContent = "Good luck to every runner.";
+        return;
+      }
+      const parts = [];
+      if (c.days) parts.push(`${c.days}d`);
+      parts.push(`${c.hours}h`, `${c.minutes}m`, `${c.seconds}s`);
+      countdownMain.textContent = parts.join(" ");
+    }
+    renderCountdown();
+    setInterval(renderCountdown, 1000);
+
+    subscribe("raceClock", (v) => {
+      if (v && v.raceStart) {
+        raceTarget = v.raceStart;
+        countdownSub.textContent = v.running
+          ? "Race in progress — results are live now."
+          : "Start time set by the race organizer.";
+        renderCountdown();
+      }
+    });
+    subscribe("raceStartTime", (v) => {
+      if (typeof v === "number" && v > 0) { raceTarget = v; renderCountdown(); }
+    });
+
+    /* ---------- Pace preview ---------- */
+    const estInput = document.getElementById("estimatedTime");
+    const pacePreview = document.getElementById("pacePreview");
+    const paceSub = document.getElementById("paceSub");
+
+    function updatePacePreview() {
+      const ms = parseTimeInput(estInput.value);
+      if (!ms || ms <= 0) {
+        pacePreview.textContent = "— /mi";
+        paceSub.textContent = "Enter an estimate to see your pace";
+        return;
+      }
+      pacePreview.textContent = `${pacePerMile(ms)} /mi`;
+      paceSub.textContent = `${(ms / 60000).toFixed(1)} min finish · ${(ms / EVENT.distanceKm / 60000).toFixed(1)} min/km`;
+    }
+    estInput.addEventListener("input", updatePacePreview);
+
+    /* ---------- Validation ---------- */
+    const form = document.getElementById("registrationForm");
+    const formError = document.getElementById("formError");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function setError(fieldId, on) {
+      const f = document.getElementById(fieldId);
+      if (!f) return;
+      f.classList.toggle("has-error", !!on);
+      const input = f.querySelector("input, select");
+      if (input) input.classList.toggle("invalid", !!on);
     }
 
-    form.addEventListener('submit', async (e) => {
+    function validate() {
+      let ok = true;
+      formError.classList.remove("show");
+
+      const name = document.getElementById("runnerName").value.trim();
+      const nameBad = name.length < 2;
+      setError("f-name", nameBad); if (nameBad) ok = false;
+
+      const email = document.getElementById("runnerEmail").value.trim();
+      const emailBad = email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      setError("f-email", emailBad); if (emailBad) ok = false;
+
+      const ageRaw = document.getElementById("runnerAge").value.trim();
+      const ageBad = ageRaw !== "" && !(+ageRaw >= 1 && +ageRaw <= 100);
+      setError("f-age", ageBad); if (ageBad) ok = false;
+
+      const sizeBad = !document.getElementById("runnerSize").value;
+      setError("f-size", sizeBad); if (sizeBad) ok = false;
+
+      const ms = parseTimeInput(estInput.value);
+      const estBad = !(ms && ms >= 5 * 60000 && ms <= 2 * 3600000);
+      setError("f-est", estBad); if (estBad) ok = false;
+
+      const waiverBad = !document.getElementById("waiver").checked;
+      document.getElementById("waiverError").style.display = waiverBad ? "block" : "none";
+      if (waiverBad) ok = false;
+
+      if (!ok) {
+        formError.textContent = "Please fix the highlighted fields and try again.";
+        formError.classList.add("show");
+        const first = form.querySelector(".has-error, input:invalid");
+        if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return ok;
+    }
+
+    /* ---------- Roster ---------- */
+    let registrations = {};   // firebase map
+    const rosterBody = document.getElementById("rosterBody");
+    const rosterCount = document.getElementById("rosterCount");
+    const rosterSearch = document.getElementById("rosterSearch");
+
+    function rosterRows() {
+      const entries = Object.entries(registrations).map(([id, r]) => ({ id, ...r }));
+      const bibs = computeBibs(entries);
+      const q = rosterSearch.value.trim().toLowerCase();
+      return entries
+        .map((r) => ({ ...r, bib: bibs[r.id] }))
+        .filter((r) => !q || String(r.name || "").toLowerCase().includes(q) || r.bib.includes(q))
+        .sort((a, b) => a.bib.localeCompare(b.bib));
+    }
+
+    function renderRoster() {
+      const rows = rosterRows();
+      const total = Object.keys(registrations).length;
+      rosterCount.textContent = `${total} runner${total === 1 ? "" : "s"}`;
+      if (!rows.length) {
+        rosterBody.innerHTML = `<tr><td colspan="8" class="muted" style="text-align:center;padding:26px">${total ? "No runners match your search." : "No registrations yet — be the first to sign up!"}</td></tr>`;
+        return;
+      }
+      rosterBody.innerHTML = rows.map((r) => `
+        <tr>
+          <td class="mono" style="font-weight:700">${r.bib}</td>
+          <td style="font-weight:600">${escapeHtml(r.name)}</td>
+          <td>${escapeHtml(divisionLabel(r.division))}</td>
+          <td>${escapeHtml(ageGroup(r.age))}</td>
+          <td>${escapeHtml(r.size || "—")}</td>
+          <td class="num">${r.estimatedTime ? formatShort(r.estimatedTime) : "—"}</td>
+          <td class="num">${r.estimatedTime ? pacePerMile(r.estimatedTime) + " /mi" : "—"}</td>
+          <td class="small muted">${fmtDateTime(r.registeredAt)}</td>
+        </tr>
+      `).join("");
+    }
+    rosterSearch.addEventListener("input", renderRoster);
+
+    subscribe("registrations", (v) => {
+      registrations = v || {};
+      renderRoster();
+    });
+
+    /* ---------- Submit ---------- */
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      
-      const name = document.getElementById('runnerName').value.trim();
-      const size = document.getElementById('runnerSize').value.trim();
-      const estimatedTime = getTimeInMs();
+      if (!validate()) return;
 
-      if (!name) {
-        showError('Please enter your name');
-        return;
-      }
-
-      if (!size) {
-        showError('Please enter your shirt size');
-        return;
-      }
-
-      if (estimatedTime <= 0) {
-        estimatedTime = 0;;
-        return;
-      }
+      const estimatedTime = parseTimeInput(estInput.value);
+      const data = {
+        name: document.getElementById("runnerName").value.trim(),
+        email: document.getElementById("runnerEmail").value.trim(),
+        age: document.getElementById("runnerAge").value.trim() || null,
+        division: document.getElementById("runnerDivision").value || "U",
+        size: document.getElementById("runnerSize").value,
+        estimatedTime,
+        experience: document.getElementById("runnerExperience").value || null,
+        emergencyName: document.getElementById("emergencyName").value.trim() || null,
+        emergencyPhone: document.getElementById("emergencyPhone").value.trim() || null,
+        waiverAccepted: true,
+        registeredAt: Date.now(),
+        source: "web",
+      };
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Registering...';
-
+      submitBtn.textContent = "Saving…";
       try {
-        const registrationData = {
-          name: name,
-          size: size,
-          estimatedTime: estimatedTime,
-          registeredAt: Date.now()
-        };
+        const newRef = push(ref(getDb(), "registrations"));
+        await set(newRef, data);
 
-        const newRegistrationRef = push(ref(db, 'registrations'));
-        await set(newRegistrationRef, registrationData);
+        // Bib = position among all registrations sorted by predicted time
+        const merged = { ...registrations, [newRef.key]: data };
+        const entries = Object.entries(merged).map(([id, r]) => ({ id, ...r }));
+        const bibs = computeBibs(entries);
 
-        showSuccess();
-        loadRegisteredRunners();
-      } catch (error) {
-        console.error('Registration error:', error);
-        showError('Registration failed. Please try again.');
+        document.getElementById("successBib").textContent = bibs[newRef.key];
+        document.getElementById("successTime").textContent = formatShort(data.estimatedTime);
+        document.getElementById("successPace").textContent = `${pacePerMile(data.estimatedTime)} /mi`;
+        form.style.display = "none";
+        document.getElementById("successPanel").style.display = "block";
+        document.getElementById("formCard").scrollIntoView({ behavior: "smooth", block: "start" });
+        toast(`Registered — bib ${bibs[newRef.key]} is yours!`, "success");
+      } catch (err) {
+        console.error("Registration error:", err);
+        formError.textContent = "We couldn't save your registration. Check your connection and try again.";
+        formError.classList.add("show");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Register for Race';
+        submitBtn.textContent = "Complete Registration";
       }
     });
 
-    loadRegisteredRunners();
+    document.getElementById("registerAnother").addEventListener("click", () => {
+      form.reset();
+      updatePacePreview();
+      document.getElementById("successPanel").style.display = "none";
+      form.style.display = "block";
+      document.getElementById("runnerName").focus();
+    });
 
-    let countdownInterval = null;
-    let raceStartTime = null;
-
-    function updateCountdown() {
-      if (!raceStartTime) {
-        document.getElementById('countdownDisplay').style.display = 'none';
-        return;
+    /* ---------- Organizer access (unchanged password) ---------- */
+    document.getElementById("organizerLink").addEventListener("click", () => {
+      const password = prompt("Please enter the organizer password:");
+      if (password === "1stannualBO") {
+        sessionStorage.setItem("bo5k_organizer", "1");
+        window.location.href = "organizer.html";
+      } else if (password !== null) {
+        alert("Incorrect password");
       }
-
-      const now = new Date().getTime();
-      const distance = raceStartTime - now;
-
-      if (distance < 0) {
-        document.getElementById('countdownText').innerHTML = 'Race has started!';
-        document.getElementById('countdownDisplay').style.display = 'block';
-        document.getElementById('countdownDisplay').style.background = 'rgba(212, 237, 218, 0.9)';
-        clearInterval(countdownInterval);
-        return;
-      }
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      let countdownText = '';
-      if (days > 0) countdownText += `${days}d `;
-      if (hours > 0 || days > 0) countdownText += `${hours}h `;
-      if (minutes > 0 || hours > 0 || days > 0) countdownText += `${minutes}m `;
-      countdownText += `${seconds}s`;
-
-      document.getElementById('countdownText').innerHTML = countdownText;
-      document.getElementById('countdownDisplay').style.display = 'block';
-      document.getElementById('countdownDisplay').style.background = 'rgba(255,255,255,0.9)';
-    }
-
-    function loadRaceStartTime() {
-      const raceStartRef = ref(db, 'raceStartTime');
-      onValue(raceStartRef, (snapshot) => {
-        if (snapshot.exists()) {
-          raceStartTime = snapshot.val();
-          
-          if (countdownInterval) {
-            clearInterval(countdownInterval);
-          }
-          
-          updateCountdown();
-          countdownInterval = setInterval(updateCountdown, 1000);
-        } else {
-          if (countdownInterval) {
-            clearInterval(countdownInterval);
-            countdownInterval = null;
-          }
-          document.getElementById('countdownDisplay').style.display = 'none';
-        }
-      });
-    }
-
-    loadRaceStartTime();
+    });
   </script>
-  <footer class="footer">
-    <img src="Favicon Generator/web-app-manifest-192x192.png" alt="Runner Art" class="footer-art" />
-    <p>© 2025 Brighton Oaks 5k. All rights reserved.</p>
-    <p style="margin-top: 10px;">
-        <a href="javascript:void(0)" onclick="accessOrganizer()" style="color: var(--accent); text-decoration: none; font-size: 14px;">Race Organizer Access</a>
-    </p>
-    <script>
-        function accessOrganizer() {
-            const password = prompt("Please enter the organizer password:");
-            if (password === "1stannualBO") {
-                window.location.href = "orgnizer.html";
-            } else {
-                alert("Incorrect password");
-            }
-        }
-    </script>
-  </footer>
 </body>
 </html>

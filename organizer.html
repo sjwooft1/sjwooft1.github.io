@@ -58,25 +58,12 @@
       aspect-ratio: 4 / 3;
       display: flex; align-items: center; justify-content: center;
     }
-    .camera-stage video { width: 100%; height: 100%; object-fit: cover; }
+    .camera-stage video { width: 100%; height: 100%; object-fit: contain; background:#060b14; }
+    .camera-stage #camOverlay {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      cursor: ns-resize; touch-action: none;
+    }
     .camera-stage .stage-msg { color: var(--muted); text-align: center; padding: 22px; font-size: 0.92rem; }
-    .scan-frame {
-      position: absolute; inset: 18% 12%;
-      border: 2px solid rgba(255, 127, 17, 0.85);
-      border-radius: 12px;
-      box-shadow: 0 0 0 9999px rgba(6, 11, 20, 0.35);
-      pointer-events: none;
-    }
-    .scan-frame::after {
-      content: 'Center the bib number here';
-      position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
-      color: var(--accent2); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-      white-space: nowrap;
-    }
-    .ocr-progress {
-      height: 6px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; margin-top: 10px;
-    }
-    .ocr-progress > div { height: 100%; width: 0%; background: var(--accent2); transition: width 0.25s; border-radius: 999px; }
     .thumb { width: 100%; border-radius: 8px; display: block; border: 1px solid var(--border); }
     .capture-row {
       display: flex; gap: 12px; align-items: center;
@@ -84,6 +71,16 @@
       border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 9px;
     }
     .capture-row img { width: 56px; height: 42px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+    .feed-row {
+      display: flex; gap: 10px; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .feed-row:last-child { border-bottom: none; }
+    .feed-row img { width: 52px; height: 38px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+    .settings-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .settings-row .field { margin: 0; }
+    .settings-row input[type="range"] { width: 160px; }
+    .toggle { display: inline-flex; gap: 8px; align-items: center; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
 
     .shortcut-table { width: 100%; font-size: 0.85rem; }
     .shortcut-table td { padding: 5px 8px 5px 0; color: var(--muted); }
@@ -222,25 +219,33 @@
 
       <!-- ==================== CAMERA ==================== -->
       <section class="tab-panel" id="tab-camera">
+        <div class="stat-strip" style="margin-bottom:18px">
+          <div class="stat"><div class="stat-label">Scanner</div><div class="stat-value" id="scanState" style="font-size:1.15rem">Standby</div><div class="stat-sub" id="scanStateSub">Start the camera, then arm the scanner</div></div>
+          <div class="stat"><div class="stat-label">Runners tracked</div><div class="stat-value mono" id="scanTracks">0</div></div>
+          <div class="stat"><div class="stat-label">Bib reads</div><div class="stat-value mono" id="scanReads">0</div></div>
+          <div class="stat"><div class="stat-label">Auto finishes</div><div class="stat-value mono" id="scanFinishes">0</div></div>
+        </div>
+
         <div class="grid grid-2">
           <div class="card">
             <div class="card-head">
               <div>
                 <div class="eyebrow">Photo finish</div>
-                <h2>Finish-Line Camera</h2>
+                <h2>Finish-Line Scanner</h2>
               </div>
               <span class="badge gray" id="camBadge">Camera off</span>
             </div>
-            <p class="muted small">Point the camera at a runner's bib and capture. The bib number is read automatically (OCR), matched to the roster, and the finish is recorded at the moment the photo was taken.</p>
+            <p class="muted small">Mount the camera on a tripod behind the finish line, aimed back up the course. Drag the orange line onto the physical finish line in the frame. Arm the scanner (or just start the race) and it tracks every runner, reads their bib as they approach, and stamps a finish the moment their feet cross the line.</p>
 
             <div class="camera-stage" id="cameraStage">
               <video id="cameraVideo" autoplay playsinline muted></video>
-              <div class="scan-frame" id="scanFrame" style="display:none"></div>
+              <canvas id="camOverlay"></canvas>
             </div>
 
             <div class="btn-row" style="margin-top:14px">
               <button class="btn primary" id="startCamBtn">Start camera</button>
-              <button class="btn" id="captureBtn" disabled>📸 Capture &amp; read bib</button>
+              <button class="btn" id="armCamBtn" disabled>Arm scanner</button>
+              <button class="btn ghost" id="captureBtn" disabled>📸 Manual read</button>
               <button class="btn ghost" id="stopCamBtn" disabled>Stop</button>
               <label class="btn ghost" style="cursor:pointer">
                 Upload photo
@@ -248,17 +253,36 @@
               </label>
             </div>
 
-            <div id="ocrStatus" class="small muted" style="margin-top:12px">Camera idle — start the camera or upload a photo to read bibs.</div>
-            <div class="ocr-progress" id="ocrProgressWrap" style="display:none"><div id="ocrProgress"></div></div>
+            <div class="settings-row">
+              <div class="field">
+                <label for="lineYRange">Finish line height</label>
+                <input type="range" id="lineYRange" min="10" max="95" value="62" />
+              </div>
+              <div class="field">
+                <label for="confFloor">Min confidence to auto-record</label>
+                <input type="number" id="confFloor" min="30" max="95" value="65" style="width:90px" />
+              </div>
+              <label class="toggle"><input type="checkbox" id="autoRecordChk" checked /> Auto-record confident crossings</label>
+            </div>
+
+            <div id="ocrStatus" class="small muted" style="margin-top:12px">Camera idle — start the camera and arm the scanner to begin watching the finish line.</div>
             <div class="notice error" id="camError" style="margin-top:12px"></div>
           </div>
 
           <aside class="grid" style="align-content:start; gap:18px">
             <div class="card">
-              <div class="eyebrow">Capture review</div>
-              <div id="reviewEmpty" class="empty">Capture a photo to review the bib read here.</div>
-              <div id="reviewPanel" style="display:none">
-                <img class="thumb" id="reviewThumb" alt="Captured frame" />
+              <div class="card-head" style="margin-bottom:10px">
+                <div class="eyebrow" style="margin:0">Auto finish feed</div>
+                <button class="btn ghost sm" id="clearLogBtn">Clear</button>
+              </div>
+              <div id="captureLog"><div class="empty" style="padding:18px">No finishes recorded by the scanner yet</div></div>
+            </div>
+
+            <div class="card" id="reviewCard" style="display:none">
+              <div class="eyebrow">Needs review</div>
+              <p class="small muted">A runner crossed with an uncertain bib — confirm before the finish is official.</p>
+              <div id="reviewPanel">
+                <img class="thumb" id="reviewThumb" alt="Crossing frame" />
                 <div class="stat-strip" style="grid-template-columns:repeat(2,minmax(0,1fr)); margin:13px 0">
                   <div class="stat">
                     <div class="stat-label">Bib read</div>
@@ -275,7 +299,7 @@
                   <div class="help" id="reviewMatch">No roster match yet</div>
                 </div>
                 <div class="notice info show" id="reviewTimeNote" style="margin:12px 0">
-                  <span>⏱</span><div id="reviewTimeText">Photo time: —</div>
+                  <span>⏱</span><div id="reviewTimeText">Crossing time: —</div>
                 </div>
                 <div class="btn-row">
                   <button class="btn primary" id="recordOcrBtn">Record finish</button>
@@ -285,21 +309,20 @@
             </div>
 
             <div class="card">
-              <div class="card-head" style="margin-bottom:10px">
-                <div class="eyebrow" style="margin:0">Recent captures</div>
-                <button class="btn ghost sm" id="clearLogBtn">Clear</button>
-              </div>
-              <div id="captureLog"><div class="empty" style="padding:18px">No captures yet</div></div>
+              <div class="eyebrow">Setup checklist</div>
+              <ul class="small muted" style="margin:6px 0 0; padding-left:18px; line-height:1.9">
+                <li>Camera 6–15 ft behind the line, chest height, facing oncoming runners</li>
+                <li>Drag the orange line exactly onto the finish line in view</li>
+                <li>Bibs should be front-facing and unobstructed</li>
+                <li>Even light — avoid hard shadows and glare across the chute</li>
+                <li>Do a test walk-through before the gun; adjust confidence if needed</li>
+                <li>Anything uncertain lands in <b>Needs review</b> — nothing is lost</li>
+              </ul>
             </div>
 
-            <div class="card">
-              <div class="eyebrow">Getting a clean read</div>
-              <ul class="small muted" style="margin:6px 0 0; padding-left:18px; line-height:1.9">
-                <li>Fill the orange frame with the bib number</li>
-                <li>Hold steady in good light; avoid glare</li>
-                <li>Tap the bib number on the phone screen to help focus</li>
-                <li>Always confirm the read before recording</li>
-              </ul>
+            <div class="card" id="manualReviewCard" style="display:none">
+              <div class="eyebrow">Manual read result</div>
+              <div id="manualReview"></div>
             </div>
           </aside>
         </div>
@@ -420,6 +443,7 @@
       computeBibs, sortRunners, divisionLabel, escapeHtml, fmtDateTime,
       downloadCsv, toast, watchConnection
     } from "./race-core.js";
+    import { FinishCam } from "./finish-cam.js";
 
     /* =====================================================================
        0. Access gate (same password as before, remembered for the session)
@@ -610,6 +634,7 @@
         toast("Race resumed", "success");
       }
       saveSnapshot(); writeClock(); renderClock(); renderAll();
+      armForRace();
     }
 
     function togglePause() {
@@ -947,15 +972,16 @@
     }
 
     /* =====================================================================
-       8. OCR finish-line camera
+       8. Finish-line scanner (motion tracking + multi-pass OCR)
     ===================================================================== */
     const video = document.getElementById("cameraVideo");
     const camBadge = document.getElementById("camBadge");
     const ocrStatus = document.getElementById("ocrStatus");
     const camError = document.getElementById("camError");
     let stream = null;
-    let tesseractWorker = null;
-    let pendingCapture = null;   // { bibGuess, confidence, thumb, at }
+    let cam = null;               // FinishCam engine (finish-cam.js)
+    let pendingCapture = null;    // review-queue item { bibGuess, confidence, thumb, at }
+    const scanStats = { reads: 0, finishes: 0 };
 
     function camShowError(msg) {
       camError.textContent = msg;
@@ -965,6 +991,100 @@
       camError.classList.remove("show");
     }
 
+    function rosterBibs() {
+      return roster().map((r) => r.bib);
+    }
+
+    function runnerByBib(bib) {
+      const val = String(bib || "").trim();
+      if (!val) return null;
+      return field().find((x) => String(x.bib) === val.padStart(4, "0") || String(x.bib) === val);
+    }
+
+    function ensureCam() {
+      if (cam) return cam;
+      cam = new FinishCam({
+        video,
+        overlay: document.getElementById("camOverlay"),
+        getRosterBibs: rosterBibs,
+        onFinish: onAutoFinish,
+        onReview: onScanReview,
+        onRead: onScanRead,
+        onStatus: onScanStatus,
+      });
+      cam.attachLineDrag();
+      syncCamSettings();
+      return cam;
+    }
+
+    function syncCamSettings() {
+      if (!cam) return;
+      cam.lineY = (parseInt(document.getElementById("lineYRange").value, 10) || 62) / 100;
+      cam.minConf = parseInt(document.getElementById("confFloor").value, 10) || 65;
+      cam.autoRecord = document.getElementById("autoRecordChk").checked;
+    }
+
+    /* ---- scanner events ---- */
+
+    function onAutoFinish({ bib, confidence, when, thumb }) {
+      scanStats.finishes++;
+      document.getElementById("scanFinishes").textContent = scanStats.finishes;
+      const r = runnerByBib(bib);
+      if (r) {
+        recordFinish(r.id, when, "ocr");
+      } else {
+        // unknown bib — save as an extra finisher so the crossing is never lost
+        const id = `ocr_${when}`;
+        const entry = {
+          name: `Unmatched bib ${bib}`,
+          bibNumber: bib,
+          estimatedTime: null,
+          finishTime: elapsedAt(when),
+          finishedAt: when,
+          recordedAt: Date.now(),
+          method: "ocr",
+          dnf: false,
+        };
+        state.results[id] = entry;
+        state.finishStack.push(id);
+        dbSet(`results/${id}`, entry, true);
+        saveSnapshot(); renderAll();
+        toast(`Scanner recorded unmatched bib ${bib} — fix the name in Results`, "info");
+      }
+      pushCaptureLog({ thumb, at: when, confidence }, bib);
+    }
+
+    function onScanReview({ guess, confidence, thumb, when }) {
+      pendingCapture = { bibGuess: guess, confidence, thumb, at: when };
+      showReview(pendingCapture);
+    }
+
+    function onScanRead() {
+      scanStats.reads++;
+      document.getElementById("scanReads").textContent = scanStats.reads;
+    }
+
+    function onScanStatus({ state: st, tracks }) {
+      document.getElementById("scanTracks").textContent = tracks;
+      const el = document.getElementById("scanState");
+      const sub = document.getElementById("scanStateSub");
+      if (st === "scanning") {
+        el.textContent = "Scanning";
+        el.style.color = "var(--green)";
+        sub.textContent = "Tracking runners and reading bibs";
+      } else if (st === "armed") {
+        el.textContent = "Armed";
+        el.style.color = "var(--green)";
+        sub.textContent = "Watching the finish line";
+      } else {
+        el.textContent = "Standby";
+        el.style.color = "";
+        sub.textContent = "Start the camera, then arm the scanner";
+      }
+    }
+
+    /* ---- camera lifecycle ---- */
+
     async function startCamera() {
       camClearError();
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -973,17 +1093,18 @@
       }
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } },
+          video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } },
           audio: false,
         });
         video.srcObject = stream;
-        document.getElementById("scanFrame").style.display = "block";
+        ensureCam();
         document.getElementById("startCamBtn").disabled = true;
         document.getElementById("captureBtn").disabled = false;
         document.getElementById("stopCamBtn").disabled = false;
+        document.getElementById("armCamBtn").disabled = false;
         camBadge.className = "badge green";
         camBadge.textContent = "● Camera live";
-        ocrStatus.textContent = "Camera running — frame the bib inside the orange box, then capture.";
+        ocrStatus.textContent = "Camera running — drag the orange line onto the finish line, then arm the scanner (or just start the race).";
       } catch (err) {
         console.warn("camera start failed", err);
         camShowError("Couldn't open the camera (permission denied or no camera). Use the Upload photo button instead.");
@@ -991,126 +1112,93 @@
     }
 
     function stopCamera() {
+      disarmScanner();
       if (stream) {
         stream.getTracks().forEach((t) => t.stop());
         stream = null;
       }
       video.srcObject = null;
-      document.getElementById("scanFrame").style.display = "none";
       document.getElementById("startCamBtn").disabled = false;
       document.getElementById("captureBtn").disabled = true;
       document.getElementById("stopCamBtn").disabled = true;
+      document.getElementById("armCamBtn").disabled = true;
       camBadge.className = "badge gray";
       camBadge.textContent = "Camera off";
       ocrStatus.textContent = "Camera stopped.";
     }
 
-    /** draw the current frame (or an uploaded image) to a canvas, pre-processed for OCR */
-    function frameToCanvas(source, maxW = 1280) {
-      const sw = source.videoWidth || source.naturalWidth || source.width;
-      const sh = source.videoHeight || source.naturalHeight || source.height;
-      if (!sw || !sh) return null;
-      const scale = Math.min(1, maxW / sw);
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.round(sw * scale);
-      canvas.height = Math.round(sh * scale);
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
-
-      // grayscale + contrast stretch — big help for digit recognition
-      try {
-        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const d = img.data;
-        for (let i = 0; i < d.length; i += 4) {
-          const lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-          const v = lum > 150 ? 255 : lum < 70 ? 0 : Math.round((lum - 70) * (255 / 80));
-          d[i] = d[i + 1] = d[i + 2] = v;
-        }
-        ctx.putImageData(img, 0, 0);
-      } catch (e) { console.warn("preprocess skipped", e); }
-      return canvas;
-    }
-
-    function thumbFrom(canvas) {
-      const t = document.createElement("canvas");
-      const scale = Math.min(1, 160 / canvas.width);
-      t.width = Math.round(canvas.width * scale);
-      t.height = Math.round(canvas.height * scale);
-      t.getContext("2d").drawImage(canvas, 0, 0, t.width, t.height);
-      return t.toDataURL("image/jpeg", 0.65);
-    }
-
-    async function getTesseractWorker() {
-      if (tesseractWorker) return tesseractWorker;
-      if (!window.Tesseract) throw new Error("Tesseract library not loaded (CDN unreachable)");
-      tesseractWorker = await window.Tesseract.createWorker("eng", 1, {
-        logger: (m) => {
-          if (m.status === "recognizing text") {
-            const pct = Math.round((m.progress || 0) * 100);
-            ocrStatus.textContent = `Reading bib… ${pct}%`;
-            document.getElementById("ocrProgress").style.width = `${pct}%`;
-          } else if (m.status) {
-            ocrStatus.textContent = `OCR engine: ${m.status.replace(/_/g, " ")}…`;
-          }
-        },
-      });
-      await tesseractWorker.setParameters({
-        tessedit_char_whitelist: "0123456789",
-        preserve_interword_spaces: "1",
-      });
-      return tesseractWorker;
-    }
-
-    /** pick the most plausible bib from OCR text */
-    function guessBib(text) {
-      const runs = (String(text || "").match(/\d+/g) || []).sort((a, b) => b.length - a.length);
-      if (!runs.length) return null;
-      const known = new Set(roster().map((r) => r.bib));
-      // prefer a run that matches a known bib (as-is or zero-padded)
-      for (const run of runs) {
-        const padded = run.padStart(4, "0");
-        if (known.has(padded)) return padded;
-        if (known.has(run)) return run;
-      }
-      const best = runs[0];
-      return best.length <= 4 ? best.padStart(4, "0") : best;
-    }
-
-    async function readBib(canvas, capturedAt) {
+    function armScanner() {
       camClearError();
-      const wrap = document.getElementById("ocrProgressWrap");
-      const bar = document.getElementById("ocrProgress");
-      wrap.style.display = "block";
-      bar.style.width = "0%";
       try {
-        const worker = await getTesseractWorker();
-        const { data } = await worker.recognize(canvas);
-        const guess = guessBib(data.text);
-        const confidence = Math.round(data.confidence ?? 0);
-        ocrStatus.textContent = guess
-          ? `Bib read: ${guess} (${confidence}% confidence) — confirm and record below.`
-          : "No digits found. Try a closer, steadier shot, or type the bib manually below.";
-        showReview({ bibGuess: guess, confidence, thumb: thumbFrom(canvas), at: capturedAt });
+        ensureCam();
+        syncCamSettings();
+        cam.arm();
+        const btn = document.getElementById("armCamBtn");
+        btn.textContent = "Disarm scanner";
+        btn.classList.add("primary");
+        ocrStatus.textContent = "Scanner armed — runners crossing the line are timed automatically.";
+      } catch (err) {
+        camShowError(err.message || "Camera is not ready yet.");
+      }
+    }
+
+    function disarmScanner() {
+      if (cam) cam.disarm();
+      const btn = document.getElementById("armCamBtn");
+      btn.textContent = "Arm scanner";
+      btn.classList.remove("primary");
+    }
+
+    function toggleScanner() {
+      if (cam && cam.armed) disarmScanner();
+      else armScanner();
+    }
+
+    /** Auto-arm when the race clock starts (if the camera is live). */
+    function armForRace() {
+      if (stream && (!cam || !cam.armed)) {
+        armScanner();
+        toast("Finish-line scanner armed with the race clock", "success");
+      }
+    }
+
+    /* ---- manual reads (capture button + uploads) ---- */
+
+    async function manualRead(source) {
+      camClearError();
+      try {
+        ensureCam();
+        ocrStatus.textContent = "Reading bib…";
+        const read = await cam.readOnce(source);
+        if (!read) {
+          ocrStatus.textContent = "No digits found — try a closer, steadier shot, or type the bib on the Timing tab.";
+          return;
+        }
+        ocrStatus.textContent = `Bib read: ${read.digits} (${read.confidence}% confidence) — confirm below.`;
+        showReview({
+          bibGuess: read.digits.padStart(4, "0"),
+          confidence: read.confidence,
+          thumb: read.thumb,
+          at: Date.now(),
+        });
       } catch (err) {
         console.warn("OCR failed", err);
         camShowError(`OCR unavailable (${err.message}). You can still record finishes manually on the Timing tab.`);
-        ocrStatus.textContent = "OCR failed — see message above.";
-        showReview({ bibGuess: null, confidence: 0, thumb: thumbFrom(canvas), at: capturedAt });
-      } finally {
-        wrap.style.display = "none";
       }
     }
 
+    /* ---- review panel ---- */
+
     function showReview(capture) {
       pendingCapture = capture;
-      document.getElementById("reviewEmpty").style.display = "none";
-      document.getElementById("reviewPanel").style.display = "block";
-      document.getElementById("reviewThumb").src = capture.thumb;
+      document.getElementById("reviewCard").style.display = "block";
+      document.getElementById("reviewThumb").src = capture.thumb || "";
       document.getElementById("reviewBib").textContent = capture.bibGuess || "—";
       document.getElementById("reviewConf").textContent = capture.confidence ? `${capture.confidence}%` : "—";
       document.getElementById("reviewBibInput").value = capture.bibGuess || "";
       document.getElementById("reviewTimeText").textContent =
-        `Photo time: ${new Date(capture.at).toLocaleTimeString()} · finish will be recorded as ${state.raceStart != null ? formatClock(elapsedAt(capture.at)) : "…(start the race first)"}`;
+        `Crossing time: ${new Date(capture.at).toLocaleTimeString()} · finish will be recorded as ${
+          state.raceStart != null ? formatClock(elapsedAt(capture.at)) : "…(start the race first)"}`;
       updateReviewMatch();
       document.getElementById("reviewBibInput").focus();
     }
@@ -1118,7 +1206,7 @@
     function updateReviewMatch() {
       const val = document.getElementById("reviewBibInput").value.trim();
       const matchEl = document.getElementById("reviewMatch");
-      const r = field().find((x) => String(x.bib) === val.padStart(4, "0") || String(x.bib) === val);
+      const r = runnerByBib(val);
       if (!val) { matchEl.textContent = "No roster match yet"; return null; }
       if (r) {
         matchEl.innerHTML = `Matched: <b style="color:var(--green)">${escapeHtml(r.name)}</b> · bib ${escapeHtml(r.bib)}`;
@@ -1126,14 +1214,6 @@
         matchEl.innerHTML = `<span style="color:var(--amber)">No roster runner with bib ${escapeHtml(val)} — it will be saved as an extra finisher.</span>`;
       }
       return r;
-    }
-
-    async function captureFromCamera() {
-      if (!stream) return;
-      const canvas = frameToCanvas(video);
-      if (!canvas) { camShowError("Camera frame not ready yet."); return; }
-      const at = Date.now();
-      await readBib(canvas, at);
     }
 
     function recordOcrFinish() {
@@ -1145,21 +1225,20 @@
       if (r) {
         recordFinish(r.id, when, "ocr");
       } else if (val) {
-        // unknown bib: create an extra result entry so the photo is never lost
         const id = `ocr_${when}`;
-        const finishTime = elapsedAt(when);
         const entry = {
           name: `Unmatched bib ${val}`,
           bibNumber: val.padStart(4, "0"),
           estimatedTime: null,
-          finishTime,
+          finishTime: elapsedAt(when),
           finishedAt: when,
           recordedAt: Date.now(),
           method: "ocr",
           dnf: false,
         };
         state.results[id] = entry;
-        dbSet(`results/${id}`, entry);
+        state.finishStack.push(id);
+        dbSet(`results/${id}`, entry, true);
         saveSnapshot(); renderAll();
         toast(`Recorded unmatched bib ${val} — fix the name in Results`, "info");
       } else {
@@ -1167,36 +1246,48 @@
         return;
       }
       pushCaptureLog(pendingCapture, val);
-      pendingCapture = null;
-      document.getElementById("reviewPanel").style.display = "none";
-      document.getElementById("reviewEmpty").style.display = "block";
-      ocrStatus.textContent = "Ready for the next capture.";
+      closeReview();
     }
 
-    /* ---- capture log (local only) ---- */
+    function closeReview() {
+      pendingCapture = null;
+      document.getElementById("reviewCard").style.display = "none";
+      ocrStatus.textContent = cam && cam.armed
+        ? "Scanner armed — watching the finish line."
+        : "Ready.";
+    }
+
+    /* ---- auto finish feed (local only) ---- */
+
     function loadLog() {
       try { return JSON.parse(localStorage.getItem(LS_KEYS.log) || "[]"); }
       catch { return []; }
     }
     function pushCaptureLog(capture, bib) {
       const log = loadLog();
-      log.unshift({ thumb: capture.thumb, bib, at: capture.at, recorded: true });
-      localStorage.setItem(LS_KEYS.log, JSON.stringify(log.slice(0, 10)));
+      log.unshift({
+        thumb: capture.thumb || null,
+        bib,
+        at: capture.at,
+        confidence: capture.confidence ?? null,
+        recorded: true,
+      });
+      localStorage.setItem(LS_KEYS.log, JSON.stringify(log.slice(0, 12)));
       renderCaptureLog();
     }
     function renderCaptureLog() {
       const log = loadLog();
       const box = document.getElementById("captureLog");
       if (!log.length) {
-        box.innerHTML = `<div class="empty" style="padding:18px">No captures yet</div>`;
+        box.innerHTML = `<div class="empty" style="padding:18px">No finishes recorded by the scanner yet</div>`;
         return;
       }
       box.innerHTML = log.map((c) => `
-        <div class="capture-row">
-          <img src="${c.thumb}" alt="capture" />
+        <div class="feed-row">
+          ${c.thumb ? `<img src="${c.thumb}" alt="crossing" />` : ""}
           <div style="flex:1">
-            <div class="mono" style="font-weight:700">${escapeHtml(c.bib || "—")}</div>
-            <div class="small muted">${new Date(c.at).toLocaleTimeString()}</div>
+            <div class="mono" style="font-weight:700">#${escapeHtml(c.bib || "—")}</div>
+            <div class="small muted">${new Date(c.at).toLocaleTimeString()} · ${c.confidence != null ? c.confidence + "% conf" : ""}</div>
           </div>
           <span class="badge ${c.recorded ? "green" : "gray"}">${c.recorded ? "Recorded" : "Skipped"}</span>
         </div>`).join("");
@@ -1332,27 +1423,28 @@
     // camera
     document.getElementById("startCamBtn").addEventListener("click", startCamera);
     document.getElementById("stopCamBtn").addEventListener("click", stopCamera);
-    document.getElementById("captureBtn").addEventListener("click", captureFromCamera);
+    document.getElementById("captureBtn").addEventListener("click", () => manualRead(video));
     document.getElementById("photoUpload").addEventListener("change", (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
       const img = new Image();
       img.onload = () => {
-        const canvas = frameToCanvas(img);
-        if (canvas) readBib(canvas, Date.now());
+        manualRead(img);
         URL.revokeObjectURL(img.src);
       };
       img.src = URL.createObjectURL(file);
       e.target.value = "";
     });
+    document.getElementById("armCamBtn").addEventListener("click", toggleScanner);
+    document.getElementById("lineYRange").addEventListener("input", () => {
+      syncCamSettings();
+      if (cam) cam.setLine(cam.lineY);
+    });
+    document.getElementById("confFloor").addEventListener("change", syncCamSettings);
+    document.getElementById("autoRecordChk").addEventListener("change", syncCamSettings);
     document.getElementById("reviewBibInput").addEventListener("input", updateReviewMatch);
     document.getElementById("recordOcrBtn").addEventListener("click", recordOcrFinish);
-    document.getElementById("discardCaptureBtn").addEventListener("click", () => {
-      pendingCapture = null;
-      document.getElementById("reviewPanel").style.display = "none";
-      document.getElementById("reviewEmpty").style.display = "block";
-      ocrStatus.textContent = "Capture discarded.";
-    });
+    document.getElementById("discardCaptureBtn").addEventListener("click", closeReview);
     document.getElementById("clearLogBtn").addEventListener("click", () => {
       localStorage.removeItem(LS_KEYS.log);
       renderCaptureLog();
