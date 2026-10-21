@@ -4,222 +4,480 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Brighton Oaks 5K — Live Results</title>
+  <meta name="description" content="Live results and leaderboards for the Brighton Oaks 5K. Real-time finish times, pace, standings and runner details." />
   <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
   <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-title" content="BO 5k" />
   <link rel="manifest" href="/Favicon Generator/site.webmanifest" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="race.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <style>
-    @font-face{
-      font-family: 'Oakhill';
-      src: url('fonts/Oakhill.ttf') format('truetype');
-    }
-    @font-face{
-      font-family: 'run';
-      src: url('fonts/RUNNING DEMO.otf') format('opentype');
-    }
-    :root {
-      --accent: #3b6e22;
-      --accent2: #ff7f11;
-      --bg: #0f1724;
-      --card: #131f33;
-      --text: #e6eef8;
-      --muted: #9ca3af;
-      --shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-    * { box-sizing: border-box; }
-    html, body {
-      height: 100%; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
-    }
-    .navbar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 28px; background: #101b2f; box-shadow: var(--shadow);
-      position: sticky; top: 0; z-index: 100;
-    }
-    .navbar .logo { 
-      font-size: 1.5rem; 
-      font-weight: 700; 
-      color: var(--accent2);
-      font-family: 'Luckiest Guy', cursive;
-    }
-    .navbar .nav-links { 
-      font-family: 'run', sans-serif;
-      display: flex; 
-      gap: 14px; 
-    }
-    .navbar a {
-      text-decoration: none; color: var(--text); font-weight: 600;
-      transition: 0.2s; padding: 6px 12px; border-radius: 8px;
-    }
-    .navbar a:hover, .navbar a.active { background: var(--accent2); color: #fff; }
-
-    .hero {
-      height: 40vh; display: flex; align-items: center; justify-content: center;
-      background: url('images/road.jpeg') center/cover no-repeat;
-      position: relative; color: white; text-align: center;
-    }
-    .hero::after {
-      content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.5);
-    }
-    .hero h1 { z-index: 1; font-size: 2.5rem; text-shadow: 0 4px 14px rgba(0,0,0,0.6); }
-
-    #map { height: 50vh; margin-top: 20px; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); }
-
-    .dashboard {
-      display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 20px; max-width: 1200px; margin: auto;
-    }
-    .card {
-      background: var(--card); border-radius: 16px; padding: 20px; box-shadow: var(--shadow);
-    }
-    .card h2 { margin-top: 0; color: var(--accent2); }
-
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    th { color: var(--accent2); font-weight: 600; }
-    tr.highlight { background: rgba(255,127,17,0.15); }
-
-    .pace { color: var(--muted); font-size: 0.9rem; }
-    .clock {
-      font-size: 2rem; text-align: center; margin: 16px 0; font-weight: 600;
-      color: var(--accent2); text-shadow: 0 0 20px rgba(255,127,17,0.3);
-    }
-
-    .footer {
-      background: #101b2f; color: #aaa; text-align: center; padding: 30px 12px;
-      margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.05);
-    }
-
-    @media (max-width: 900px) {
-      .dashboard { grid-template-columns: 1fr; }
-    }
-  </style>
 </head>
 <body>
   <nav class="navbar">
-    <div class="logo">Brighton Oaks 5K</div>
+    <a class="brand" href="index.html">
+      <div class="brand-mark">BO</div>
+      <div>
+        <span class="brand-name">Brighton Oaks 5K</span>
+        <span class="brand-sub">Thanksgiving Day Run</span>
+      </div>
+    </a>
     <div class="nav-links">
       <a href="index.html">Home</a>
       <a href="registration.html">Register</a>
       <a href="results.html" class="active">Results</a>
+      <a href="map.html">Course</a>
       <a href="bibprinter.html">Bib Printer</a>
     </div>
   </nav>
 
-  <section class="hero">
-    <h1>Live Race Spectator View</h1>
-  </section>
-
-  <div class="clock" id="raceClock">Race clock: 00:00.000</div>
-  <div id="map"></div>
-
-  <div class="dashboard">
-    <div class="card">
-      <h2>Live Leaderboard</h2>
-      <div id="leaderboard">Loading results...</div>
+  <header class="hero" style="--hero-img:url('images/road.jpeg')">
+    <div class="hero-inner">
+      <div class="eyebrow">Official Timing</div>
+      <h1>Live Race Results</h1>
+      <p class="lede">Finish times post the moment runners cross the line. Search a name or bib to follow any runner.</p>
+      <div class="hero-chips">
+        <span class="badge gray" id="raceStatusChip">Loading race status…</span>
+        <span class="chip"><span class="dot"></span>5K · 3.107 miles</span>
+        <span class="chip"><span class="dot"></span>Thu, Nov 26, 2026 · 8:30 AM</span>
+      </div>
     </div>
-    <div class="card">
-      <h2>Runner Details</h2>
-      <div id="runnerResult">Select a runner to view details.</div>
+  </header>
+
+  <main class="page">
+    <!-- ============ Clock + stats ============ -->
+    <div class="grid" style="grid-template-columns:minmax(0,1fr); gap:18px">
+      <section class="card" style="display:flex; align-items:center; justify-content:space-between; gap:22px; flex-wrap:wrap">
+        <div>
+          <div class="clock-label">Official race clock</div>
+          <div class="clock-big" id="raceClock">00:00<span class="ms">.000</span></div>
+        </div>
+        <div class="stat-strip" style="flex:1; min-width:280px">
+          <div class="stat">
+            <div class="stat-label">Finishers</div>
+            <div class="stat-value" id="statFinishers">0</div>
+            <div class="stat-sub" id="statFinishersSub">of 0 registered</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">On course</div>
+            <div class="stat-value" id="statOnCourse">0</div>
+            <div class="stat-sub">runners still racing</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Average time</div>
+            <div class="stat-value mono" id="statAvg">—</div>
+            <div class="stat-sub">finishers only</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Winning time</div>
+            <div class="stat-value mono" id="statWin">—</div>
+            <div class="stat-sub" id="statWinSub">leader at the line</div>
+          </div>
+        </div>
+      </section>
     </div>
-  </div>
+
+    <!-- ============ Podium ============ -->
+    <section id="podiumSection" style="margin-top:22px; display:none">
+      <div class="card-head">
+        <div>
+          <div class="eyebrow">Podium</div>
+          <h2>Top Finishers</h2>
+        </div>
+      </div>
+      <div class="podium" id="podium"></div>
+    </section>
+
+    <!-- ============ Leaderboard + detail ============ -->
+    <div class="grid grid-2" style="margin-top:22px">
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <div class="eyebrow">Live standings</div>
+            <h2>Leaderboard</h2>
+          </div>
+          <div class="btn-row">
+            <button class="btn ghost sm" id="exportCsv">Export CSV</button>
+            <button class="btn ghost sm" onclick="window.print()">Print</button>
+          </div>
+        </div>
+
+        <div class="toolbar" style="margin-bottom:12px">
+          <div class="search">
+            <input type="text" id="boardSearch" placeholder="Search runner or bib…" />
+          </div>
+          <div class="filter-chips" id="boardFilters">
+            <button class="on" data-filter="all">All</button>
+            <button data-filter="finished">Finishers</button>
+            <button data-filter="course">On course</button>
+            <button data-filter="dnf">DNF</button>
+          </div>
+        </div>
+
+        <div class="table-wrap" style="max-height:620px; overflow-y:auto">
+          <table class="data" id="boardTable">
+            <thead>
+              <tr>
+                <th>Pos</th>
+                <th>Bib</th>
+                <th>Runner</th>
+                <th>Div</th>
+                <th style="text-align:right">Time</th>
+                <th style="text-align:right">Pace</th>
+                <th style="text-align:right">vs Pred</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="boardBody">
+              <tr><td colspan="8" class="muted" style="text-align:center;padding:26px">Waiting for race data…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="grid" style="align-content:start;gap:18px">
+        <div class="card" id="runnerDetail">
+          <div class="eyebrow">Runner spotlight</div>
+          <div id="detailBody">
+            <p class="muted">Select any runner on the leaderboard to see their full race card — splits, pace and prediction vs. result.</p>
+            <div class="empty">No runner selected</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow">Course</div>
+          <div id="map" style="height:280px; border-radius:10px; overflow:hidden"></div>
+          <div class="btn-row" style="margin-top:12px">
+            <a class="btn ghost sm" href="map.html">Full course map</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow">Share results</div>
+          <p class="small muted">Send someone a direct link to a runner's result — just select them and copy the URL from your address bar.</p>
+          <div class="btn-row">
+            <button class="btn ghost sm" id="copyLink">Copy result link</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
 
   <footer class="footer">
-    © 2025 Brighton Oaks 5K — All rights reserved.
+    <p><b style="color:var(--text)">Brighton Oaks 5K</b> · Official results by the Brighton Oaks timing team</p>
+    <p style="margin-top:8px">
+      <a href="index.html">Home</a> ·
+      <a href="registration.html">Register</a> ·
+      <a href="map.html">Course Map</a>
+    </p>
+    <p class="small" style="margin-top:10px">© 2025–2026 Brighton Oaks 5K — All rights reserved.</p>
   </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import {
+      EVENT, subscribe,
+      formatClock, formatShort, pacePerMile, clockParts,
+      computeBibs, divisionLabel, ageGroup, escapeHtml,
+      downloadCsv, toast
+    } from "./race-core.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDUnAV-DL-Saw2ByPY6GF8aDaZbVCXDIH4",
-      authDomain: "the-race-organizer.firebaseapp.com",
-      databaseURL: "https://the-race-organizer-default-rtdb.firebaseio.com",
-      projectId: "the-race-organizer",
-      storageBucket: "the-race-organizer.firebasestorage.app",
-      messagingSenderId: "265977321479",
-      appId: "1:265977321479:web:23d3f3077e8e766323b2a2",
-      measurementId: "G-PKGPD78DYM"
-    };
+    /* ---------- State ---------- */
+    let registrations = {};
+    let results = {};
+    let raceClock = { raceStart: null, running: false, paused: false, pausedAt: null };
+    let selectedId = new URLSearchParams(window.location.search).get("result");
+    let filter = "all";
+    let query = "";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // --- Map setup ---
-    const map = L.map('map').setView([39.8283, -98.5795], 4);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-    let poly = L.polyline([], {color: "#ff7f11", weight: 4}).addTo(map);
-
-    // --- Helper Functions ---
-    function formatMs(ms) {
-      const m = Math.floor(ms/60000), s = Math.floor((ms%60000)/1000);
-      return `${m}:${String(s).padStart(2,'0')}`;
+    /* ---------- Race clock ---------- */
+    const clockEl = document.getElementById("raceClock");
+    function elapsed() {
+      if (!raceClock.raceStart) return 0;
+      if (raceClock.paused && raceClock.pausedAt) return raceClock.pausedAt - raceClock.raceStart;
+      return Math.max(0, Date.now() - raceClock.raceStart);
     }
-
-    function calcPacePerMile(ms, distanceMiles) {
-      const paceMs = ms / distanceMiles;
-      const min = Math.floor(paceMs / 60000);
-      const sec = Math.floor((paceMs % 60000) / 1000);
-      return `${min}:${String(sec).padStart(2,'0')} / mi`;
-    }
-
-    // --- Leaderboard Sync ---
-    onValue(ref(db, "results"), snap => {
-      const results = snap.val();
-      if (!results) return;
-      const arr = Object.values(results).filter(r => r.finishTime);
-      arr.sort((a,b)=>a.finishTime-b.finishTime);
-      const raceDistanceMiles = 3.10686;
-      const params = new URLSearchParams(window.location.search);
-      const rid = params.get("result");
-
-      let html = `<table><thead><tr><th>#</th><th>Name</th><th>Time</th><th>Pace</th></tr></thead><tbody>`;
-      arr.forEach((r, i) => {
-        const pace = calcPacePerMile(r.finishTime, raceDistanceMiles);
-        html += `<tr class="${rid===r.id?'highlight':''}"><td>${i+1}</td><td>${r.name}</td><td>${formatMs(r.finishTime)}</td><td class='pace'>${pace}</td></tr>`;
+    function renderClock() {
+      const p = clockParts(raceClock.raceStart ? elapsed() : 0);
+      clockEl.innerHTML = `${p.main}<span class="ms">${p.ms}</span>`;
+      // refresh live "on course" durations
+      document.querySelectorAll("[data-live-bib]").forEach((el) => {
+        const id = el.getAttribute("data-live-bib");
+        const r = results[id];
+        if (raceClock.raceStart && (!r || r.finishTime == null)) {
+          el.textContent = formatClock(elapsed());
+        }
       });
-      html += `</tbody></table>`;
-      document.getElementById("leaderboard").innerHTML = html;
+    }
+    setInterval(renderClock, 100);
+    renderClock();
 
-      if (rid && results[rid]) {
-        const rr = results[rid];
-        const pace = calcPacePerMile(rr.finishTime, raceDistanceMiles);
-        document.getElementById("runnerResult").innerHTML = `
-          <h3>${rr.name}</h3>
-          <p><b>Time:</b> ${formatMs(rr.finishTime)}</p>
-          <p><b>Pace:</b> ${pace}</p>
-          <p><b>Bib:</b> ${rr.bibNumber || rr.bib || '–'}</p>
-        `;
+    subscribe("raceClock", (v) => {
+      if (v) raceClock = v;
+      renderStatus();
+      renderClock();
+    });
+
+    function renderStatus() {
+      const chip = document.getElementById("raceStatusChip");
+      if (raceClock.raceStart && raceClock.running) {
+        chip.className = "badge green";
+        chip.textContent = "● Live now";
+      } else if (raceClock.raceStart && raceClock.paused) {
+        chip.className = "badge amber";
+        chip.textContent = "● Race paused";
+      } else if (raceClock.raceStart) {
+        chip.className = "badge blue";
+        chip.textContent = "● Race complete";
+      } else {
+        chip.className = "badge orange";
+        chip.textContent = "● Starts Thu, Nov 26 · 8:30 AM";
+      }
+    }
+
+    /* ---------- Combined dataset ---------- */
+    function dataset() {
+      const bibs = computeBibs(
+        Object.entries(registrations).map(([id, r]) => ({ id, ...r }))
+      );
+      const ids = new Set([...Object.keys(registrations), ...Object.keys(results)]);
+      return [...ids].map((id) => {
+        const reg = registrations[id] || {};
+        const res = results[id] || {};
+        return {
+          id,
+          name: res.name || reg.name || "Unknown runner",
+          bib: res.bibNumber || bibs[id] || "—",
+          division: reg.division || "U",
+          age: reg.age || null,
+          estimatedTime: res.estimatedTime ?? reg.estimatedTime ?? null,
+          finishTime: res.finishTime ?? null,
+          finishedAt: res.finishedAt ?? null,
+          dnf: !!res.dnf,
+        };
+      });
+    }
+
+    function standings() {
+      const all = dataset();
+      const finished = all.filter((r) => r.finishTime != null).sort((a, b) => a.finishTime - b.finishTime);
+      const dnf = all.filter((r) => r.dnf && r.finishTime == null);
+      const course = all.filter((r) => r.finishTime == null && !r.dnf)
+        .sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
+      return { finished, course, dnf, all };
+    }
+
+    /* ---------- Leaderboard ---------- */
+    const boardBody = document.getElementById("boardBody");
+
+    function deltaCell(r) {
+      if (r.finishTime == null || !r.estimatedTime) return '<td class="num muted">—</td>';
+      const d = r.finishTime - r.estimatedTime;
+      const sign = d >= 0 ? "+" : "−";
+      const abs = formatShort(Math.abs(d));
+      const color = d <= 0 ? "var(--green)" : "var(--amber)";
+      return `<td class="num" style="color:${color}">${sign}${abs}</td>`;
+    }
+
+    function renderBoard() {
+      const { finished, course, dnf } = standings();
+      const q = query.toLowerCase();
+      const match = (r) => !q || String(r.name).toLowerCase().includes(q) || String(r.bib).includes(q);
+
+      let rows = [];
+      if (filter === "all" || filter === "finished") {
+        finished.forEach((r, i) => rows.push({ ...r, place: i + 1, status: "finished" }));
+      }
+      if (filter === "all" || filter === "course") {
+        course.forEach((r) => rows.push({ ...r, place: null, status: "course" }));
+      }
+      if (filter === "all" || filter === "dnf") {
+        dnf.forEach((r) => rows.push({ ...r, place: null, status: "dnf" }));
+      }
+      rows = rows.filter(match);
+
+      if (!rows.length) {
+        boardBody.innerHTML = `<tr><td colspan="8" class="muted" style="text-align:center;padding:26px">${
+          query ? "No runners match your search." : "No runners yet — results appear here as runners finish."
+        }</td></tr>`;
+      } else {
+        boardBody.innerHTML = rows.map((r) => {
+          const medal = r.place === 1 ? "🥇" : r.place === 2 ? "🥈" : r.place === 3 ? "🥉" : "";
+          const timeCell = r.finishTime != null
+            ? formatClock(r.finishTime)
+            : (r.status === "dnf" ? "DNF" : `<span data-live-bib="${r.id}">${raceClock.raceStart ? formatClock(elapsed()) : "—"}</span>`);
+          const statusBadge = r.status === "finished"
+            ? '<span class="badge green">Finished</span>'
+            : r.status === "dnf"
+              ? '<span class="badge red">DNF</span>'
+              : '<span class="badge blue">On course</span>';
+          return `
+            <tr class="clickable ${r.id === selectedId ? "highlight" : ""}" data-id="${r.id}">
+              <td class="place">${medal || (r.place ?? "—")}</td>
+              <td class="mono">${escapeHtml(r.bib)}</td>
+              <td style="font-weight:600">${escapeHtml(r.name)}</td>
+              <td class="small muted">${escapeHtml(divisionLabel(r.division))}</td>
+              <td class="num">${timeCell}</td>
+              <td class="num">${r.finishTime != null ? pacePerMile(r.finishTime) : "—"}</td>
+              ${deltaCell(r)}
+              <td>${statusBadge}</td>
+            </tr>`;
+        }).join("");
+      }
+
+      boardBody.querySelectorAll("tr[data-id]").forEach((tr) => {
+        tr.addEventListener("click", () => selectRunner(tr.getAttribute("data-id")));
+      });
+
+      // stats
+      const total = Object.keys(registrations).length + Object.keys(results).length;
+      const known = dataset().length;
+      document.getElementById("statFinishers").textContent = finished.length;
+      document.getElementById("statFinishersSub").textContent = `of ${known} registered`;
+      document.getElementById("statOnCourse").textContent = course.length;
+      document.getElementById("statAvg").textContent = finished.length
+        ? formatShort(finished.reduce((s, r) => s + r.finishTime, 0) / finished.length)
+        : "—";
+      document.getElementById("statWin").textContent = finished.length ? formatClock(finished[0].finishTime) : "—";
+      document.getElementById("statWinSub").textContent = finished.length
+        ? `${finished[0].name} · bib ${finished[0].bib}`
+        : "leader at the line";
+
+      renderPodium(finished);
+    }
+
+    /* ---------- Podium ---------- */
+    function renderPodium(finished) {
+      const section = document.getElementById("podiumSection");
+      if (finished.length < 3) { section.style.display = "none"; return; }
+      section.style.display = "block";
+      const order = [1, 0, 2]; // silver, gold, bronze visual order
+      const medals = ["🥇", "🥈", "🥉"];
+      const cls = ["first", "second", "third"];
+      document.getElementById("podium").innerHTML = order.map((idx, slot) => {
+        const r = finished[idx];
+        return `
+          <div class="podium-card ${cls[slot]}">
+            <div class="medal">${medals[slot]}</div>
+            <div class="p-name">${escapeHtml(r.name)}</div>
+            <div class="small muted">Bib ${escapeHtml(r.bib)} · ${escapeHtml(divisionLabel(r.division))}</div>
+            <div class="p-time">${formatClock(r.finishTime)}</div>
+            <div class="small muted">${pacePerMile(r.finishTime)} /mi</div>
+          </div>`;
+      }).join("");
+    }
+
+    /* ---------- Runner detail ---------- */
+    function selectRunner(id) {
+      selectedId = id;
+      const url = new URL(window.location);
+      url.searchParams.set("result", id);
+      history.replaceState(null, "", url);
+      renderDetail();
+      renderBoard();
+    }
+
+    function renderDetail() {
+      const box = document.getElementById("detailBody");
+      const r = dataset().find((x) => x.id === selectedId);
+      if (!r) {
+        box.innerHTML = `<p class="muted">Select any runner on the leaderboard to see their full race card — splits, pace and prediction vs. result.</p><div class="empty">No runner selected</div>`;
+        return;
+      }
+      const { finished } = standings();
+      const place = r.finishTime != null ? finished.findIndex((x) => x.id === r.id) + 1 : null;
+      const delta = (r.finishTime != null && r.estimatedTime) ? r.finishTime - r.estimatedTime : null;
+      const deltaTxt = delta == null ? "—"
+        : `${delta <= 0 ? "−" : "+"}${formatShort(Math.abs(delta))} vs prediction`;
+      const deltaColor = delta == null ? "var(--muted)" : delta <= 0 ? "var(--green)" : "var(--amber)";
+
+      box.innerHTML = `
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px">
+          <div class="brand-mark" style="width:52px;height:52px;font-size:18px">${escapeHtml(String(r.bib).slice(-2))}</div>
+          <div>
+            <h3 style="margin:0">${escapeHtml(r.name)}</h3>
+            <div class="small muted">Bib ${escapeHtml(r.bib)} · ${escapeHtml(divisionLabel(r.division))}${r.age ? ` · ${escapeHtml(ageGroup(r.age))}` : ""}</div>
+          </div>
+        </div>
+        <div class="stat-strip" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+          <div class="stat">
+            <div class="stat-label">Finish time</div>
+            <div class="stat-value mono">${r.finishTime != null ? formatClock(r.finishTime) : "—"}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Overall place</div>
+            <div class="stat-value">${place ? `#${place}` : "—"}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Avg pace</div>
+            <div class="stat-value mono">${r.finishTime != null ? pacePerMile(r.finishTime) : "—"}<span class="small muted"> /mi</span></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Predicted</div>
+            <div class="stat-value mono">${r.estimatedTime ? formatShort(r.estimatedTime) : "—"}</div>
+          </div>
+        </div>
+        <div class="notice info show" style="margin-top:14px">
+          <span>◆</span>
+          <div style="color:${deltaColor}">${deltaTxt}</div>
+        </div>
+        ${r.dnf ? '<div class="notice error show" style="margin-top:10px"><span>▲</span><div>Did not finish</div></div>' : ""}
+      `;
+    }
+
+    /* ---------- Map ---------- */
+    const map = L.map("map", { scrollWheelZoom: false }).setView([33.9, -80.9], 12);
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      attribution: "Esri · Maxar · Earthstar Geographics",
+    }).addTo(map);
+    const poly = L.polyline([], { color: "#ff7f11", weight: 5, opacity: 0.9 }).addTo(map);
+    subscribe("route", (data) => {
+      if (!data || !data.points || !data.points.length) return;
+      poly.setLatLngs(data.points);
+      try {
+        map.fitBounds(poly.getBounds(), { padding: [24, 24] });
+        L.circleMarker(data.points[0], { radius: 8, color: "#34d399", fillColor: "#34d399", fillOpacity: 1 })
+          .addTo(map).bindTooltip("Start");
+        const end = data.points[data.points.length - 1];
+        L.circleMarker(end, { radius: 8, color: "#ff7f11", fillColor: "#ff7f11", fillOpacity: 1 })
+          .addTo(map).bindTooltip("Finish");
+      } catch (e) { console.warn("map fit failed", e); }
+    });
+
+    /* ---------- Controls ---------- */
+    document.getElementById("boardSearch").addEventListener("input", (e) => {
+      query = e.target.value.trim();
+      renderBoard();
+    });
+    document.getElementById("boardFilters").addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      filter = btn.getAttribute("data-filter");
+      document.querySelectorAll("#boardFilters button").forEach((b) => b.classList.toggle("on", b === btn));
+      renderBoard();
+    });
+    document.getElementById("exportCsv").addEventListener("click", () => {
+      const { finished, course, dnf } = standings();
+      const rows = [["Place", "Bib", "Name", "Division", "Age Group", "Finish Time", "Pace /mi", "Predicted", "Status"]];
+      finished.forEach((r, i) => rows.push([i + 1, r.bib, r.name, divisionLabel(r.division), ageGroup(r.age), formatClock(r.finishTime), pacePerMile(r.finishTime), r.estimatedTime ? formatShort(r.estimatedTime) : "", "Finished"]));
+      course.forEach((r) => rows.push(["", r.bib, r.name, divisionLabel(r.division), ageGroup(r.age), "", "", r.estimatedTime ? formatShort(r.estimatedTime) : "", "On course"]));
+      dnf.forEach((r) => rows.push(["", r.bib, r.name, divisionLabel(r.division), ageGroup(r.age), "", "", "", "DNF"]));
+      downloadCsv("brighton-oaks-5k-results.csv", rows);
+      toast("Results exported", "success");
+    });
+    document.getElementById("copyLink").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast("Result link copied to clipboard", "success");
+      } catch {
+        toast("Copy failed — copy the URL from your address bar", "error");
       }
     });
 
-    // --- Route ---
-    onValue(ref(db, "route"), snap => {
-      const data = snap.val();
-      if (!data || !data.points) return;
-      poly.setLatLngs(data.points);
-      map.fitBounds(poly.getBounds());
-    });
-
-    // --- Race Clock ---
-    let raceClock = { raceStart: null, running: false, paused: false, pausedAt: null };
-    onValue(ref(db, "raceClock"), snap => { raceClock = snap.val() || raceClock; });
-
-    function updateClock() {
-      const el = document.getElementById('raceClock');
-      if (!raceClock.raceStart) { el.textContent = 'Race clock: 00:00.000'; return; }
-      let ms = 0;
-      if (raceClock.paused && raceClock.pausedAt) ms = raceClock.pausedAt - raceClock.raceStart;
-      else if (raceClock.running) ms = Date.now() - raceClock.raceStart;
-      el.textContent = 'Race clock: ' + formatMs(ms);
-    }
-    setInterval(updateClock, 100);
+    /* ---------- Live data ---------- */
+    subscribe("registrations", (v) => { registrations = v || {}; renderBoard(); renderDetail(); });
+    subscribe("results", (v) => { results = v || {}; renderBoard(); renderDetail(); renderStatus(); });
   </script>
 </body>
 </html>

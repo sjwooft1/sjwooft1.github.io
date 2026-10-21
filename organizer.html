@@ -3,583 +3,1470 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Organizer — Race Timer</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-
+  <title>Brighton Oaks 5K — Race Timing Console</title>
+  <meta name="description" content="Organizer timing console for the Brighton Oaks 5K: race clock, tap-to-finish timing, OCR finish-line camera, registrations and results management." />
+  <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
+  <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
+  <link rel="stylesheet" href="race.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    :root{--accent:#ff7f11;--bg:#f7f7f7}
-    body{font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial; margin:0; background:var(--bg); color:#111}
-    .navbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.06);position:sticky;top:0;z-index:1000}
-    .container{padding:14px}
-    #map{height:420px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);width:100%}
-    .top-toolbar{display:flex;gap:8px;align-items:center;padding:10px 14px;background:#fff;border-bottom:1px solid #eee}
-    .btn{background:var(--accent);color:#fff;border:0;padding:8px 10px;border-radius:8px;cursor:pointer}
-    .btn.secondary{background:#eee;color:#111}
-    .muted{color:#666;font-size:13px}
+    /* ---- Timing console ---- */
+    .console-bar {
+      position: sticky; top: 0; z-index: 400;
+      background: rgba(14, 22, 38, 0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 22px;
+    }
+    .console-inner {
+      max-width: 1440px; margin: 0 auto;
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    }
+    .console-clock { display: flex; flex-direction: column; margin-left: auto; }
+    .runners-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+      gap: 11px;
+    }
+    .runner-card {
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 13px 15px;
+      cursor: pointer;
+      transition: border-color 0.12s, transform 0.08s, background 0.12s;
+      user-select: none;
+    }
+    .runner-card:hover { border-color: var(--accent2); }
+    .runner-card:active { transform: scale(0.98); background: rgba(255, 127, 17, 0.12); }
+    .runner-card.finished { border-color: rgba(52, 211, 153, 0.55); background: rgba(52, 211, 153, 0.08); cursor: default; }
+    .runner-card.dnf { border-color: rgba(248, 113, 113, 0.4); opacity: 0.75; cursor: default; }
+    .runner-card .rc-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .runner-card .rc-name { font-weight: 700; font-size: 0.95rem; }
+    .runner-card .rc-bib { font-family: var(--mono); color: var(--accent2); font-weight: 600; font-size: 0.85rem; }
+    .runner-card .rc-meta { color: var(--muted); font-size: 0.78rem; margin-top: 3px; }
+    .runner-card .rc-time { font-family: var(--mono); font-size: 1.02rem; font-weight: 600; margin-top: 6px; }
 
-    /* timing modal */
-    .timing-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:12000;align-items:center;justify-content:center}
-    .timing-modal.open{display:flex}
-    .timing-content{background:#fff;border-radius:12px;padding:16px;width:1000px;max-width:96vw;max-height:92vh;overflow:auto}
-    .timing-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
-    .stat-card{background:#f8f9fa;padding:10px;border-radius:8px;text-align:center}
-    .stat-number{font-weight:700;color:var(--accent)}
-    .runners-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;max-height:420px;overflow:auto;padding:6px;background:#f8f9fa;border-radius:8px}
-    .runner-card{background:#fff;border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);cursor:pointer;transition:transform .06s ease,background-color .08s}
-    .runner-card:active{transform:scale(.98);background:#eef9ff}
-    .runner-card.finished{border:2px solid #28a745;background:#f8fff9}
-    .runner-name{font-weight:700;margin:0}
-    .runner-details{color:#666;font-size:13px;margin:0}
-    .runner-time{font-weight:700;text-align:right}
-    .search-box{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-bottom:12px}
-    @media (max-width:800px){ .timing-stats{grid-template-columns:repeat(2,1fr)} .runners-grid{grid-template-columns:1fr;max-height:320px} }
+    /* ---- Camera ---- */
+    .camera-stage {
+      position: relative;
+      background: #060b14;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .camera-stage video { width: 100%; height: 100%; object-fit: cover; }
+    .camera-stage .stage-msg { color: var(--muted); text-align: center; padding: 22px; font-size: 0.92rem; }
+    .scan-frame {
+      position: absolute; inset: 18% 12%;
+      border: 2px solid rgba(255, 127, 17, 0.85);
+      border-radius: 12px;
+      box-shadow: 0 0 0 9999px rgba(6, 11, 20, 0.35);
+      pointer-events: none;
+    }
+    .scan-frame::after {
+      content: 'Center the bib number here';
+      position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+      color: var(--accent2); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .ocr-progress {
+      height: 6px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; margin-top: 10px;
+    }
+    .ocr-progress > div { height: 100%; width: 0%; background: var(--accent2); transition: width 0.25s; border-radius: 999px; }
+    .thumb { width: 100%; border-radius: 8px; display: block; border: 1px solid var(--border); }
+    .capture-row {
+      display: flex; gap: 12px; align-items: center;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 9px;
+    }
+    .capture-row img { width: 56px; height: 42px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+
+    .shortcut-table { width: 100%; font-size: 0.85rem; }
+    .shortcut-table td { padding: 5px 8px 5px 0; color: var(--muted); }
+    .shortcut-table td:first-child { width: 78px; }
   </style>
 </head>
 <body>
-  <nav class="navbar">
-    <div style="font-weight:700;color:var(--accent)">Brighton Oaks 5k — Organizer</div>
-    <div>
-      <a href="index.html" style="margin-right:12px;color:var(--accent);text-decoration:none;font-weight:600">Home</a>
-      <a href="registration.html" style="margin-right:12px;color:#333;text-decoration:none">Register</a>
-      <a href="results.html" style="color:#333;text-decoration:none">Results</a>
-    </div>
-  </nav>
-
-  <div class="top-toolbar">
-    <button id="openTiming" class="btn">Timing</button>
-    <button id="openRegistrations" class="btn secondary">Registrations</button>
-    <button id="openResults" class="btn secondary">Results</button>
-    <div style="margin-left:auto" class="muted">Data saved to Firebase + localStorage</div>
-  </div>
-
-  <div class="container">
-    <div id="map"></div>
-  </div>
-
-  <div id="notification" style="display:none;position:fixed;top:16px;right:16px;padding:10px 14px;border-radius:8px;color:#fff;background:#28a745;z-index:13000"></div>
-
-  <!-- Timing modal -->
-  <div id="timingModal" class="timing-modal" aria-hidden="true">
-    <div class="timing-content" role="dialog" aria-modal="true">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <h2 style="margin:0">Timing Screen</h2>
-        <button id="closeTiming" class="btn secondary">Close</button>
+  <!-- ================= Unlock gate ================= -->
+  <div id="gate" style="display:none; min-height:100vh; align-items:center; justify-content:center; padding:20px">
+    <div class="card" style="max-width:420px; width:100%; text-align:center">
+      <div class="brand-mark" style="margin:0 auto 14px">BO</div>
+      <h2>Organizer Access</h2>
+      <p class="muted small">This console is for the Brighton Oaks 5K race team. Enter the organizer password to continue.</p>
+      <div class="field" style="text-align:left; margin:16px 0">
+        <label for="gatePassword">Organizer password</label>
+        <input type="password" id="gatePassword" placeholder="Password" autocomplete="off" />
       </div>
-
-      <div class="timing-stats">
-        <div class="stat-card"><div class="stat-number" id="totalCount">0</div><div class="stat-label">Total</div></div>
-        <div class="stat-card"><div class="stat-number" id="finishedCount">0</div><div class="stat-label">Finished</div></div>
-        <div class="stat-card"><div class="stat-number" id="remainingCount">0</div><div class="stat-label">Remaining</div></div>
-        <div class="stat-card"><div class="stat-number" id="clockDisplay">00:00.000</div><div class="stat-label">Race Time</div></div>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <button id="startRace" class="btn">Start Race</button>
-        <button id="pauseRace" class="btn secondary">Pause</button>
-        <button id="resetRace" class="btn secondary">Reset</button>
-        <button id="finishAll" class="btn secondary">Finish All Remaining</button>
-        <div style="margin-left:auto"><button id="finishNext" class="btn">Finish Next</button></div>
-      </div>
-
-      <input id="runnerSearch" class="search-box" placeholder="Search name or bib...">
-
-      <div id="runnersGrid" class="runners-grid" aria-live="polite"></div>
-
-      <div style="margin-top:10px;color:#666;font-size:13px">Tip: Tap any runner card to instantly record finish. Press F to finish next unfinished.</div>
+      <button class="btn primary" id="gateUnlock" style="width:100%">Unlock console</button>
+      <div class="notice error" id="gateError" style="margin-top:12px; text-align:left"></div>
+      <p class="small muted" style="margin-top:14px"><a href="index.html">← Back to the race site</a></p>
     </div>
   </div>
 
-  <!-- Registrations modal -->
-  <div id="registrationsModal" class="timing-modal">
-    <div class="timing-content">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <h2 style="margin:0">Registrations</h2>
-        <button id="closeRegistrationsBtn" class="btn secondary">Close</button>
+  <!-- ================= App ================= -->
+  <div id="app" style="display:none">
+    <nav class="navbar">
+      <a class="brand" href="index.html">
+        <div class="brand-mark">BO</div>
+        <div>
+          <span class="brand-name">Brighton Oaks 5K</span>
+          <span class="brand-sub">Timing Console</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="registration.html">Register</a>
+        <a href="results.html">Public Results</a>
       </div>
-      <div id="registrationsArea"></div>
+    </nav>
+
+    <!-- ============ Race control bar ============ -->
+    <div class="console-bar">
+      <div class="console-inner">
+        <div>
+          <div class="clock-label">Official race clock</div>
+          <div class="clock-big" id="clockDisplay" style="font-size:2.5rem">00:00<span class="ms">.000</span></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn lg" id="startBtn">Start race</button>
+          <button class="btn ghost lg" id="pauseBtn">Pause</button>
+          <button class="btn danger lg" id="resetBtn">Reset</button>
+        </div>
+        <div class="console-clock">
+          <div style="display:flex; gap:8px; align-items:center">
+            <span class="badge gray" id="syncBadge">● Checking sync…</span>
+            <span class="badge orange" id="queueBadge" style="display:none">0 queued</span>
+          </div>
+          <div class="small muted" id="clockSub" style="margin-top:4px">Clock not started</div>
+        </div>
+      </div>
     </div>
+
+    <main class="page-wide">
+      <div class="tabs" id="tabs">
+        <button class="on" data-tab="timing">⏱ Timing Console</button>
+        <button data-tab="camera">📷 Finish Camera (OCR)</button>
+        <button data-tab="registrations">Registrations</button>
+        <button data-tab="results">Results</button>
+        <button data-tab="map">Course Map</button>
+      </div>
+
+      <!-- ==================== TIMING ==================== -->
+      <section class="tab-panel on" id="tab-timing">
+        <div class="stat-strip" style="margin-bottom:18px">
+          <div class="stat"><div class="stat-label">Starters</div><div class="stat-value" id="statTotal">0</div></div>
+          <div class="stat"><div class="stat-label">Finished</div><div class="stat-value" id="statFinished">0</div></div>
+          <div class="stat"><div class="stat-label">On course</div><div class="stat-value" id="statRemaining">0</div></div>
+          <div class="stat"><div class="stat-label">Last finish</div><div class="stat-value mono" id="statLast" style="font-size:1.15rem">—</div><div class="stat-sub" id="statLastSub">no finishers yet</div></div>
+        </div>
+
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-head" style="margin-bottom:12px">
+            <div>
+              <div class="eyebrow">Manual finish entry</div>
+              <h3>Record a finish by bib number</h3>
+            </div>
+            <div class="btn-row">
+              <button class="btn ghost" id="undoBtn">↩ Undo last finish <span class="kbd" style="margin-left:6px">U</span></button>
+              <button class="btn ghost" id="finishAllBtn">Finish all remaining</button>
+            </div>
+          </div>
+          <div class="toolbar">
+            <div class="search" style="max-width:340px">
+              <input type="text" id="bibInput" placeholder="Bib number or name, then press Enter…" autocomplete="off" />
+            </div>
+            <button class="btn" id="recordBibBtn">Record finish now</button>
+            <span class="small muted" id="bibMatch">Type a bib to preview the match</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="eyebrow">Field</div>
+              <h3>Runners <span class="muted small" style="font-weight:500">— tap a card to record a finish</span></h3>
+            </div>
+            <div class="toolbar" style="flex:1; max-width:560px">
+              <div class="search">
+                <input type="text" id="runnerSearch" placeholder="Search name or bib…" />
+              </div>
+            </div>
+          </div>
+          <div class="filter-chips" id="timingFilters" style="margin-bottom:13px">
+            <button class="on" data-filter="all">All</button>
+            <button data-filter="course">On course</button>
+            <button data-filter="finished">Finished</button>
+            <button data-filter="dnf">DNF</button>
+          </div>
+          <div class="runners-grid" id="runnersGrid" aria-live="polite"></div>
+          <div class="empty" id="runnersEmpty" style="display:none">
+            No registrations loaded yet. Open the <b>Registrations</b> tab to load the field, or register runners on the public page.
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <div class="eyebrow">Keyboard shortcuts</div>
+          <table class="shortcut-table">
+            <tr><td><span class="kbd">F</span></td><td>Finish next runner (by predicted time)</td></tr>
+            <tr><td><span class="kbd">U</span></td><td>Undo the last recorded finish</td></tr>
+            <tr><td><span class="kbd">B</span></td><td>Jump to the bib entry box</td></tr>
+            <tr><td><span class="kbd">Space</span></td><td>Start / pause the race clock</td></tr>
+            <tr><td><span class="kbd">1–5</span></td><td>Switch tabs</td></tr>
+          </table>
+        </div>
+      </section>
+
+      <!-- ==================== CAMERA ==================== -->
+      <section class="tab-panel" id="tab-camera">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="eyebrow">Photo finish</div>
+                <h2>Finish-Line Camera</h2>
+              </div>
+              <span class="badge gray" id="camBadge">Camera off</span>
+            </div>
+            <p class="muted small">Point the camera at a runner's bib and capture. The bib number is read automatically (OCR), matched to the roster, and the finish is recorded at the moment the photo was taken.</p>
+
+            <div class="camera-stage" id="cameraStage">
+              <video id="cameraVideo" autoplay playsinline muted></video>
+              <div class="scan-frame" id="scanFrame" style="display:none"></div>
+            </div>
+
+            <div class="btn-row" style="margin-top:14px">
+              <button class="btn primary" id="startCamBtn">Start camera</button>
+              <button class="btn" id="captureBtn" disabled>📸 Capture &amp; read bib</button>
+              <button class="btn ghost" id="stopCamBtn" disabled>Stop</button>
+              <label class="btn ghost" style="cursor:pointer">
+                Upload photo
+                <input type="file" id="photoUpload" accept="image/*" capture="environment" style="display:none" />
+              </label>
+            </div>
+
+            <div id="ocrStatus" class="small muted" style="margin-top:12px">Camera idle — start the camera or upload a photo to read bibs.</div>
+            <div class="ocr-progress" id="ocrProgressWrap" style="display:none"><div id="ocrProgress"></div></div>
+            <div class="notice error" id="camError" style="margin-top:12px"></div>
+          </div>
+
+          <aside class="grid" style="align-content:start; gap:18px">
+            <div class="card">
+              <div class="eyebrow">Capture review</div>
+              <div id="reviewEmpty" class="empty">Capture a photo to review the bib read here.</div>
+              <div id="reviewPanel" style="display:none">
+                <img class="thumb" id="reviewThumb" alt="Captured frame" />
+                <div class="stat-strip" style="grid-template-columns:repeat(2,minmax(0,1fr)); margin:13px 0">
+                  <div class="stat">
+                    <div class="stat-label">Bib read</div>
+                    <div class="stat-value mono" id="reviewBib">—</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-label">OCR confidence</div>
+                    <div class="stat-value mono" id="reviewConf">—</div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="reviewBibInput">Confirm or correct the bib number</label>
+                  <input type="text" id="reviewBibInput" inputmode="numeric" placeholder="e.g. 0042" />
+                  <div class="help" id="reviewMatch">No roster match yet</div>
+                </div>
+                <div class="notice info show" id="reviewTimeNote" style="margin:12px 0">
+                  <span>⏱</span><div id="reviewTimeText">Photo time: —</div>
+                </div>
+                <div class="btn-row">
+                  <button class="btn primary" id="recordOcrBtn">Record finish</button>
+                  <button class="btn ghost" id="discardCaptureBtn">Discard</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head" style="margin-bottom:10px">
+                <div class="eyebrow" style="margin:0">Recent captures</div>
+                <button class="btn ghost sm" id="clearLogBtn">Clear</button>
+              </div>
+              <div id="captureLog"><div class="empty" style="padding:18px">No captures yet</div></div>
+            </div>
+
+            <div class="card">
+              <div class="eyebrow">Getting a clean read</div>
+              <ul class="small muted" style="margin:6px 0 0; padding-left:18px; line-height:1.9">
+                <li>Fill the orange frame with the bib number</li>
+                <li>Hold steady in good light; avoid glare</li>
+                <li>Tap the bib number on the phone screen to help focus</li>
+                <li>Always confirm the read before recording</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ==================== REGISTRATIONS ==================== -->
+      <section class="tab-panel" id="tab-registrations">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="eyebrow">Field management</div>
+              <h2>Registrations</h2>
+            </div>
+            <div class="btn-row">
+              <button class="btn ghost sm" id="reloadRegsBtn">Reload from database</button>
+              <button class="btn ghost sm" id="exportRegsBtn">Export CSV</button>
+            </div>
+          </div>
+
+          <div class="card" style="background:var(--bg-soft); margin-bottom:16px">
+            <div class="eyebrow">Add a walk-in runner</div>
+            <div class="toolbar">
+              <div class="field" style="flex:1; min-width:180px">
+                <input type="text" id="walkinName" placeholder="Full name" />
+              </div>
+              <div class="field" style="width:130px">
+                <input type="text" id="walkinTime" placeholder="Est. MM:SS" />
+              </div>
+              <div class="field" style="width:130px">
+                <select id="walkinSize">
+                  <option value="">Shirt…</option>
+                  <option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option>
+                </select>
+              </div>
+              <button class="btn" id="addWalkinBtn">Add runner</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>Bib</th><th>Runner</th><th>Div</th><th>Shirt</th>
+                  <th style="text-align:right">Est. finish</th><th>Registered</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="regsBody">
+                <tr><td colspan="7" class="muted" style="text-align:center;padding:24px">Loading registrations…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== RESULTS ==================== -->
+      <section class="tab-panel" id="tab-results">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="eyebrow">Official results</div>
+              <h2>Finishers</h2>
+            </div>
+            <div class="btn-row">
+              <button class="btn ghost sm" id="exportResultsBtn">Export CSV</button>
+              <button class="btn ghost sm" onclick="window.print()">Print</button>
+              <button class="btn danger sm" id="clearResultsBtn">Clear all results</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>Place</th><th>Bib</th><th>Runner</th>
+                  <th style="text-align:right">Time</th><th style="text-align:right">Pace</th>
+                  <th style="text-align:right">vs Pred</th><th>Recorded</th><th>Method</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="resultsBody">
+                <tr><td colspan="9" class="muted" style="text-align:center;padding:24px">No finishers yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== MAP ==================== -->
+      <section class="tab-panel" id="tab-map">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="eyebrow">Course editor</div>
+              <h2>Course Map</h2>
+            </div>
+            <div class="btn-row">
+              <button class="btn ghost sm" id="undoPointBtn">Undo last point</button>
+              <button class="btn ghost sm" id="clearRouteBtn">Clear route</button>
+              <button class="btn sm" id="saveRouteBtn">Save route</button>
+            </div>
+          </div>
+          <p class="muted small">Click the map to add route points — the saved route appears on the public results page.</p>
+          <div id="map" style="height:520px; border-radius:10px; overflow:hidden"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p><b style="color:var(--text)">Brighton Oaks 5K</b> · Timing console — data syncs to Firebase and caches locally for race day.</p>
+      <p class="small" style="margin-top:10px">© 2025–2026 Brighton Oaks 5K — All rights reserved.</p>
+    </footer>
   </div>
 
-  <!-- Results modal -->
-  <div id="resultsModal" class="timing-modal">
-    <div class="timing-content">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <h2 style="margin:0">Results</h2>
-        <button id="closeResultsBtn" class="btn secondary">Close</button>
-      </div>
-      <div id="resultsArea"></div>
-    </div>
-  </div>
-
-  <!-- libs -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script type="module">
-  /************************************************************************
-   * Organizer — single-file app (fixed Firebase integration + instant finish)
-   ************************************************************************/
+    import {
+      getDb, ref, set, push, get, onValue,
+      formatClock, formatShort, pacePerMile, parseTimeInput, clockParts,
+      computeBibs, sortRunners, divisionLabel, escapeHtml, fmtDateTime,
+      downloadCsv, toast, watchConnection
+    } from "./race-core.js";
 
-  // ---------- Firebase config (from you) ----------
-  const firebaseConfig = {
-    apiKey: "AIzaSyDUnAV-DL-Saw2ByPY6GF8aDaZbVCXDIH4",
-    authDomain: "the-race-organizer.firebaseapp.com",
-    databaseURL: "https://the-race-organizer-default-rtdb.firebaseio.com",
-    projectId: "the-race-organizer",
-    storageBucket: "the-race-organizer.firebasestorage.app",
-    messagingSenderId: "265977321479",
-    appId: "1:265977321479:web:23d3f3077e8e766323b2a2",
-    measurementId: "G-PKGPD78DYM"
-  };
+    /* =====================================================================
+       0. Access gate (same password as before, remembered for the session)
+    ===================================================================== */
+    const gate = document.getElementById("gate");
+    const app = document.getElementById("app");
+    const ORGANIZER_PASSWORD = "1stannualBO";
 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getDatabase, ref, set, push, onValue, get, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    function unlock() {
+      sessionStorage.setItem("bo5k_organizer", "1");
+      gate.style.display = "none";
+      app.style.display = "block";
+      boot();
+    }
+    if (sessionStorage.getItem("bo5k_organizer") === "1") {
+      unlock();
+    } else {
+      gate.style.display = "flex";
+      const tryUnlock = () => {
+        const val = document.getElementById("gatePassword").value;
+        if (val === ORGANIZER_PASSWORD) unlock();
+        else {
+          const err = document.getElementById("gateError");
+          err.textContent = "Incorrect password — try again.";
+          err.classList.add("show");
+        }
+      };
+      document.getElementById("gateUnlock").addEventListener("click", tryUnlock);
+      document.getElementById("gatePassword").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") tryUnlock();
+      });
+    }
 
-  // Initialize Firebase (and expose lightweight wrappers used by the rest of the script)
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  window.mainDb = db;
-  window.mainRef = ref;
-  window.mainSet = set;
-  // also expose helpers for dynamic imports in older code sections
-  window.firebaseDb = db;
-  window.firebaseDatabase = { getDatabase, ref, set, push, onValue, get, remove };
+    /* =====================================================================
+       1. State + persistence
+    ===================================================================== */
+    const state = {
+      registrations: {},       // firebase map id -> reg
+      results: {},             // firebase map id -> result
+      route: [],
+      raceStart: null,
+      running: false,
+      paused: false,
+      pausedAt: null,
+      filter: "all",
+      search: "",
+      finishStack: [],         // ids in finish order, for undo
+    };
 
-  // ---------- State ----------
-  const state = {
-    route: [],
-    runners: [],           // each runner: { id, name, estimatedTime, finishTime, finishedAt, size }
-    raceStart: null,       // timestamp ms
-    running: false,
-    paused: false,
-    pausedAt: null
-  };
+    const LS_KEYS = { snapshot: "bo5k_console_snapshot", queue: "bo5k_write_queue", log: "bo5k_capture_log" };
 
-  // ---------- Utilities ----------
-  function showNotification(msg, type='success'){
-    const el = document.getElementById('notification');
-    el.style.background = type === 'error' ? '#dc3545' : '#28a745';
-    el.textContent = msg; el.style.display='block';
-    setTimeout(()=> el.style.display='none', 1800);
-  }
-  function formatMs(ms){
-    if (ms == null) return '—';
-    const t = Math.max(0, Math.floor(ms));
-    const m = Math.floor(t/60000);
-    const s = Math.floor((t%60000)/1000);
-    const msPart = t%1000;
-    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(msPart).padStart(3,'0')}`;
-  }
-  function makeId(){ return Math.random().toString(36).slice(2,9); }
+    function saveSnapshot() {
+      try {
+        localStorage.setItem(LS_KEYS.snapshot, JSON.stringify({
+          registrations: state.registrations,
+          results: state.results,
+          route: state.route,
+          raceStart: state.raceStart, running: state.running,
+          paused: state.paused, pausedAt: state.pausedAt,
+          finishStack: state.finishStack,
+          savedAt: Date.now(),
+        }));
+      } catch (e) { console.warn("snapshot save failed", e); }
+    }
+    function loadSnapshot() {
+      try {
+        const raw = localStorage.getItem(LS_KEYS.snapshot);
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        state.registrations = s.registrations || {};
+        state.results = s.results || {};
+        state.route = s.route || [];
+        state.raceStart = s.raceStart ?? null;
+        state.running = !!s.running;
+        state.paused = !!s.paused;
+        state.pausedAt = s.pausedAt ?? null;
+        state.finishStack = s.finishStack || [];
+      } catch (e) { console.warn("snapshot load failed", e); }
+    }
 
-  function saveLocal(){
-    try {
-      localStorage.setItem('organizer_state_v1', JSON.stringify({
-        route: state.route,
-        runners: state.runners,
+    /* =====================================================================
+       2. Firebase writes with an offline queue (race-day insurance)
+    ===================================================================== */
+    function loadQueue() {
+      try { return JSON.parse(localStorage.getItem(LS_KEYS.queue) || "[]"); }
+      catch { return []; }
+    }
+    let writeQueue = loadQueue();
+
+    function persistQueue() {
+      localStorage.setItem(LS_KEYS.queue, JSON.stringify(writeQueue));
+      const badge = document.getElementById("queueBadge");
+      if (writeQueue.length) {
+        badge.style.display = "inline-flex";
+        badge.textContent = `${writeQueue.length} queued`;
+      } else {
+        badge.style.display = "none";
+      }
+    }
+
+    async function dbSet(path, value, silent = false) {
+      try {
+        await set(ref(getDb(), path), value);
+        return true;
+      } catch (e) {
+        console.warn("db write failed, queued:", path, e);
+        writeQueue.push({ path, value, at: Date.now() });
+        persistQueue();
+        if (!silent) toast("Saved locally — will sync when the connection returns", "error");
+        return false;
+      }
+    }
+
+    async function flushQueue() {
+      if (!writeQueue.length || !navigator.onLine) return;
+      const pending = [...writeQueue];
+      writeQueue = [];
+      for (const op of pending) {
+        try {
+          await set(ref(getDb(), op.path), op.value);
+        } catch {
+          writeQueue.push(op);
+        }
+      }
+      persistQueue();
+    }
+    setInterval(flushQueue, 5000);
+    window.addEventListener("online", flushQueue);
+
+    /* =====================================================================
+       3. Race clock
+    ===================================================================== */
+    function currentElapsed() {
+      if (state.raceStart == null) return 0;
+      if (state.paused && state.pausedAt != null) return state.pausedAt - state.raceStart;
+      return Math.max(0, Date.now() - state.raceStart);
+    }
+    /** elapsed at a specific wall-clock moment (for photo finishes) */
+    function elapsedAt(when) {
+      if (state.raceStart == null) return null;
+      return Math.max(0, when - state.raceStart);
+    }
+
+    const clockDisplay = document.getElementById("clockDisplay");
+    function renderClock() {
+      const p = clockParts(currentElapsed());
+      clockDisplay.innerHTML = `${p.main}<span class="ms">${p.ms}</span>`;
+      const sub = document.getElementById("clockSub");
+      if (state.raceStart == null) sub.textContent = "Clock not started";
+      else if (state.paused) sub.textContent = "Paused";
+      else if (state.running) sub.textContent = "Timing live · tap a runner to record a finish";
+      else sub.textContent = "Clock stopped";
+      // live durations on un-finished cards
+      document.querySelectorAll("[data-live]").forEach((el) => {
+        el.textContent = formatClock(currentElapsed());
+      });
+      document.getElementById("startBtn").textContent =
+        state.raceStart == null ? "Start race" : state.paused ? "Resume" : "Running…";
+      document.getElementById("startBtn").disabled = state.raceStart != null && !state.paused;
+      document.getElementById("pauseBtn").disabled = state.raceStart == null || state.paused;
+    }
+    setInterval(renderClock, 100);
+
+    async function writeClock() {
+      await dbSet("raceClock", {
         raceStart: state.raceStart,
         running: state.running,
         paused: state.paused,
-        pausedAt: state.pausedAt
+        pausedAt: state.pausedAt,
+      }, true);
+      // mirror legacy key used by other pages
+      await dbSet("raceStartTime", state.raceStart, true);
+    }
+
+    function startRace() {
+      if (state.raceStart == null) {
+        state.raceStart = Date.now();
+        state.running = true;
+        state.paused = false;
+        state.pausedAt = null;
+        toast("Race started — the clock is live", "success");
+      } else if (state.paused) {
+        const pausedFor = Date.now() - state.pausedAt;
+        state.raceStart += pausedFor;
+        state.paused = false;
+        state.pausedAt = null;
+        state.running = true;
+        toast("Race resumed", "success");
+      }
+      saveSnapshot(); writeClock(); renderClock(); renderAll();
+    }
+
+    function togglePause() {
+      if (state.raceStart == null) return;
+      if (state.running) {
+        state.paused = true;
+        state.pausedAt = Date.now();
+        state.running = false;
+        toast("Race paused", "info");
+      } else if (state.paused) {
+        const pausedFor = Date.now() - state.pausedAt;
+        state.raceStart += pausedFor;
+        state.paused = false;
+        state.pausedAt = null;
+        state.running = true;
+        toast("Race resumed", "success");
+      }
+      saveSnapshot(); writeClock(); renderClock();
+    }
+
+    function resetRace() {
+      if (!confirm("Reset the race? This clears the clock and every recorded finish.")) return;
+      state.raceStart = null;
+      state.running = false;
+      state.paused = false;
+      state.pausedAt = null;
+      state.results = {};
+      state.finishStack = [];
+      dbSet("raceClock", null, true);
+      dbSet("raceStartTime", null, true);
+      dbSet("results", null, true);
+      saveSnapshot(); renderClock(); renderAll();
+      toast("Race reset", "info");
+    }
+
+    /* =====================================================================
+       4. Roster + bibs
+    ===================================================================== */
+    function roster() {
+      const entries = Object.entries(state.registrations).map(([id, r]) => ({ id, ...r }));
+      const bibs = computeBibs(entries);
+      return entries.map((r) => ({ ...r, bib: bibs[r.id] }));
+    }
+    function bibOf(id) {
+      const found = roster().find((r) => r.id === id);
+      return found ? found.bib : (state.results[id]?.bibNumber || "—");
+    }
+    /** merge registrations + orphan results into one field list */
+    function field() {
+      const base = roster().map((r) => ({
+        ...r,
+        ...(state.results[r.id] || {}),
+        bib: r.bib,
+        id: r.id,
       }));
-    } catch(e){ console.warn('saveLocal failed', e); }
-  }
-  function loadLocal(){
-    try {
-      const raw = localStorage.getItem('organizer_state_v1');
-      if (!raw) return;
-      const obj = JSON.parse(raw);
-      state.route = obj.route || [];
-      state.runners = obj.runners || [];
-      state.raceStart = typeof obj.raceStart === 'number' ? obj.raceStart : null;
-      state.running = !!obj.running;
-      state.paused = !!obj.paused;
-      state.pausedAt = obj.pausedAt || null;
-    } catch(e){ console.warn('loadLocal failed', e); }
-  }
-
-  // ---------- Map ----------
-  const map = L.map('map').setView([39.8283, -98.5795], 4);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
-  let poly = L.polyline([], {color: '#ff7f11'}).addTo(map);
-  let markers = [];
-  function refreshRouteDisplay(){
-    markers.forEach(m=>map.removeLayer(m)); markers=[];
-    poly.setLatLngs(state.route);
-    state.route.forEach(pt=>{ markers.push(L.circleMarker(pt,{radius:6}).addTo(map)); });
-  }
-  map.on('click', e=>{ state.route.push({lat:e.latlng.lat, lng:e.latlng.lng}); refreshRouteDisplay(); saveLocal(); });
-
-  // ---------- Runners — add / render / load ----------
-  function addRunnerObj(obj){
-    // preserve provided id (from Firebase). only generate if missing
-    obj.id = obj.id || makeId();
-    obj.finishTime = obj.finishTime || null;
-    obj.finishedAt = obj.finishedAt || null;
-    state.runners.push(obj);
-    renderRunners();
-    saveLocal();
-  }
-
-  function renderRunners(){
-    // For the main registrations area (if exists)
-    const container = document.getElementById('runnersList');
-    if (!container) return;
-    container.innerHTML = '';
-    const sorted = [...state.runners].sort((a,b)=>(a.estimatedTime||0)-(b.estimatedTime||0));
-    sorted.forEach((r,i)=>{
-      const bib = String(i+1).padStart(4,'0');
-      const el = document.createElement('div');
-      el.className = 'runner-row';
-      el.innerHTML = `<strong>${escapeHtml(r.name)}</strong><div class="muted">Bib: ${bib} | Est: ${r.estimatedTime ? formatMs(r.estimatedTime) : '—'}</div>`;
-      container.appendChild(el);
-    });
-  }
-
-  function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  // ---------- Race clock ----------
-  function currentElapsed(){
-    if (state.raceStart==null) return 0;
-    if (state.paused && state.pausedAt!=null) return state.pausedAt - state.raceStart;
-    return Date.now() - state.raceStart;
-  }
-  let raf = null;
-  function tick(){
-    if (!state.running) return;
-    const el = document.getElementById('clockDisplay');
-    if (el) el.textContent = formatMs(currentElapsed());
-    raf = requestAnimationFrame(tick);
-  }
-  function startRace(){
-    if (state.raceStart == null){ state.raceStart = Date.now(); state.running = true; state.paused = false; state.pausedAt = null; raf = requestAnimationFrame(tick); }
-    else if (state.paused){ const resume = Date.now(); const pausedDur = resume - state.pausedAt; state.raceStart += pausedDur; state.paused=false; state.pausedAt=null; state.running=true; raf = requestAnimationFrame(tick); }
-    saveLocal(); updateTimingScreen(); writeRaceClockToFirebase();
-  }
-  function togglePause(){
-    if (state.raceStart==null) return;
-    if (state.running){ state.paused=true; state.pausedAt = Date.now(); state.running=false; cancelAnimationFrame(raf); }
-    else if (state.paused){ const resume = Date.now(); const pausedDur = resume - state.pausedAt; state.raceStart += pausedDur; state.paused=false; state.pausedAt=null; state.running=true; raf = requestAnimationFrame(tick); }
-    saveLocal(); updateTimingScreen(); writeRaceClockToFirebase();
-  }
-  function resetRace(){
-    state.raceStart = null; state.running = false; state.paused=false; state.pausedAt=null; cancelAnimationFrame(raf);
-    state.runners.forEach(r=>{ r.finishTime = null; r.finishedAt = null; });
-    saveLocal(); renderTimingRunners(); updateTimingScreen();
-    // clear firebase clock & results? leave to button
-  }
-
-  // ---------- Finishing ----------
-  function finishRunner(id){
-    const r = state.runners.find(x=>x.id===id);
-    if (!r) return;
-    if (r.finishTime != null) return;
-    if (state.raceStart == null) { showNotification('Race not started','error'); return; }
-
-    const elapsed = currentElapsed();
-    r.finishTime = elapsed;
-    r.finishedAt = Date.now();
-    saveLocal();
-
-    // minimal feedback
-    try { if (navigator.vibrate) navigator.vibrate(40); } catch(e){}
-    const card = document.querySelector(`[data-runner-id="${id}"]`);
-    if (card) card.classList.add('finished');
-
-    // Save to Firebase (results/<id>)
-    try {
-      const allSorted = [...state.runners].sort((a,b)=>(a.estimatedTime||0)-(b.estimatedTime||0));
-      const bibIndex = allSorted.findIndex(x=>x.id===id);
-      const bib = bibIndex>=0 ? String(bibIndex+1).padStart(4,'0') : '—';
-      set(ref(db, 'results/' + id), {
-        name: r.name,
-        bibNumber: bib,
-        estimatedTime: r.estimatedTime || null,
-        finishTime: r.finishTime,
-        finishedAt: r.finishedAt
-      });
-    } catch(e){ console.warn('firebase write failed', e); }
-
-    renderTimingRunners();
-    updateTimingScreen();
-  }
-
-  // Finish next unfinished runner (by estimated time then FIFO)
-  function finishNext(){
-    if (state.raceStart==null) { showNotification('Start race first','error'); return; }
-    const next = [...state.runners].filter(r=>r.finishTime==null && r.estimatedTime!=null).sort((a,b)=>a.estimatedTime-b.estimatedTime)[0]
-               || [...state.runners].filter(r=>r.finishTime==null)[0];
-    if (!next) { showNotification('No remaining runners'); return; }
-    finishRunner(next.id);
-    autoScrollTo(next.id);
-  }
-
-  // Finish all remaining (bulk)
-  async function finishAllRemaining(){
-    if (state.raceStart==null){ alert('Start race first'); return; }
-    const remaining = state.runners.filter(r=>r.finishTime==null);
-    if (remaining.length===0){ alert('No remaining runners'); return; }
-    if (!confirm(`Finish ${remaining.length} remaining runners?`)) return;
-    const elapsed = currentElapsed();
-    for (const r of remaining){ r.finishTime = elapsed; r.finishedAt = Date.now(); 
-      try { const allSorted = [...state.runners].sort((a,b)=>(a.estimatedTime||0)-(b.estimatedTime||0)); const bibIndex = allSorted.findIndex(x=>x.id===r.id); const bib = bibIndex>=0?String(bibIndex+1).padStart(4,'0'):'—';
-            await set(ref(db, 'results/' + r.id), { name: r.name, bibNumber: bib, estimatedTime: r.estimatedTime||null, finishTime: r.finishTime, finishedAt: r.finishedAt }); } catch(e){ console.warn(e); }
-    }
-    saveLocal(); renderTimingRunners(); updateTimingScreen(); showNotification(`Finished ${remaining.length}`);
-  }
-
-  // ---------- Timing UI Render ----------
-  let searchTerm = '';
-  function renderTimingRunners(){
-    const grid = document.getElementById('runnersGrid');
-    if (!grid) return;
-    const sorted = [...state.runners].sort((a,b)=>(a.estimatedTime||0)-(b.estimatedTime||0));
-    grid.innerHTML = '';
-    sorted.forEach((r, idx)=>{
-      const bib = String(idx+1).padStart(4,'0');
-      const isFinished = r.finishTime != null;
-      if (searchTerm){
-        const s = searchTerm.toLowerCase();
-        if (!( (r.name||'').toLowerCase().includes(s) || bib.includes(s) )) return;
-      }
-      const card = document.createElement('div');
-      card.className = 'runner-card' + (isFinished ? ' finished' : '');
-      card.setAttribute('data-runner-id', r.id);
-      card.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div class="runner-name">${escapeHtml(r.name)}</div>
-            <div class="runner-details">Bib #${bib} • Est: ${r.estimatedTime ? formatMs(r.estimatedTime) : '—'}</div>
-          </div>
-          <div style="min-width:110px;text-align:right;">
-            <div class="runner-time">${isFinished ? formatMs(r.finishTime) : (state.running ? formatMs(currentElapsed()) : '00:00.000')}</div>
-          </div>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-  }
-
-  // auto-scroll helper
-  function autoScrollTo(id){
-    const el = document.querySelector(`[data-runner-id="${id}"]`);
-    if (el) el.scrollIntoView({behavior:'smooth',block:'center'});
-  }
-
-  // instant tap-to-finish handler (delegated)
-  let lastTap = 0;
-  function timingGridClick(e){
-    const card = e.target.closest('.runner-card');
-    if (!card) return;
-    const now = Date.now();
-    if (now - lastTap < 80) return;
-    lastTap = now;
-    const id = card.getAttribute('data-runner-id');
-    const runner = state.runners.find(r=>r.id===id);
-    if (!runner) return;
-    if (state.running && runner.finishTime == null && state.raceStart != null) {
-      finishRunner(id);
-      // scroll to next
-      setTimeout(()=>{ const next = state.runners.find(r=>r.finishTime==null); if (next) autoScrollTo(next.id); }, 100);
-    }
-  }
-
-  // ---------- Loading from Firebase ----------
-  // Load registrations (preserve the Firebase IDs)
-  async function loadRegistrationsIntoRunners(){
-    try {
-      const registrationsRef = ref(db, 'registrations');
-      const snap = await get(registrationsRef);
-      if (!snap.exists()){
-        showNotification('No registrations found','warning');
-        return;
-      }
-      const regsObj = snap.val(); // { id1: {name,...}, id2: {...} }
-      // clear local runners and load fresh
-      state.runners = [];
-      Object.entries(regsObj).forEach(([id, reg])=>{
-        addRunnerObj({
-          id: id,                              // preserve firebase id
-          name: reg.name || 'Unknown',
-          estimatedTime: reg.estimatedTime || null,
-          size: reg.size || null
-        });
-      });
-      // merge any existing results
-      await loadResultsIntoRunners();
-      showNotification(`Loaded ${Object.keys(regsObj).length} registrations`);
-    } catch (e){
-      console.error('loadRegs error', e);
-      showNotification('Failed to load registrations','error');
-    }
-  }
-
-  // Load existing results and merge
-  async function loadResultsIntoRunners(){
-    try {
-      const resultsRef = ref(db, 'results');
-      const snap = await get(resultsRef);
-      if (!snap.exists()) return;
-      const resultsObj = snap.val();
-      Object.entries(resultsObj).forEach(([id, res])=>{
-        const local = state.runners.find(r=>r.id===id);
-        if (local){
-          local.finishTime = res.finishTime || local.finishTime;
-          local.finishedAt = res.finishedAt || local.finishedAt;
-        } else {
-          // If a result exists but no registration (rare), include it so results view shows it
-          state.runners.push({
-            id: id,
-            name: res.name || 'Unknown',
-            estimatedTime: res.estimatedTime || null,
-            finishTime: res.finishTime || null,
-            finishedAt: res.finishedAt || null
+      const known = new Set(base.map((r) => r.id));
+      Object.entries(state.results).forEach(([id, res]) => {
+        if (!known.has(id)) {
+          base.push({
+            id,
+            name: res.name || "Unknown runner",
+            bib: res.bibNumber || "—",
+            estimatedTime: res.estimatedTime ?? null,
+            ...res,
           });
         }
       });
-      saveLocal(); renderTimingRunners(); updateTimingScreen();
-    } catch(e){ console.warn('loadResults err', e); }
-  }
+      return base;
+    }
 
-  async function loadRaceStateFromFirebase(){
-    try {
-      const clockRef = ref(db, 'raceClock');
-      const snap = await get(clockRef);
-      if (snap.exists()){
-        const data = snap.val();
-        if (data){
-          state.raceStart = data.raceStart || state.raceStart;
-          state.running = !!data.running;
-          state.paused = !!data.paused;
-          state.pausedAt = data.pausedAt || null;
-          if (state.running) { raf = requestAnimationFrame(tick); }
-        }
+    /* =====================================================================
+       5. Recording finishes
+    ===================================================================== */
+    function recordFinish(id, when = Date.now(), method = "tap") {
+      const runner = field().find((r) => r.id === id);
+      if (!runner) return;
+      if (state.raceStart == null) { toast("Start the race first", "error"); return; }
+      const existing = state.results[id];
+      if (existing && existing.finishTime != null && !existing.dnf) {
+        toast(`${runner.name} already has a finish — use Edit to change it`, "info");
+        return;
       }
-      // load registrations + results
-      await loadRegistrationsIntoRunners();
-    } catch(e){ console.warn('loadRaceStateFromFirebase', e); }
-  }
+      const finishTime = elapsedAt(when);
+      const entry = {
+        name: runner.name,
+        bibNumber: runner.bib,
+        estimatedTime: runner.estimatedTime ?? null,
+        finishTime,
+        finishedAt: when,
+        recordedAt: Date.now(),
+        method,
+        dnf: false,
+      };
+      state.results[id] = entry;
+      state.finishStack.push(id);
+      dbSet(`results/${id}`, entry, true);
+      try { if (navigator.vibrate) navigator.vibrate(35); } catch {}
+      saveSnapshot();
+      renderAll();
+      toast(`🏁 ${runner.name} — ${formatClock(finishTime)}`, "success");
+    }
 
-  // ---------- Firebase helpers ----------
-  async function writeRaceClockToFirebase(){
-    try {
-      await set(ref(db, 'raceClock'), {
-        raceStart: state.raceStart,
-        running: state.running,
-        paused: state.paused,
-        pausedAt: state.pausedAt
-      });
-    } catch(e){ console.warn(e); }
-  }
+    function undoLastFinish() {
+      const id = state.finishStack.pop();
+      if (!id) { toast("Nothing to undo", "info"); return; }
+      const name = state.results[id]?.name || "Runner";
+      delete state.results[id];
+      dbSet(`results/${id}`, null, true);
+      saveSnapshot();
+      renderAll();
+      toast(`Undid finish for ${name}`, "info");
+    }
 
-  // ---------- Registrations management UI ----------
-  async function viewRegistrationsUI(){
-    try {
-      const registrationsRef = ref(db, 'registrations');
-      const snap = await get(registrationsRef);
-      const area = document.getElementById('registrationsArea');
-      area.innerHTML = '';
-      if (!snap.exists()){ area.innerHTML = '<div class="muted">No registrations</div>'; return; }
-      const regs = snap.val();
-      const rows = Object.entries(regs).sort((a,b)=>(a[1].estimatedTime||0)-(b[1].estimatedTime||0));
-      const table = document.createElement('table'); table.style.width='100%';
-      table.innerHTML = '<thead><tr style="background:#f8f9fa"><th>Name</th><th>Est</th><th>Size</th><th>Registered</th><th>Actions</th></tr></thead>';
-      const tbody = document.createElement('tbody');
-      rows.forEach(([id, reg], i)=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td><strong>${escapeHtml(reg.name)}</strong></td>
-                        <td>${reg.estimatedTime ? formatMs(reg.estimatedTime) : '—'}</td>
-                        <td>${escapeHtml(reg.size||'')}</td>
-                        <td>${new Date(reg.registeredAt||0).toLocaleString()}</td>
-                        <td><button class="btn secondary" data-id="${id}" data-name="${escapeHtml(reg.name)}">Remove</button></td>`;
-        tbody.appendChild(tr);
+    function finishNext() {
+      if (state.raceStart == null) { toast("Start the race first", "error"); return; }
+      const next = field()
+        .filter((r) => !(state.results[r.id] && state.results[r.id].finishTime != null))
+        .sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0))[0];
+      if (!next) { toast("Every runner is finished", "info"); return; }
+      recordFinish(next.id);
+      const el = document.querySelector(`[data-runner-id="${next.id}"]`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function finishAllRemaining() {
+      if (state.raceStart == null) { toast("Start the race first", "error"); return; }
+      const remaining = field().filter((r) => !(state.results[r.id] && state.results[r.id].finishTime != null));
+      if (!remaining.length) { toast("Everyone is finished", "info"); return; }
+      if (!confirm(`Record finishes for the remaining ${remaining.length} runners at the current clock time?`)) return;
+      const when = Date.now();
+      remaining.forEach((r) => recordFinish(r.id, when, "bulk"));
+      toast(`Recorded ${remaining.length} finishes`, "success");
+    }
+
+    /* =====================================================================
+       6. Timing console rendering
+    ===================================================================== */
+    const runnersGrid = document.getElementById("runnersGrid");
+
+    function renderRunners() {
+      const q = state.search.toLowerCase();
+      const all = field().sort((a, b) => ((a.estimatedTime || 0) - (b.estimatedTime || 0)) || String(a.name).localeCompare(String(b.name)));
+      const rows = all.filter((r) => {
+        const res = state.results[r.id] || {};
+        const isFinished = res.finishTime != null;
+        const isDnf = !!res.dnf;
+        if (state.filter === "finished" && !isFinished) return false;
+        if (state.filter === "course" && (isFinished || isDnf)) return false;
+        if (state.filter === "dnf" && !isDnf) return false;
+        if (q && !(String(r.name).toLowerCase().includes(q) || String(r.bib).includes(q))) return false;
+        return true;
       });
-      table.appendChild(tbody); area.appendChild(table);
-      // wire remove buttons
-      tbody.querySelectorAll('button').forEach(btn=>{
-        btn.addEventListener('click', async (ev)=>{
-          const id = btn.getAttribute('data-id');
-          const name = btn.getAttribute('data-name');
-          if (!confirm(`Remove ${name} from registrations? This also removes results.`)) return;
-          try { await remove(ref(db, 'registrations/' + id)); await remove(ref(db, 'results/' + id)); showNotification('Removed'); viewRegistrationsUI(); loadRegistrationsIntoRunners(); } catch(e){ alert('Failed: '+e.message); }
+
+      document.getElementById("runnersEmpty").style.display = rows.length ? "none" : "block";
+      runnersGrid.innerHTML = rows.map((r) => {
+        const res = state.results[r.id] || {};
+        const isFinished = res.finishTime != null;
+        const isDnf = !!res.dnf;
+        const cls = isFinished ? "finished" : isDnf ? "dnf" : "";
+        const timeHtml = isFinished
+          ? `<span class="rc-time" style="color:var(--green)">${formatClock(res.finishTime)}</span>`
+          : isDnf
+            ? `<span class="rc-time" style="color:var(--red)">DNF</span>`
+            : `<span class="rc-time" data-live>${formatClock(currentElapsed())}</span>`;
+        const methodBadge = res.method === "ocr" ? '<span class="badge blue">OCR</span>'
+          : res.method === "manual" ? '<span class="badge amber">Manual</span>'
+          : res.method === "bulk" ? '<span class="badge gray">Bulk</span>' : "";
+        return `
+          <div class="runner-card ${cls}" data-runner-id="${r.id}">
+            <div class="rc-top">
+              <div class="rc-name">${escapeHtml(r.name)}</div>
+              <div class="rc-bib">#${escapeHtml(r.bib)}</div>
+            </div>
+            <div class="rc-meta">Est: ${r.estimatedTime ? formatShort(r.estimatedTime) : "—"} · ${escapeHtml(divisionLabel(r.division))}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              ${timeHtml}
+              ${methodBadge}
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    runnersGrid.addEventListener("click", (e) => {
+      const card = e.target.closest(".runner-card");
+      if (!card) return;
+      const id = card.getAttribute("data-runner-id");
+      const res = state.results[id];
+      if (res && res.finishTime != null) return;
+      recordFinish(id);
+      setTimeout(() => {
+        const nextCard = document.querySelector(".runner-card:not(.finished):not(.dnf)");
+        if (nextCard) nextCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 120);
+    });
+
+    function renderStats() {
+      const all = field();
+      const finished = all.filter((r) => (state.results[r.id] || {}).finishTime != null)
+        .sort((a, b) => state.results[a.id].finishTime - state.results[b.id].finishTime);
+      const dnfCount = all.filter((r) => (state.results[r.id] || {}).dnf).length;
+      document.getElementById("statTotal").textContent = all.length;
+      document.getElementById("statFinished").textContent = finished.length;
+      document.getElementById("statRemaining").textContent = all.length - finished.length - dnfCount;
+      const last = finished[finished.length - 1];
+      if (last) {
+        document.getElementById("statLast").textContent = formatClock(state.results[last.id].finishTime);
+        document.getElementById("statLastSub").textContent = `${last.name} · bib ${last.bib}`;
+      } else {
+        document.getElementById("statLast").textContent = "—";
+        document.getElementById("statLastSub").textContent = "no finishers yet";
+      }
+    }
+
+    /* =====================================================================
+       7. Registrations & results tabs
+    ===================================================================== */
+    function renderRegs() {
+      const body = document.getElementById("regsBody");
+      const rows = sortRunners(roster());
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">No registrations yet.</td></tr>`;
+        return;
+      }
+      body.innerHTML = rows.map((r) => `
+        <tr>
+          <td class="mono" style="font-weight:700">${escapeHtml(r.bib)}</td>
+          <td style="font-weight:600">${escapeHtml(r.name)}</td>
+          <td>${escapeHtml(divisionLabel(r.division))}</td>
+          <td>${escapeHtml(r.size || "—")}</td>
+          <td class="num">${r.estimatedTime ? formatShort(r.estimatedTime) : "—"}</td>
+          <td class="small muted">${fmtDateTime(r.registeredAt)}</td>
+          <td><button class="btn danger sm" data-remove="${r.id}" data-name="${escapeHtml(r.name)}">Remove</button></td>
+        </tr>`).join("");
+      body.querySelectorAll("[data-remove]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-remove");
+          const name = btn.getAttribute("data-name");
+          if (!confirm(`Remove ${name} from the roster? Their result (if any) is removed too.`)) return;
+          delete state.registrations[id];
+          delete state.results[id];
+          await dbSet(`registrations/${id}`, null);
+          await dbSet(`results/${id}`, null);
+          saveSnapshot(); renderAll();
+          toast(`${name} removed`, "info");
         });
       });
-    } catch(e){ console.warn(e); }
-  }
+    }
 
-  // ---------- Results UI ----------
-  function showResultsUI(){
-    const area = document.getElementById('resultsArea'); area.innerHTML = '';
-    const finished = state.runners.filter(r=>r.finishTime!=null).sort((a,b)=>a.finishTime - b.finishTime);
-    if (finished.length===0){ area.innerHTML = '<div class="muted">No finishers yet</div>'; return; }
-    const table = document.createElement('table'); table.style.width='100%';
-    table.innerHTML = '<thead><tr><th>Place</th><th>Name</th><th>Bib</th><th>Time</th></tr></thead>';
-    const tbody = document.createElement('tbody');
-    const allSorted = [...state.runners].sort((a,b)=>(a.estimatedTime||0)-(b.estimatedTime||0));
-    finished.forEach((r, i)=>{
-      const bibIndex = allSorted.findIndex(x=>x.id===r.id);
-      const bib = bibIndex>=0 ? String(bibIndex+1).padStart(4,'0') : '—';
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${i+1}</td><td>${escapeHtml(r.name)}</td><td>${bib}</td><td>${formatMs(r.finishTime)}</td>`;
-      tbody.appendChild(tr);
+    function renderResults() {
+      const body = document.getElementById("resultsBody");
+      const finished = field()
+        .filter((r) => (state.results[r.id] || {}).finishTime != null)
+        .sort((a, b) => state.results[a.id].finishTime - state.results[b.id].finishTime);
+      const dnfs = field().filter((r) => (state.results[r.id] || {}).dnf && (state.results[r.id] || {}).finishTime == null);
+      if (!finished.length && !dnfs.length) {
+        body.innerHTML = `<tr><td colspan="9" class="muted" style="text-align:center;padding:24px">No finishers yet.</td></tr>`;
+        return;
+      }
+      const rowHtml = (r, i) => {
+        const res = state.results[r.id];
+        const delta = r.estimatedTime ? res.finishTime - r.estimatedTime : null;
+        const deltaTxt = delta == null ? "—" : `${delta <= 0 ? "−" : "+"}${formatShort(Math.abs(delta))}`;
+        return `
+          <tr>
+            <td class="place">${i + 1}</td>
+            <td class="mono">${escapeHtml(r.bib)}</td>
+            <td style="font-weight:600">${escapeHtml(r.name)}</td>
+            <td class="num">${formatClock(res.finishTime)}</td>
+            <td class="num">${pacePerMile(res.finishTime)}</td>
+            <td class="num">${deltaTxt}</td>
+            <td class="small muted">${fmtDateTime(res.finishedAt)}</td>
+            <td><span class="badge gray">${escapeHtml(res.method || "tap")}</span></td>
+            <td>
+              <button class="btn ghost sm" data-edit="${r.id}">Edit</button>
+              <button class="btn danger sm" data-dnf="${r.id}">DNF</button>
+            </td>
+          </tr>`;
+      };
+      body.innerHTML = finished.map(rowHtml).join("") + dnfs.map((r) => `
+        <tr style="opacity:.7">
+          <td class="place">—</td>
+          <td class="mono">${escapeHtml(r.bib)}</td>
+          <td style="font-weight:600">${escapeHtml(r.name)}</td>
+          <td class="num">DNF</td>
+          <td class="num">—</td>
+          <td class="num">—</td>
+          <td class="small muted">—</td>
+          <td><span class="badge red">DNF</span></td>
+          <td><button class="btn ghost sm" data-clear-dnf="${r.id}">Clear DNF</button></td>
+        </tr>`).join("");
+
+      body.querySelectorAll("[data-edit]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-edit");
+          const res = state.results[id];
+          const input = prompt("Enter the corrected finish time (MM:SS.mmm):", formatClock(res.finishTime));
+          if (input == null) return;
+          const ms = parseTimeInput(input);
+          if (ms == null) { toast("Could not parse that time", "error"); return; }
+          res.finishTime = ms;
+          res.method = res.method || "tap";
+          res.editedAt = Date.now();
+          dbSet(`results/${id}`, res);
+          saveSnapshot(); renderAll();
+          toast("Finish time updated", "success");
+        });
+      });
+      body.querySelectorAll("[data-dnf]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-dnf");
+          const res = state.results[id];
+          if (!confirm(`Mark ${res.name} as DNF? Their finish time will be removed.`)) return;
+          state.results[id] = { ...res, dnf: true, finishTime: null };
+          dbSet(`results/${id}`, state.results[id]);
+          saveSnapshot(); renderAll();
+          toast(`${res.name} marked DNF`, "info");
+        });
+      });
+      body.querySelectorAll("[data-clear-dnf]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-clear-dnf");
+          delete state.results[id];
+          dbSet(`results/${id}`, null);
+          saveSnapshot(); renderAll();
+          toast("DNF cleared", "info");
+        });
+      });
+    }
+
+    function renderAll() {
+      renderRunners();
+      renderStats();
+      renderRegs();
+      renderResults();
+    }
+
+    /* =====================================================================
+       8. OCR finish-line camera
+    ===================================================================== */
+    const video = document.getElementById("cameraVideo");
+    const camBadge = document.getElementById("camBadge");
+    const ocrStatus = document.getElementById("ocrStatus");
+    const camError = document.getElementById("camError");
+    let stream = null;
+    let tesseractWorker = null;
+    let pendingCapture = null;   // { bibGuess, confidence, thumb, at }
+
+    function camShowError(msg) {
+      camError.textContent = msg;
+      camError.classList.add("show");
+    }
+    function camClearError() {
+      camError.classList.remove("show");
+    }
+
+    async function startCamera() {
+      camClearError();
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        camShowError("This browser doesn't support camera access. Use the Upload photo button instead.");
+        return;
+      }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } },
+          audio: false,
+        });
+        video.srcObject = stream;
+        document.getElementById("scanFrame").style.display = "block";
+        document.getElementById("startCamBtn").disabled = true;
+        document.getElementById("captureBtn").disabled = false;
+        document.getElementById("stopCamBtn").disabled = false;
+        camBadge.className = "badge green";
+        camBadge.textContent = "● Camera live";
+        ocrStatus.textContent = "Camera running — frame the bib inside the orange box, then capture.";
+      } catch (err) {
+        console.warn("camera start failed", err);
+        camShowError("Couldn't open the camera (permission denied or no camera). Use the Upload photo button instead.");
+      }
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach((t) => t.stop());
+        stream = null;
+      }
+      video.srcObject = null;
+      document.getElementById("scanFrame").style.display = "none";
+      document.getElementById("startCamBtn").disabled = false;
+      document.getElementById("captureBtn").disabled = true;
+      document.getElementById("stopCamBtn").disabled = true;
+      camBadge.className = "badge gray";
+      camBadge.textContent = "Camera off";
+      ocrStatus.textContent = "Camera stopped.";
+    }
+
+    /** draw the current frame (or an uploaded image) to a canvas, pre-processed for OCR */
+    function frameToCanvas(source, maxW = 1280) {
+      const sw = source.videoWidth || source.naturalWidth || source.width;
+      const sh = source.videoHeight || source.naturalHeight || source.height;
+      if (!sw || !sh) return null;
+      const scale = Math.min(1, maxW / sw);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(sw * scale);
+      canvas.height = Math.round(sh * scale);
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+
+      // grayscale + contrast stretch — big help for digit recognition
+      try {
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = img.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+          const v = lum > 150 ? 255 : lum < 70 ? 0 : Math.round((lum - 70) * (255 / 80));
+          d[i] = d[i + 1] = d[i + 2] = v;
+        }
+        ctx.putImageData(img, 0, 0);
+      } catch (e) { console.warn("preprocess skipped", e); }
+      return canvas;
+    }
+
+    function thumbFrom(canvas) {
+      const t = document.createElement("canvas");
+      const scale = Math.min(1, 160 / canvas.width);
+      t.width = Math.round(canvas.width * scale);
+      t.height = Math.round(canvas.height * scale);
+      t.getContext("2d").drawImage(canvas, 0, 0, t.width, t.height);
+      return t.toDataURL("image/jpeg", 0.65);
+    }
+
+    async function getTesseractWorker() {
+      if (tesseractWorker) return tesseractWorker;
+      if (!window.Tesseract) throw new Error("Tesseract library not loaded (CDN unreachable)");
+      tesseractWorker = await window.Tesseract.createWorker("eng", 1, {
+        logger: (m) => {
+          if (m.status === "recognizing text") {
+            const pct = Math.round((m.progress || 0) * 100);
+            ocrStatus.textContent = `Reading bib… ${pct}%`;
+            document.getElementById("ocrProgress").style.width = `${pct}%`;
+          } else if (m.status) {
+            ocrStatus.textContent = `OCR engine: ${m.status.replace(/_/g, " ")}…`;
+          }
+        },
+      });
+      await tesseractWorker.setParameters({
+        tessedit_char_whitelist: "0123456789",
+        preserve_interword_spaces: "1",
+      });
+      return tesseractWorker;
+    }
+
+    /** pick the most plausible bib from OCR text */
+    function guessBib(text) {
+      const runs = (String(text || "").match(/\d+/g) || []).sort((a, b) => b.length - a.length);
+      if (!runs.length) return null;
+      const known = new Set(roster().map((r) => r.bib));
+      // prefer a run that matches a known bib (as-is or zero-padded)
+      for (const run of runs) {
+        const padded = run.padStart(4, "0");
+        if (known.has(padded)) return padded;
+        if (known.has(run)) return run;
+      }
+      const best = runs[0];
+      return best.length <= 4 ? best.padStart(4, "0") : best;
+    }
+
+    async function readBib(canvas, capturedAt) {
+      camClearError();
+      const wrap = document.getElementById("ocrProgressWrap");
+      const bar = document.getElementById("ocrProgress");
+      wrap.style.display = "block";
+      bar.style.width = "0%";
+      try {
+        const worker = await getTesseractWorker();
+        const { data } = await worker.recognize(canvas);
+        const guess = guessBib(data.text);
+        const confidence = Math.round(data.confidence ?? 0);
+        ocrStatus.textContent = guess
+          ? `Bib read: ${guess} (${confidence}% confidence) — confirm and record below.`
+          : "No digits found. Try a closer, steadier shot, or type the bib manually below.";
+        showReview({ bibGuess: guess, confidence, thumb: thumbFrom(canvas), at: capturedAt });
+      } catch (err) {
+        console.warn("OCR failed", err);
+        camShowError(`OCR unavailable (${err.message}). You can still record finishes manually on the Timing tab.`);
+        ocrStatus.textContent = "OCR failed — see message above.";
+        showReview({ bibGuess: null, confidence: 0, thumb: thumbFrom(canvas), at: capturedAt });
+      } finally {
+        wrap.style.display = "none";
+      }
+    }
+
+    function showReview(capture) {
+      pendingCapture = capture;
+      document.getElementById("reviewEmpty").style.display = "none";
+      document.getElementById("reviewPanel").style.display = "block";
+      document.getElementById("reviewThumb").src = capture.thumb;
+      document.getElementById("reviewBib").textContent = capture.bibGuess || "—";
+      document.getElementById("reviewConf").textContent = capture.confidence ? `${capture.confidence}%` : "—";
+      document.getElementById("reviewBibInput").value = capture.bibGuess || "";
+      document.getElementById("reviewTimeText").textContent =
+        `Photo time: ${new Date(capture.at).toLocaleTimeString()} · finish will be recorded as ${state.raceStart != null ? formatClock(elapsedAt(capture.at)) : "…(start the race first)"}`;
+      updateReviewMatch();
+      document.getElementById("reviewBibInput").focus();
+    }
+
+    function updateReviewMatch() {
+      const val = document.getElementById("reviewBibInput").value.trim();
+      const matchEl = document.getElementById("reviewMatch");
+      const r = field().find((x) => String(x.bib) === val.padStart(4, "0") || String(x.bib) === val);
+      if (!val) { matchEl.textContent = "No roster match yet"; return null; }
+      if (r) {
+        matchEl.innerHTML = `Matched: <b style="color:var(--green)">${escapeHtml(r.name)}</b> · bib ${escapeHtml(r.bib)}`;
+      } else {
+        matchEl.innerHTML = `<span style="color:var(--amber)">No roster runner with bib ${escapeHtml(val)} — it will be saved as an extra finisher.</span>`;
+      }
+      return r;
+    }
+
+    async function captureFromCamera() {
+      if (!stream) return;
+      const canvas = frameToCanvas(video);
+      if (!canvas) { camShowError("Camera frame not ready yet."); return; }
+      const at = Date.now();
+      await readBib(canvas, at);
+    }
+
+    function recordOcrFinish() {
+      if (!pendingCapture) return;
+      if (state.raceStart == null) { toast("Start the race first", "error"); return; }
+      const val = document.getElementById("reviewBibInput").value.trim();
+      const r = updateReviewMatch();
+      const when = pendingCapture.at || Date.now();
+      if (r) {
+        recordFinish(r.id, when, "ocr");
+      } else if (val) {
+        // unknown bib: create an extra result entry so the photo is never lost
+        const id = `ocr_${when}`;
+        const finishTime = elapsedAt(when);
+        const entry = {
+          name: `Unmatched bib ${val}`,
+          bibNumber: val.padStart(4, "0"),
+          estimatedTime: null,
+          finishTime,
+          finishedAt: when,
+          recordedAt: Date.now(),
+          method: "ocr",
+          dnf: false,
+        };
+        state.results[id] = entry;
+        dbSet(`results/${id}`, entry);
+        saveSnapshot(); renderAll();
+        toast(`Recorded unmatched bib ${val} — fix the name in Results`, "info");
+      } else {
+        toast("Enter a bib number first", "error");
+        return;
+      }
+      pushCaptureLog(pendingCapture, val);
+      pendingCapture = null;
+      document.getElementById("reviewPanel").style.display = "none";
+      document.getElementById("reviewEmpty").style.display = "block";
+      ocrStatus.textContent = "Ready for the next capture.";
+    }
+
+    /* ---- capture log (local only) ---- */
+    function loadLog() {
+      try { return JSON.parse(localStorage.getItem(LS_KEYS.log) || "[]"); }
+      catch { return []; }
+    }
+    function pushCaptureLog(capture, bib) {
+      const log = loadLog();
+      log.unshift({ thumb: capture.thumb, bib, at: capture.at, recorded: true });
+      localStorage.setItem(LS_KEYS.log, JSON.stringify(log.slice(0, 10)));
+      renderCaptureLog();
+    }
+    function renderCaptureLog() {
+      const log = loadLog();
+      const box = document.getElementById("captureLog");
+      if (!log.length) {
+        box.innerHTML = `<div class="empty" style="padding:18px">No captures yet</div>`;
+        return;
+      }
+      box.innerHTML = log.map((c) => `
+        <div class="capture-row">
+          <img src="${c.thumb}" alt="capture" />
+          <div style="flex:1">
+            <div class="mono" style="font-weight:700">${escapeHtml(c.bib || "—")}</div>
+            <div class="small muted">${new Date(c.at).toLocaleTimeString()}</div>
+          </div>
+          <span class="badge ${c.recorded ? "green" : "gray"}">${c.recorded ? "Recorded" : "Skipped"}</span>
+        </div>`).join("");
+    }
+
+    /* =====================================================================
+       9. Course map
+    ===================================================================== */
+    let map = null, poly = null, markers = [];
+    function initMap() {
+      if (map) return;
+      map = L.map("map").setView([33.9, -80.9], 12);
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        attribution: "Esri · Maxar · Earthstar Geographics",
+      }).addTo(map);
+      poly = L.polyline([], { color: "#ff7f11", weight: 4 }).addTo(map);
+      map.on("click", (e) => {
+        state.route.push({ lat: e.latlng.lat, lng: e.latlng.lng });
+        drawRoute();
+        saveSnapshot();
+      });
+      drawRoute();
+    }
+    function drawRoute() {
+      if (!map) return;
+      markers.forEach((m) => map.removeLayer(m));
+      markers = [];
+      poly.setLatLngs(state.route);
+      state.route.forEach((pt) => markers.push(L.circleMarker(pt, { radius: 5, color: "#ff7f11" }).addTo(map)));
+      if (state.route.length) {
+        try { map.fitBounds(poly.getBounds(), { padding: [30, 30] }); } catch {}
+      }
+    }
+
+    /* =====================================================================
+       10. Wiring
+    ===================================================================== */
+    function boot() {
+      loadSnapshot();
+      persistQueue();
+      renderCaptureLog();
+      renderAll();
+      renderClock();
+      watchConnection(document.getElementById("syncBadge"));
+
+      // live firebase subscriptions (server wins over snapshot)
+      const db = getDb();
+      onValue(ref(db, "registrations"), (snap) => {
+        state.registrations = snap.val() || {};
+        saveSnapshot(); renderAll();
+      }, (e) => console.warn("registrations subscribe failed", e));
+      onValue(ref(db, "results"), (snap) => {
+        state.results = snap.val() || {};
+        saveSnapshot(); renderAll();
+      }, (e) => console.warn("results subscribe failed", e));
+      onValue(ref(db, "raceClock"), (snap) => {
+        const v = snap.val();
+        if (v && state.raceStart == null) {
+          state.raceStart = v.raceStart ?? null;
+          state.running = !!v.running;
+          state.paused = !!v.paused;
+          state.pausedAt = v.pausedAt ?? null;
+          renderClock();
+        }
+      }, (e) => console.warn("raceClock subscribe failed", e));
+      onValue(ref(db, "route"), (snap) => {
+        const v = snap.val();
+        if (v && v.points) {
+          state.route = v.points.map((p) => (Array.isArray(p) ? { lat: p[0], lng: p[1] } : p));
+          drawRoute();
+        }
+      }, (e) => console.warn("route subscribe failed", e));
+
+      flushQueue();
+    }
+
+    // tabs
+    document.getElementById("tabs").addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const tab = btn.getAttribute("data-tab");
+      document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("on", b === btn));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("on"));
+      document.getElementById(`tab-${tab}`).classList.add("on");
+      if (tab === "map") setTimeout(() => { initMap(); map && map.invalidateSize(); }, 60);
     });
-    table.appendChild(tbody); area.appendChild(table);
-  }
 
-  // ---------- UI wiring ----------
-  document.getElementById('openTiming').addEventListener('click', async ()=>{
-    document.getElementById('timingModal').classList.add('open');
-    await loadRaceStateFromFirebase();
-    renderTimingRunners();
-    updateTimingScreen();
-    const grid = document.getElementById('runnersGrid');
-    grid.removeEventListener('click', timingGridClick);
-    grid.addEventListener('click', timingGridClick);
-  });
-  document.getElementById('closeTiming').addEventListener('click', ()=> document.getElementById('timingModal').classList.remove('open'));
-  document.getElementById('openRegistrations').addEventListener('click', ()=>{ document.getElementById('registrationsModal').classList.add('open'); viewRegistrationsUI(); });
-  document.getElementById('closeRegistrationsBtn').addEventListener('click', ()=> document.getElementById('registrationsModal').classList.remove('open'));
-  document.getElementById('openResults').addEventListener('click', ()=>{ document.getElementById('resultsModal').classList.add('open'); showResultsUI(); });
-  document.getElementById('closeResultsBtn').addEventListener('click', ()=> document.getElementById('resultsModal').classList.remove('open'));
+    // race control
+    document.getElementById("startBtn").addEventListener("click", startRace);
+    document.getElementById("pauseBtn").addEventListener("click", togglePause);
+    document.getElementById("resetBtn").addEventListener("click", resetRace);
+    document.getElementById("undoBtn").addEventListener("click", undoLastFinish);
+    document.getElementById("finishAllBtn").addEventListener("click", finishAllRemaining);
 
-  document.getElementById('runnerSearch').addEventListener('input', (e)=>{ searchTerm = e.target.value; renderTimingRunners(); });
+    // manual bib entry
+    const bibInput = document.getElementById("bibInput");
+    function recordFromBibInput() {
+      const val = bibInput.value.trim();
+      if (!val) return;
+      const r = field().find((x) => String(x.bib) === val.padStart(4, "0") || String(x.bib) === val)
+        || field().find((x) => String(x.name || "").toLowerCase().includes(val.toLowerCase()));
+      if (!r) { toast(`No runner matches "${val}"`, "error"); return; }
+      recordFinish(r.id, Date.now(), "manual");
+      bibInput.value = "";
+      document.getElementById("bibMatch").textContent = "Type a bib to preview the match";
+    }
+    document.getElementById("recordBibBtn").addEventListener("click", recordFromBibInput);
+    bibInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); recordFromBibInput(); } });
+    bibInput.addEventListener("input", () => {
+      const val = bibInput.value.trim();
+      const matchEl = document.getElementById("bibMatch");
+      if (!val) { matchEl.textContent = "Type a bib to preview the match"; return; }
+      const r = field().find((x) => String(x.bib) === val.padStart(4, "0") || String(x.bib) === val)
+        || field().find((x) => String(x.name || "").toLowerCase().includes(val.toLowerCase()));
+      matchEl.innerHTML = r
+        ? `→ <b style="color:var(--green)">${escapeHtml(r.name)}</b> (bib ${escapeHtml(r.bib)})`
+        : `<span style="color:var(--amber)">No match</span>`;
+    });
 
-  document.getElementById('startRace').addEventListener('click', ()=>{ startRace(); writeRaceClockToFirebase(); updateTimingScreen(); });
-  document.getElementById('pauseRace').addEventListener('click', ()=>{ togglePause(); writeRaceClockToFirebase(); updateTimingScreen(); });
-  document.getElementById('resetRace').addEventListener('click', ()=>{ if(confirm('Reset race and clear finish times?')){ resetRace(); set(ref(db,'raceClock'), null); } });
-  document.getElementById('finishNext').addEventListener('click', ()=>{ finishNext(); updateTimingScreen(); });
-  document.getElementById('finishAll').addEventListener('click', finishAllRemaining);
+    // search + filters
+    document.getElementById("runnerSearch").addEventListener("input", (e) => {
+      state.search = e.target.value.trim();
+      renderRunners();
+    });
+    document.getElementById("timingFilters").addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      state.filter = btn.getAttribute("data-filter");
+      document.querySelectorAll("#timingFilters button").forEach((b) => b.classList.toggle("on", b === btn));
+      renderRunners();
+    });
 
-  document.addEventListener('keydown', (e)=>{
-    const modal = document.getElementById('timingModal');
-    if (!modal || !modal.classList.contains('open')) return;
-    if (e.key === 'f' || e.key === 'F'){ e.preventDefault(); finishNext(); updateTimingScreen(); }
-    if (e.key === 'Escape') modal.classList.remove('open');
-  });
+    // camera
+    document.getElementById("startCamBtn").addEventListener("click", startCamera);
+    document.getElementById("stopCamBtn").addEventListener("click", stopCamera);
+    document.getElementById("captureBtn").addEventListener("click", captureFromCamera);
+    document.getElementById("photoUpload").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = frameToCanvas(img);
+        if (canvas) readBib(canvas, Date.now());
+        URL.revokeObjectURL(img.src);
+      };
+      img.src = URL.createObjectURL(file);
+      e.target.value = "";
+    });
+    document.getElementById("reviewBibInput").addEventListener("input", updateReviewMatch);
+    document.getElementById("recordOcrBtn").addEventListener("click", recordOcrFinish);
+    document.getElementById("discardCaptureBtn").addEventListener("click", () => {
+      pendingCapture = null;
+      document.getElementById("reviewPanel").style.display = "none";
+      document.getElementById("reviewEmpty").style.display = "block";
+      ocrStatus.textContent = "Capture discarded.";
+    });
+    document.getElementById("clearLogBtn").addEventListener("click", () => {
+      localStorage.removeItem(LS_KEYS.log);
+      renderCaptureLog();
+    });
 
-  function updateTimingScreen(){
-    const total = state.runners.length;
-    const finished = state.runners.filter(r=>r.finishTime!=null).length;
-    document.getElementById('totalCount').textContent = total;
-    document.getElementById('finishedCount').textContent = finished;
-    document.getElementById('remainingCount').textContent = total - finished;
-    document.getElementById('clockDisplay').textContent = formatMs(currentElapsed());
-    renderTimingRunners();
-  }
+    // registrations tab
+    document.getElementById("reloadRegsBtn").addEventListener("click", async () => {
+      try {
+        const snap = await get(ref(getDb(), "registrations"));
+        state.registrations = snap.val() || {};
+        saveSnapshot(); renderAll();
+        toast(`Loaded ${Object.keys(state.registrations).length} registrations`, "success");
+      } catch { toast("Couldn't reach the database", "error"); }
+    });
+    document.getElementById("exportRegsBtn").addEventListener("click", () => {
+      const rows = [["Bib", "Name", "Division", "Age", "Shirt", "Est. Finish", "Registered"]];
+      sortRunners(roster()).forEach((r) => rows.push([
+        r.bib, r.name, divisionLabel(r.division), r.age || "", r.size || "",
+        r.estimatedTime ? formatShort(r.estimatedTime) : "", fmtDateTime(r.registeredAt),
+      ]));
+      downloadCsv("brighton-oaks-5k-registrations.csv", rows);
+      toast("Registrations exported", "success");
+    });
+    document.getElementById("addWalkinBtn").addEventListener("click", async () => {
+      const name = document.getElementById("walkinName").value.trim();
+      if (!name) { toast("Enter the runner's name", "error"); return; }
+      const ms = parseTimeInput(document.getElementById("walkinTime").value) || null;
+      const data = {
+        name,
+        size: document.getElementById("walkinSize").value || null,
+        estimatedTime: ms,
+        division: "U",
+        age: null,
+        registeredAt: Date.now(),
+        source: "walk-in",
+      };
+      const newRef = push(ref(getDb(), "registrations"));
+      await dbSet(`registrations/${newRef.key}`, data);
+      state.registrations[newRef.key] = data;
+      document.getElementById("walkinName").value = "";
+      document.getElementById("walkinTime").value = "";
+      document.getElementById("walkinSize").value = "";
+      saveSnapshot(); renderAll();
+      toast(`${name} added to the field`, "success");
+    });
 
-  // ---------- On load ----------
-  loadLocal();
-  refreshRouteDisplay();
-  renderRunners();
-  // Start lightweight periodic save
-  setInterval(saveLocal, 5000);
+    // results tab
+    document.getElementById("exportResultsBtn").addEventListener("click", () => {
+      const rows = [["Place", "Bib", "Name", "Finish Time", "Pace /mi", "Predicted", "Method", "Recorded"]];
+      field()
+        .filter((r) => (state.results[r.id] || {}).finishTime != null)
+        .sort((a, b) => state.results[a.id].finishTime - state.results[b.id].finishTime)
+        .forEach((r, i) => {
+          const res = state.results[r.id];
+          rows.push([i + 1, r.bib, r.name, formatClock(res.finishTime), pacePerMile(res.finishTime),
+            r.estimatedTime ? formatShort(r.estimatedTime) : "", res.method || "tap", fmtDateTime(res.finishedAt)]);
+        });
+      downloadCsv("brighton-oaks-5k-results.csv", rows);
+      toast("Results exported", "success");
+    });
+    document.getElementById("clearResultsBtn").addEventListener("click", () => {
+      if (!confirm("Clear every recorded finish? This cannot be undone.")) return;
+      state.results = {};
+      state.finishStack = [];
+      dbSet("results", null);
+      saveSnapshot(); renderAll();
+      toast("All results cleared", "info");
+    });
 
-  // expose some helpers for console if needed
-  window.finishRunner = finishRunner;
-  window.loadRegistrationsIntoRunners = loadRegistrationsIntoRunners;
-  window.loadResultsIntoRunners = loadResultsIntoRunners;
+    // map tab
+    document.getElementById("saveRouteBtn").addEventListener("click", () => {
+      if (!state.route.length) { toast("Add some points to the map first", "error"); return; }
+      dbSet("route", { points: state.route });
+      toast("Route saved — it now shows on public results", "success");
+    });
+    document.getElementById("undoPointBtn").addEventListener("click", () => {
+      state.route.pop();
+      drawRoute(); saveSnapshot();
+    });
+    document.getElementById("clearRouteBtn").addEventListener("click", () => {
+      if (!confirm("Clear the saved route?")) return;
+      state.route = [];
+      drawRoute(); saveSnapshot();
+      dbSet("route", null);
+    });
 
+    // keyboard shortcuts
+    document.addEventListener("keydown", (e) => {
+      const typing = /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName || "");
+      if (e.key === "Escape") {
+        if (stream) stopCamera();
+        return;
+      }
+      if (typing) return;
+      if (e.key === "f" || e.key === "F") { e.preventDefault(); finishNext(); }
+      else if (e.key === "u" || e.key === "U") { e.preventDefault(); undoLastFinish(); }
+      else if (e.key === "b" || e.key === "B") {
+        e.preventDefault();
+        document.querySelector('[data-tab="timing"]').click();
+        bibInput.focus();
+      }
+      else if (e.key === " ") {
+        e.preventDefault();
+        if (state.raceStart == null || state.paused) startRace();
+        else togglePause();
+      }
+      else if (["1", "2", "3", "4", "5"].includes(e.key)) {
+        const btn = document.querySelectorAll("#tabs button")[parseInt(e.key, 10) - 1];
+        if (btn) btn.click();
+      }
+    });
+
+    // persist periodically as a safety net
+    setInterval(saveSnapshot, 5000);
   </script>
 </body>
 </html>
