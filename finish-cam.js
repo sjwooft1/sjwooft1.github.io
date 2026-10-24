@@ -1,16 +1,23 @@
 /* =====================================================================
-   finish-cam.js — spatial finish-line scanner for the Brighton Oaks 5K.
+   finish-cam.js — Number-First 3D Finish-Gate Scanner for Brighton Oaks 5K.
 
-   How it works:
-   1. The camera watches the finish straight. A background model finds
-      moving runners (motion blobs) and a lightweight tracker follows
-      each one across frames with a stable ID.
-   2. Each tracked runner's chest region (where the bib lives) is read
-      with a multi-pass OCR pipeline — lighting flattening, unsharp
-      masking, Otsu binarization in both polarities — and reads are
-      voted on across frames.
-   3. When a tracked runner's feet cross the configured finish line the
-      engine emits a finish event with a sub-frame interpolated time.
+   How it works (Bib-Number Driven, NOT Person/Motion Driven):
+   1. The organizer places a 3D finish-gate wall (ground line A–B plus a
+      vertical plane rising from the chute) onto the live camera feed.
+   2. On every scan tick, `detectBibRegions` scans the frame directly for
+      bib/number patches — rectangular regions with high internal contrast
+      that pass `hasDigitLikeStructure` (horizontally-aligned digit-shaped
+      ink components). People walking by without a bib number, trees,
+      shadows, and clothing folds produce ZERO candidate boxes and NEVER
+      trigger tracking or OCR.
+   3. When a bib-number patch is spotted, Tesseract OCR immediately reads
+      the digits (`recognizeDigits`), validates symbol geometry/confidence
+      (`validateOcrSymbols`), and canonicalizes against the race roster
+      (`canonicalizeBibRead`).
+   4. Confirmed bib numbers are tracked spatially across frames (`BibTracker`).
+      When a tracked bib number breaches the 3D finish-gate wall plane
+      (`checkCrossing`), the engine emits a finish event with sub-frame
+      interpolated timing.
 
    Pure helpers are exported for unit tests; the FinishCam class wires
    them to a <video> element for live scanning.
@@ -71,10 +78,11 @@ export function flattenLighting(gray, w, h, radius = 12) {
   const mean = boxBlur(gray, w, h, radius);
   let global = 0;
   for (let i = 0; i < gray.length; i++) global += gray[i];
-  global /= gray.length;
+  global /= gray.length || 1;
   const out = new Uint8Array(w * h);
   for (let i = 0; i < out.length; i++) {
-    const v = global + (gray[i] - mean[i]) * 1.5;
+    const diff = gray[i] - mean[i];
+    const v = global + diff * 1.45;
     out[i] = v < 0 ? 0 : v > 255 ? 255 : v | 0;
   }
   return out;
@@ -114,7 +122,7 @@ export function binarizeOtsu(gray, w, h, invert = false) {
 }
 
 /* ---------------------------------------------------------------------
-   Motion detection + blob extraction (pure)
+   Motion / Blob utilities (pure)
 --------------------------------------------------------------------- */
 
 /** |fg - bg| > threshold -> 1. */
@@ -126,7 +134,7 @@ export function motionMask(fg, bg, w, h, threshold = 25) {
   return out;
 }
 
-/** Binary dilation to join speckle into coherent regions. */
+/** Binary dilation to join adjacent strokes/pixels into coherent regions. */
 export function dilate(mask, w, h, r = 2) {
   if (r <= 0) return mask;
   const out = new Uint8Array(w * h);
@@ -200,19 +208,340 @@ export function mergeBoxes(boxes, gap = 8) {
 }
 
 /* ---------------------------------------------------------------------
-   Spatial tracker (pure) — tracks are in normalized 0..1 coordinates
+   Bib-Number Structural Verifier & Direct Frame Detector (pure)
 --------------------------------------------------------------------- */
 
+/**
+ * Inspects a grayscale crop to determine if it plausibly contains printed
+ * bib digits before we ever invoke Tesseract or spawn a track.
+ *
+ * Returns { ok, contrast, components, polarity } where:
+ *   - ok: boolean (true only if the crop has high contrast AND 1..8
+ *     horizontally-aligned digit-sized ink components)
+ *   - polarity: "dark-on-light" | "light-on-dark" | "both"
+ */
+export function hasDigitLikeStructure(gray, w, h) {
+  if (!gray || w < 16 || h < 10) {
+    return { ok: false, reason: "too-small", contrast: 0, components: 0, polarity: "dark-on-light" };
+  }
+
+  const hist = new Uint32Array(256);
+  let sum = 0;
+  const n = gray.length;
+  for (let i = 0; i < n; i++) {
+    const v = gray[i];
+    hist[v]++;
+    sum += v;
+  }
+  const mean = sum / n;
+  let varSum = 0;
+  for (let i = 0; i < n; i++) {
+    const d = gray[i] - mean;
+    varSum += d * d;
+  }
+  const std = Math.sqrt(varSum / n);
+
+  let acc = 0, p10 = 0, p90 = 255;
+  for (let v = 0; v < 256; v++) {
+    acc += hist[v];
+    if (acc >= n * 0.10) { p10 = v; break; }
+  }
+  acc = 0;
+  for (let v = 255; v >= 0; v--) {
+    acc += hist[v];
+    if (acc >= n * 0.10) { p90 = v; break; }
+  }
+  const contrast = p90 - p10;
+  if (contrast < 38 || std < 14) {
+    return { ok: false, reason: "low-contrast", contrast, components: 0, polarity: "dark-on-light" };
+  }
+
+  const flat = flattenLighting(gray, w, h, Math.max(6, Math.round(Math.min(w, h) / 6)));
+  const t = otsuThreshold(flat);
+
+  const checkPolarity = (invert) => {
+    const inkMask = new Uint8Array(w * h);
+    let inkCount = 0;
+    let borderInk = 0;
+    const borderTotal = 2 * w + 2 * Math.max(0, h - 2);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        const isInk = invert ? flat[i] > t : flat[i] <= t;
+        if (isInk) {
+          inkMask[i] = 1;
+          inkCount++;
+          if (x === 0 || x === w - 1 || y === 0 || y === h - 1) borderInk++;
+        }
+      }
+    }
+    const inkRatio = inkCount / n;
+    if (inkRatio < 0.03 || inkRatio > 0.55) return { valid: false, count: 0, digitBlobs: [] };
+    if (borderTotal > 0 && borderInk / borderTotal > 0.65) return { valid: false, count: 0, digitBlobs: [] };
+
+    const blobs = findBlobs(inkMask, w, h, {
+      minArea: Math.max(5, Math.round(n * 0.0035)),
+      maxArea: Math.round(n * 0.35),
+    });
+    if (blobs.length > 28) return { valid: false, count: 0, digitBlobs: [] };
+
+    const digitBlobs = blobs.filter((b) => {
+      const relH = b.h / h;
+      const relW = b.w / w;
+      const aspect = b.w / b.h;
+      const fill = b.area / (b.w * b.h);
+      return (
+        relH >= 0.16 && relH <= 0.96 &&
+        relW >= 0.02 && relW <= 0.78 &&
+        aspect >= 0.10 && aspect <= 2.5 &&
+        fill >= 0.12 && fill <= 1.0
+      );
+    });
+
+    if (digitBlobs.length < 1 || digitBlobs.length > 10) {
+      return { valid: false, count: digitBlobs.length, digitBlobs: [] };
+    }
+    return { valid: true, count: digitBlobs.length, digitBlobs };
+  };
+
+  const darkOnLight = checkPolarity(false);
+  const lightOnDark = checkPolarity(true);
+
+  if (!darkOnLight.valid && !lightOnDark.valid) {
+    return {
+      ok: false,
+      reason: "no-digit-components",
+      contrast,
+      components: Math.max(darkOnLight.count, lightOnDark.count),
+      polarity: "dark-on-light",
+    };
+  }
+
+  const polarity = darkOnLight.valid && lightOnDark.valid
+    ? "both"
+    : darkOnLight.valid ? "dark-on-light" : "light-on-dark";
+
+  return {
+    ok: true,
+    reason: "ok",
+    contrast,
+    components: Math.max(darkOnLight.count, lightOnDark.count),
+    polarity,
+  };
+}
+
+/**
+ * Extract a sub-rectangle of a grayscale buffer.
+ */
+export function cropGray(gray, w, h, sx, sy, sw, sh) {
+  const x0 = Math.max(0, Math.min(w - 1, Math.round(sx)));
+  const y0 = Math.max(0, Math.min(h - 1, Math.round(sy)));
+  const cw = Math.max(1, Math.min(w - x0, Math.round(sw)));
+  const ch = Math.max(1, Math.min(h - y0, Math.round(sh)));
+  const out = new Uint8Array(cw * ch);
+  for (let y = 0; y < ch; y++) {
+    const srcOff = (y0 + y) * w + x0;
+    const dstOff = y * cw;
+    for (let x = 0; x < cw; x++) {
+      out[dstOff + x] = gray[srcOff + x];
+    }
+  }
+  return { data: out, w: cw, h: ch, x: x0, y: y0 };
+}
+
+/**
+ * Directly scan a grayscale frame for bib-number regions (NOT people/motion).
+ *
+ * How it works:
+ * 1. Computes local bright-card regions (above local mean + margin) AND high
+ *    horizontal-gradient stroke regions (`|I(x+1,y) - I(x-1,y)|`), since bib
+ *    numbers are horizontal sequences of sharp vertical digit strokes inside a
+ *    contrasting bib rectangle.
+ * 2. Every candidate region is cropped and tested with `hasDigitLikeStructure`
+ *    requiring horizontally-aligned digit components.
+ * 3. Returns normalized candidate bib boxes `[{ x, y, w, h, components, contrast }]`.
+ *    When a person without a bib walks by, or when trees/grass/shadows move,
+ *    this returns `[]` — so OCR and tracking NEVER fire on people without numbers.
+ */
+export function detectBibRegions(gray, w, h) {
+  if (!gray || w < 32 || h < 24) return [];
+
+  const localMean = boxBlur(gray, w, h, Math.max(6, Math.round(Math.min(w, h) / 14)));
+  const brightCard = new Uint8Array(w * h);
+  const strokeMask = new Uint8Array(w * h);
+
+  for (let y = 1; y < h - 1; y++) {
+    const row = y * w;
+    for (let x = 1; x < w - 1; x++) {
+      const i = row + x;
+      // Bright bib card relative to surrounding torso/background
+      if (gray[i] > 145 && gray[i] - localMean[i] > -12) {
+        brightCard[i] = 1;
+      }
+      // Sharp vertical stroke edge (characteristic of printed digits)
+      const gx = Math.abs(gray[i + 1] - gray[i - 1]);
+      const diffMean = Math.abs(gray[i] - localMean[i]);
+      if (gx > 34 && diffMean > 22) {
+        strokeMask[i] = 1;
+      }
+    }
+  }
+
+  const candidates = [];
+
+  // Pass A: Bright rectangular bib cards
+  const cardBlobs = findBlobs(brightCard, w, h, {
+    minArea: Math.max(48, Math.round(w * h * 0.0012)),
+    maxArea: Math.round(w * h * 0.45),
+  });
+  for (const b of cardBlobs) {
+    const aspect = b.w / b.h;
+    if (aspect < 0.65 || aspect > 4.8) continue;
+    const fill = b.area / (b.w * b.h);
+    if (fill < 0.38) continue;
+    candidates.push(b);
+  }
+
+  // Pass B: Horizontally clustered digit strokes (catches dark bibs or close-up numbers)
+  const dilatedStrokes = dilate(strokeMask, w, h, 2);
+  const strokeClusters = mergeBoxes(
+    findBlobs(dilatedStrokes, w, h, {
+      minArea: Math.max(24, Math.round(w * h * 0.0008)),
+      maxArea: Math.round(w * h * 0.30),
+    }),
+    4
+  );
+  for (const b of strokeClusters) {
+    const aspect = b.w / b.h;
+    if (aspect < 0.65 || aspect > 5.2) continue;
+    if (b.w < 14 || b.h < 9) continue;
+    // Pad slightly around the stroke cluster to include the bib background margin
+    const padX = Math.round(b.w * 0.14);
+    const padY = Math.round(b.h * 0.20);
+    const x = Math.max(0, b.x - padX);
+    const y = Math.max(0, b.y - padY);
+    const bw = Math.min(w - x, b.w + padX * 2);
+    const bh = Math.min(h - y, b.h + padY * 2);
+    candidates.push({ x, y, w: bw, h: bh, area: bw * bh });
+  }
+
+  // Deduplicate overlapping candidate rectangles
+  const merged = mergeBoxes(candidates, 2);
+  const verified = [];
+
+  for (const cand of merged) {
+    if (cand.w < 16 || cand.h < 10) continue;
+    const sub = cropGray(gray, w, h, cand.x, cand.y, cand.w, cand.h);
+    const check = hasDigitLikeStructure(sub.data, sub.w, sub.h);
+    if (!check.ok) continue;
+
+    // Require at least 2 digit-like components (or 1 very high-contrast component)
+    // and ensure the region has real internal ink strokes, not just a bright blank shirt.
+    let strokeCount = 0;
+    for (let yy = cand.y; yy < cand.y + cand.h; yy++) {
+      const rOff = yy * w;
+      for (let xx = cand.x; xx < cand.x + cand.w; xx++) {
+        strokeCount += strokeMask[rOff + xx];
+      }
+    }
+    const strokeDensity = strokeCount / (cand.w * cand.h);
+    if (strokeDensity < 0.025 || strokeDensity > 0.55) continue;
+
+    verified.push({
+      x: cand.x / w,
+      y: cand.y / h,
+      w: cand.w / w,
+      h: cand.h / h,
+      components: check.components,
+      contrast: check.contrast,
+    });
+  }
+
+  return verified;
+}
+
+/* ---------------------------------------------------------------------
+   3D Finish-Gate Wall geometry + Spatial Bib Tracker (pure)
+--------------------------------------------------------------------- */
+
+/**
+ * Default 3D finish gate in normalized (0..1) image coordinates:
+ * - A: left base post on the ground (x1, y1)
+ * - B: right base post on the ground (x2, y2)
+ * - wallHeight: vertical height of the 3D finish plane rising up from A–B
+ */
+export function normalizeGate(gateOrLineY) {
+  if (typeof gateOrLineY === "number") {
+    const y = Math.min(0.95, Math.max(0.10, gateOrLineY));
+    return {
+      x1: 0.08,
+      y1: y,
+      x2: 0.92,
+      y2: y,
+      wallHeight: 0.42,
+    };
+  }
+  const g = gateOrLineY || {};
+  const x1 = Math.min(0.95, Math.max(0.02, g.x1 ?? 0.12));
+  const y1 = Math.min(0.96, Math.max(0.12, g.y1 ?? 0.72));
+  const x2 = Math.min(0.98, Math.max(0.05, g.x2 ?? 0.88));
+  const y2 = Math.min(0.96, Math.max(0.12, g.y2 ?? 0.72));
+  const wallHeight = Math.min(0.75, Math.max(0.15, g.wallHeight ?? 0.42));
+  return { x1, y1, x2, y2, wallHeight };
+}
+
+/**
+ * Compute the 4 corners of the 3D finish-gate wall plane in normalized
+ * screen space (with slight perspective convergence toward the top of the posts).
+ * Returns { baseLeft, baseRight, topLeft, topRight }.
+ */
+export function gateQuad(gateInput) {
+  const g = normalizeGate(gateInput);
+  const leftFirst = g.x1 <= g.x2;
+  const baseLeft = leftFirst ? { x: g.x1, y: g.y1 } : { x: g.x2, y: g.y2 };
+  const baseRight = leftFirst ? { x: g.x2, y: g.y2 } : { x: g.x1, y: g.y1 };
+  const h = g.wallHeight;
+  const taper = 0.015 * h;
+  const topLeft = {
+    x: Math.min(0.98, Math.max(0.02, baseLeft.x + taper)),
+    y: Math.max(0.02, baseLeft.y - h),
+  };
+  const topRight = {
+    x: Math.min(0.98, Math.max(0.02, baseRight.x - taper)),
+    y: Math.max(0.02, baseRight.y - h),
+  };
+  return { baseLeft, baseRight, topLeft, topRight, wallHeight: h };
+}
+
+/**
+ * Evaluate the ground line Y at a given normalized X along the gate plane,
+ * plus whether X falls horizontally within the gate posts (with small margin).
+ */
+export function gateGroundYAtX(gateInput, x) {
+  const { baseLeft, baseRight, wallHeight } = gateQuad(gateInput);
+  const spanX = baseRight.x - baseLeft.x;
+  const u = Math.abs(spanX) > 1e-4 ? (x - baseLeft.x) / spanX : 0.5;
+  const clampedU = Math.min(1, Math.max(0, u));
+  const groundY = baseLeft.y + (baseRight.y - baseLeft.y) * clampedU;
+  const withinSpan = u >= -0.06 && u <= 1.06;
+  return {
+    groundY,
+    topY: Math.max(0.02, groundY - wallHeight),
+    u,
+    withinSpan,
+  };
+}
+
 export class BibTracker {
-  constructor({ maxDist = 0.22, maxLost = 4 } = {}) {
+  constructor({ maxDist = 0.25, maxLost = 4 } = {}) {
     this.maxDist = maxDist;      // normalized centroid distance for matching
     this.maxLost = maxLost;      // frames a track survives without a match
     this.tracks = [];
     this.nextId = 1;
   }
 
-  /** Update with normalized boxes {x,y,w,h}. Returns the live track list.
-      Each track: { id, cx, cy, feet, bbox, votes, history, lastSeen, seen } */
+  /** Update with normalized bib/runner boxes {x,y,w,h,feet?}. Returns the live track list.
+      Each track: { id, cx, cy, feet, torsoY, bbox, votes, history, lastSeen, seen } */
   update(boxes, timestamp) {
     const used = new Set();
     for (const track of this.tracks) {
@@ -230,12 +559,19 @@ export class BibTracker {
         const b = boxes[best];
         track.cx = b.x + b.w / 2;
         track.cy = b.y + b.h / 2;
-        track.feet = b.y + b.h;            // bottom edge = runner's feet
+        track.feet = b.feet ?? (b.y + b.h);
+        track.torsoY = b.torsoY ?? (b.y + b.h * 0.5);
         track.bbox = b;
         track.lastSeen = timestamp;
         track.lost = 0;
         track.seen++;
-        track.history.push({ t: timestamp, feet: track.feet, cy: track.cy });
+        track.history.push({
+          t: timestamp,
+          cx: track.cx,
+          cy: track.cy,
+          feet: track.feet,
+          torsoY: track.torsoY,
+        });
       } else {
         track.lost++;
       }
@@ -244,14 +580,19 @@ export class BibTracker {
     for (let i = 0; i < boxes.length; i++) {
       if (used.has(i)) continue;
       const b = boxes[i];
+      const cx = b.x + b.w / 2;
+      const cy = b.y + b.h / 2;
+      const feet = b.feet ?? (b.y + b.h);
+      const torsoY = b.torsoY ?? (b.y + b.h * 0.5);
       this.tracks.push({
         id: this.nextId++,
-        cx: b.x + b.w / 2,
-        cy: b.y + b.h / 2,
-        feet: b.y + b.h,
+        cx,
+        cy,
+        feet,
+        torsoY,
         bbox: b,
         votes: new Map(),       // bib -> { count, confSum, thumb }
-        history: [{ t: timestamp, feet: b.y + b.h, cy: b.y + b.h / 2 }],
+        history: [{ t: timestamp, cx, cy, feet, torsoY }],
         lastSeen: timestamp,
         lost: 0,
         seen: 1,
@@ -259,8 +600,6 @@ export class BibTracker {
         pendingOcr: false,
       });
     }
-    // retire stale tracks — unresolved crossings get a longer grace period
-    // so late OCR reads can still settle them
     this.tracks = this.tracks.filter((t) =>
       t.lost <= (t.crossed && !t.resolved ? this.maxLost * 4 : this.maxLost));
     return this.tracks;
@@ -277,22 +616,101 @@ export class BibTracker {
   }
 }
 
-/** Did the track's feet cross `lineY` between its last two history
-    samples? Returns { at } with a sub-frame interpolated timestamp, or null. */
-export function checkCrossing(track, lineY) {
+/**
+ * Did the tracked bib/runner breach the 3D finish-gate wall between their
+ * last two history samples?
+ *
+ * Supports both:
+ *   - `gateOrLineY` as a number (legacy horizontal lineY in 0..1)
+ *   - `gateOrLineY` as a 3D gate `{ x1, y1, x2, y2, wallHeight }`
+ */
+export function checkCrossing(track, gateOrLineY) {
   const h = track.history;
-  if (track.crossed || h.length < 2) return null;
-  const a = h[h.length - 2], b = h[h.length - 1];
-  if (a.feet < lineY && b.feet >= lineY) {
-    const span = b.feet - a.feet;
-    const frac = span > 0 ? (lineY - a.feet) / span : 1;
-    return { at: a.t + (b.t - a.t) * Math.min(1, Math.max(0, frac)) };
+  if (track.crossed || !h || h.length < 2) return null;
+  const a = h[h.length - 2];
+  const b = h[h.length - 1];
+
+  if (typeof gateOrLineY === "number") {
+    const lineY = gateOrLineY;
+    if (a.feet < lineY && b.feet >= lineY) {
+      const span = b.feet - a.feet;
+      const frac = span > 0 ? (lineY - a.feet) / span : 1;
+      const f = Math.min(1, Math.max(0, frac));
+      const ax = a.cx ?? track.cx ?? 0.5;
+      const bx = b.cx ?? track.cx ?? 0.5;
+      return {
+        at: a.t + (b.t - a.t) * f,
+        point: {
+          x: ax + (bx - ax) * f,
+          y: lineY,
+          torsoY: (a.torsoY ?? a.cy ?? lineY - 0.12) + ((b.torsoY ?? b.cy ?? lineY - 0.12) - (a.torsoY ?? a.cy ?? lineY - 0.12)) * f,
+        },
+      };
+    }
+    return null;
+  }
+
+  const gate = normalizeGate(gateOrLineY);
+  const ax = a.cx ?? track.cx ?? 0.5;
+  const bx = b.cx ?? track.cx ?? 0.5;
+  const ga = gateGroundYAtX(gate, ax);
+  const gb = gateGroundYAtX(gate, bx);
+
+  const da = a.feet - ga.groundY;
+  const db = b.feet - gb.groundY;
+
+  if (da < 0 && db >= 0) {
+    const denom = db - da;
+    const f = denom > 0 ? Math.min(1, Math.max(0, -da / denom)) : 1;
+    const crossX = ax + (bx - ax) * f;
+    const gCross = gateGroundYAtX(gate, crossX);
+    if (!gCross.withinSpan) return null;
+
+    const aTorso = a.torsoY ?? a.cy ?? (a.feet - 0.15);
+    const bTorso = b.torsoY ?? b.cy ?? (b.feet - 0.15);
+    const crossTorsoY = aTorso + (bTorso - aTorso) * f;
+
+    if (crossTorsoY < gCross.topY - 0.12 || crossTorsoY > gCross.groundY + 0.05) {
+      return null;
+    }
+
+    return {
+      at: a.t + (b.t - a.t) * f,
+      point: {
+        x: crossX,
+        y: gCross.groundY,
+        torsoY: Math.min(gCross.groundY, Math.max(gCross.topY, crossTorsoY)),
+      },
+    };
   }
   return null;
 }
 
-/** Resolve a track's accumulated votes to one bib.
-    votes: Map bib -> { count, confSum }. */
+/**
+ * Normalize a raw digit string against the active roster.
+ * - If a raw read ("1", "42", "0042") matches a roster bib's numeric value,
+ *   canonicalize it to that roster bib ("0001", "0042").
+ * - If it does NOT match any roster bib, DO NOT pad 1- or 2-digit noise
+ *   ("1", "7", "11") into fake 4-digit bibs ("0001", "0007"). Require at
+ *   least 3 digits for an unlisted bib, or reject it as noise.
+ */
+export function canonicalizeBibRead(rawDigits, knownBibs = []) {
+  const clean = String(rawDigits || "").replace(/\D/g, "");
+  if (!clean || clean.length > 5) return null;
+  if (/^0+$/.test(clean)) return null;
+
+  const padded4 = clean.padStart(4, "0");
+  const knownSet = new Set(knownBibs.map((b) => String(b).trim()));
+
+  if (knownSet.has(clean)) return { bib: clean, known: true, rawLength: clean.length };
+  if (knownSet.has(padded4)) return { bib: padded4, known: true, rawLength: clean.length };
+
+  if (clean.length < 3) return null;
+
+  return { bib: padded4, known: false, rawLength: clean.length };
+}
+
+/** Resolve a track's accumulated votes to one bib. */
 export function tallyVotes(votes, knownBibs = []) {
   const known = new Set(knownBibs);
   const entries = [...votes.entries()].map(([bib, v]) => ({
@@ -304,15 +722,23 @@ export function tallyVotes(votes, knownBibs = []) {
   }));
   if (!entries.length) return null;
   entries.sort((a, b) =>
+    (Number(b.known) - Number(a.known)) ||
     (b.count - a.count) ||
-    (b.confidence - a.confidence) ||
-    (Number(b.known) - Number(a.known)));
+    (b.confidence - a.confidence));
   const top = entries[0];
   const total = entries.reduce((s, e) => s + e.count, 0);
   const dominant = total ? top.count / total >= 0.6 : true;
-  const accepted =
-    (top.count >= 2 && dominant && top.confidence >= 50) ||
-    (top.count >= 1 && top.confidence >= 82);
+
+  const hasRoster = known.size > 0;
+  let accepted = false;
+  if (top.known || !hasRoster) {
+    accepted =
+      (top.count >= 2 && dominant && top.confidence >= 50) ||
+      (top.count >= 1 && top.confidence >= 80);
+  } else {
+    accepted = top.count >= 2 && dominant && top.confidence >= 72;
+  }
+
   return { ...top, accepted, total };
 }
 
@@ -334,14 +760,18 @@ export function cropToCanvas(source, sx, sy, sw, sh, minW = 220) {
   return canvas;
 }
 
-/** Build both polarity variants of a crop, pre-processed for OCR.
-    Returns [{ canvas, invert }] with ink dark on white paper. */
-export function ocrVariants(cropCanvas) {
+/** Build polarity variants of a crop, pre-processed for OCR. */
+export function ocrVariants(cropCanvas, polarity = "both") {
   const w = cropCanvas.width, h = cropCanvas.height;
   const ctx = cropCanvas.getContext("2d", { willReadFrequently: true });
   const gray = toGray(ctx.getImageData(0, 0, w, h).data, w, h);
   const prepped = unsharpMask(flattenLighting(gray, w, h), w, h);
-  return [false, true].map((invert) => {
+  const modes = polarity === "dark-on-light"
+    ? [false]
+    : polarity === "light-on-dark"
+      ? [true]
+      : [false, true];
+  return modes.map((invert) => {
     const bin = binarizeOtsu(prepped, w, h, invert);
     const out = document.createElement("canvas");
     out.width = w; out.height = h;
@@ -356,8 +786,7 @@ export function ocrVariants(cropCanvas) {
   });
 }
 
-/** Tesseract.js v5 reports 0 for data.confidence / word confidence on
-    single-word crops — per-symbol confidence is the reliable one. */
+/** Per-symbol confidence reader for Tesseract.js v5. */
 export function readConfidence(data) {
   const symbols = data?.symbols || [];
   const withConf = symbols.filter((s) => typeof s.confidence === "number");
@@ -371,71 +800,107 @@ export function readConfidence(data) {
   return data?.confidence ?? 0;
 }
 
-/** Run OCR on prepared variants and return the best digit read. */
+/**
+ * Validate Tesseract's recognized symbols so that random edges/textures
+ * forced into "1" or "7" by `tessedit_char_whitelist` are rejected.
+ */
+export function validateOcrSymbols(data, cropW, cropH) {
+  const rawText = String(data?.text || "").replace(/\D/g, "");
+  if (!rawText || rawText.length > 5) return null;
+
+  const conf = readConfidence(data);
+  const symbols = (data?.symbols || []).filter((s) => /\d/.test(s?.text || ""));
+
+  if (symbols.length > 0 && cropW > 0 && cropH > 0) {
+    const validSymbols = [];
+    for (const s of symbols) {
+      const sConf = typeof s.confidence === "number" ? s.confidence : conf;
+      if (sConf < 42) continue;
+      const b = s.bbox;
+      if (b && typeof b.x0 === "number" && typeof b.x1 === "number") {
+        const sw = Math.max(1, b.x1 - b.x0);
+        const sh = Math.max(1, b.y1 - b.y0);
+        const relH = sh / cropH;
+        const relW = sw / cropW;
+        if (relH < 0.14 || relH > 0.98) continue;
+        if (relW > 0.85) continue;
+        validSymbols.push({ text: String(s.text).replace(/\D/g, ""), conf: sConf, h: sh, y: (b.y0 + b.y1) / 2 });
+      } else {
+        validSymbols.push({ text: String(s.text).replace(/\D/g, ""), conf: sConf, h: cropH * 0.5, y: cropH * 0.5 });
+      }
+    }
+    if (!validSymbols.length) return null;
+
+    const cleanDigits = validSymbols.map((s) => s.text).join("");
+    if (!cleanDigits || cleanDigits.length > 5) return null;
+    const meanConf = validSymbols.reduce((acc, s) => acc + s.conf, 0) / validSymbols.length;
+
+    if (cleanDigits.length === 1 && meanConf < 82) return null;
+    if (meanConf < 52) return null;
+
+    return { digits: cleanDigits, confidence: Math.round(meanConf) };
+  }
+
+  if (rawText.length === 1 && conf < 82) return null;
+  if (conf < 52) return null;
+  return { digits: rawText, confidence: Math.round(conf) };
+}
+
+/** Run OCR on prepared variants and return the best validated digit read.
+    Returns null immediately if the crop fails `hasDigitLikeStructure`. */
 export async function recognizeDigits(worker, cropCanvas) {
-  const variants = ocrVariants(cropCanvas);
+  const w = cropCanvas.width, h = cropCanvas.height;
+  const ctx = cropCanvas.getContext("2d", { willReadFrequently: true });
+  const gray = toGray(ctx.getImageData(0, 0, w, h).data, w, h);
+
+  const struct = hasDigitLikeStructure(gray, w, h);
+  if (!struct.ok) return null;
+
+  const variants = ocrVariants(cropCanvas, struct.polarity);
   let best = null;
   for (const { canvas, invert } of variants) {
     await worker.setParameters({
       tessedit_char_whitelist: "0123456789",
-      tessedit_pageseg_mode: "8", // single word
+      tessedit_pageseg_mode: "8",
     });
     const { data } = await worker.recognize(canvas);
-    const digits = String(data.text || "").replace(/\D/g, "");
-    const conf = readConfidence(data);
-    if (digits && (!best || conf > best.confidence)) {
-      best = { digits, confidence: Math.round(conf), invert };
+    const checked = validateOcrSymbols(data, w, h);
+    if (checked && (!best || checked.confidence > best.confidence)) {
+      best = { digits: checked.digits, confidence: checked.confidence, invert };
     }
-    if (best && best.confidence >= 80) break;
+    if (best && best.confidence >= 82 && best.digits.length >= 2) break;
   }
-  if (!best || best.confidence < 25) {
-    // one retry as a single line — helps when the crop catches two numbers
+  if (!best || best.confidence < 58) {
     await worker.setParameters({
       tessedit_char_whitelist: "0123456789",
       tessedit_pageseg_mode: "7",
     });
     const { data } = await worker.recognize(variants[0].canvas);
-    const digits = String(data.text || "").replace(/\D/g, "");
-    const conf = readConfidence(data);
-    if (digits && conf > (best?.confidence ?? 0)) {
-      best = { digits, confidence: Math.round(conf), invert: false };
+    const checked = validateOcrSymbols(data, w, h);
+    if (checked && checked.confidence > (best?.confidence ?? 0)) {
+      best = { digits: checked.digits, confidence: checked.confidence, invert: variants[0].invert };
     }
   }
   return best;
 }
 
-/** Locate the bright bib patch inside a chest-band crop and return a
-    tight crop of just the bib. Bibs are bright rectangles on the torso,
-    so we threshold for bright regions and pick the best bib-shaped blob.
-    Falls back to the full crop when nothing bib-like is found. */
+/** Locate the bright bib patch inside a larger image/crop. */
 export function locateBibPatch(cropCanvas) {
   const w = cropCanvas.width, h = cropCanvas.height;
   if (w < 24 || h < 16) return cropCanvas;
   const ctx = cropCanvas.getContext("2d", { willReadFrequently: true });
   const gray = toGray(ctx.getImageData(0, 0, w, h).data, w, h);
-  const t = otsuThreshold(gray);
-  const bright = new Uint8Array(w * h);
-  for (let i = 0; i < gray.length; i++) bright[i] = gray[i] > t ? 1 : 0;
-  const mask = dilate(bright, w, h, Math.max(2, Math.round(Math.min(w, h) / 36)));
-  const blobs = findBlobs(mask, w, h, {
-    minArea: Math.round(w * h * 0.03),
-    maxArea: Math.round(w * h * 0.9),
-  });
-  let best = null, bestScore = 0;
-  for (const b of blobs) {
-    const aspect = b.w / b.h;
-    if (aspect < 0.8 || aspect > 5.5) continue;
-    const fill = b.area / (b.w * b.h);
-    const score = fill * (1 - Math.abs(aspect - 2.2) / 6);
-    if (score > bestScore) { bestScore = score; best = b; }
+  const regions = detectBibRegions(gray, w, h);
+  if (regions.length > 0) {
+    const r = regions[0];
+    const mx = r.w * 0.08, my = r.h * 0.12;
+    const sx = Math.max(0, (r.x - mx) * w);
+    const sy = Math.max(0, (r.y - my) * h);
+    const sw = Math.min(w - sx, (r.w + mx * 2) * w);
+    const sh = Math.min(h - sy, (r.h + my * 2) * h);
+    return cropToCanvas(cropCanvas, sx, sy, sw, sh, 240);
   }
-  if (!best) return cropCanvas;
-  const mx = best.w * 0.08, my = best.h * 0.14;
-  const sx = Math.max(0, best.x - mx);
-  const sy = Math.max(0, best.y - my);
-  const sw = Math.min(w - sx, best.w + mx * 2);
-  const sh = Math.min(h - sy, best.h + my * 2);
-  return cropToCanvas(cropCanvas, sx, sy, sw, sh, 240);
+  return cropCanvas;
 }
 
 /** Small JPEG thumbnail data-URL of a canvas (for feeds/review rows). */
@@ -449,19 +914,20 @@ export function thumbOf(canvas, width = 96) {
 }
 
 /* ---------------------------------------------------------------------
-   FinishCam — live scanning against a <video> element
+   FinishCam — Number-First 3D Finish-Gate Scanner
 --------------------------------------------------------------------- */
 
 export class FinishCam {
   /**
    * opts:
    *   video        — <video> element with an active stream
-   *   overlay      — <canvas> for the detection overlay (optional)
+   *   overlay      — <canvas> for the 3D finish-wall & bib detection overlay
    *   getRosterBibs() -> string[] of known bib numbers
    *   onFinish({ bib, confidence, when, thumb, trackId, known })
    *   onReview({ guess, confidence, thumb, when, trackId })  (uncertain)
-   *   onRead({ bib, confidence, trackId, thumb })            (each vote)
+   *   onRead({ bib, confidence, trackId, thumb })            (each valid bib read)
    *   onStatus({ state, tracks, reads })                     (UI updates)
+   *   onGateChange(gate)                                     (when user drags posts)
    */
   constructor(opts = {}) {
     this.video = opts.video;
@@ -471,28 +937,44 @@ export class FinishCam {
     this.onReview = opts.onReview || (() => {});
     this.onRead = opts.onRead || (() => {});
     this.onStatus = opts.onStatus || (() => {});
+    this.onGateChange = opts.onGateChange || (() => {});
 
-    this.lineY = opts.lineY ?? 0.62;     // normalized finish-line height
-    this.scanMs = opts.scanMs ?? 350;    // detection cadence
-    this.minConf = opts.minConf ?? 65;   // auto-record confidence floor
+    this.lineY = opts.lineY ?? 0.72;
+    this.gate = normalizeGate(opts.gate || {
+      x1: 0.14,
+      y1: this.lineY,
+      x2: 0.86,
+      y2: this.lineY,
+      wallHeight: opts.wallHeight ?? 0.44,
+    });
+    this.scanMs = opts.scanMs ?? 320;    // detection cadence
+    this.minConf = opts.minConf ?? 68;   // auto-record confidence floor
     this.cooldownMs = opts.cooldownMs ?? 90000; // per-bib re-record guard
     this.autoRecord = opts.autoRecord ?? true;
+    this.reviewUnknownCrossings = opts.reviewUnknownCrossings ?? false;
 
     this.tracker = new BibTracker();
-    this.bg = null;                      // background model (grayscale)
-    this.bgW = 0; this.bgH = 0;
     this.armed = false;
     this.timer = null;
     this.ocrBusy = false;
     this.ocrQueue = [];
     this.reads = 0;
     this.recentBibs = new Map();         // bib -> timestamp of last finish
-    this.workW = 320;                    // motion-analysis resolution
+    this.wallFlash = null;               // { at, point, bib } for visual 3D wall pulse
+    this.workW = 360;                    // bib-detection analysis resolution
 
     this._grabCanvas = document.createElement("canvas");
     this._fullCanvas = document.createElement("canvas");
     this._onTick = this._onTick.bind(this);
-    this._dragging = false;
+    this._dragHandle = null;             // "p1" | "p2" | "top" | "wall" | null
+    this._dragStart = null;
+
+    if (this.overlay && typeof ResizeObserver !== "undefined") {
+      this._ro = new ResizeObserver(() => {
+        this._drawOverlay(this.tracker ? this.tracker.tracks : []);
+      });
+      this._ro.observe(this.overlay);
+    }
   }
 
   /* ---- lifecycle ---- */
@@ -502,31 +984,58 @@ export class FinishCam {
     if (!this.video || !this.video.videoWidth) {
       throw new Error("Camera is not ready yet");
     }
+    this.tracker = new BibTracker();
+    this.ocrQueue = [];
     this.armed = true;
     this.timer = setInterval(this._onTick, this.scanMs);
     this._onTick();
-    this.onStatus({ state: "armed", tracks: this.tracker.tracks.length, reads: this.reads });
+    this.onStatus({ state: "armed", tracks: 0, reads: this.reads });
   }
 
   disarm() {
     this.armed = false;
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
+    this.ocrQueue = [];
+    this._drawOverlay([]);
     this.onStatus({ state: "standby", tracks: 0, reads: this.reads });
   }
 
+  /** Set horizontal finish-line depth (keeps existing slant/width & wall height). */
   setLine(y) {
-    this.lineY = Math.min(0.95, Math.max(0.05, y));
-    this._drawOverlay([]);
+    const clampedY = Math.min(0.95, Math.max(0.15, y));
+    const midY = (this.gate.y1 + this.gate.y2) / 2;
+    const dy = clampedY - midY;
+    this.gate = normalizeGate({
+      ...this.gate,
+      y1: this.gate.y1 + dy,
+      y2: this.gate.y2 + dy,
+    });
+    this.lineY = (this.gate.y1 + this.gate.y2) / 2;
+    this._drawOverlay(this.tracker.tracks);
   }
 
-  /* ---- scanning ---- */
+  /** Set 3D gate wall height (0.15..0.75 of frame height). */
+  setWallHeight(h) {
+    this.gate = normalizeGate({ ...this.gate, wallHeight: h });
+    this._drawOverlay(this.tracker.tracks);
+  }
+
+  /** Update full 3D gate geometry `{ x1, y1, x2, y2, wallHeight }`. */
+  setGate(nextGate) {
+    this.gate = normalizeGate({ ...this.gate, ...nextGate });
+    this.lineY = (this.gate.y1 + this.gate.y2) / 2;
+    this._drawOverlay(this.tracker.tracks);
+    this.onGateChange(this.gate);
+  }
+
+  /* ---- Bib-Number-First Scanning ---- */
 
   _onTick() {
     const video = this.video;
     if (!video || !video.videoWidth) return;
     const w = this.workW;
-    const h = Math.round(w * video.videoHeight / video.videoWidth) || 240;
+    const h = Math.round(w * video.videoHeight / video.videoWidth) || 270;
 
     const gctx = this._grabCanvas.getContext("2d", { willReadFrequently: true });
     this._grabCanvas.width = w;
@@ -535,51 +1044,56 @@ export class FinishCam {
     const gray = toGray(gctx.getImageData(0, 0, w, h).data, w, h);
 
     const now = Date.now();
-    if (!this.bg || this.bgW !== w) {
-      this.bg = gray;
-      this.bgW = w; this.bgH = h;
-      return;
-    }
 
-    const mask = dilate(motionMask(gray, this.bg, w, h, 22), w, h, 3);
-    const boxes = mergeBoxes(
-      findBlobs(mask, w, h, {
-        minArea: Math.round(w * h * 0.006),
-        maxArea: Math.round(w * h * 0.6),
-      }),
-      6
-    );
+    // Detect bib/number patches directly in the frame (ignores people without bibs!)
+    const bibBoxes = detectBibRegions(gray, w, h).map((b) => {
+      // A bib sits on the chest/torso (~42% down the runner's body); project ground
+      // contact (`feet`) directly below the bib patch so it crosses the 3D finish
+      // gate wall at the runner's stride position, while `torsoY` is the bib center.
+      const torsoY = b.y + b.h * 0.5;
+      const estimatedRunnerFootY = Math.min(0.99, b.y + b.h * 2.15);
+      return {
+        x: b.x,
+        y: b.y,
+        w: b.w,
+        h: b.h,
+        torsoY,
+        feet: estimatedRunnerFootY,
+      };
+    });
 
-    // slow background adaptation where nothing moves
-    const alpha = 0.05;
-    for (let i = 0; i < gray.length; i++) {
-      if (!mask[i]) this.bg[i] += alpha * (gray[i] - this.bg[i]);
-    }
+    const tracks = this.tracker.update(bibBoxes, now);
 
-    const norm = boxes.map((b) => ({ x: b.x / w, y: b.y / h, w: b.w / w, h: b.h / h }));
-    const tracks = this.tracker.update(norm, now);
-
-    // finish-line crossings + OCR scheduling
+    // Trigger OCR immediately whenever a bib-number patch is spotted!
     for (const track of tracks) {
-      const cross = checkCrossing(track, this.lineY);
+      const cross = checkCrossing(track, this.gate);
       if (cross) {
         track.crossed = true;
         track.crossedAt = cross.at;
+        track.crossPoint = cross.point;
+        this.wallFlash = { at: now, point: cross.point, trackId: track.id };
       }
       if (track.crossed && !track.resolved) this._maybeResolve(track);
-      // keep reading crossed tracks too — a late vote can still settle them
-      if (!track.pendingOcr && track.seen >= 2 && !track.resolved) {
-        const nearLine = track.feet > this.lineY - 0.45 || track.crossed;
-        if (nearLine && this.ocrQueue.length < 3) {
+
+      // As soon as a bib-number candidate is spotted (`seen >= 1`), queue OCR
+      if (!track.pendingOcr && !track.resolved && track.lost === 0) {
+        if (this.ocrQueue.length < 4) {
           track.pendingOcr = true;
           this.ocrQueue.push(track);
         }
       }
     }
 
-    this._drawOverlay(tracks);
+    // Only display tracks on the overlay that have a confirmed bib read (or are actively being read)
+    const visibleTracks = tracks.filter((t) => t.votes.size > 0 || t.pendingOcr);
+    const confirmedTracks = tracks.filter((t) => t.votes.size > 0);
+    this._drawOverlay(visibleTracks);
     this._drainOcr();
-    this.onStatus({ state: "scanning", tracks: tracks.length, reads: this.reads });
+    this.onStatus({
+      state: confirmedTracks.length ? "scanning" : "armed",
+      tracks: confirmedTracks.length,
+      reads: this.reads,
+    });
   }
 
   _drainOcr() {
@@ -595,43 +1109,47 @@ export class FinishCam {
       });
   }
 
-  /** Crop the chest region of a tracked runner and OCR it. */
+  /** Crop the spotted bib-number region directly and run OCR. */
   async _readTrackBib(track) {
     const video = this.video;
     const vw = video.videoWidth, vh = video.videoHeight;
     if (!vw) return;
-    // chest zone: middle band of the bounding box, padded horizontally
-    const padX = track.bbox.w * 0.15;
+
+    // Pad slightly around the detected bib patch
+    const padX = track.bbox.w * 0.14;
+    const padY = track.bbox.h * 0.18;
     const sx = Math.max(0, (track.bbox.x - padX) * vw);
-    const sy = Math.max(0, (track.bbox.y + track.bbox.h * 0.12) * vh);
+    const sy = Math.max(0, (track.bbox.y - padY) * vh);
     const sw = Math.min(vw - sx, (track.bbox.w + padX * 2) * vw);
-    const sh = Math.min(vh - sy, track.bbox.h * 0.55 * vh);
+    const sh = Math.min(vh - sy, (track.bbox.h + padY * 2) * vh);
     if (sw < 16 || sh < 12) return;
-    const crop = cropToCanvas(video, sx, sy, sw, sh, 240);
-    const bibPatch = locateBibPatch(crop);
-    const thumb = thumbOf(bibPatch);
+
+    const bibCrop = cropToCanvas(video, sx, sy, sw, sh, 240);
     const worker = await this._getWorker();
-    let read = await recognizeDigits(worker, bibPatch);
-    // fall back to the full chest band if the patch read is weak
-    if ((!read || read.confidence < 45) && bibPatch !== crop) {
-      const alt = await recognizeDigits(worker, crop);
-      if (alt && (!read || alt.confidence > read.confidence)) read = alt;
-    }
+    const read = await recognizeDigits(worker, bibCrop);
     if (!read) return;
+
+    const knownBibs = this.getRosterBibs();
+    const canonical = canonicalizeBibRead(read.digits, knownBibs);
+    if (!canonical) return;
+
+    if (!canonical.known && knownBibs.length > 0 && read.confidence < 72) return;
+
+    const thumb = thumbOf(bibCrop);
     this.reads++;
-    this.tracker.vote(track, read.digits.padStart(4, "0"), read.confidence, thumb);
+    this.tracker.vote(track, canonical.bib, read.confidence, thumb);
     this.onRead({
-      bib: read.digits.padStart(4, "0"),
+      bib: canonical.bib,
       confidence: read.confidence,
       trackId: track.id,
       thumb,
+      known: canonical.known,
     });
-    // a confident vote can settle a runner already across the line
+    this._drawOverlay(this.tracker.tracks.filter((t) => t.votes.size > 0 || t.pendingOcr));
     if (track.crossed && !track.resolved) this._maybeResolve(track);
   }
 
-  /** Emit a finish (or review) event for a crossed track.
-      Waits for in-flight OCR reads; forces a review after a grace period. */
+  /** Emit a finish (or review) event when a confirmed bib crosses the 3D finish wall. */
   _maybeResolve(track) {
     if (track.resolved) return;
     const tally = tallyVotes(track.votes, this.getRosterBibs());
@@ -642,6 +1160,9 @@ export class FinishCam {
       if (last && at - last < this.cooldownMs) { track.resolved = true; return; }
       this.recentBibs.set(tally.bib, at);
       track.resolved = true;
+      if (this.wallFlash && this.wallFlash.trackId === track.id) {
+        this.wallFlash.bib = tally.bib;
+      }
       this.onFinish({
         bib: tally.bib,
         confidence: Math.round(tally.confidence),
@@ -653,19 +1174,19 @@ export class FinishCam {
       return;
     }
 
-    // force a review only once reads stop coming (track gone) or the
-    // grace period expires — until then keep gathering votes
     const waited = Date.now() - at;
     const trackGone = track.lost > 1;
-    if (!track.pendingOcr && (trackGone || waited > 3500)) {
+    if (!track.pendingOcr && (trackGone || waited > 2500)) {
       track.resolved = true;
-      this.onReview({
-        guess: tally?.bib || null,
-        confidence: tally ? Math.round(tally.confidence) : 0,
-        thumb: tally?.thumb || null,
-        when: at,
-        trackId: track.id,
-      });
+      if (tally && tally.bib && tally.confidence >= 48) {
+        this.onReview({
+          guess: tally.bib,
+          confidence: Math.round(tally.confidence),
+          thumb: tally.thumb || null,
+          when: at,
+          trackId: track.id,
+        });
+      }
     }
   }
 
@@ -692,16 +1213,19 @@ export class FinishCam {
     const bibPatch = locateBibPatch(crop);
     const worker = await this._getWorker();
     let read = await recognizeDigits(worker, bibPatch);
-    if ((!read || read.confidence < 45) && bibPatch !== crop) {
+    if ((!read || read.confidence < 55) && bibPatch !== crop) {
       const alt = await recognizeDigits(worker, crop);
       if (alt && (!read || alt.confidence > read.confidence)) read = alt;
     }
-    return read ? { ...read, thumb: thumbOf(bibPatch), crop: bibPatch } : null;
+    if (!read) return null;
+    const canonical = canonicalizeBibRead(read.digits, this.getRosterBibs());
+    const bib = canonical ? canonical.bib : read.digits.padStart(4, "0");
+    return { ...read, digits: bib, thumb: thumbOf(bibPatch), crop: bibPatch };
   }
 
-  /* ---- overlay ---- */
+  /* ---- 3D Finish-Gate Wall overlay ---- */
 
-  _drawOverlay(tracks) {
+  _drawOverlay(tracks = []) {
     const cv = this.overlay;
     if (!cv) return;
     const ctx = cv.getContext("2d");
@@ -709,56 +1233,274 @@ export class FinishCam {
     const h = cv.height = cv.clientHeight || 400;
     ctx.clearRect(0, 0, w, h);
 
-    // finish line
-    const y = this.lineY * h;
-    ctx.strokeStyle = "rgba(255,127,17,0.95)";
-    ctx.lineWidth = 3;
-    ctx.setLineDash([14, 9]);
+    const quad = gateQuad(this.gate);
+    const bl = { x: quad.baseLeft.x * w, y: quad.baseLeft.y * h };
+    const br = { x: quad.baseRight.x * w, y: quad.baseRight.y * h };
+    const tl = { x: quad.topLeft.x * w, y: quad.topLeft.y * h };
+    const tr = { x: quad.topRight.x * w, y: quad.topRight.y * h };
+
+    const now = Date.now();
+    const flashAge = this.wallFlash ? now - this.wallFlash.at : Infinity;
+    const isFlashing = flashAge < 900;
+    const flashAlpha = isFlashing ? Math.max(0, 1 - flashAge / 900) : 0;
+
+    // 1. Ground chute shadow / depth apron behind & in front of the 3D wall
+    const dx = br.x - bl.x;
+    const dy = br.y - bl.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len * 10;
+    const ny = dx / len * 18;
+    ctx.save();
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(w, y);
+    ctx.moveTo(bl.x - nx, bl.y - ny);
+    ctx.lineTo(br.x - nx, br.y - ny);
+    ctx.lineTo(br.x + nx, br.y + ny);
+    ctx.lineTo(bl.x + nx, bl.y + ny);
+    ctx.closePath();
+    ctx.fillStyle = isFlashing
+      ? `rgba(52, 211, 153, ${0.18 + flashAlpha * 0.25})`
+      : "rgba(255, 127, 17, 0.10)";
+    ctx.fill();
+    ctx.restore();
+
+    // 2. Translucent 3D vertical finish wall plane
+    ctx.save();
+    const grad = ctx.createLinearGradient(
+      (tl.x + tr.x) / 2,
+      (tl.y + tr.y) / 2,
+      (bl.x + br.x) / 2,
+      (bl.y + br.y) / 2
+    );
+    if (isFlashing) {
+      grad.addColorStop(0, `rgba(52, 211, 153, ${0.14 + flashAlpha * 0.25})`);
+      grad.addColorStop(0.6, `rgba(52, 211, 153, ${0.28 + flashAlpha * 0.30})`);
+      grad.addColorStop(1, `rgba(16, 185, 129, ${0.42 + flashAlpha * 0.35})`);
+    } else {
+      grad.addColorStop(0, "rgba(255, 127, 17, 0.08)");
+      grad.addColorStop(0.55, "rgba(255, 127, 17, 0.18)");
+      grad.addColorStop(1, "rgba(255, 127, 17, 0.34)");
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(bl.x, bl.y);
+    ctx.lineTo(br.x, br.y);
+    ctx.lineTo(tr.x, tr.y);
+    ctx.lineTo(tl.x, tl.y);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // 3. Perspective 3D grid mesh inside the finish wall plane
+    ctx.strokeStyle = isFlashing
+      ? "rgba(52, 211, 153, 0.45)"
+      : "rgba(255, 165, 70, 0.28)";
+    ctx.lineWidth = 1;
+    const cols = 6;
+    for (let i = 1; i < cols; i++) {
+      const u = i / cols;
+      const bx = bl.x + (br.x - bl.x) * u;
+      const by = bl.y + (br.y - bl.y) * u;
+      const tx = tl.x + (tr.x - tl.x) * u;
+      const ty = tl.y + (tr.y - tl.y) * u;
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(tx, ty);
+      ctx.stroke();
+    }
+    const rows = 3;
+    for (let j = 1; j < rows; j++) {
+      const v = j / rows;
+      const lx = tl.x + (bl.x - tl.x) * v;
+      const ly = tl.y + (bl.y - tl.y) * v;
+      const rx = tr.x + (br.x - tr.x) * v;
+      const ry = tr.y + (br.y - tr.y) * v;
+      ctx.beginPath();
+      ctx.moveTo(lx, ly);
+      ctx.lineTo(rx, ry);
+      ctx.stroke();
+    }
+
+    // 4. Vertical Left & Right Gate Posts + Top Arch Beam
+    const mainColor = isFlashing ? "rgba(52, 211, 153, 0.98)" : "rgba(255, 127, 17, 0.96)";
+    ctx.strokeStyle = mainColor;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(bl.x, bl.y);
+    ctx.lineTo(tl.x, tl.y);
+    ctx.lineTo(tr.x, tr.y);
+    ctx.lineTo(br.x, br.y);
+    ctx.stroke();
+
+    // 5. Ground Finish Line (thick glowing threshold at the base of the wall)
+    ctx.strokeStyle = mainColor;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(bl.x, bl.y);
+    ctx.lineTo(br.x, br.y);
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([10, 10]);
+    ctx.beginPath();
+    ctx.moveTo(bl.x, bl.y);
+    ctx.lineTo(br.x, br.y);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = "rgba(255,127,17,0.95)";
-    ctx.font = "600 12px system-ui, sans-serif";
-    ctx.fillText("FINISH LINE — drag to reposition", 10, y - 8);
 
-    // tracked runners
+    // 6. Impact ripple on the 3D wall when a bib crosses
+    if (isFlashing && this.wallFlash?.point) {
+      const px = this.wallFlash.point.x * w;
+      const py = (this.wallFlash.point.torsoY ?? this.wallFlash.point.y) * h;
+      const r = 14 + (1 - flashAlpha) * 34;
+      ctx.strokeStyle = `rgba(52, 211, 153, ${flashAlpha * 0.95})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(px, py, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // 7. Interactive drag handles: Post A (left base), Post B (right base), and Top Arch (height)
+    const drawHandle = (x, y, label) => {
+      ctx.fillStyle = "#0b1322";
+      ctx.strokeStyle = mainColor;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      if (label) {
+        ctx.fillStyle = "rgba(255,255,255,0.92)";
+        ctx.font = "700 10px system-ui, sans-serif";
+        ctx.fillText(label, x - 3, y + 3.5);
+      }
+    };
+    drawHandle(bl.x, bl.y, "A");
+    drawHandle(br.x, br.y, "B");
+    const topMidX = (tl.x + tr.x) / 2;
+    const topMidY = (tl.y + tr.y) / 2;
+    drawHandle(topMidX, topMidY, "↕");
+
+    const bannerText = isFlashing && this.wallFlash?.bib
+      ? `3D FINISH GATE — BIB #${this.wallFlash.bib} CROSSED`
+      : "3D FINISH GATE — drag posts A / B or top arch ↕";
+    ctx.font = "600 11px system-ui, sans-serif";
+    const textW = ctx.measureText(bannerText).width + 16;
+    const pillX = Math.max(8, Math.min(w - textW - 8, topMidX - textW / 2));
+    const pillY = Math.max(6, topMidY - 26);
+    ctx.fillStyle = "rgba(10, 17, 30, 0.82)";
+    ctx.strokeStyle = mainColor;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(pillX, pillY, textW, 20, 6);
+    else ctx.rect(pillX, pillY, textW, 20);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = isFlashing ? "#34d399" : "#ff9f43";
+    ctx.fillText(bannerText, pillX + 8, pillY + 14);
+    ctx.restore();
+
+    // 8. Spotted Bib-Number overlays (only draws bib numbers, never people without bibs)
     for (const t of tracks) {
       const tally = tallyVotes(t.votes, this.getRosterBibs());
+      if (!tally && !t.pendingOcr) continue;
       const color = t.crossed
         ? "rgba(52,211,153,0.95)"
-        : tally?.accepted ? "rgba(96,165,250,0.95)" : "rgba(255,255,255,0.55)";
+        : tally?.accepted ? "rgba(96,165,250,0.95)" : "rgba(255,159,67,0.85)";
       ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.5;
       ctx.strokeRect(t.bbox.x * w, t.bbox.y * h, t.bbox.w * w, t.bbox.h * h);
       const label = tally?.bib
-        ? `#${tally.bib} · ${Math.round(tally.confidence)}%`
-        : `runner ${t.id}`;
+        ? `BIB #${tally.bib} · ${Math.round(tally.confidence)}%`
+        : "Reading bib…";
       ctx.fillStyle = color;
-      ctx.fillText(label, t.bbox.x * w + 4, t.bbox.y * h - 6);
-      // feet marker
-      ctx.fillRect(t.cx * w - 4, t.feet * h - 2, 8, 4);
+      ctx.font = "700 12px system-ui, sans-serif";
+      ctx.fillText(label, t.bbox.x * w + 2, Math.max(14, t.bbox.y * h - 6));
+
+      // Vertical projection line from bib patch down to ground contact on the 3D gate floor
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(t.cx * w, (t.bbox.y + t.bbox.h) * h);
+      ctx.lineTo(t.cx * w, t.feet * h);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillRect(t.cx * w - 5, t.feet * h - 2, 10, 4);
+      ctx.restore();
     }
   }
 
-  /* ---- drag-to-position the finish line on the overlay ---- */
+  /* ---- Interactive 3D gate manipulation on the overlay ---- */
 
   attachLineDrag() {
     const cv = this.overlay;
     if (!cv) return;
-    const toY = (e) => {
+    const toNorm = (e) => {
       const rect = cv.getBoundingClientRect();
-      return (e.clientY - rect.top) / rect.height;
+      return {
+        x: Math.min(0.98, Math.max(0.02, (e.clientX - rect.left) / (rect.width || 1))),
+        y: Math.min(0.96, Math.max(0.04, (e.clientY - rect.top) / (rect.height || 1))),
+      };
     };
+
     cv.addEventListener("pointerdown", (e) => {
-      this._dragging = true;
+      const p = toNorm(e);
+      const quad = gateQuad(this.gate);
+      const d1 = Math.hypot(p.x - quad.baseLeft.x, p.y - quad.baseLeft.y);
+      const d2 = Math.hypot(p.x - quad.baseRight.x, p.y - quad.baseRight.y);
+      const topMid = {
+        x: (quad.topLeft.x + quad.topRight.x) / 2,
+        y: (quad.topLeft.y + quad.topRight.y) / 2,
+      };
+      const dTop = Math.hypot(p.x - topMid.x, p.y - topMid.y);
+
+      if (d1 < 0.075) this._dragHandle = "p1";
+      else if (d2 < 0.075) this._dragHandle = "p2";
+      else if (dTop < 0.085) this._dragHandle = "top";
+      else this._dragHandle = "wall";
+
+      this._dragStart = { p, gate: { ...this.gate } };
       cv.setPointerCapture(e.pointerId);
-      this.setLine(toY(e));
     });
+
     cv.addEventListener("pointermove", (e) => {
-      if (this._dragging) this.setLine(toY(e));
+      if (!this._dragHandle || !this._dragStart) return;
+      const p = toNorm(e);
+      const startGate = this._dragStart.gate;
+      if (this._dragHandle === "p1") {
+        this.setGate({ x1: Math.min(startGate.x2 - 0.12, p.x), y1: p.y });
+      } else if (this._dragHandle === "p2") {
+        this.setGate({ x2: Math.max(startGate.x1 + 0.12, p.x), y2: p.y });
+      } else if (this._dragHandle === "top") {
+        const baseMidY = (startGate.y1 + startGate.y2) / 2;
+        this.setGate({ wallHeight: Math.min(0.75, Math.max(0.15, baseMidY - p.y)) });
+      } else if (this._dragHandle === "wall") {
+        const dx = p.x - this._dragStart.p.x;
+        const dy = p.y - this._dragStart.p.y;
+        const clampShiftX = Math.min(
+          0.96 - Math.max(startGate.x1, startGate.x2),
+          Math.max(0.04 - Math.min(startGate.x1, startGate.x2), dx)
+        );
+        const clampShiftY = Math.min(
+          0.95 - Math.max(startGate.y1, startGate.y2),
+          Math.max(0.18 - Math.min(startGate.y1, startGate.y2), dy)
+        );
+        this.setGate({
+          x1: startGate.x1 + clampShiftX,
+          y1: startGate.y1 + clampShiftY,
+          x2: startGate.x2 + clampShiftX,
+          y2: startGate.y2 + clampShiftY,
+        });
+      }
     });
-    cv.addEventListener("pointerup", () => { this._dragging = false; });
+
+    const endDrag = () => {
+      this._dragHandle = null;
+      this._dragStart = null;
+    };
+    cv.addEventListener("pointerup", endDrag);
+    cv.addEventListener("pointercancel", endDrag);
   }
 }

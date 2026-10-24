@@ -14,7 +14,7 @@
     <!-- Include in <head> (once per page) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&family=Rye&family=Special+Elite&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -27,32 +27,42 @@
             src: url('fonts/RUNNING DEMO.otf') format('opentype');
         }
         :root {
-            --accent: #3b6e22;
-            --accent2: #ff7f11;
-            --bg: #0f1724;
-            --card: #131f33;
-            --text: #e6eef8;
-            --muted: #9ca3af;
-            --shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            --accent: #5d7c34;
+            --accent2: #d2762e;
+            --bg: #16100a;
+            --card: #271c11;
+            --text: #f1e6cf;
+            --muted: #c0a982;
+            --shadow: 0 6px 20px rgba(8, 4, 0, 0.5);
+            --display: 'Rye', 'Oakhill', Georgia, serif;
+            --paper: #f1e6cf;
+            --ink: #2b1c0c;
         }
         * { box-sizing: border-box; }
         html, body {
             margin: 0; padding: 0; min-height: 100vh;
             font-family: 'Inter', sans-serif; 
-            background: var(--bg); 
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(ellipse at 18% -10%, rgba(210, 118, 46, 0.10), transparent 55%),
+                radial-gradient(ellipse at 85% 112%, rgba(122, 84, 44, 0.14), transparent 62%);
+            background-attachment: fixed;
             color: var(--text);
         }
         .navbar {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 28px; background: #101b2f; box-shadow: var(--shadow);
+            padding: 12px 28px; background: rgba(22, 16, 10, 0.95); box-shadow: var(--shadow);
+            border-bottom: 2px solid rgba(201, 162, 109, 0.28);
             position: sticky; top: 0; z-index: 100;
         }
         .navbar .logo {
+            display: flex; align-items: center; gap: 12px;
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--accent2);
-            font-family: 'Luckiest Guy', cursive;
+            font-family: var(--display);
         }
+        .navbar .logo img { height: 46px; border-radius: 8px; }
         .navbar .nav-links { 
             font-family: 'run', sans-serif;
             display: flex; 
@@ -107,8 +117,14 @@
         }
         .map-container h1 {
             color: var(--accent2);
-            font-family: 'Luckiest Guy', cursive;
+            font-family: var(--display);
             text-align: center;
+            margin-bottom: 6px;
+        }
+        .map-container .map-sub {
+            text-align: center;
+            color: var(--muted);
+            font-family: 'Special Elite', 'Courier New', monospace;
             margin-bottom: 20px;
         }
         
@@ -117,10 +133,79 @@
             border-radius: 16px;
             overflow: hidden;
             box-shadow: var(--shadow);
+            border: 2px solid rgba(201, 162, 109, 0.35);
+        }
+
+        /* ---- Course tour (rustic photo stops along the route) ---- */
+        .tour {
+            max-width: 1200px;
+            margin: 46px auto 0;
+            padding: 0 20px;
+        }
+        .tour h2 {
+            color: var(--accent2);
+            font-family: var(--display);
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .tour .tour-sub {
+            text-align: center;
+            color: var(--muted);
+            font-family: 'Special Elite', 'Courier New', monospace;
+            margin-bottom: 26px;
+        }
+        .tour-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 22px;
+        }
+        .tour-stop {
+            background: linear-gradient(175deg, var(--paper) 0%, #e4d3ae 100%);
+            color: var(--ink);
+            border: 1px solid #c9a26d;
+            border-radius: 10px;
+            box-shadow: 0 12px 30px rgba(8, 4, 0, 0.5), inset 0 0 60px rgba(140, 96, 42, 0.14);
+            padding: 12px 12px 16px;
+            transform: rotate(-0.4deg);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .tour-stop:nth-child(even) { transform: rotate(0.5deg); }
+        .tour-stop:hover {
+            transform: rotate(0deg) translateY(-4px);
+            box-shadow: 0 18px 38px rgba(8, 4, 0, 0.6);
+        }
+        .tour-stop img {
+            display: block;
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 4px;
+            filter: sepia(0.42) saturate(0.85) contrast(1.04);
+            border: 1px solid #c9a26d;
+        }
+        .tour-stop .stop-miles {
+            margin: 12px 0 2px;
+            font-size: 0.72rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: #a4611f;
+            font-weight: 700;
+        }
+        .tour-stop .stop-name {
+            font-family: var(--display);
+            font-size: 1.06rem;
+            color: #5c320e;
+            margin: 0 0 6px;
+        }
+        .tour-stop .stop-note {
+            font-family: 'Special Elite', 'Courier New', monospace;
+            font-size: 0.84rem;
+            line-height: 1.5;
+            color: #4a3520;
         }
 
         .legend {
-            background: var(--card);
+            background: rgba(39, 28, 17, 0.94);
             border: 2px solid var(--accent2);
             box-shadow: var(--shadow);
             padding: 16px;
@@ -146,7 +231,7 @@
         }
 
         .mile-marker {
-            background: var(--card);
+            background: rgba(39, 28, 17, 0.92);
             border: 2px solid var(--accent2);
             border-radius: 4px;
             padding: 2px 6px;
@@ -155,12 +240,12 @@
         }
 
         .footer {
-            background: #101b2f;
-            color: #aaa;
+            background: rgba(22, 16, 10, 0.96);
+            color: var(--muted);
             text-align: center;
             padding: 30px 12px;
             margin-top: 60px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            border-top: 2px solid rgba(201, 162, 109, 0.28);
         }
         .footer-art {
             height: 60px;
@@ -288,7 +373,8 @@
     <!-- Place inside <body> at the very top -->
     <nav class="navbar">
         <div class="logo">
-            <span style="font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--accent2);letter-spacing:1px;">Brighton Oaks 5k</span>
+            <img src="images/bright1.png" alt="Brighton Oaks 5K" />
+            <span>Brighton Oaks 5k</span>
         </div>
         <div class="nav-links">
             <a href="index.html">Home</a>
@@ -303,6 +389,7 @@
     </section>
     <div class="map-container">
         <h1>Brighton Oaks 5k Course Map</h1>
+        <div class="map-sub">3.1 miles through the pines of Garnett, South Carolina</div>
         <div id="map"></div>
         <div class="legend">
             <h3>Map Legend</h3>
@@ -324,6 +411,57 @@
             </div>
         </div>
     </div>
+
+    <!-- ==================== COURSE TOUR (rustic photo stops) ==================== -->
+    <section class="tour">
+        <div style="display:flex; flex-wrap:wrap; gap:26px; align-items:center; justify-content:center; margin-bottom:42px">
+            <img src="images/bright.png" alt="2nd Annual Brighton Oaks 5K — November 26th, 2026, Garnett SC" style="max-width:320px; width:100%; border-radius:12px; box-shadow:0 16px 40px rgba(8,4,0,0.55); transform:rotate(-1.2deg)" />
+            <div style="max-width:380px; text-align:center">
+                <h2 style="margin-bottom:10px">Some Things Never Change</h2>
+                <p style="color:var(--muted); font-family:'Special Elite','Courier New',monospace; line-height:1.7">Same pines, same dirt roads, same country store on the corner. The only thing that's changed is the shoes. Pin up the poster, lace 'em up, and join us at the old gas pumps for the 2nd Annual Brighton Oaks 5K.</p>
+            </div>
+        </div>
+        <h2>Sights Along the Way</h2>
+        <div class="tour-sub">A few landmarks you'll pass on Thanksgiving morning</div>
+        <div class="tour-grid">
+            <div class="tour-stop">
+                <img src="images/First half mile.jpg" alt="First half mile" />
+                <div class="stop-miles">Mile 0 – 0.5</div>
+                <h3 class="stop-name">The First Half Mile</h3>
+                <p class="stop-note">The crowd thins out as the road rolls under the pines. Settle into your pace here.</p>
+            </div>
+            <div class="tour-stop">
+                <img src="images/Mile 1 - 2.jpg" alt="Mile one to two" />
+                <div class="stop-miles">Mile 1 – 2</div>
+                <h3 class="stop-name">The Long Pines</h3>
+                <p class="stop-note">Shaded straightaway past old homesteads — the quiet heart of the course.</p>
+            </div>
+            <div class="tour-stop">
+                <img src="images/OrganeBurg Road.jpg" alt="Organeburg Road" />
+                <div class="stop-miles">Mile 2 – 2.5</div>
+                <h3 class="stop-name">Organeburg Road</h3>
+                <p class="stop-note">A stretch of hardpack and old oaks with your name on it. Hold steady.</p>
+            </div>
+            <div class="tour-stop">
+                <img src="images/Brighton Oaks grocery.jpg" alt="Brighton Oaks country store" />
+                <div class="stop-miles">Mile 2.5 – 3</div>
+                <h3 class="stop-name">The Old Country Store</h3>
+                <p class="stop-note">Wave at the porch as you pass the old store — you're nearly home.</p>
+            </div>
+            <div class="tour-stop">
+                <img src="images/Last 400m.jpg" alt="Last 400 meters" />
+                <div class="stop-miles">Final 400m</div>
+                <h3 class="stop-name">The Last 400</h3>
+                <p class="stop-note">The finish arch comes into view. Everything you've got left, right here.</p>
+            </div>
+            <div class="tour-stop">
+                <img src="images/gutpit.jpeg" alt="The gut pit" />
+                <div class="stop-miles">Course Icon</div>
+                <h3 class="stop-name">The Gut Pit</h3>
+                <p class="stop-note">The locals' landmark. If you see it, you've still got some work to do.</p>
+            </div>
+        </div>
+    </section>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";

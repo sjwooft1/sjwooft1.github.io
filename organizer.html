@@ -61,9 +61,98 @@
     .camera-stage video { width: 100%; height: 100%; object-fit: contain; background:#060b14; }
     .camera-stage #camOverlay {
       position: absolute; inset: 0; width: 100%; height: 100%;
-      cursor: ns-resize; touch-action: none;
+      cursor: grab; touch-action: none;
+    }
+    .camera-stage #camOverlay:active {
+      cursor: grabbing;
     }
     .camera-stage .stage-msg { color: var(--muted); text-align: center; padding: 22px; font-size: 0.92rem; }
+
+    /* Fullscreen camera mode (automatic on mobile when camera starts, or via Fullscreen button) */
+    .camera-stage.fs-active,
+    .camera-stage:fullscreen,
+    .camera-stage:-webkit-full-screen {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+      max-width: none !important;
+      max-height: none !important;
+      aspect-ratio: auto !important;
+      border: none !important;
+      border-radius: 0 !important;
+      z-index: 2500 !important;
+      background: #000 !important;
+    }
+    .camera-stage.fs-active video,
+    .camera-stage:fullscreen video,
+    .camera-stage:-webkit-full-screen video {
+      object-fit: cover;
+    }
+    body.cam-fs-lock {
+      overflow: hidden !important;
+      touch-action: none;
+    }
+    .cam-fs-hud-top,
+    .cam-fs-hud-bottom {
+      display: none;
+      position: absolute;
+      left: 0; right: 0;
+      z-index: 20;
+      pointer-events: none;
+      padding: 12px 14px;
+    }
+    .cam-fs-hud-top {
+      top: 0;
+      padding-top: max(12px, env(safe-area-inset-top));
+      background: linear-gradient(180deg, rgba(6,11,20,0.86) 0%, rgba(6,11,20,0) 100%);
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .cam-fs-hud-bottom {
+      bottom: 0;
+      padding-bottom: max(14px, env(safe-area-inset-bottom));
+      background: linear-gradient(0deg, rgba(6,11,20,0.90) 0%, rgba(6,11,20,0) 100%);
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .camera-stage.fs-active .cam-fs-hud-top,
+    .camera-stage:fullscreen .cam-fs-hud-top,
+    .camera-stage:-webkit-full-screen .cam-fs-hud-top,
+    .camera-stage.fs-active .cam-fs-hud-bottom,
+    .camera-stage:fullscreen .cam-fs-hud-bottom,
+    .camera-stage:-webkit-full-screen .cam-fs-hud-bottom {
+      display: flex;
+    }
+    .cam-fs-hud-top > *,
+    .cam-fs-hud-bottom > * {
+      pointer-events: auto;
+    }
+    .cam-fs-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(10, 17, 30, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 999px;
+      padding: 6px 11px;
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .cam-fs-clock {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--accent2);
+    }
     .thumb { width: 100%; border-radius: 8px; display: block; border: 1px solid var(--border); }
     .capture-row {
       display: flex; gap: 12px; align-items: center;
@@ -221,7 +310,7 @@
       <section class="tab-panel" id="tab-camera">
         <div class="stat-strip" style="margin-bottom:18px">
           <div class="stat"><div class="stat-label">Scanner</div><div class="stat-value" id="scanState" style="font-size:1.15rem">Standby</div><div class="stat-sub" id="scanStateSub">Start the camera, then arm the scanner</div></div>
-          <div class="stat"><div class="stat-label">Runners tracked</div><div class="stat-value mono" id="scanTracks">0</div></div>
+          <div class="stat"><div class="stat-label">Bibs in view</div><div class="stat-value mono" id="scanTracks">0</div></div>
           <div class="stat"><div class="stat-label">Bib reads</div><div class="stat-value mono" id="scanReads">0</div></div>
           <div class="stat"><div class="stat-label">Auto finishes</div><div class="stat-value mono" id="scanFinishes">0</div></div>
         </div>
@@ -230,21 +319,39 @@
           <div class="card">
             <div class="card-head">
               <div>
-                <div class="eyebrow">Photo finish</div>
-                <h2>Finish-Line Scanner</h2>
+                <div class="eyebrow">3D Photo Finish Gate</div>
+                <h2>Finish-Line Wall Scanner</h2>
               </div>
               <span class="badge gray" id="camBadge">Camera off</span>
             </div>
-            <p class="muted small">Mount the camera on a tripod behind the finish line, aimed back up the course. Drag the orange line onto the physical finish line in the frame. Arm the scanner (or just start the race) and it tracks every runner, reads their bib as they approach, and stamps a finish the moment their feet cross the line.</p>
+            <p class="muted small">Mount the camera on a tripod aimed across or up the finish chute. Position the <b>3D Finish Gate wall</b> by dragging base posts <b>A</b> and <b>B</b> along the ground line and the top arch <b>↕</b> to match runner height. The scanner watches specifically for <b>bib numbers</b> (ignoring people without bibs, trees, or shadows) — when a bib number is spotted, OCR reads it and stamps a finish as it crosses the 3D wall.</p>
 
             <div class="camera-stage" id="cameraStage">
               <video id="cameraVideo" autoplay playsinline muted></video>
               <canvas id="camOverlay"></canvas>
+              <div class="cam-fs-hud-top">
+                <div class="cam-fs-pill">
+                  <span id="fsStatusDot" style="color:var(--green)">●</span>
+                  <span id="fsStatusText">Camera live</span>
+                  <span class="cam-fs-clock" id="fsClockDisplay">00:00.000</span>
+                </div>
+                <div class="cam-fs-pill">
+                  <span>Finishes: <b class="mono" id="fsFinishCount">0</b></span>
+                  <button class="btn ghost sm" id="fsExitBtn" type="button" style="padding:4px 10px">✕ Exit fullscreen</button>
+                </div>
+              </div>
+              <div class="cam-fs-hud-bottom">
+                <button class="btn primary" id="fsStartRaceBtn" type="button">Start race</button>
+                <button class="btn" id="fsArmBtn" type="button">Arm scanner</button>
+                <button class="btn ghost" id="fsCaptureBtn" type="button">📸 Manual read</button>
+                <button class="btn danger" id="fsStopBtn" type="button">Stop</button>
+              </div>
             </div>
 
             <div class="btn-row" style="margin-top:14px">
               <button class="btn primary" id="startCamBtn">Start camera</button>
               <button class="btn" id="armCamBtn" disabled>Arm scanner</button>
+              <button class="btn ghost" id="fullscreenCamBtn">⛶ Fullscreen</button>
               <button class="btn ghost" id="captureBtn" disabled>📸 Manual read</button>
               <button class="btn ghost" id="stopCamBtn" disabled>Stop</button>
               <label class="btn ghost" style="cursor:pointer">
@@ -255,12 +362,16 @@
 
             <div class="settings-row">
               <div class="field">
-                <label for="lineYRange">Finish line height</label>
-                <input type="range" id="lineYRange" min="10" max="95" value="62" />
+                <label for="lineYRange">Gate ground depth</label>
+                <input type="range" id="lineYRange" min="18" max="95" value="72" />
               </div>
               <div class="field">
-                <label for="confFloor">Min confidence to auto-record</label>
-                <input type="number" id="confFloor" min="30" max="95" value="65" style="width:90px" />
+                <label for="wallHeightRange">3D wall height</label>
+                <input type="range" id="wallHeightRange" min="18" max="72" value="44" />
+              </div>
+              <div class="field">
+                <label for="confFloor">Min confidence (%)</label>
+                <input type="number" id="confFloor" min="45" max="95" value="68" style="width:84px" />
               </div>
               <label class="toggle"><input type="checkbox" id="autoRecordChk" checked /> Auto-record confident crossings</label>
             </div>
@@ -311,12 +422,11 @@
             <div class="card">
               <div class="eyebrow">Setup checklist</div>
               <ul class="small muted" style="margin:6px 0 0; padding-left:18px; line-height:1.9">
-                <li>Camera 6–15 ft behind the line, chest height, facing oncoming runners</li>
-                <li>Drag the orange line exactly onto the finish line in view</li>
-                <li>Bibs should be front-facing and unobstructed</li>
-                <li>Even light — avoid hard shadows and glare across the chute</li>
-                <li>Do a test walk-through before the gun; adjust confidence if needed</li>
-                <li>Anything uncertain lands in <b>Needs review</b> — nothing is lost</li>
+                <li>Camera 6–15 ft from the finish chute, chest height, angled toward oncoming runners</li>
+                <li>Drag base posts <b>A</b> &amp; <b>B</b> onto the left and right edges of the physical finish line</li>
+                <li>Drag the top arch <b>↕</b> so the 3D vertical wall covers runners from ground to chest</li>
+                <li>People walking by without a bib number are ignored — OCR triggers only when a bib number pattern is spotted</li>
+                <li>Roster bibs match first; uncertain reads land in <b>Needs review</b></li>
               </ul>
             </div>
 
@@ -339,6 +449,17 @@
             <div class="btn-row">
               <button class="btn ghost sm" id="reloadRegsBtn">Reload from database</button>
               <button class="btn ghost sm" id="exportRegsBtn">Export CSV</button>
+            </div>
+          </div>
+
+          <div class="card" style="background:var(--bg-soft); margin-bottom:16px">
+            <div class="eyebrow">Bib number requests</div>
+            <div class="toolbar">
+              <label class="toggle" style="flex:1; min-width:220px">
+                <input type="checkbox" id="customBibsToggle" />
+                Allow runners to request a custom bib number
+              </label>
+              <span class="small muted">Yes = the registration form shows the request box and the bib printer honors requested numbers.</span>
             </div>
           </div>
 
@@ -490,6 +611,7 @@
       pausedAt: null,
       filter: "all",
       search: "",
+      customBibs: false,       // organizer opted in to custom bib number requests
       finishStack: [],         // ids in finish order, for undo
     };
 
@@ -604,6 +726,12 @@
         state.raceStart == null ? "Start race" : state.paused ? "Resume" : "Running…";
       document.getElementById("startBtn").disabled = state.raceStart != null && !state.paused;
       document.getElementById("pauseBtn").disabled = state.raceStart == null || state.paused;
+      const fsClock = document.getElementById("fsClockDisplay");
+      if (fsClock) fsClock.textContent = `${p.main}${p.ms}`;
+      const fsStart = document.getElementById("fsStartRaceBtn");
+      if (fsStart) {
+        fsStart.textContent = state.raceStart == null ? "Start race" : state.paused ? "Resume" : "Pause clock";
+      }
     }
     setInterval(renderClock, 100);
 
@@ -675,7 +803,7 @@
     ===================================================================== */
     function roster() {
       const entries = Object.entries(state.registrations).map(([id, r]) => ({ id, ...r }));
-      const bibs = computeBibs(entries);
+      const bibs = computeBibs(entries, state.customBibs);
       return entries.map((r) => ({ ...r, bib: bibs[r.id] }));
     }
     function bibOf(id) {
@@ -1011,16 +1139,28 @@
         onReview: onScanReview,
         onRead: onScanRead,
         onStatus: onScanStatus,
+        onGateChange: (g) => {
+          const midY = Math.round(((g.y1 + g.y2) / 2) * 100);
+          const wh = Math.round((g.wallHeight || 0.44) * 100);
+          document.getElementById("lineYRange").value = String(midY);
+          const whEl = document.getElementById("wallHeightRange");
+          if (whEl) whEl.value = String(wh);
+        },
       });
       cam.attachLineDrag();
       syncCamSettings();
+      cam._drawOverlay([]);
       return cam;
     }
 
     function syncCamSettings() {
       if (!cam) return;
-      cam.lineY = (parseInt(document.getElementById("lineYRange").value, 10) || 62) / 100;
-      cam.minConf = parseInt(document.getElementById("confFloor").value, 10) || 65;
+      const depth = (parseInt(document.getElementById("lineYRange").value, 10) || 72) / 100;
+      const whEl = document.getElementById("wallHeightRange");
+      const wallH = whEl ? (parseInt(whEl.value, 10) || 44) / 100 : 0.44;
+      cam.setLine(depth);
+      cam.setWallHeight(wallH);
+      cam.minConf = parseInt(document.getElementById("confFloor").value, 10) || 68;
       cam.autoRecord = document.getElementById("autoRecordChk").checked;
     }
 
@@ -1029,6 +1169,8 @@
     function onAutoFinish({ bib, confidence, when, thumb }) {
       scanStats.finishes++;
       document.getElementById("scanFinishes").textContent = scanStats.finishes;
+      const fsCount = document.getElementById("fsFinishCount");
+      if (fsCount) fsCount.textContent = scanStats.finishes;
       const r = runnerByBib(bib);
       if (r) {
         recordFinish(r.id, when, "ocr");
@@ -1068,20 +1210,90 @@
       document.getElementById("scanTracks").textContent = tracks;
       const el = document.getElementById("scanState");
       const sub = document.getElementById("scanStateSub");
+      const fsText = document.getElementById("fsStatusText");
+      const fsDot = document.getElementById("fsStatusDot");
       if (st === "scanning") {
-        el.textContent = "Scanning";
+        el.textContent = "Bib spotted";
         el.style.color = "var(--green)";
-        sub.textContent = "Tracking runners and reading bibs";
+        sub.textContent = "Reading & tracking spotted bib numbers";
+        if (fsText) fsText.textContent = `Bib spotted · ${tracks} in view`;
+        if (fsDot) fsDot.style.color = "var(--green)";
       } else if (st === "armed") {
         el.textContent = "Armed";
         el.style.color = "var(--green)";
-        sub.textContent = "Watching the finish line";
+        sub.textContent = "Watching for bib numbers at the finish gate";
+        if (fsText) fsText.textContent = "Armed · watching for bibs";
+        if (fsDot) fsDot.style.color = "var(--green)";
       } else {
         el.textContent = "Standby";
         el.style.color = "";
         sub.textContent = "Start the camera, then arm the scanner";
+        if (fsText) fsText.textContent = stream ? "Camera live" : "Standby";
+        if (fsDot) fsDot.style.color = stream ? "var(--accent2)" : "var(--muted)";
       }
     }
+
+    /* ---- Fullscreen camera support (automatic on mobile) ---- */
+
+    const cameraStage = document.getElementById("cameraStage");
+
+    function isMobileViewport() {
+      return window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
+    }
+
+    function isCamFullscreen() {
+      return cameraStage.classList.contains("fs-active") ||
+        document.fullscreenElement === cameraStage ||
+        document.webkitFullscreenElement === cameraStage;
+    }
+
+    async function enterCamFullscreen() {
+      cameraStage.classList.add("fs-active");
+      document.body.classList.add("cam-fs-lock");
+      const fsBtn = document.getElementById("fullscreenCamBtn");
+      if (fsBtn) fsBtn.textContent = "✕ Exit fullscreen";
+      try {
+        if (cameraStage.requestFullscreen && !document.fullscreenElement) {
+          await cameraStage.requestFullscreen();
+        } else if (cameraStage.webkitRequestFullscreen && !document.webkitFullscreenElement) {
+          cameraStage.webkitRequestFullscreen();
+        }
+      } catch {}
+      setTimeout(() => { if (cam) cam._drawOverlay(cam.tracker.tracks); }, 60);
+    }
+
+    async function exitCamFullscreen() {
+      cameraStage.classList.remove("fs-active");
+      document.body.classList.remove("cam-fs-lock");
+      const fsBtn = document.getElementById("fullscreenCamBtn");
+      if (fsBtn) fsBtn.textContent = "⛶ Fullscreen";
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      } catch {}
+      setTimeout(() => { if (cam) cam._drawOverlay(cam.tracker.tracks); }, 60);
+    }
+
+    function toggleCamFullscreen() {
+      if (isCamFullscreen()) exitCamFullscreen();
+      else enterCamFullscreen();
+    }
+
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        cameraStage.classList.remove("fs-active");
+        document.body.classList.remove("cam-fs-lock");
+        const fsBtn = document.getElementById("fullscreenCamBtn");
+        if (fsBtn) fsBtn.textContent = "⛶ Fullscreen";
+      }
+      setTimeout(() => { if (cam) cam._drawOverlay(cam.tracker.tracks); }, 60);
+    });
+    window.addEventListener("resize", () => {
+      if (cam) cam._drawOverlay(cam.tracker.tracks);
+    });
 
     /* ---- camera lifecycle ---- */
 
@@ -1104,7 +1316,10 @@
         document.getElementById("armCamBtn").disabled = false;
         camBadge.className = "badge green";
         camBadge.textContent = "● Camera live";
-        ocrStatus.textContent = "Camera running — drag the orange line onto the finish line, then arm the scanner (or just start the race).";
+        ocrStatus.textContent = "Camera running — align the 3D Finish Gate wall (posts A & B + height ↕), then arm the scanner (or start the race).";
+        if (isMobileViewport()) {
+          await enterCamFullscreen();
+        }
       } catch (err) {
         console.warn("camera start failed", err);
         camShowError("Couldn't open the camera (permission denied or no camera). Use the Upload photo button instead.");
@@ -1113,6 +1328,7 @@
 
     function stopCamera() {
       disarmScanner();
+      if (isCamFullscreen()) exitCamFullscreen();
       if (stream) {
         stream.getTracks().forEach((t) => t.stop());
         stream = null;
@@ -1136,6 +1352,11 @@
         const btn = document.getElementById("armCamBtn");
         btn.textContent = "Disarm scanner";
         btn.classList.add("primary");
+        const fsArm = document.getElementById("fsArmBtn");
+        if (fsArm) {
+          fsArm.textContent = "Disarm scanner";
+          fsArm.classList.add("primary");
+        }
         ocrStatus.textContent = "Scanner armed — runners crossing the line are timed automatically.";
       } catch (err) {
         camShowError(err.message || "Camera is not ready yet.");
@@ -1147,6 +1368,11 @@
       const btn = document.getElementById("armCamBtn");
       btn.textContent = "Arm scanner";
       btn.classList.remove("primary");
+      const fsArm = document.getElementById("fsArmBtn");
+      if (fsArm) {
+        fsArm.textContent = "Arm scanner";
+        fsArm.classList.remove("primary");
+      }
     }
 
     function toggleScanner() {
@@ -1360,6 +1586,12 @@
           drawRoute();
         }
       }, (e) => console.warn("route subscribe failed", e));
+      onValue(ref(db, "settings/customBibs"), (snap) => {
+        state.customBibs = !!snap.val();
+        const t = document.getElementById("customBibsToggle");
+        if (t) t.checked = state.customBibs;
+        renderAll();
+      }, (e) => console.warn("settings subscribe failed", e));
 
       flushQueue();
     }
@@ -1373,6 +1605,7 @@
       document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("on"));
       document.getElementById(`tab-${tab}`).classList.add("on");
       if (tab === "map") setTimeout(() => { initMap(); map && map.invalidateSize(); }, 60);
+      if (tab === "camera") setTimeout(() => { ensureCam()._drawOverlay([]); }, 40);
     });
 
     // race control
@@ -1423,6 +1656,15 @@
     // camera
     document.getElementById("startCamBtn").addEventListener("click", startCamera);
     document.getElementById("stopCamBtn").addEventListener("click", stopCamera);
+    document.getElementById("fullscreenCamBtn").addEventListener("click", toggleCamFullscreen);
+    document.getElementById("fsExitBtn").addEventListener("click", exitCamFullscreen);
+    document.getElementById("fsStartRaceBtn").addEventListener("click", () => {
+      if (state.raceStart == null || state.paused) startRace();
+      else togglePause();
+    });
+    document.getElementById("fsArmBtn").addEventListener("click", toggleScanner);
+    document.getElementById("fsCaptureBtn").addEventListener("click", () => manualRead(video));
+    document.getElementById("fsStopBtn").addEventListener("click", stopCamera);
     document.getElementById("captureBtn").addEventListener("click", () => manualRead(video));
     document.getElementById("photoUpload").addEventListener("change", (e) => {
       const file = e.target.files && e.target.files[0];
@@ -1438,7 +1680,9 @@
     document.getElementById("armCamBtn").addEventListener("click", toggleScanner);
     document.getElementById("lineYRange").addEventListener("input", () => {
       syncCamSettings();
-      if (cam) cam.setLine(cam.lineY);
+    });
+    document.getElementById("wallHeightRange").addEventListener("input", () => {
+      syncCamSettings();
     });
     document.getElementById("confFloor").addEventListener("change", syncCamSettings);
     document.getElementById("autoRecordChk").addEventListener("change", syncCamSettings);
@@ -1467,6 +1711,15 @@
       ]));
       downloadCsv("brighton-oaks-5k-registrations.csv", rows);
       toast("Registrations exported", "success");
+    });
+    document.getElementById("customBibsToggle").addEventListener("change", (e) => {
+      state.customBibs = e.target.checked;
+      dbSet("settings/customBibs", state.customBibs ? true : null);
+      saveSnapshot();
+      renderAll();
+      toast(state.customBibs
+        ? "Custom bib requests are ON — runners can request a number when they register"
+        : "Custom bib requests are OFF — bibs are seeded by predicted time only", "success");
     });
     document.getElementById("addWalkinBtn").addEventListener("click", async () => {
       const name = document.getElementById("walkinName").value.trim();

@@ -130,10 +130,45 @@ export function bibNumber(index) {
   return String(index + 1).padStart(4, "0");
 }
 
-/** returns { [id]: "0001" } for a list of { id, name, estimatedTime, registeredAt } */
-export function computeBibs(list) {
+/** Normalize a custom bib number request to "0007" form, or null if invalid. */
+export function normalizeCustomBib(raw) {
+  const clean = String(raw ?? "").replace(/\D/g, "");
+  if (!clean || clean.length > 4) return null;
+  const n = parseInt(clean, 10);
+  if (!n || n < 1 || n > 9999) return null;
+  return String(n).padStart(4, "0");
+}
+
+/**
+ * returns { [id]: "0001" } for a list of { id, name, estimatedTime, registeredAt, customBib? }.
+ * When allowCustom is true (organizer said yes), runners with a valid customBib
+ * request keep that number (earliest registration wins conflicts); everyone else
+ * is seeded by predicted time and skips the reserved numbers.
+ */
+export function computeBibs(list, allowCustom = true) {
   const map = {};
-  sortRunners(list).forEach((r, i) => { map[r.id] = bibNumber(i); });
+  const taken = new Set();
+
+  if (allowCustom) {
+    [...list]
+      .sort((a, b) => (a.registeredAt || 0) - (b.registeredAt || 0))
+      .forEach((r) => {
+        const want = normalizeCustomBib(r.customBib);
+        if (want && !taken.has(want)) {
+          map[r.id] = want;
+          taken.add(want);
+        }
+      });
+  }
+
+  let next = 1;
+  sortRunners(list).forEach((r) => {
+    if (map[r.id]) return;
+    while (taken.has(bibNumber(next - 1))) next++;
+    map[r.id] = bibNumber(next - 1);
+    taken.add(map[r.id]);
+    next++;
+  });
   return map;
 }
 

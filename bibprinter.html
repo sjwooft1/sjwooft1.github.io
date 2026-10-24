@@ -12,7 +12,7 @@
   <link rel="manifest" href="/Favicon Generator/site.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&family=Rye&family=Special+Elite&display=swap" rel="stylesheet">
   <style>
     @font-face {
       font-family: 'Oakhill';
@@ -23,30 +23,40 @@
       src: url('fonts/RUNNING DEMO.otf') format('opentype');
     }
     :root {
-      --accent: #3b6e22;
-      --accent2: #ff7f11;
-      --bg: #0f1724;
-      --card: #131f33;
-      --text: #e6eef8;
-      --muted: #9ca3af;
-      --shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      --accent: #5d7c34;
+      --accent2: #d2762e;
+      --bg: #16100a;
+      --card: #271c11;
+      --text: #f1e6cf;
+      --muted: #c0a982;
+      --shadow: 0 6px 20px rgba(8, 4, 0, 0.5);
+      --display: 'Rye', 'Oakhill', Georgia, serif;
     }
     * { box-sizing: border-box; }
     html, body {
       margin: 0; padding: 0; min-height: 100vh;
-      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 18% -10%, rgba(210, 118, 46, 0.10), transparent 55%),
+        radial-gradient(ellipse at 85% 112%, rgba(122, 84, 44, 0.14), transparent 62%);
+      background-attachment: fixed;
+      color: var(--text);
     }
     .navbar {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 28px; background: #101b2f; box-shadow: var(--shadow);
+      padding: 12px 28px; background: rgba(22, 16, 10, 0.95); box-shadow: var(--shadow);
+      border-bottom: 2px solid rgba(201, 162, 109, 0.28);
       position: sticky; top: 0; z-index: 100;
     }
     .navbar .logo {
+      display: flex; align-items: center; gap: 12px;
       font-size: 1.5rem;
       font-weight: 700;
       color: var(--accent2);
-      font-family: 'Luckiest Guy', cursive;
+      font-family: var(--display);
     }
+    .navbar .logo img { height: 46px; border-radius: 8px; }
     .navbar .nav-links { 
       font-family: 'run', sans-serif;
       display: flex; 
@@ -86,7 +96,8 @@
     
     h1 {
       color: var(--accent2);
-      font-family: 'Luckiest Guy', cursive;
+      font-family: var(--display);
+      font-weight: 400;
       margin: 0;
       font-size: 2rem;
     }
@@ -123,29 +134,30 @@
       box-shadow: 0 4px 12px rgba(255,127,17,0.3);
     }
 
+    /* Dark digits on cream paper — legible for runners and for the finish-cam OCR */
     .bib {
       width: 800px;
       height: 500px;
-      border: 4px solid var(--accent2);
+      border: 5px solid var(--accent2);
       border-radius: 20px;
       margin: 30px auto;
-      background: var(--card);
+      background: linear-gradient(175deg, #f6ecd6 0%, #ead9b3 100%);
       position: relative;
       box-shadow: var(--shadow);
       page-break-after: always;
       display: flex;
       flex-direction: column;
       padding: 30px;
-      color: var(--text);
+      color: #1c1206;
     }
 
     .race-title {
-      font-family: 'Luckiest Guy', cursive;
+      font-family: var(--display);
       font-size: 48px;
       margin-bottom: 20px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: var(--accent2);
+      color: #a4611f;
       text-align: center;
     }
 
@@ -154,7 +166,7 @@
       font-weight: 900;
       margin: 0;
       text-align: center;
-      color: var(--text);
+      color: #100a02;
       line-height: 1;
       font-family: 'Inter', sans-serif;
     }
@@ -164,16 +176,16 @@
       font-weight: bold;
       text-align: center;
       margin: 20px 0;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
+      color: #1c1206;
+      font-family: 'Special Elite', 'Courier New', monospace;
     }
 
     .estimated-time {
       font-size: 32px;
       font-weight: 500;
       text-align: center;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
+      color: #4a3520;
+      font-family: 'Special Elite', 'Courier New', monospace;
     }
 
     .bib-logo {
@@ -218,12 +230,12 @@
     }
 
     .footer {
-      background: #101b2f;
-      color: #aaa;
+      background: rgba(22, 16, 10, 0.96);
+      color: var(--muted);
       text-align: center;
       padding: 30px 12px;
       margin-top: 60px;
-      border-top: 1px solid rgba(255,255,255,0.05);
+      border-top: 2px solid rgba(201, 162, 109, 0.28);
     }
     .footer-art {
       height: 60px;
@@ -251,15 +263,18 @@
       }
       .race-title {
         color: #000;
+        font-family: var(--display);
       }
       .bib-number {
         color: #000;
       }
       .runner-name {
         color: #000;
+        font-family: 'Special Elite', 'Courier New', monospace;
       }
       .estimated-time {
         color: #000;
+        font-family: 'Special Elite', 'Courier New', monospace;
       }
       .qr-code {
         border: 1px solid #ddd;
@@ -431,7 +446,7 @@
 </head>
 <body>
   <nav class="navbar">
-    <div class="logo">Brighton Oaks 5k</div>
+    <div class="logo"><img src="images/bright1.png" alt="Brighton Oaks 5K" /> Brighton Oaks 5k</div>
     <div class="nav-links">
       <a href="index.html">Home</a>
       <a href="registration.html">Register</a>
@@ -455,15 +470,18 @@
   </div>
   <p>Race logo: <strong>images/bright.png</strong> (automatically loaded)</p>
   <button onclick="loadRunners()">Load Runners & Generate Bibs</button>
+  <button onclick="exportPdf()" style="background:#5d7c34; color:white;">⬇ Export PDF (one bib per page)</button>
   <button onclick="printBibs()">Print Bibs</button>
   <button onclick="manualPrint()" style="background:#17a2b8; color:white;">Manual Print (Ctrl+P)</button>
   <div id="bibs"></div>
   <div id="notification" class="notification"></div>
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { computeBibs, normalizeCustomBib } from "./race-core.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDUnAV-DL-Saw2ByPY6GF8aDaZbVCXDIH4",
@@ -490,15 +508,30 @@
         
         if (snapshot.exists()) {
           const registrations = snapshot.val();
-          const runners = Object.values(registrations)
+
+          // Custom bib number requests are honored only when the organizer selects yes
+          const settingsSnap = await get(ref(db, 'settings/customBibs'));
+          const allowCustom = !!settingsSnap.val();
+
+          const entries = Object.entries(registrations).map(([id, r]) => ({ id, ...r }));
+          const bibs = computeBibs(entries, allowCustom);
+          const runners = entries
+            .map((r) => ({ ...r, bib: bibs[r.id] }))
             .sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0));
-          
-          runners.forEach((runner, index) => {
-            const bib = generateBib(runner, index);
+
+          const customCount = allowCustom
+            ? runners.filter((r) => normalizeCustomBib(r.customBib) === r.bib).length
+            : 0;
+
+          runners.forEach((runner) => {
+            const bib = generateBib(runner);
             bibsContainer.appendChild(bib);
           });
           
-          showNotification(`Generated ${runners.length} bibs`);
+          showNotification(`Generated ${runners.length} bibs` +
+            (allowCustom
+              ? (customCount ? ` · ${customCount} custom number${customCount === 1 ? '' : 's'} honored` : '')
+              : ' · custom requests ignored (organizer setting is off)'));
         } else {
           showNotification('No registrations found', 'error');
         }
@@ -538,13 +571,138 @@
       showNotification('Use Ctrl+P or Cmd+P to print');
     };
 
-    function generateBib(runner, index) {
+    /* ---------- PDF export: one bib per landscape page, print-ready ---------- */
+
+    function imageDataUrl(src, maxW = 0) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = maxW && img.naturalWidth > maxW ? maxW / img.naturalWidth : 1;
+          const c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+          c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          resolve({ dataUrl: c.toDataURL('image/png'), w: c.width, h: c.height });
+        };
+        img.onerror = () => reject(new Error('could not load ' + src));
+        img.src = src;
+      });
+    }
+
+    function qrDataUrl(bibEl) {
+      const el = bibEl.querySelector('.qr-code canvas, .qr-code img');
+      if (!el) return null;
+      return el.tagName === 'CANVAS' ? el.toDataURL('image/png') : (el.src || null);
+    }
+
+    /** Build the bibs PDF and return the jsPDF doc (exportPdf saves it). */
+    window.buildBibsPdf = async function() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'letter' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+
+      // 22mm at ~300dpi ≈ 260px — keeps the PDF light and print-sharp
+      let logo = null;
+      try { logo = await imageDataUrl('images/bright.png', 260); } catch { /* logo optional */ }
+
+      const bibEls = [...document.querySelectorAll('#bibs .bib')];
+      bibEls.forEach((bibEl, i) => {
+        if (i > 0) pdf.addPage();
+
+        const number = (bibEl.querySelector('.bib-number')?.textContent || '----').trim();
+        const name = (bibEl.querySelector('.runner-name')?.textContent || '').trim();
+        const est = (bibEl.querySelector('.estimated-time')?.textContent || '').trim();
+
+        // same 800x500 (1.6) panel ratio as the on-screen / print bibs
+        const bibW = pageW - 20;
+        const bibH = bibW / 1.6;
+        const bibX = (pageW - bibW) / 2;
+        const bibY = (pageH - bibH) / 2;
+        const cx = pageW / 2;
+
+        pdf.setDrawColor(210, 118, 46);
+        pdf.setLineWidth(1.6);
+        pdf.roundedRect(bibX, bibY, bibW, bibH, 3, 3);
+
+        pdf.setTextColor(164, 97, 31);
+        pdf.setFont('times', 'bold');
+        pdf.setFontSize(26);
+        pdf.text('BRIGHTON OAKS 5K', cx, bibY + 17, { align: 'center' });
+
+        pdf.setTextColor(16, 10, 2);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(112);
+        pdf.text(number, cx, bibY + 88, { align: 'center' });
+
+        pdf.setFont('courier', 'bold');
+        let nameSize = 24;
+        pdf.setFontSize(nameSize);
+        while (nameSize > 12 && pdf.getTextWidth(name) > bibW - 60) {
+          nameSize--;
+          pdf.setFontSize(nameSize);
+        }
+        pdf.text(name, cx, bibY + 112, { align: 'center' });
+
+        pdf.setTextColor(74, 53, 32);
+        pdf.setFont('courier', 'normal');
+        pdf.setFontSize(14);
+        pdf.text(est, cx, bibY + 128, { align: 'center' });
+
+        if (logo) {
+          const logoW = 22;
+          const logoH = (logo.h / logo.w) * logoW;
+          pdf.addImage(logo.dataUrl, 'PNG', bibX + 11, bibY + bibH - 10 - logoH, logoW, logoH);
+        }
+
+        const qr = qrDataUrl(bibEl);
+        if (qr) {
+          const qrS = 26;
+          const qrX = bibX + bibW - 11 - qrS;
+          const qrY = bibY + bibH - 10 - qrS;
+          pdf.setFillColor(255, 255, 255);
+          pdf.rect(qrX - 1.5, qrY - 1.5, qrS + 3, qrS + 3, 'F');
+          pdf.addImage(qr, 'PNG', qrX, qrY, qrS, qrS);
+          pdf.setDrawColor(180, 150, 110);
+          pdf.setLineWidth(0.4);
+          pdf.rect(qrX - 1.5, qrY - 1.5, qrS + 3, qrS + 3);
+        }
+      });
+
+      return pdf;
+    };
+
+    /** Download all generated bibs as one print-ready PDF. */
+    window.exportPdf = async function() {
+      const bibsContainer = document.getElementById('bibs');
+      if (!bibsContainer.children.length) await window.loadRunners();
+      if (!bibsContainer.children.length) {
+        showNotification('No bibs to export — no registrations found', 'error');
+        return;
+      }
+      if (!window.jspdf) {
+        showNotification('PDF library failed to load — check your connection', 'error');
+        return;
+      }
+      showNotification('Building PDF…');
+      try {
+        const pdf = await window.buildBibsPdf();
+        const n = pdf.internal.getNumberOfPages();
+        pdf.save('brighton-oaks-5k-bibs.pdf');
+        showNotification(`Bibs PDF downloaded — ${n} page${n === 1 ? '' : 's'}, one bib per page`);
+      } catch (err) {
+        console.error('PDF export failed', err);
+        showNotification('PDF export failed: ' + err.message, 'error');
+      }
+    };
+
+    function generateBib(runner) {
       const bib = document.createElement('div');
       bib.className = 'bib';
       
       const number = document.createElement('div');
       number.className = 'bib-number';
-      number.textContent = String(index + 1).padStart(4, '0');
+      number.textContent = runner.bib || '0000';
       
       const title = document.createElement('div');
       title.className = 'race-title';

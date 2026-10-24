@@ -19,7 +19,7 @@
       <div class="brand-mark">BO</div>
       <div>
         <span class="brand-name">Brighton Oaks 5K</span>
-        <span class="brand-sub">Thanksgiving Day Run</span>
+        <span class="brand-sub">2nd Annual Thanksgiving Day Run</span>
       </div>
     </a>
     <div class="nav-links">
@@ -39,7 +39,7 @@
       <div class="hero-chips">
         <span class="chip"><span class="dot"></span>Thu, Nov 26, 2026 · 8:30 AM</span>
         <span class="chip"><span class="dot"></span>Brighton Oaks, South Carolina</span>
-        <span class="chip"><span class="dot"></span>5K · USATF-certified distance</span>
+        <span class="chip"><span class="dot"></span>5000m</span>
         <span class="chip"><span class="dot"></span>Free entry · Shirt included</span>
       </div>
     </div>
@@ -69,25 +69,11 @@
                 <input type="text" id="runnerName" name="name" autocomplete="name" placeholder="e.g. Jordan Smith" maxlength="60" />
                 <div class="field-error">Please enter your full name (at least 2 characters).</div>
               </div>
-              <div class="field" id="f-email">
-                <label for="runnerEmail">Email <span class="muted small">(optional)</span></label>
-                <input type="email" id="runnerEmail" name="email" autocomplete="email" placeholder="you@example.com" maxlength="80" />
-                <div class="help">Only used for race-day updates.</div>
-                <div class="field-error">That doesn't look like a valid email address.</div>
-              </div>
-              <div class="field" id="f-age">
-                <label for="runnerAge">Age <span class="muted small">(optional)</span></label>
-                <input type="number" id="runnerAge" name="age" min="1" max="100" placeholder="e.g. 34" inputmode="numeric" />
-                <div class="help">Used for age-group awards.</div>
-                <div class="field-error">Age must be between 1 and 100.</div>
-              </div>
               <div class="field" id="f-division">
                 <label for="runnerDivision">Division</label>
                 <select id="runnerDivision" name="division">
-                  <option value="U">Prefer not to say</option>
                   <option value="F">Women</option>
                   <option value="M">Men</option>
-                  <option value="X">Non-binary</option>
                 </select>
               </div>
               <div class="field" id="f-size">
@@ -100,6 +86,7 @@
                   <option value="L">Large</option>
                   <option value="XL">X-Large</option>
                   <option value="XXL">XX-Large</option>
+                  <option value="JUMBO RAW size">JUMBO RAW size/XXXXXXXXXXXXXX-Large</option>
                 </select>
                 <div class="field-error">Please choose a shirt size.</div>
               </div>
@@ -112,9 +99,9 @@
             <div class="form-grid">
               <div class="field" id="f-est">
                 <label for="estimatedTime">Estimated finish time <span class="req">*</span></label>
-                <input type="text" id="estimatedTime" name="estimatedTime" placeholder="MM:SS  e.g. 25:45" inputmode="numeric" autocomplete="off" />
-                <div class="help">Format <span class="kbd">MM:SS</span> — not sure? Guess; you can adjust later.</div>
-                <div class="field-error">Enter a valid time between 5:00 and 2:00:00 (e.g. 25:45).</div>
+                <input type="text" id="estimatedTime" name="estimatedTime" placeholder="MM:SS.00  e.g. 25:45.10" inputmode="numeric" autocomplete="off" />
+                <div class="help">Format <span class="kbd">MM:SS.00</span> — not sure? Guess; you can adjust later.</div>
+                <div class="field-error">Enter a valid time between 5:00 and 2:00:00 (e.g. 25:45.10).</div>
               </div>
               <div class="field">
                 <label>Projected pace</label>
@@ -122,6 +109,12 @@
                   <div class="stat-value mono" id="pacePreview">— /mi</div>
                   <div class="stat-sub" id="paceSub">Enter an estimate to see your pace</div>
                 </div>
+              </div>
+              <div class="field" id="f-bibreq" style="display:none">
+                <label for="customBib">Custom bib number <span class="muted small">(optional request)</span></label>
+                <input type="text" id="customBib" name="customBib" inputmode="numeric" maxlength="4" placeholder="e.g. 7 or 0007" autocomplete="off" />
+                <div class="help">The organizer is honoring requested numbers — pick one and the bib printer will use it.</div>
+                <div class="field-error">Use 1 to 4 digits (e.g. 7 or 0007).</div>
               </div>
               <div class="field span-2">
                 <label for="runnerExperience">Running experience <span class="muted small">(optional)</span></label>
@@ -136,26 +129,12 @@
             </div>
           </div>
 
-          <div class="form-section">
-            <h3>Emergency contact <span class="muted small" style="font-weight:500">(optional)</span></h3>
-            <div class="section-note">Recommended for race-day safety.</div>
-            <div class="form-grid">
-              <div class="field">
-                <label for="emergencyName">Contact name</label>
-                <input type="text" id="emergencyName" placeholder="e.g. Alex Smith" maxlength="60" />
-              </div>
-              <div class="field">
-                <label for="emergencyPhone">Contact phone</label>
-                <input type="tel" id="emergencyPhone" placeholder="(555) 123-4567" maxlength="24" />
-              </div>
-            </div>
-          </div>
-
+          
           <div class="form-section">
             <div class="check-row" id="f-waiver">
               <input type="checkbox" id="waiver" />
               <label for="waiver">
-                I accept the race waiver: I am physically fit to run this event, I enter at my own risk, and I grant permission for free use of my name and likeness in race photos and results. <span class="req">*</span>
+                I accept the race waiver: I am physically fit to run this event, I enter at my own risk, and I grant permission for free use of my name and likeness in race photos and results. If you didn't read this and check the box you owe me $100.<span class="req">*</span>
               </label>
             </div>
             <div class="field-error" id="waiverError" style="margin-top:8px">Please accept the waiver to register.</div>
@@ -277,7 +256,7 @@
     import {
       EVENT, getDb, ref, set, push, subscribe,
       formatClock, formatShort, pacePerMile, parseTimeInput,
-      computeBibs, divisionLabel, ageGroup, escapeHtml, fmtDateTime, countdownTo, toast
+      computeBibs, normalizeCustomBib, divisionLabel, ageGroup, escapeHtml, fmtDateTime, countdownTo, toast
     } from "./race-core.js";
 
     /* ---------- Countdown (race clock if the timer is set, else published date) ---------- */
@@ -366,6 +345,10 @@
       const estBad = !(ms && ms >= 5 * 60000 && ms <= 2 * 3600000);
       setError("f-est", estBad); if (estBad) ok = false;
 
+      const bibReqRaw = document.getElementById("customBib").value.trim();
+      const bibReqBad = customBibsOn && bibReqRaw !== "" && !normalizeCustomBib(bibReqRaw);
+      setError("f-bibreq", bibReqBad); if (bibReqBad) ok = false;
+
       const waiverBad = !document.getElementById("waiver").checked;
       document.getElementById("waiverError").style.display = waiverBad ? "block" : "none";
       if (waiverBad) ok = false;
@@ -387,13 +370,14 @@
 
     function rosterRows() {
       const entries = Object.entries(registrations).map(([id, r]) => ({ id, ...r }));
-      const bibs = computeBibs(entries);
+      const bibs = computeBibs(entries, customBibsOn);
       const q = rosterSearch.value.trim().toLowerCase();
       return entries
         .map((r) => ({ ...r, bib: bibs[r.id] }))
         .filter((r) => !q || String(r.name || "").toLowerCase().includes(q) || r.bib.includes(q))
         .sort((a, b) => a.bib.localeCompare(b.bib));
     }
+
 
     function renderRoster() {
       const rows = rosterRows();
@@ -418,6 +402,15 @@
     }
     rosterSearch.addEventListener("input", renderRoster);
 
+    /* ---------- Custom bib number requests (organizer must select yes) ---------- */
+    let customBibsOn = false;
+    const bibReqField = document.getElementById("f-bibreq");
+    subscribe("settings/customBibs", (v) => {
+      customBibsOn = !!v;
+      bibReqField.style.display = v ? "" : "none";
+      renderRoster();
+    });
+
     subscribe("registrations", (v) => {
       registrations = v || {};
       renderRoster();
@@ -439,6 +432,7 @@
         experience: document.getElementById("runnerExperience").value || null,
         emergencyName: document.getElementById("emergencyName").value.trim() || null,
         emergencyPhone: document.getElementById("emergencyPhone").value.trim() || null,
+        customBib: customBibsOn ? (normalizeCustomBib(document.getElementById("customBib").value) || null) : null,
         waiverAccepted: true,
         registeredAt: Date.now(),
         source: "web",
@@ -453,7 +447,7 @@
         // Bib = position among all registrations sorted by predicted time
         const merged = { ...registrations, [newRef.key]: data };
         const entries = Object.entries(merged).map(([id, r]) => ({ id, ...r }));
-        const bibs = computeBibs(entries);
+        const bibs = computeBibs(entries, customBibsOn);
 
         document.getElementById("successBib").textContent = bibs[newRef.key];
         document.getElementById("successTime").textContent = formatShort(data.estimatedTime);

@@ -13,7 +13,7 @@
   <!-- Include in <head> (once per page) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&family=Rye&family=Special+Elite&display=swap" rel="stylesheet">
   <style>
     @font-face{
       font-family: 'Oakhill';
@@ -24,30 +24,40 @@
       src: url('fonts/RUNNING DEMO.otf') format('opentype');
     }
     :root {
-      --accent: #3b6e22;
-      --accent2: #ff7f11;
-      --bg: #0f1724;
-      --card: #131f33;
-      --text: #e6eef8;
-      --muted: #9ca3af;
-      --shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      --accent: #5d7c34;
+      --accent2: #d2762e;
+      --bg: #16100a;
+      --card: #271c11;
+      --text: #f1e6cf;
+      --muted: #c0a982;
+      --shadow: 0 6px 20px rgba(8, 4, 0, 0.5);
+      --display: 'Rye', 'Oakhill', Georgia, serif;
     }
     * { box-sizing: border-box; }
     html, body {
       margin: 0; padding: 0; height: 100%;
-      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 18% -10%, rgba(210, 118, 46, 0.10), transparent 55%),
+        radial-gradient(ellipse at 85% 112%, rgba(122, 84, 44, 0.14), transparent 62%);
+      background-attachment: fixed;
+      color: var(--text);
     }
     .navbar {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 28px; background: #101b2f; box-shadow: var(--shadow);
+      padding: 12px 28px; background: rgba(22, 16, 10, 0.95); box-shadow: var(--shadow);
+      border-bottom: 2px solid rgba(201, 162, 109, 0.28);
       position: sticky; top: 0; z-index: 100;
     }
     .navbar .logo {
+      display: flex; align-items: center; gap: 12px;
       font-size: 1.5rem;
       font-weight: 700;
       color: var(--accent2);
-      font-family: 'Luckiest Guy', cursive;
+      font-family: var(--display);
     }
+    .navbar .logo img { height: 46px; border-radius: 8px; }
     .navbar .nav-links { 
       font-family: 'run', sans-serif;
       display: flex; 
@@ -77,10 +87,12 @@
       height: 60vh;
       display: flex; align-items: center; justify-content: center;
       background: url('images/trail.jpeg') center/cover no-repeat;
+      filter: saturate(0.8);
       position: relative; text-align: center; color: #fff;
     }
     .hero::after {
-      content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.55);
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.32) 45%, rgba(24,12,2,0.78) 100%);
     }
     .hero-content { position: relative; z-index: 1; }
     .hero-content h1 { font-size: 3rem; margin: 0; text-shadow: 0 4px 14px rgba(0,0,0,0.6); }
@@ -90,7 +102,7 @@
     }
     .hero-buttons { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
     .hero-buttons a {
-      font-family: 'Oakhill', opentype;
+      font-family: var(--display);
       background: var(--accent2);
       color: #fff;
       font-size: 1.2rem;
@@ -111,34 +123,58 @@
       max-width: 1200px;
       margin: auto;
     }
-    .section h2 { text-align: center; color: var(--accent2); margin-bottom: 24px; }
+    .section h2 {
+      text-align: center; color: var(--accent2); margin-bottom: 24px;
+      font-family: var(--display); font-weight: 400;
+      text-shadow: 0 2px 0 rgba(0,0,0,0.35);
+    }
 
     .gallery {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;
     }
     .gallery img {
       width: 100%; border-radius: 12px; box-shadow: var(--shadow);
-      transition: transform 0.4s ease;
+      filter: sepia(0.4) saturate(0.85) contrast(1.04);
+      border: 1px solid rgba(201, 162, 109, 0.35);
+      transition: transform 0.4s ease, filter 0.4s ease;
     }
-    .gallery img:hover { transform: scale(1.05); }
+    .gallery img:hover { transform: scale(1.05); filter: sepia(0.12) saturate(1); }
+
+    .poster-wrap {
+      display: flex; flex-wrap: wrap; gap: 30px; align-items: center; justify-content: center;
+    }
+    .poster-wrap img {
+      max-width: 300px; width: 100%; border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(8,4,0,0.55); transform: rotate(-1.5deg);
+    }
+    .poster-copy { max-width: 420px; }
+    .poster-copy .stamp {
+      display: inline-block; font-family: 'Special Elite', monospace;
+      border: 2px dashed rgba(210, 118, 46, 0.6); color: var(--accent2);
+      padding: 4px 12px; border-radius: 6px; transform: rotate(-2deg);
+      font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px;
+    }
+    .poster-copy p { font-family: 'Special Elite', 'Courier New', monospace; line-height: 1.8; color: var(--muted); }
 
     .about {
       background: var(--card);
+      border: 1px solid rgba(201, 162, 109, 0.25);
       border-radius: 16px;
       box-shadow: var(--shadow);
       padding: 30px;
       text-align: center;
       line-height: 1.6;
       margin-top: 40px;
+      font-family: 'Special Elite', 'Courier New', monospace;
     }
 
     .footer {
-      background: #101b2f;
-      color: #aaa;
+      background: rgba(22, 16, 10, 0.96);
+      color: var(--muted);
       text-align: center;
       padding: 30px 12px;
       margin-top: 60px;
-      border-top: 1px solid rgba(255,255,255,0.05);
+      border-top: 2px solid rgba(201, 162, 109, 0.28);
     }
 
     #leavesCanvas {
@@ -300,7 +336,7 @@
 <body>
   <canvas id="leavesCanvas"></canvas>
   <nav class="navbar">
-    <div class="logo">Brighton Oaks 5K</div>
+    <div class="logo"><img src="images/bright1.png" alt="Brighton Oaks 5K" /> Brighton Oaks 5K</div>
     <div class="nav-links">
       <a href="index.html" class="active">Home</a>
       <a href="registration.html">Register</a>
@@ -309,7 +345,7 @@
     </div>
   </nav>
   <div class="announcement">
-  🚨 <b>Race Tour Meeting:</b> Wednesday, Nov 26 at 1:00 PM — Meet at the start line by the Patterson fire pit!
+  🚨 <b>Race Tour Meeting:</b> Wednesday, Nov 25 at 1:00 PM — Meet at the start line by the Patterson fire pit!
 </div>
 
   <section class="hero">
@@ -332,6 +368,20 @@
       <img src="images/IMG_0700.jpeg" alt="Open Fields">
       <img src="images/road.jpeg" alt="Race Road">
       <img src="images/gutpit.jpeg" alt="Course Icon">
+      <img src="images/Brighton Oaks grocery.jpg" alt="The old country store">
+      <img src="images/OrganeBurg Road.jpg" alt="Organeburg Road">
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="poster-wrap">
+      <img src="images/bright.png" alt="2nd Annual Brighton Oaks 5K poster" />
+      <div class="poster-copy">
+        <div class="stamp">Est. Thanksgiving 2025</div>
+        <h2 style="text-align:left">Some Things Never Change</h2>
+        <p>The same pines. The same dirt roads. The same old country store on the corner. The Brighton Oaks 5K is a run back in time — a Thanksgiving morning tradition for the whole town, from the gas pumps at the start to the porch at the finish.</p>
+        <p>Grab a friend, pin on a number, and become part of the story.</p>
+      </div>
     </div>
   </section>
 

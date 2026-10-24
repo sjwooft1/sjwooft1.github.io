@@ -237,9 +237,17 @@
     }
 
     /* ---------- Combined dataset ---------- */
+    let customBibsOn = false;   // mirror of the organizer's "custom bib requests" setting
+    subscribe("settings/customBibs", (v) => {
+      customBibsOn = !!v;
+      renderBoard();
+      renderDetail();
+    });
+
     function dataset() {
       const bibs = computeBibs(
-        Object.entries(registrations).map(([id, r]) => ({ id, ...r }))
+        Object.entries(registrations).map(([id, r]) => ({ id, ...r })),
+        customBibsOn
       );
       const ids = new Set([...Object.keys(registrations), ...Object.keys(results)]);
       return [...ids].map((id) => {
