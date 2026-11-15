@@ -59,14 +59,64 @@
       display: flex; align-items: center; justify-content: center;
     }
     .camera-stage video { width: 100%; height: 100%; object-fit: contain; background:#060b14; }
-    .camera-stage #camOverlay {
+    .camera-stage canvas {
       position: absolute; inset: 0; width: 100%; height: 100%;
       cursor: grab; touch-action: none;
     }
-    .camera-stage #camOverlay:active {
+    .camera-stage canvas:active {
       cursor: grabbing;
     }
-    .camera-stage .stage-msg { color: var(--muted); text-align: center; padding: 22px; font-size: 0.92rem; }
+    .camera-stage .stage-msg {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      box-sizing: border-box;
+      color: var(--muted); text-align: center; padding: 22px; font-size: 0.92rem;
+    }
+    .camera-stage .stage-msg > div { max-width: 100%; }
+
+    /* Phone layout for the two-device tab. A grid item defaults to
+       min-width:auto, so the camera stage and the settings row push the
+       single mobile column wider than the viewport (608px inside 375px) and
+       the whole card slides off the right edge. Let the items shrink and let
+       the controls wrap instead. */
+    /* Crossing photos */
+    .thumb-btn {
+      padding: 0; width: 56px; height: 34px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: 6px;
+      background: none; color: var(--muted); cursor: pointer; overflow: hidden;
+      font-size: 0.9rem;
+    }
+    .thumb-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .thumb-btn:hover { border-color: var(--accent2); }
+    .frame-viewer {
+      position: fixed; inset: 0; z-index: 3000;
+      display: none; align-items: center; justify-content: center;
+      background: rgba(4, 8, 16, 0.92); padding: 18px;
+    }
+    .frame-viewer.on { display: flex; }
+    .frame-viewer .fv-inner {
+      background: var(--card); border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm); padding: 16px;
+      width: 100%; max-width: 900px; max-height: 92vh; overflow: auto;
+    }
+    .frame-viewer .fv-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .frame-viewer .fv-strip { display: flex; gap: 12px; flex-wrap: wrap; }
+    .frame-viewer figure { margin: 0; flex: 1 1 300px; }
+    .frame-viewer figure img { width: 100%; display: block; border-radius: 8px; border: 1px solid var(--border); }
+    .frame-viewer figcaption { font-size: 0.76rem; color: var(--muted); margin-top: 5px; text-align: center; }
+
+    #tab-line .grid > *,
+    #tab-line .grid-2 > * { min-width: 0; }
+    #tab-line textarea { max-width: 100%; box-sizing: border-box; }
+    @media (max-width: 640px) {
+      #tab-line .settings-row { display: flex; flex-wrap: wrap; gap: 10px; }
+      #tab-line .settings-row > * { flex: 1 1 140px; min-width: 0; }
+      #tab-line .settings-row input[type="range"] { width: 100%; }
+      #tab-line .btn-row { flex-wrap: wrap; }
+      #tab-line .camera-stage { aspect-ratio: 4 / 3; }
+    }
 
     /* Fullscreen camera mode (automatic on mobile when camera starts, or via Fullscreen button) */
     .camera-stage.fs-active,
@@ -226,8 +276,10 @@
           <div style="display:flex; gap:8px; align-items:center">
             <span class="badge gray" id="syncBadge">● Checking sync…</span>
             <span class="badge orange" id="queueBadge" style="display:none">0 queued</span>
+            <span class="badge amber" id="practiceBadge" style="display:none">Practice — nothing is saved</span>
           </div>
           <div class="small muted" id="clockSub" style="margin-top:4px">Clock not started</div>
+          <label class="toggle small" style="margin-top:6px; white-space:nowrap"><input type="checkbox" id="practiceChk" /> Practice mode</label>
         </div>
       </div>
     </div>
@@ -235,6 +287,7 @@
     <main class="page-wide">
       <div class="tabs" id="tabs">
         <button class="on" data-tab="timing">⏱ Timing Console</button>
+        <button data-tab="line">🏁 Finish Line (2 devices)</button>
         <button data-tab="camera">📷 Finish Camera (OCR)</button>
         <button data-tab="registrations">Registrations</button>
         <button data-tab="results">Results</button>
@@ -438,6 +491,120 @@
         </div>
       </section>
 
+      <!-- ==================== FINISH LINE (TWO DEVICES) ==================== -->
+      <section class="tab-panel" id="tab-line">
+        <div class="stat-strip" style="margin-bottom:18px">
+          <div class="stat"><div class="stat-label">Race clock</div><div class="stat-value mono" id="lineClock" style="font-size:1.2rem">00:00.000</div><div class="stat-sub" id="lineClockSub">Waiting for the start device</div></div>
+          <div class="stat"><div class="stat-label">Line</div><div class="stat-value" id="lineState" style="font-size:1.15rem">Camera off</div><div class="stat-sub" id="lineStateSub">Start the camera, then arm the line</div></div>
+          <div class="stat"><div class="stat-label">Crossings</div><div class="stat-value mono" id="lineCount">0</div></div>
+          <div class="stat"><div class="stat-label">Last crossing</div><div class="stat-value mono" id="lineLast" style="font-size:1.15rem">—</div><div class="stat-sub" id="lineLastSub">nobody yet</div></div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="eyebrow">Two-device timing</div>
+                <h2>Finish Line Camera</h2>
+              </div>
+              <span class="badge gray" id="lineBadge">Camera off</span>
+            </div>
+            <p class="muted small">Start the race on your other device, then film the finish line here. Every runner who crosses the marked line gets a finish time against that shared clock — no bib reading involved, so a smudged number can never cost a time. Crossings are assigned in expected finish order; write the real bibs down and correct them below. <b>Only the chest counts:</b> the time stamps when the athlete's torso reaches the line — swinging arms, trailing feet and heads above the strip are ignored.</p>
+
+            <div class="camera-stage" id="lineStage">
+              <video id="lineVideo" autoplay playsinline muted></video>
+              <canvas id="lineOverlay"></canvas>
+              <div class="stage-msg" id="linePlaceholder"><div>Camera off — press <b>Start camera</b><br /><span style="font-size:0.85em">Allow camera access when the browser asks</span></div></div>
+            </div>
+
+            <div class="btn-row" style="margin-top:14px">
+              <button class="btn primary" id="lineStartCamBtn">Start camera</button>
+              <button class="btn" id="lineArmBtn" disabled>Arm line</button>
+              <button class="btn ghost" id="lineStopBtn" disabled>Stop</button>
+              <button class="btn ghost" id="lineSimBtn" disabled title="Practice mode only">Simulate crossing</button>
+            </div>
+
+            <div class="settings-row">
+              <div class="field">
+                <label for="lineXRange">Line position (%)</label>
+                <input type="range" id="lineXRange" min="5" max="95" value="50" />
+              </div>
+              <div class="field">
+                <label for="lineChest">Chest height (%)</label>
+                <input type="range" id="lineChest" min="15" max="85" value="49" />
+              </div>
+              <div class="field">
+                <label for="lineBandH">Chest band (%)</label>
+                <input type="range" id="lineBandH" min="8" max="60" value="26" />
+              </div>
+              <div class="field">
+                <label for="lineDir">Runners cross</label>
+                <select id="lineDir">
+                  <option value="either">Either way</option>
+                  <option value="ltr">Left → right</option>
+                  <option value="rtl">Right → left</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="lineSens">Sensitivity</label>
+                <input type="range" id="lineSens" min="40" max="220" value="100" />
+              </div>
+            </div>
+
+            <div class="small muted" id="lineStatus" style="margin-top:12px">Drag on the preview to put the line on the physical finish line.</div>
+          </div>
+
+          <aside class="grid" style="align-content:start; gap:18px">
+            <div class="card">
+              <div class="card-head" style="margin-bottom:10px">
+                <div class="eyebrow" style="margin:0">Start gun</div>
+                <span class="badge gray" id="gunBadge">Not listening</span>
+              </div>
+              <p class="small muted" style="margin-top:0">Record the starter's pistol once, then press <b>Listen</b> before the start. When it hears that same bang it starts the clock and arms the finish camera, so nobody has to touch the phone at the gun.</p>
+              <div class="btn-row">
+                <button class="btn sm" id="gunRecordBtn">Record the gun</button>
+                <button class="btn ghost sm" id="gunArmBtn" disabled>Listen</button>
+              </div>
+              <div class="settings-row" style="margin-top:10px">
+                <div class="field">
+                  <label for="gunThreshold">Match threshold (%)</label>
+                  <input type="range" id="gunThreshold" min="40" max="95" value="60" />
+                </div>
+              </div>
+              <div class="small muted" id="gunStatus" style="margin-top:8px">No gun recorded yet.</div>
+            </div>
+
+            <div class="card">
+              <div class="card-head" style="margin-bottom:10px">
+                <div class="eyebrow" style="margin:0">Expected finish order</div>
+                <div class="btn-row">
+                  <button class="btn ghost sm" id="lineSeedOrderBtn">From roster</button>
+                  <button class="btn sm" id="lineSaveOrderBtn">Save order</button>
+                </div>
+              </div>
+              <p class="small muted" style="margin-top:0">One bib per line, fastest first. Each crossing takes the next free number — correct them from the written-down bibs once the runners are through.</p>
+              <textarea id="lineOrderInput" rows="6" style="width:100%; font-family:var(--mono); font-size:0.85rem" placeholder="0001&#10;0002&#10;0003"></textarea>
+              <div class="small muted" id="lineNextUp" style="margin-top:8px">Next bib: —</div>
+            </div>
+
+            <div class="card">
+              <div class="eyebrow" style="margin:0 0 8px">Crossings</div>
+              <p class="small muted" style="margin-top:0">Times are fixed by the crossing. Editing a bib, or swapping two rows, only changes <b>who</b> owns that time.</p>
+              <div class="table-wrap">
+                <table class="data">
+                  <thead><tr><th>#</th><th style="text-align:right">Time</th><th>Bib</th><th>Runner</th><th>Photo</th><th></th></tr></thead>
+                  <tbody id="lineCrossBody"><tr><td colspan="6" class="muted" style="text-align:center;padding:20px">No crossings yet.</td></tr></tbody>
+                </table>
+              </div>
+              <div class="btn-row" style="margin-top:10px">
+                <button class="btn ghost sm" id="lineUndoBtn">↩ Remove last crossing</button>
+                <button class="btn ghost sm" id="lineClearBtn">Clear all crossings</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
       <!-- ==================== REGISTRATIONS ==================== -->
       <section class="tab-panel" id="tab-registrations">
         <div class="card">
@@ -507,6 +674,8 @@
               <h2>Finishers</h2>
             </div>
             <div class="btn-row">
+              <button class="btn sm" id="sharePdfBtn">Share PDF with photos</button>
+              <button class="btn ghost sm" id="copyListBtn">Copy athlete list</button>
               <button class="btn ghost sm" id="exportResultsBtn">Export CSV</button>
               <button class="btn ghost sm" onclick="window.print()">Print</button>
               <button class="btn danger sm" id="clearResultsBtn">Clear all results</button>
@@ -526,6 +695,7 @@
               </tbody>
             </table>
           </div>
+          <p class="small muted" style="margin:10px 0 0">The PDF lists every athlete and embeds the photo taken as their chest met the line. Those photos live only on this device, so the PDF is built here and then shared as a single file.</p>
         </div>
       </section>
 
@@ -549,6 +719,17 @@
       </section>
     </main>
 
+    <div class="frame-viewer" id="frameViewer">
+      <div class="fv-inner">
+        <div class="fv-head">
+          <div class="eyebrow" id="fvTitle" style="margin:0">Crossing photo</div>
+          <button class="btn ghost sm" id="fvClose">✕ Close</button>
+        </div>
+        <div class="fv-strip" id="fvStrip"></div>
+        <div class="small muted" style="margin-top:10px">Photos stay on this device (they never go to the race database), so review them here rather than on another phone.</div>
+      </div>
+    </div>
+
     <footer class="footer">
       <p><b style="color:var(--text)">Brighton Oaks 5K</b> · Timing console — data syncs to Firebase and caches locally for race day.</p>
       <p class="small" style="margin-top:10px">© 2025–2026 Brighton Oaks 5K — All rights reserved.</p>
@@ -565,6 +746,9 @@
       downloadCsv, toast, watchConnection
     } from "./race-core.js";
     import { FinishCam } from "./finish-cam.js";
+    import { CrossingCam } from "./crossing-cam.js";
+    import { buildResultsPdf, buildResultsText } from "./pdf-export.js";
+    import { GunSensor } from "./gun-sensor.js";
 
     /* =====================================================================
        0. Access gate (same password as before, remembered for the session)
@@ -580,7 +764,11 @@
       boot();
     }
     if (sessionStorage.getItem("bo5k_organizer") === "1") {
-      unlock();
+      // Defer past module evaluation: boot() reads `state`, `LS_KEYS` and
+      // `writeQueue`, which are declared further down this module. Booting
+      // synchronously here (the "remembered for the session" reload path)
+      // hits the temporal dead zone and leaves the console empty.
+      queueMicrotask(unlock);
     } else {
       gate.style.display = "flex";
       const tryUnlock = () => {
@@ -613,11 +801,21 @@
       search: "",
       customBibs: false,       // organizer opted in to custom bib number requests
       finishStack: [],         // ids in finish order, for undo
+      crossings: [],           // finish-line crossings in order (two-device timing)
+      crossingsAt: 0,          // last-write-wins stamp for the crossings list
+      expectedOrder: [],       // bibs in the organizer's expected finish order
+      frames: {},              // crossing id -> [photo data URLs], kept out of the DB list
     };
 
     const LS_KEYS = { snapshot: "bo5k_console_snapshot", queue: "bo5k_write_queue", log: "bo5k_capture_log" };
 
+    /* Practice mode: everything stays inside this tab. Nothing is written to
+       the race database and nothing is left in local storage, so a dry run at
+       the venue can walk a crossing all the way to a result with zero risk. */
+    let practiceMode = false;
+
     function saveSnapshot() {
+      if (practiceMode) return;
       try {
         localStorage.setItem(LS_KEYS.snapshot, JSON.stringify({
           registrations: state.registrations,
@@ -626,6 +824,9 @@
           raceStart: state.raceStart, running: state.running,
           paused: state.paused, pausedAt: state.pausedAt,
           finishStack: state.finishStack,
+          crossings: state.crossings,
+          crossingsAt: state.crossingsAt,
+          expectedOrder: state.expectedOrder,
           savedAt: Date.now(),
         }));
       } catch (e) { console.warn("snapshot save failed", e); }
@@ -643,6 +844,9 @@
         state.paused = !!s.paused;
         state.pausedAt = s.pausedAt ?? null;
         state.finishStack = s.finishStack || [];
+        state.crossings = s.crossings || [];
+        state.crossingsAt = s.crossingsAt || 0;
+        state.expectedOrder = s.expectedOrder || [];
       } catch (e) { console.warn("snapshot load failed", e); }
     }
 
@@ -667,6 +871,7 @@
     }
 
     async function dbSet(path, value, silent = false) {
+      if (practiceMode) return true; // practice runs never touch the database
       try {
         await set(ref(getDb(), path), value);
         return true;
@@ -697,13 +902,22 @@
 
     /* =====================================================================
        3. Race clock
+
+       Two devices time the same race, so every timestamp this console makes
+       or stores is in *server* time. The start device and the finish-line
+       device can have wall clocks seconds apart, and that difference would
+       otherwise land straight in the recorded finish times.
     ===================================================================== */
+    let serverOffset = 0;                        // ms to add to Date.now()
+    const serverNow = () => Date.now() + serverOffset;
+    const toServer = (ts) => ts + serverOffset;  // for timestamps made by the scanner
+
     function currentElapsed() {
       if (state.raceStart == null) return 0;
       if (state.paused && state.pausedAt != null) return state.pausedAt - state.raceStart;
-      return Math.max(0, Date.now() - state.raceStart);
+      return Math.max(0, serverNow() - state.raceStart);
     }
-    /** elapsed at a specific wall-clock moment (for photo finishes) */
+    /** elapsed at a specific server-time moment (crossings, photo finishes) */
     function elapsedAt(when) {
       if (state.raceStart == null) return null;
       return Math.max(0, when - state.raceStart);
@@ -732,8 +946,33 @@
       if (fsStart) {
         fsStart.textContent = state.raceStart == null ? "Start race" : state.paused ? "Resume" : "Pause clock";
       }
+      const lineClock = document.getElementById("lineClock");
+      if (lineClock) lineClock.textContent = `${p.main}${p.ms}`;
+      const lineClockSub = document.getElementById("lineClockSub");
+      if (lineClockSub) {
+        lineClockSub.textContent = state.raceStart == null
+          ? "Waiting for the start device"
+          : state.paused ? "Paused" : "Live · shared with the start device";
+      }
     }
-    setInterval(renderClock, 100);
+    /* The clock value comes from timestamps, but the *display* still has to be
+       repainted. A plain setInterval freezes whenever the tab is in the
+       background — the browser throttles timers to about once a minute there —
+       which looks exactly like a dead Start button: the button flips to
+       "Running…" while the clock sits at 00:00.000. rAF is smooth while the
+       window is visible, and a redraw on focus/visibility change makes the
+       clock jump straight to the right time on return. */
+    let lastClockPaint = 0;
+    function clockFrame(ts) {
+      if (ts - lastClockPaint >= 40) {
+        lastClockPaint = ts;
+        renderClock();
+      }
+      requestAnimationFrame(clockFrame);
+    }
+    requestAnimationFrame(clockFrame);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) renderClock(); });
+    window.addEventListener("focus", renderClock);
 
     async function writeClock() {
       await dbSet("raceClock", {
@@ -748,13 +987,13 @@
 
     function startRace() {
       if (state.raceStart == null) {
-        state.raceStart = Date.now();
+        state.raceStart = serverNow();
         state.running = true;
         state.paused = false;
         state.pausedAt = null;
         toast("Race started — the clock is live", "success");
       } else if (state.paused) {
-        const pausedFor = Date.now() - state.pausedAt;
+        const pausedFor = serverNow() - state.pausedAt;
         state.raceStart += pausedFor;
         state.paused = false;
         state.pausedAt = null;
@@ -769,11 +1008,11 @@
       if (state.raceStart == null) return;
       if (state.running) {
         state.paused = true;
-        state.pausedAt = Date.now();
+        state.pausedAt = serverNow();
         state.running = false;
         toast("Race paused", "info");
       } else if (state.paused) {
-        const pausedFor = Date.now() - state.pausedAt;
+        const pausedFor = serverNow() - state.pausedAt;
         state.raceStart += pausedFor;
         state.paused = false;
         state.pausedAt = null;
@@ -791,6 +1030,10 @@
       state.pausedAt = null;
       state.results = {};
       state.finishStack = [];
+      state.crossings = [];
+      state.frames = {};
+      clearFramesLocal();
+      dbSet("crossings", null, true);
       dbSet("raceClock", null, true);
       dbSet("raceStartTime", null, true);
       dbSet("results", null, true);
@@ -836,7 +1079,7 @@
     /* =====================================================================
        5. Recording finishes
     ===================================================================== */
-    function recordFinish(id, when = Date.now(), method = "tap") {
+    function recordFinish(id, when = serverNow(), method = "tap") {
       const runner = field().find((r) => r.id === id);
       if (!runner) return;
       if (state.raceStart == null) { toast("Start the race first", "error"); return; }
@@ -892,7 +1135,7 @@
       const remaining = field().filter((r) => !(state.results[r.id] && state.results[r.id].finishTime != null));
       if (!remaining.length) { toast("Everyone is finished", "info"); return; }
       if (!confirm(`Record finishes for the remaining ${remaining.length} runners at the current clock time?`)) return;
-      const when = Date.now();
+      const when = serverNow();
       remaining.forEach((r) => recordFinish(r.id, when, "bulk"));
       toast(`Recorded ${remaining.length} finishes`, "success");
     }
@@ -929,6 +1172,7 @@
             : `<span class="rc-time" data-live>${formatClock(currentElapsed())}</span>`;
         const methodBadge = res.method === "ocr" ? '<span class="badge blue">OCR</span>'
           : res.method === "manual" ? '<span class="badge amber">Manual</span>'
+          : res.method === "crossing" ? '<span class="badge green">Line</span>'
           : res.method === "bulk" ? '<span class="badge gray">Bulk</span>' : "";
         return `
           <div class="runner-card ${cls}" data-runner-id="${r.id}">
@@ -1036,6 +1280,7 @@
             <td class="small muted">${fmtDateTime(res.finishedAt)}</td>
             <td><span class="badge gray">${escapeHtml(res.method || "tap")}</span></td>
             <td>
+              ${res.crossingId ? `<button class="btn ghost sm" data-frame="${res.crossingId}" title="Crossing photo">📷</button>` : ""}
               <button class="btn ghost sm" data-edit="${r.id}">Edit</button>
               <button class="btn danger sm" data-dnf="${r.id}">DNF</button>
             </td>
@@ -1054,6 +1299,9 @@
           <td><button class="btn ghost sm" data-clear-dnf="${r.id}">Clear DNF</button></td>
         </tr>`).join("");
 
+      body.querySelectorAll("[data-frame]").forEach((btn) => {
+        btn.addEventListener("click", () => openFrameViewer(btn.getAttribute("data-frame")));
+      });
       body.querySelectorAll("[data-edit]").forEach((btn) => {
         btn.addEventListener("click", () => {
           const id = btn.getAttribute("data-edit");
@@ -1097,6 +1345,7 @@
       renderStats();
       renderRegs();
       renderResults();
+      renderCrossings();
     }
 
     /* =====================================================================
@@ -1173,7 +1422,7 @@
       if (fsCount) fsCount.textContent = scanStats.finishes;
       const r = runnerByBib(bib);
       if (r) {
-        recordFinish(r.id, when, "ocr");
+        recordFinish(r.id, toServer(when), "ocr");
       } else {
         // unknown bib — save as an extra finisher so the crossing is never lost
         const id = `ocr_${when}`;
@@ -1181,9 +1430,9 @@
           name: `Unmatched bib ${bib}`,
           bibNumber: bib,
           estimatedTime: null,
-          finishTime: elapsedAt(when),
-          finishedAt: when,
-          recordedAt: Date.now(),
+          finishTime: elapsedAt(toServer(when)),
+          finishedAt: toServer(when),
+          recordedAt: serverNow(),
           method: "ocr",
           dnf: false,
         };
@@ -1197,7 +1446,7 @@
     }
 
     function onScanReview({ guess, confidence, thumb, when }) {
-      pendingCapture = { bibGuess: guess, confidence, thumb, at: when };
+      pendingCapture = { bibGuess: guess, confidence, thumb, at: toServer(when) };
       showReview(pendingCapture);
     }
 
@@ -1386,6 +1635,13 @@
         armScanner();
         toast("Finish-line scanner armed with the race clock", "success");
       }
+      // The line camera belongs to the device that films the line, so it is
+      // the only one that opens its own camera when the race begins.
+      if (isLineDevice()) {
+        startAndArmLine().then((armed) => {
+          if (armed) toast("Finish camera armed — the clock is running", "success");
+        });
+      }
     }
 
     /* ---- manual reads (capture button + uploads) ---- */
@@ -1405,7 +1661,7 @@
           bibGuess: read.digits.padStart(4, "0"),
           confidence: read.confidence,
           thumb: read.thumb,
-          at: Date.now(),
+          at: serverNow(),
         });
       } catch (err) {
         console.warn("OCR failed", err);
@@ -1456,9 +1712,9 @@
           name: `Unmatched bib ${val}`,
           bibNumber: val.padStart(4, "0"),
           estimatedTime: null,
-          finishTime: elapsedAt(when),
-          finishedAt: when,
-          recordedAt: Date.now(),
+          finishTime: elapsedAt(toServer(when)),
+          finishedAt: toServer(when),
+          recordedAt: serverNow(),
           method: "ocr",
           dnf: false,
         };
@@ -1549,14 +1805,620 @@
     }
 
     /* =====================================================================
+       9b. Finish-line crossing timing (two devices)
+
+       Device A starts the race on the Timing tab. Device B films the finish
+       line here and arms it. Every crossing stamps a finish against the
+       shared race clock, in expected finish order. Bibs are written down at
+       the line and corrected afterwards: the time is already safe, so a
+       wrong or unreadable bib can never cost a runner their result.
+    ===================================================================== */
+    const lineVideo = document.getElementById("lineVideo");
+    let lineCam = null;
+    let lineStream = null;
+
+    function persistCrossings() {
+      state.crossingsAt = serverNow();
+      dbSet("crossings", state.crossings.length ? { at: state.crossingsAt, list: state.crossings } : null, true);
+      saveSnapshot();
+    }
+
+    /** Bibs a crossing has already claimed, so each crossing takes a fresh one. */
+    function claimedBibs() {
+      return new Set(state.crossings.map((c) => c.bib).filter(Boolean));
+    }
+
+    function nextExpectedBib() {
+      const taken = claimedBibs();
+      const fromOrder = state.expectedOrder.find((b) => b && !taken.has(b));
+      if (fromOrder) return fromOrder;
+      const spare = field()
+        .filter((r) => !taken.has(String(r.bib)))
+        .filter((r) => !(state.results[r.id] && state.results[r.id].finishTime != null))
+        .sort((a, b) => (a.estimatedTime || 0) - (b.estimatedTime || 0))[0];
+      return spare ? String(spare.bib) : null;
+    }
+
+    /** A runner crossed the line: stamp the time, guess the bib, keep going. */
+    function onLineCross({ at, frames }) {
+      if (state.raceStart == null) {
+        toast("Crossing seen — but the race clock hasn't started", "error");
+      }
+      const bib = nextExpectedBib();
+      const crossing = {
+        id: `c${Math.round(at)}${Math.random().toString(36).slice(2, 5)}`,
+        at,
+        time: state.raceStart == null ? null : Math.max(0, at - state.raceStart),
+        bib,
+      };
+      state.crossings.push(crossing);
+      if (frames && frames.length) {
+        state.frames[crossing.id] = frames;
+        // Local only: written once, under the crossing's own key.
+        saveFramesLocal(crossing.id, frames);
+      }
+      persistCrossings();
+      applyCrossings();
+      cueCrossing();
+      toast(
+        bib ? `Crossing ${state.crossings.length} — bib ${bib}` : `Crossing ${state.crossings.length} — assign the bib below`,
+        bib ? "success" : "info"
+      );
+    }
+
+    /** Short blip so the operator knows a crossing registered without watching. */
+    let audioCtx = null;
+    function cueCrossing() {
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) {
+          if (!audioCtx) audioCtx = new Ctx();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.frequency.value = 880;
+          gain.gain.value = 0.07;
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.09);
+        }
+      } catch {}
+      try { if (navigator.vibrate) navigator.vibrate(60); } catch {}
+    }
+
+    /**
+     * Make the results table mirror the crossings: the *time* belongs to the
+     * crossing, the *bib* is whatever the organizer has assigned to it. Hand
+     * recorded finishes always win over a crossing for the same runner.
+     */
+    function applyCrossings() {
+      Object.entries(state.results).forEach(([id, res]) => {
+        if (!res || !res.crossingId) return;
+        const owner = state.crossings.find((c) => c.id === res.crossingId);
+        if (!owner || owner.bib !== res.bibNumber) {
+          delete state.results[id];
+          dbSet(`results/${id}`, null, true);
+        }
+      });
+
+      state.crossings.forEach((c) => {
+        if (!c.bib || c.time == null) return;
+        const runner = runnerByBib(c.bib);
+        const id = runner ? runner.id : `line_${c.id}`;
+        const existing = state.results[id];
+        if (existing && existing.finishTime != null && !existing.crossingId) return;
+        const entry = {
+          name: runner ? runner.name : `Unmatched bib ${c.bib}`,
+          bibNumber: c.bib,
+          estimatedTime: runner ? (runner.estimatedTime ?? null) : null,
+          finishTime: c.time,
+          finishedAt: c.at,
+          recordedAt: c.at,
+          method: "crossing",
+          crossingId: c.id,
+          dnf: false,
+        };
+        state.results[id] = entry;
+        dbSet(`results/${id}`, entry, true);
+      });
+
+      saveSnapshot();
+      renderAll();
+    }
+
+    function renderCrossings() {
+      const body = document.getElementById("lineCrossBody");
+      if (!body) return;
+      const count = state.crossings.length;
+      document.getElementById("lineCount").textContent = String(count);
+      const last = state.crossings[count - 1];
+      document.getElementById("lineLast").textContent = last && last.time != null ? formatClock(last.time) : "—";
+      document.getElementById("lineLastSub").textContent = last
+        ? (last.bib ? `bib ${last.bib}` : "bib missing")
+        : "nobody yet";
+      const next = nextExpectedBib();
+      document.getElementById("lineNextUp").textContent = count
+        ? (next ? `Next bib: ${next}` : "Every runner has a crossing")
+        : "Next bib: —";
+
+      if (!count) {
+        body.innerHTML = `<tr><td colspan="6" class="muted" style="text-align:center;padding:20px">No crossings yet.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = state.crossings.map((c, i) => {
+        const runner = c.bib ? runnerByBib(c.bib) : null;
+        const who = runner
+          ? escapeHtml(runner.name)
+          : c.bib
+            ? '<span style="color:var(--amber)">No roster match</span>'
+            : '<span class="muted">assign a bib</span>';
+        return `
+          <tr>
+            <td class="place">${i + 1}</td>
+            <td class="num mono">${c.time == null ? "—" : formatClock(c.time)}</td>
+            <td><input type="text" inputmode="numeric" class="line-bib" data-crossing="${c.id}" value="${escapeHtml(c.bib || "")}" placeholder="bib" style="width:76px;font-family:var(--mono)" /></td>
+            <td class="small">${who}</td>
+            <td><button class="thumb-btn" data-frame="${c.id}" title="View the crossing photo">${state.frames[c.id] && state.frames[c.id][0] ? `<img src="${state.frames[c.id][0]}" alt="crossing photo" />` : "📷"}</button></td>
+            <td style="white-space:nowrap">
+              <button class="btn ghost sm" data-move="${c.id}" data-dir="-1" title="Swap bibs with the crossing above" ${i === 0 ? "disabled" : ""}>↑</button>
+              <button class="btn ghost sm" data-move="${c.id}" data-dir="1" title="Swap bibs with the crossing below" ${i === count - 1 ? "disabled" : ""}>↓</button>
+              <button class="btn danger sm" data-drop="${c.id}" title="Remove this crossing">✕</button>
+            </td>
+          </tr>`;
+      }).join("");
+    }
+
+    /* ---- crossing photos (local only) ----
+       Two 960px JPEGs per crossing is megabytes over a race, so they live in
+       IndexedDB on the device that filmed them and never touch Firebase. */
+    const PHOTO_DB = "bo5k_photos";
+    let photoDbPromise = null;
+
+    function photoDb() {
+      if (!("indexedDB" in window)) return Promise.reject(new Error("IndexedDB unavailable"));
+      if (!photoDbPromise) {
+        photoDbPromise = new Promise((resolve, reject) => {
+          const req = indexedDB.open(PHOTO_DB, 1);
+          req.onupgradeneeded = () => {
+            if (!req.result.objectStoreNames.contains("frames")) req.result.createObjectStore("frames");
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+      return photoDbPromise;
+    }
+
+    function photoStore(mode, fn) {
+      return photoDb().then((db) => new Promise((resolve, reject) => {
+        const tx = db.transaction("frames", mode);
+        const req = fn(tx.objectStore("frames"));
+        tx.oncomplete = () => resolve(req ? req.result : undefined);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      }));
+    }
+
+    const saveFramesLocal = (id, frames) =>
+      photoStore("readwrite", (s) => s.put(frames, id)).catch((e) => console.warn("photo save failed", e));
+    const loadFramesLocal = (id) =>
+      photoStore("readonly", (s) => s.get(id)).catch(() => null);
+    const dropFramesLocal = (id) =>
+      photoStore("readwrite", (s) => s.delete(id)).catch(() => {});
+    const clearFramesLocal = () =>
+      photoStore("readwrite", (s) => s.clear()).catch(() => {});
+
+    /** In-memory cache first, then this device's own store. */
+    async function ensureFrames(id) {
+      if (state.frames[id] && state.frames[id].length) return state.frames[id];
+      const stored = await loadFramesLocal(id);
+      const list = Array.isArray(stored) ? stored : stored ? Object.values(stored) : [];
+      if (list.length) state.frames[id] = list;
+      return state.frames[id] || null;
+    }
+
+    async function openFrameViewer(id) {
+      const viewer = document.getElementById("frameViewer");
+      if (!viewer) return;
+      const idx = state.crossings.findIndex((c) => c.id === id);
+      const c = idx >= 0 ? state.crossings[idx] : null;
+      document.getElementById("fvTitle").textContent = c
+        ? `Crossing ${idx + 1} · ${c.time == null ? "no time" : formatClock(c.time)} · bib ${c.bib || "—"}`
+        : "Crossing photo";
+      const strip = document.getElementById("fvStrip");
+      strip.innerHTML = `<div class="muted small" style="padding:18px">Loading photos…</div>`;
+      viewer.classList.add("on");
+      const frames = await ensureFrames(id);
+      strip.innerHTML = frames && frames.length
+        ? frames.map((src, i) => `
+            <figure>
+              <img src="${src}" alt="Crossing frame ${i + 1}" />
+              <figcaption>${frames.length > 1 && i === frames.length - 1 ? "At the line" : frames.length > 1 ? "Approaching the line" : "Crossing frame"}</figcaption>
+            </figure>`).join("")
+        : `<div class="muted small" style="padding:18px">No photo was saved for this crossing.</div>`;
+    }
+
+    /* ---- sharing: the whole field as one PDF, photos included ----
+       The photos only exist on this device, so the document is assembled
+       here and handed to the share sheet (or downloaded) as one file. */
+
+    async function loadAllFramesLocal() {
+      try {
+        const [keys, values] = await Promise.all([
+          photoStore("readonly", (s) => s.getAllKeys()),
+          photoStore("readonly", (s) => s.getAll()),
+        ]);
+        const out = {};
+        (keys || []).forEach((key, i) => { out[key] = (values || [])[i]; });
+        return out;
+      } catch (e) {
+        console.warn("photo read failed", e);
+        return {};
+      }
+    }
+
+    /** Everyone in the field — finishers first — each with their line photo. */
+    async function resultsEntries() {
+      const frames = await loadAllFramesLocal();
+      const finished = field()
+        .filter((r) => (state.results[r.id] || {}).finishTime != null)
+        .sort((a, b) => state.results[a.id].finishTime - state.results[b.id].finishTime);
+      const rest = field()
+        .filter((r) => (state.results[r.id] || {}).finishTime == null)
+        .sort((a, b) => String(a.bib).localeCompare(String(b.bib)));
+
+      return [...finished, ...rest].map((r, i) => {
+        const res = state.results[r.id] || {};
+        const photos = res.crossingId
+          ? frames[res.crossingId] || state.frames[res.crossingId] || []
+          : [];
+        const detail = [];
+        if (res.finishTime != null) detail.push(`Place ${i + 1}`, pacePerMile(res.finishTime));
+        else if (res.dnf) detail.push("DNF");
+        if (r.division) detail.push(divisionLabel(r.division));
+        return {
+          place: res.finishTime != null ? i + 1 : null,
+          bib: String(r.bib || ""),
+          name: r.name || "",
+          line: [res.finishTime != null ? formatClock(res.finishTime) : "no finish time", ...detail].join("  ·  "),
+          // The last frame is the one taken as the chest met the line.
+          photo: photos.length ? photos[photos.length - 1] : null,
+        };
+      });
+    }
+
+    function resultsFilename(ext) {
+      const d = new Date();
+      const stamp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      return `brighton-oaks-5k-results-${stamp}.${ext}`;
+    }
+
+    function saveBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    }
+
+    async function shareResultsPdf() {
+      const btn = document.getElementById("sharePdfBtn");
+      if (!field().length) { toast("No athletes to export yet", "error"); return; }
+      const label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Building PDF…";
+      try {
+        const entries = await resultsEntries();
+        const photoCount = entries.filter((e) => e.photo).length;
+        const { bytes, pages } = buildResultsPdf({
+          title: "Brighton Oaks 5K — Finish photos",
+          subtitle: `${entries.length} athletes · ${photoCount} finish photo${photoCount === 1 ? "" : "s"} · built ${fmtDateTime(Date.now())}`,
+          entries,
+        });
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const filename = resultsFilename("pdf");
+        const file = typeof File === "function" ? new File([blob], filename, { type: "application/pdf" }) : null;
+
+        if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: "Brighton Oaks 5K results" });
+            toast(`Shared — ${pages} pages, ${photoCount} photos`, "success");
+            return;
+          } catch (err) {
+            if (err && err.name === "AbortError") return; // the organizer backed out
+          }
+        }
+
+        saveBlob(blob, filename);
+        toast(`PDF saved — ${pages} page${pages === 1 ? "" : "s"}, ${photoCount} photo${photoCount === 1 ? "" : "s"}`, "success");
+      } catch (err) {
+        console.warn("pdf export failed", err);
+        toast("Couldn't build the PDF", "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = label;
+      }
+    }
+
+    async function copyAthleteList() {
+      if (!field().length) { toast("No athletes to list yet", "error"); return; }
+      const entries = await resultsEntries();
+      const text = buildResultsText({
+        title: "Brighton Oaks 5K — Results",
+        subtitle: `${entries.length} athletes`,
+        entries,
+      });
+      try {
+        await navigator.clipboard.writeText(text);
+        toast(`Copied ${entries.length} athletes to the clipboard`, "success");
+      } catch {
+        saveBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), resultsFilename("txt"));
+        toast("Clipboard blocked — the list was saved as a .txt instead", "info");
+      }
+    }
+
+    function assignCrossing(id, raw) {
+      const c = state.crossings.find((x) => x.id === id);
+      if (!c) return;
+      const digits = String(raw || "").replace(/\D/g, "").slice(0, 4);
+      const bib = digits ? digits.padStart(4, "0") : null;
+      if (bib && state.crossings.some((x) => x.id !== id && x.bib === bib)) {
+        toast(`Bib ${bib} is already on another crossing`, "error");
+        renderCrossings();
+        return;
+      }
+      c.bib = bib;
+      persistCrossings();
+      applyCrossings();
+    }
+
+    /** Times belong to positions, so reordering swaps who owns which time. */
+    function moveCrossing(id, dir) {
+      const i = state.crossings.findIndex((c) => c.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= state.crossings.length) return;
+      const a = state.crossings[i];
+      const b = state.crossings[j];
+      [a.bib, b.bib] = [b.bib, a.bib];
+      persistCrossings();
+      applyCrossings();
+    }
+
+    function dropCrossing(id) {
+      const i = state.crossings.findIndex((c) => c.id === id);
+      if (i < 0) return;
+      const [gone] = state.crossings.splice(i, 1);
+      if (gone) {
+        delete state.frames[gone.id];
+        dropFramesLocal(gone.id);
+      }
+      persistCrossings();
+      applyCrossings();
+    }
+
+    /* ---- expected finish order ---- */
+
+    function readExpectedOrder() {
+      return document.getElementById("lineOrderInput").value
+        .split(/[\s,;]+/)
+        .map((s) => s.replace(/\D/g, ""))
+        .filter(Boolean)
+        .map((s) => s.padStart(4, "0"));
+    }
+
+    function renderExpectedOrder() {
+      const el = document.getElementById("lineOrderInput");
+      if (el && document.activeElement !== el) el.value = state.expectedOrder.join("\n");
+    }
+
+    function seedExpectedOrder() {
+      const bibs = sortRunners(roster()).map((r) => String(r.bib));
+      if (!bibs.length) { toast("No registrations loaded yet", "error"); return; }
+      document.getElementById("lineOrderInput").value = bibs.join("\n");
+      toast(`Loaded ${bibs.length} bibs in predicted finish order`, "success");
+    }
+
+    function saveExpectedOrder() {
+      state.expectedOrder = readExpectedOrder();
+      dbSet("settings/expectedOrder", state.expectedOrder.length ? state.expectedOrder : null, true);
+      saveSnapshot();
+      renderCrossings();
+      toast(`Expected order saved — ${state.expectedOrder.length} bibs`, "success");
+    }
+
+    /* ---- the finish-line camera ---- */
+
+    function ensureLineCam() {
+      if (lineCam) return lineCam;
+      lineCam = new CrossingCam({
+        video: lineVideo,
+        overlay: document.getElementById("lineOverlay"),
+        now: serverNow,
+        photoWidth: 960,
+        photoQuality: 0.72,
+        // Burned into every photo so a reviewer always sees where the line was.
+        labelFor: (at) => (state.raceStart == null ? null : formatClock(Math.max(0, at - state.raceStart))),
+        onCross: onLineCross,
+        onStatus: onLineStatus,
+        onLineChange: (x) => {
+          const el = document.getElementById("lineXRange");
+          if (el) el.value = String(Math.round(x * 100));
+          saveLineCalibration();
+        },
+      });
+      lineCam.attachLineDrag();
+      applyLineCalibration();
+      return lineCam;
+    }
+
+    /* ---- calibration, remembered on this device ----
+       The strip is lined up against the physical finish line once. A reload
+       mid-race must not drop it back to defaults and start missing finishers,
+       so line position, chest height and band height are saved per device.
+       Direction and sensitivity stay live-only: they are judgements about the
+       runners, not measurements of where this camera stands. */
+    const LINE_CAL_KEY = "bo5k_line_cal";
+    const pct = (id, fallback) => (parseInt(document.getElementById(id).value, 10) || fallback) / 100;
+
+    function applyLineCalibration() {
+      if (!lineCam) return;
+      lineCam.setLine(pct("lineXRange", 50));
+      lineCam.setDirection(document.getElementById("lineDir").value);
+      lineCam.setSensitivity(pct("lineSens", 100));
+      lineCam.setBand(pct("lineChest", 49), pct("lineBandH", 26));
+    }
+
+    function loadLineCalibration() {
+      try {
+        const cal = JSON.parse(localStorage.getItem(LINE_CAL_KEY) || "null");
+        if (!cal) return;
+        [
+          ["lineXRange", cal.lineX],
+          ["lineChest", cal.chest],
+          ["lineBandH", cal.bandH],
+        ].forEach(([id, value]) => {
+          const el = document.getElementById(id);
+          if (el && Number.isFinite(Number(value))) el.value = String(Math.round(Number(value)));
+        });
+      } catch (e) { console.warn("line calibration load failed", e); }
+    }
+
+    function saveLineCalibration() {
+      try {
+        localStorage.setItem(LINE_CAL_KEY, JSON.stringify({
+          lineX: Number(document.getElementById("lineXRange").value),
+          chest: Number(document.getElementById("lineChest").value),
+          bandH: Number(document.getElementById("lineBandH").value),
+        }));
+      } catch (e) { console.warn("line calibration save failed", e); }
+    }
+
+    function onLineStatus({ state: st, motion }) {
+      const badge = document.getElementById("lineBadge");
+      const el = document.getElementById("lineState");
+      const sub = document.getElementById("lineStateSub");
+      if (!badge || !el) return;
+      if (st === "watching") {
+        el.textContent = "Runner in frame";
+        el.style.color = "var(--green)";
+        sub.textContent = "Tracking — the finish stamps when they cross the line";
+        badge.className = "badge green";
+        badge.textContent = "● Watching";
+      } else if (st === "armed") {
+        el.textContent = "Armed";
+        el.style.color = "var(--green)";
+        sub.textContent = "Watching the finish line for the next runner";
+        badge.className = "badge green";
+        badge.textContent = "● Armed";
+      } else {
+        el.textContent = "Camera off";
+        el.style.color = "";
+        sub.textContent = "Start the camera, then arm the line";
+        badge.className = "badge gray";
+        badge.textContent = lineStream ? "Camera live" : "Camera off";
+      }
+      const statusEl = document.getElementById("lineStatus");
+      if (statusEl) {
+        statusEl.textContent = lineCam && lineCam.armed
+          ? `Armed · motion ${Math.round(motion || 0)} · ${state.crossings.length} crossings`
+          : "Drag on the preview to put the line on the physical finish line.";
+      }
+    }
+
+    async function startLineCamera() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast("This browser can't open a camera — use the OCR tab's upload instead", "error");
+        return;
+      }
+      if (lineStream) return;
+      try {
+        lineStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false,
+        });
+        lineVideo.srcObject = lineStream;
+        const placeholder = document.getElementById("linePlaceholder");
+        if (placeholder) placeholder.style.display = "none";
+        document.getElementById("lineStartCamBtn").disabled = true;
+        document.getElementById("lineArmBtn").disabled = false;
+        document.getElementById("lineStopBtn").disabled = false;
+        ensureLineCam();
+        onLineStatus({ state: "standby" });
+      } catch (err) {
+        console.warn("line camera failed", err);
+        toast("Couldn't open the camera — check the browser permission", "error");
+      }
+    }
+
+    function stopLineCamera() {
+      if (lineCam) lineCam.disarm();
+      if (lineStream) {
+        lineStream.getTracks().forEach((t) => t.stop());
+        lineStream = null;
+      }
+      lineVideo.srcObject = null;
+      const placeholder = document.getElementById("linePlaceholder");
+      if (placeholder) placeholder.style.display = "";
+      document.getElementById("lineStartCamBtn").disabled = false;
+      document.getElementById("lineArmBtn").disabled = true;
+      document.getElementById("lineArmBtn").textContent = "Arm line";
+      document.getElementById("lineArmBtn").classList.remove("primary");
+      document.getElementById("lineStopBtn").disabled = true;
+      onLineStatus({ state: "standby" });
+    }
+
+    function toggleLine() {
+      if (lineCam && lineCam.armed) {
+        lineCam.disarm();
+        document.getElementById("lineArmBtn").textContent = "Arm line";
+        document.getElementById("lineArmBtn").classList.remove("primary");
+        return;
+      }
+      try {
+        ensureLineCam();
+        lineCam.arm();
+        document.getElementById("lineArmBtn").textContent = "Disarm line";
+        document.getElementById("lineArmBtn").classList.add("primary");
+      } catch (err) {
+        toast(err.message || "Camera is not ready yet", "error");
+      }
+    }
+
+    /** Only the device that films the line opens its own camera. */
+    function isLineDevice() {
+      return !!lineStream || document.getElementById("tab-line").classList.contains("on");
+    }
+
+    /** The line camera runs for the whole race: start it, then arm it. */
+    async function startAndArmLine() {
+      if (!lineStream) await startLineCamera();
+      if (!lineStream) return false;
+      for (let i = 0; i < 25 && !lineVideo.videoWidth; i++) {
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      if (!lineCam || lineCam.armed || !lineVideo.videoWidth) return false;
+      lineCam.arm();
+      const btn = document.getElementById("lineArmBtn");
+      btn.textContent = "Disarm line";
+      btn.classList.add("primary");
+      return true;
+    }
+
+    /* =====================================================================
        10. Wiring
     ===================================================================== */
     function boot() {
+      loadLineCalibration();
       loadSnapshot();
       persistQueue();
       renderCaptureLog();
       renderAll();
       renderClock();
+      renderGun({});
       watchConnection(document.getElementById("syncBadge"));
 
       // live firebase subscriptions (server wins over snapshot)
@@ -1566,6 +2428,7 @@
         saveSnapshot(); renderAll();
       }, (e) => console.warn("registrations subscribe failed", e));
       onValue(ref(db, "results"), (snap) => {
+        if (practiceMode) return;
         state.results = snap.val() || {};
         saveSnapshot(); renderAll();
       }, (e) => console.warn("results subscribe failed", e));
@@ -1577,6 +2440,8 @@
           state.paused = !!v.paused;
           state.pausedAt = v.pausedAt ?? null;
           renderClock();
+          // Started from the other device: the finish camera follows the gun.
+          if (state.running) armForRace();
         }
       }, (e) => console.warn("raceClock subscribe failed", e));
       onValue(ref(db, "route"), (snap) => {
@@ -1593,6 +2458,28 @@
         renderAll();
       }, (e) => console.warn("settings subscribe failed", e));
 
+      // server time keeps both devices' clocks in agreement
+      onValue(ref(db, ".info/serverTimeOffset"), (snap) => {
+        serverOffset = Number(snap.val()) || 0;
+      }, (e) => console.warn("serverTimeOffset subscribe failed", e));
+
+      // crossings written by the finish-line device (last write wins)
+      onValue(ref(db, "crossings"), (snap) => {
+        if (practiceMode) return;
+        const v = snap.val();
+        if (!v || !(v.at > state.crossingsAt)) return;
+        state.crossings = Array.isArray(v.list) ? v.list : [];
+        state.crossingsAt = v.at;
+        applyCrossings();
+      }, (e) => console.warn("crossings subscribe failed", e));
+
+      onValue(ref(db, "settings/expectedOrder"), (snap) => {
+        const v = snap.val();
+        state.expectedOrder = Array.isArray(v) ? v.map(String) : [];
+        renderExpectedOrder();
+        renderCrossings();
+      }, (e) => console.warn("expectedOrder subscribe failed", e));
+
       flushQueue();
     }
 
@@ -1606,12 +2493,48 @@
       document.getElementById(`tab-${tab}`).classList.add("on");
       if (tab === "map") setTimeout(() => { initMap(); map && map.invalidateSize(); }, 60);
       if (tab === "camera") setTimeout(() => { ensureCam()._drawOverlay([]); }, 40);
+      if (tab === "line") setTimeout(() => { ensureLineCam()._drawOverlay(null); }, 60);
     });
 
     // race control
     document.getElementById("startBtn").addEventListener("click", startRace);
     document.getElementById("pauseBtn").addEventListener("click", togglePause);
     document.getElementById("resetBtn").addEventListener("click", resetRace);
+
+    // practice mode: nothing written, nothing stored, nothing left behind
+    document.getElementById("practiceChk").addEventListener("change", async (e) => {
+      practiceMode = e.target.checked;
+      document.getElementById("practiceBadge").style.display = practiceMode ? "inline-flex" : "none";
+      document.getElementById("lineSimBtn").disabled = !practiceMode;
+      document.body.style.borderTop = practiceMode ? "3px solid var(--amber)" : "";
+      if (practiceMode) {
+        toast("Practice mode ON — crossings and finishes stay in this tab only", "info");
+        return;
+      }
+      // Leaving practice: throw the rehearsal away and reload the real field.
+      state.crossings = [];
+      state.results = {};
+      state.finishStack = [];
+      renderAll();
+      try {
+        const snap = await get(ref(getDb(), "results"));
+        state.results = snap.val() || {};
+        renderAll();
+      } catch {}
+      toast("Practice mode off — results are being saved again", "success");
+    });
+    document.getElementById("lineSimBtn").addEventListener("click", () => {
+      const at = serverNow();
+      // With a camera live, this also exercises the photo path end to end.
+      const shot = lineCam && lineVideo.videoWidth ? lineCam.snapshot(at) : null;
+      onLineCross({ at, frames: shot ? [shot] : [] });
+    });
+    document.getElementById("fvClose").addEventListener("click", () => {
+      document.getElementById("frameViewer").classList.remove("on");
+    });
+    document.getElementById("frameViewer").addEventListener("click", (e) => {
+      if (e.target.id === "frameViewer") e.target.classList.remove("on");
+    });
     document.getElementById("undoBtn").addEventListener("click", undoLastFinish);
     document.getElementById("finishAllBtn").addEventListener("click", finishAllRemaining);
 
@@ -1694,6 +2617,140 @@
       renderCaptureLog();
     });
 
+    // finish-line tab (two-device timing)
+    document.getElementById("lineStartCamBtn").addEventListener("click", startLineCamera);
+    document.getElementById("lineStopBtn").addEventListener("click", stopLineCamera);
+    document.getElementById("lineArmBtn").addEventListener("click", toggleLine);
+    // One place reads the controls into the camera, so a new slider can't
+    // forget to reach the detector.
+    const recalibrate = () => { ensureLineCam(); applyLineCalibration(); };
+    ["lineXRange", "lineChest", "lineBandH"].forEach((id) => {
+      document.getElementById(id).addEventListener("input", () => {
+        recalibrate();
+        saveLineCalibration();
+      });
+    });
+    document.getElementById("lineDir").addEventListener("change", recalibrate);
+    document.getElementById("lineSens").addEventListener("input", recalibrate);
+    document.getElementById("lineSeedOrderBtn").addEventListener("click", seedExpectedOrder);
+    document.getElementById("lineSaveOrderBtn").addEventListener("click", saveExpectedOrder);
+    document.getElementById("lineUndoBtn").addEventListener("click", () => {
+      const last = state.crossings[state.crossings.length - 1];
+      if (!last) { toast("Nothing to undo", "info"); return; }
+      dropCrossing(last.id);
+      toast("Last crossing removed", "info");
+    });
+    document.getElementById("lineClearBtn").addEventListener("click", () => {
+      if (!state.crossings.length) return;
+      if (!confirm("Clear every crossing and the finishes they created?")) return;
+      state.crossings = [];
+      state.frames = {};
+      clearFramesLocal();
+      persistCrossings();
+      applyCrossings();
+    });
+    document.getElementById("lineCrossBody").addEventListener("change", (e) => {
+      const input = e.target.closest(".line-bib");
+      if (!input) return;
+      assignCrossing(input.getAttribute("data-crossing"), input.value);
+    });
+    document.getElementById("lineCrossBody").addEventListener("click", (e) => {
+      const move = e.target.closest("[data-move]");
+      if (move) {
+        moveCrossing(move.getAttribute("data-move"), parseInt(move.getAttribute("data-dir"), 10));
+        return;
+      }
+      const frame = e.target.closest("[data-frame]");
+      if (frame) { openFrameViewer(frame.getAttribute("data-frame")); return; }
+      const drop = e.target.closest("[data-drop]");
+      if (drop) dropCrossing(drop.getAttribute("data-drop"));
+    });
+
+    // start gun — learn the bang, then listen for it
+    const gun = new GunSensor({
+      onStatus: (detail) => renderGun(detail),
+      onLevel: (level) => {
+        const note = document.getElementById("gunStatus");
+        if (note && gun.state === "armed" && gun.reference) {
+          note.textContent = `Listening… room level ${(level * 100).toFixed(0)} of the recorded ${(gun.reference.peak * 100).toFixed(0)}`;
+        }
+      },
+      onFire: () => {
+        toast("Start gun heard — the clock is running", "success");
+        if (state.raceStart == null || state.paused) startRace();
+        else armForRace();
+        renderGun({ state: "fired" });
+      },
+    });
+
+    function renderGun(detail = {}) {
+      const badge = document.getElementById("gunBadge");
+      const note = document.getElementById("gunStatus");
+      const listenBtn = document.getElementById("gunArmBtn");
+      const recordBtn = document.getElementById("gunRecordBtn");
+      const st = detail.state || gun.state;
+      const ready = !!gun.reference;
+
+      if (st === "learning") {
+        badge.className = "badge amber";
+        badge.textContent = "Recording…";
+        note.textContent = "Fire the gun now — the loudest moment is remembered.";
+      } else if (st === "armed") {
+        badge.className = "badge green";
+        badge.textContent = "● Listening";
+        note.textContent = `Listening for the bang (above ${Math.round(gun.threshold * 100)}% of the recorded gun).`;
+      } else if (st === "fired") {
+        badge.className = "badge green";
+        badge.textContent = "Gun heard";
+        note.textContent = "Gun heard — the clock is running and the finish camera is armed.";
+      } else if (detail.error) {
+        badge.className = "badge red";
+        badge.textContent = "Nothing heard";
+        note.textContent = "Nothing audible was recorded — try again, closer to the gun.";
+      } else if (ready) {
+        badge.className = "badge gray";
+        badge.textContent = "Gun recorded";
+        note.textContent = `Gun recorded at level ${(gun.reference.peak * 100).toFixed(0)}. Press Listen before the start.`;
+      } else {
+        badge.className = "badge gray";
+        badge.textContent = "Not listening";
+        note.textContent = "No gun recorded yet.";
+      }
+
+      recordBtn.disabled = st === "learning";
+      recordBtn.textContent = st === "learning" ? "Recording…" : ready ? "Re-record the gun" : "Record the gun";
+      listenBtn.disabled = !ready || st === "learning";
+      listenBtn.textContent = st === "armed" ? "Stop listening" : "Listen";
+    }
+
+    document.getElementById("gunRecordBtn").addEventListener("click", async () => {
+      let failed = false;
+      try {
+        await gun.record(1600);
+      } catch (err) {
+        failed = true;
+        toast(err.message || "Couldn't open the microphone", "error");
+      }
+      renderGun(failed ? { error: "microphone" } : {});
+    });
+    document.getElementById("gunArmBtn").addEventListener("click", async () => {
+      if (gun.state === "armed") {
+        gun.stop();
+        renderGun({});
+        return;
+      }
+      try {
+        await gun.arm();
+      } catch (err) {
+        toast(err.message || "Couldn't open the microphone", "error");
+      }
+      renderGun({});
+    });
+    document.getElementById("gunThreshold").addEventListener("input", (e) => {
+      gun.setThreshold((parseInt(e.target.value, 10) || 60) / 100);
+      if (gun.state === "armed") renderGun({});
+    });
+
     // registrations tab
     document.getElementById("reloadRegsBtn").addEventListener("click", async () => {
       try {
@@ -1758,6 +2815,8 @@
       downloadCsv("brighton-oaks-5k-results.csv", rows);
       toast("Results exported", "success");
     });
+    document.getElementById("sharePdfBtn").addEventListener("click", shareResultsPdf);
+    document.getElementById("copyListBtn").addEventListener("click", copyAthleteList);
     document.getElementById("clearResultsBtn").addEventListener("click", () => {
       if (!confirm("Clear every recorded finish? This cannot be undone.")) return;
       state.results = {};
@@ -1804,7 +2863,7 @@
         if (state.raceStart == null || state.paused) startRace();
         else togglePause();
       }
-      else if (["1", "2", "3", "4", "5"].includes(e.key)) {
+      else if (["1", "2", "3", "4", "5", "6"].includes(e.key)) {
         const btn = document.querySelectorAll("#tabs button")[parseInt(e.key, 10) - 1];
         if (btn) btn.click();
       }

@@ -256,7 +256,12 @@ export function hasDigitLikeStructure(gray, w, h) {
     return { ok: false, reason: "low-contrast", contrast, components: 0, polarity: "dark-on-light" };
   }
 
-  const flat = flattenLighting(gray, w, h, Math.max(6, Math.round(Math.min(w, h) / 6)));
+  // NOTE: the flatten radius must stay small in absolute terms. It used to be
+  // `min(w, h) / 6`, which on a close-up bib is wider than the digit strokes
+  // themselves — the local mean then tracks the glyphs and erases them, so
+  // perfectly legible numbers were reported as "no digit components".
+  const flatRadius = Math.max(4, Math.min(14, Math.round(Math.min(w, h) / 12)));
+  const flat = flattenLighting(gray, w, h, flatRadius);
   const t = otsuThreshold(flat);
 
   const checkPolarity = (invert) => {
@@ -389,10 +394,12 @@ export function detectBibRegions(gray, w, h) {
 
   const candidates = [];
 
-  // Pass A: Bright rectangular bib cards
+  // Pass A: Bright rectangular bib cards. The area cap has to be generous:
+  // a runner filling the frame carries a bib covering most of it, and a tight
+  // cap made exactly those close-up bibs invisible to detection.
   const cardBlobs = findBlobs(brightCard, w, h, {
     minArea: Math.max(48, Math.round(w * h * 0.0012)),
-    maxArea: Math.round(w * h * 0.45),
+    maxArea: Math.round(w * h * 0.85),
   });
   for (const b of cardBlobs) {
     const aspect = b.w / b.h;
@@ -748,9 +755,9 @@ export function tallyVotes(votes, knownBibs = []) {
 
 /** Draw a sub-rectangle of a source (video/image/canvas) into a fresh
     canvas, with optional upscale. */
-export function cropToCanvas(source, sx, sy, sw, sh, minW = 220) {
+export function cropToCanvas(source, sx, sy, sw, sh, minW = 480) {
   const canvas = document.createElement("canvas");
-  const scale = sw * 2 < minW ? Math.min(4, Math.ceil(minW / Math.max(1, sw))) : 1;
+  const scale = sw < minW ? Math.min(6, Math.ceil(minW / Math.max(1, sw))) : 1;
   canvas.width = Math.max(8, Math.round(sw * scale));
   canvas.height = Math.max(8, Math.round(sh * scale));
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -760,30 +767,103 @@ export function cropToCanvas(source, sx, sy, sw, sh, minW = 220) {
   return canvas;
 }
 
+/* --- OCR image preparation -------------------------------------------
+   Tesseract's LSTM engine is trained on anti-aliased *grayscale* text, not
+   on hard-thresholded bitmaps: Otsu binarization on a small, noisy webcam
+   crop chops thin strokes and jagged digit edges, which is the single
+   biggest reason a bib reads as nothing. So the primary variant fed to OCR
+   is a percentile-stretched, upscaled grayscale image (each digit framed at
+   ~40px tall); binarized copies stay as fallbacks for glare / low contrast.
+   --------------------------------------------------------------------- */
+
+/** Percentile contrast stretch (ignores the extreme 2% tails). */
+export function contrastStretch(gray, w, h, tail = 0.02) {
+  const hist = new Uint32Array(256);
+  for (let i = 0; i < gray.length; i++) hist[gray[i]]++;
+  const n = gray.length || 1;
+  let acc = 0, lo = 0, hi = 255;
+  for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc >= n * tail) { lo = v; break; } }
+  acc = 0;
+  for (let v = 255; v >= 0; v--) { acc += hist[v]; if (acc >= n * tail) { hi = v; break; } }
+  const span = Math.max(1, hi - lo);
+  const out = new Uint8Array(w * h);
+  for (let i = 0; i < out.length; i++) {
+    const v = ((gray[i] - lo) * 255) / span;
+    out[i] = v < 0 ? 0 : v > 255 ? 255 : v | 0;
+  }
+  return out;
+}
+
+/** Grayscale Uint8 buffer -> opaque canvas. */
+export function grayToCanvas(gray, w, h) {
+  const cv = document.createElement("canvas");
+  cv.width = w; cv.height = h;
+  const ctx = cv.getContext("2d");
+  const img = ctx.createImageData(w, h);
+  for (let i = 0, p = 0; i < gray.length; i++, p += 4) {
+    img.data[p] = img.data[p + 1] = img.data[p + 2] = gray[i];
+    img.data[p + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  return cv;
+}
+
+/** Binary canvas from a gray buffer (255 = paper, 0 = ink). */
+export function binaryCanvas(gray, w, h, invert = false) {
+  return grayToCanvas(binarizeOtsu(gray, w, h, invert), w, h);
+}
+
+/**
+ * Upscale a crop and return the OCR-ready grayscale buffer plus a matching
+ * canvas. Upscaling happens on the *colour* image (so the browser's high
+ * quality resampler does the work) and only then becomes grayscale, which
+ * keeps digit edges smooth instead of blocky.
+ */
+export function prepOcrCrop(cropCanvas, targetW = 720) {
+  const srcW = Math.max(1, cropCanvas.width);
+  const srcH = Math.max(1, cropCanvas.height);
+  // Size the input to the glyphs, not to the crop. Tesseract is most accurate
+  // with a roughly 30-60px x-height, and blindly upscaling to `targetW` turned
+  // a crisp, perfectly legible 300px-tall "2147" into "0024". Only fall back
+  // to `targetW` when the glyph size cannot be measured.
+  const glyph = estimateGlyphHeight(cropCanvas);
+  const desired = glyph > 0 ? 46 / glyph : targetW / srcW;
+  const scale = Math.min(8, Math.max(0.2, desired));
+  const w = Math.max(16, Math.round(srcW * scale));
+  const h = Math.max(12, Math.round(srcH * scale));
+
+  const cv = document.createElement("canvas");
+  cv.width = w; cv.height = h;
+  const ctx = cv.getContext("2d", { willReadFrequently: true });
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(cropCanvas, 0, 0, w, h);
+
+  const gray0 = toGray(ctx.getImageData(0, 0, w, h).data, w, h);
+  // Stretch the tonal range to full black-to-white, then gently re-sharpen.
+  //
+  // Deliberately NO `flattenLighting` here: its radius scales with the crop,
+  // so on a large bib the local mean tracks the glyphs themselves and erases
+  // them (measured — "1093" reads perfectly without it and not at all with
+  // it). Shadow/glare gradients are handled by the binarized fallback pass.
+  const stretched = contrastStretch(gray0, w, h);
+  const prepped = unsharpMask(stretched, w, h, 0.7, Math.max(1, Math.round(w / 240)));
+
+  return { w, h, prepped, grayCanvas: grayToCanvas(prepped, w, h) };
+}
+
 /** Build polarity variants of a crop, pre-processed for OCR. */
 export function ocrVariants(cropCanvas, polarity = "both") {
-  const w = cropCanvas.width, h = cropCanvas.height;
-  const ctx = cropCanvas.getContext("2d", { willReadFrequently: true });
-  const gray = toGray(ctx.getImageData(0, 0, w, h).data, w, h);
-  const prepped = unsharpMask(flattenLighting(gray, w, h), w, h);
+  const p = prepOcrCrop(cropCanvas, Math.max(480, cropCanvas.width));
   const modes = polarity === "dark-on-light"
     ? [false]
     : polarity === "light-on-dark"
       ? [true]
       : [false, true];
-  return modes.map((invert) => {
-    const bin = binarizeOtsu(prepped, w, h, invert);
-    const out = document.createElement("canvas");
-    out.width = w; out.height = h;
-    const octx = out.getContext("2d");
-    const img = octx.createImageData(w, h);
-    for (let i = 0, p = 0; i < bin.length; i++, p += 4) {
-      img.data[p] = img.data[p + 1] = img.data[p + 2] = bin[i];
-      img.data[p + 3] = 255;
-    }
-    octx.putImageData(img, 0, 0);
-    return { canvas: out, invert };
-  });
+  return modes.map((invert) => ({
+    canvas: binaryCanvas(p.prepped, p.w, p.h, invert),
+    invert,
+  }));
 }
 
 /** Per-symbol confidence reader for Tesseract.js v5. */
@@ -815,14 +895,14 @@ export function validateOcrSymbols(data, cropW, cropH) {
     const validSymbols = [];
     for (const s of symbols) {
       const sConf = typeof s.confidence === "number" ? s.confidence : conf;
-      if (sConf < 42) continue;
+      if (sConf < 34) continue;
       const b = s.bbox;
       if (b && typeof b.x0 === "number" && typeof b.x1 === "number") {
         const sw = Math.max(1, b.x1 - b.x0);
         const sh = Math.max(1, b.y1 - b.y0);
         const relH = sh / cropH;
         const relW = sw / cropW;
-        if (relH < 0.14 || relH > 0.98) continue;
+        if (relH < 0.10 || relH > 0.99) continue;
         if (relW > 0.85) continue;
         validSymbols.push({ text: String(s.text).replace(/\D/g, ""), conf: sConf, h: sh, y: (b.y0 + b.y1) / 2 });
       } else {
@@ -836,49 +916,174 @@ export function validateOcrSymbols(data, cropW, cropH) {
     const meanConf = validSymbols.reduce((acc, s) => acc + s.conf, 0) / validSymbols.length;
 
     if (cleanDigits.length === 1 && meanConf < 82) return null;
-    if (meanConf < 52) return null;
+    if (meanConf < 45) return null;
 
     return { digits: cleanDigits, confidence: Math.round(meanConf) };
   }
 
   if (rawText.length === 1 && conf < 82) return null;
-  if (conf < 52) return null;
+  if (conf < 45) return null;
   return { digits: rawText, confidence: Math.round(conf) };
 }
 
-/** Run OCR on prepared variants and return the best validated digit read.
-    Returns null immediately if the crop fails `hasDigitLikeStructure`. */
-export async function recognizeDigits(worker, cropCanvas) {
-  const w = cropCanvas.width, h = cropCanvas.height;
-  const ctx = cropCanvas.getContext("2d", { willReadFrequently: true });
+/**
+ * Pick the best digit run out of Tesseract's line/word/text output.
+ *
+ * `validateOcrSymbols` is geometry-strict and expects one clean block; on a
+ * real bib the number can carry a faint border or sponsor text, so we also
+ * score whole lines and words and keep the most convincing digit run. Longer
+ * runs are favoured, and a lone digit must clear a higher confidence bar so
+ * random edges still cannot become "bib 1".
+ */
+export function pickBestDigitRead(data) {
+  const reported = typeof data?.confidence === "number" ? data.confidence : 0;
+  // Tesseract reports a page confidence of 0 for digit-only single-line text
+  // surprisingly often, even when every glyph scores 95-100. Fall back to the
+  // per-symbol scores instead of throwing away a correct read (a 0 would also
+  // block the vote tally from ever accepting the bib).
+  const symbolConf = reported > 0 ? reported : readConfidence(data);
+  const baseConf = symbolConf > 0 ? symbolConf : 0;
+  const cands = [];
+  const push = (text, conf) => {
+    const digits = String(text || "").replace(/\D/g, "");
+    if (!digits || digits.length > 5) return;
+    const c = typeof conf === "number" && conf > 0 ? conf : baseConf;
+    cands.push({ digits, confidence: Math.round(c) });
+  };
+
+  for (const line of data?.lines || []) push(line.text, line.confidence);
+  for (const word of data?.words || []) push(word.text, word.confidence);
+  push(data?.text, baseConf);
+
+  if (!cands.length) return null;
+  const score = (c) => c.confidence +
+    (c.digits.length >= 3 ? 12 : c.digits.length === 2 ? 4 : -20);
+  cands.sort((a, b) => score(b) - score(a));
+
+  const best = cands[0];
+  // Tesseract can return correct digit text with a 0 confidence score when the
+  // whitelist collapses the page to one numeric run. For 3+ digits that is
+  // still a usable read (the crop was already verified as a bib region);
+  // shorter runs keep the strict bar so edges cannot become a bib.
+  if (best.confidence === 0) return best.digits.length >= 3 ? best : null;
+  if (best.digits.length === 1 && best.confidence < 70) return null;
+  if (best.confidence < 45) return null;
+  return best;
+}
+
+/**
+ * Median height (px) of the ink blobs in a canvas, or 0 when it cannot tell.
+ *
+ * Used to size the OCR input: Tesseract is most accurate with a rough x-height
+ * of 30-60px. A bib that fills the frame gives glyphs several hundred pixels
+ * tall, which it reads WORSE than a modest downsample (measured: a perfectly
+ * legible 300px "2147" came back as "0024").
+ */
+export function estimateGlyphHeight(canvas) {
+  const w = canvas?.width || 0, h = canvas?.height || 0;
+  if (w < 8 || h < 8) return 0;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
   const gray = toGray(ctx.getImageData(0, 0, w, h).data, w, h);
+  const stretched = contrastStretch(gray, w, h);
+  const t = otsuThreshold(stretched);
+  const mask = new Uint8Array(w * h);
+  for (let i = 0; i < mask.length; i++) mask[i] = stretched[i] <= t ? 1 : 0;
+  const blobs = findBlobs(mask, w, h, { minArea: Math.max(12, Math.round(w * h * 0.0015)) })
+    .filter((b) => {
+      const relH = b.h / h, aspect = b.w / b.h;
+      return relH >= 0.08 && relH <= 0.95 && aspect >= 0.08 && aspect <= 2.6;
+    })
+    .sort((a, b) => b.area - a.area)
+    .slice(0, 8);
+  if (blobs.length < 2) return 0;
+  const hs = blobs.map((b) => b.h).sort((a, b) => a - b);
+  return hs[hs.length >> 1];
+}
 
-  const struct = hasDigitLikeStructure(gray, w, h);
-  if (!struct.ok) return null;
-
-  const variants = ocrVariants(cropCanvas, struct.polarity);
-  let best = null;
-  for (const { canvas, invert } of variants) {
+/**
+ * Ask Tesseract to locate digit-shaped words anywhere in a frame.
+ *
+ * The blob detector can miss a bib that fills the frame or is split by a strap
+ * or glare, but Tesseract's sparse-text mode still finds the number. These
+ * boxes are only used to propose crops for a proper re-read; the digits are
+ * never taken from this scan directly.
+ */
+export async function scanForDigitWords(worker, canvas, limit = 3) {
+  if (!worker || !canvas) return [];
+  const w = canvas.width, h = canvas.height;
+  try {
     await worker.setParameters({
       tessedit_char_whitelist: "0123456789",
-      tessedit_pageseg_mode: "8",
+      tessedit_pageseg_mode: "11",
+      classify_bln_numeric_mode: "1",
+      user_defined_dpi: "300",
     });
     const { data } = await worker.recognize(canvas);
-    const checked = validateOcrSymbols(data, w, h);
-    if (checked && (!best || checked.confidence > best.confidence)) {
-      best = { digits: checked.digits, confidence: checked.confidence, invert };
-    }
-    if (best && best.confidence >= 82 && best.digits.length >= 2) break;
+    return (data?.words || [])
+      .map((wd) => {
+        const digits = String(wd?.text || "").replace(/\D/g, "");
+        const b = wd?.bbox;
+        if (!b || digits.length < 2 || digits.length > 5) return null;
+        if ((wd.confidence || 0) < 55) return null;
+        const bw = b.x1 - b.x0, bh = b.y1 - b.y0;
+        if (bw <= 0 || bh <= 0) return null;
+        // A bib number is a horizontal run: never much taller than it is wide.
+        if (bh < h * 0.008 || bw < bh * 0.7) return null;
+        return { digits, confidence: Math.round(wd.confidence), x: b.x0, y: b.y0, w: bw, h: bh };
+      })
+      .filter(Boolean)
+      .sort((a, b) => (b.confidence + b.digits.length * 4) - (a.confidence + a.digits.length * 4))
+      .slice(0, limit);
+  } catch {
+    return [];
   }
-  if (!best || best.confidence < 58) {
-    await worker.setParameters({
-      tessedit_char_whitelist: "0123456789",
-      tessedit_pageseg_mode: "7",
-    });
-    const { data } = await worker.recognize(variants[0].canvas);
-    const checked = validateOcrSymbols(data, w, h);
-    if (checked && checked.confidence > (best?.confidence ?? 0)) {
-      best = { digits: checked.digits, confidence: checked.confidence, invert: variants[0].invert };
+}
+
+/**
+ * Run OCR over an upscaled grayscale image (with binarized fallbacks) and
+ * return the best validated digit read.
+ *
+ * opts.deep — try the full ladder (block / sparse / inverted). Used for the
+ * manual "read this frame" path where a second of latency is fine. The live
+ * finish-line scanner stays on the two fastest, most reliable passes.
+ */
+export async function recognizeDigits(worker, cropCanvas, opts = {}) {
+  if (!cropCanvas || cropCanvas.width < 12 || cropCanvas.height < 8) return null;
+
+  const prep = prepOcrCrop(cropCanvas, opts.targetW ?? 720);
+  const { w, h, prepped } = prep;
+
+  // Grayscale first (best for the LSTM engine), binary as the fallback.
+  const attempts = [
+    { canvas: prep.grayCanvas, psm: "7", variant: "gray-line" },
+    { canvas: binaryCanvas(prepped, w, h, false), psm: "7", variant: "binary-line" },
+  ];
+  if (opts.deep) {
+    attempts.push({ canvas: prep.grayCanvas, psm: "6", variant: "gray-block" });
+  }
+
+  let best = null;
+  for (const a of attempts) {
+    try {
+      await worker.setParameters({
+        tessedit_char_whitelist: "0123456789",
+        tessedit_pageseg_mode: a.psm,
+        classify_bln_numeric_mode: "1",
+        user_defined_dpi: "300",
+      });
+      const { data } = await worker.recognize(a.canvas);
+      const checked = validateOcrSymbols(data, w, h) || pickBestDigitRead(data);
+      if (checked && (!best ||
+        checked.confidence > best.confidence ||
+        (checked.confidence === best.confidence && checked.digits.length > best.digits.length))) {
+        best = { digits: checked.digits, confidence: checked.confidence, variant: a.variant };
+      }
+      // A validated 3+ digit run is already the answer; Tesseract sometimes
+      // reports confidence 0 for digit-only single-line text, so a missing
+      // score must not force every remaining fallback pass.
+      if (best && best.digits.length >= 3 && (best.confidence >= 70 || best.confidence === 0)) break;
+    } catch (e) {
+      if (!best) throw e;
     }
   }
   return best;
@@ -890,16 +1095,79 @@ export function locateBibPatch(cropCanvas) {
   if (w < 24 || h < 16) return cropCanvas;
   const ctx = cropCanvas.getContext("2d", { willReadFrequently: true });
   const gray = toGray(ctx.getImageData(0, 0, w, h).data, w, h);
-  const regions = detectBibRegions(gray, w, h);
-  if (regions.length > 0) {
-    const r = regions[0];
+
+  // Analyse at a capped resolution: a 1080p frame makes the blob scan take
+  // seconds, and detection only needs a coarse box. The box found here is in
+  // normalized space, so it maps straight back onto the full-res crop.
+  const analysisW = Math.min(w, 720);
+  let analysisGray = gray, aw = w, ah = h;
+  if (analysisW < w) {
+    const s = analysisW / w;
+    aw = analysisW;
+    ah = Math.max(8, Math.round(h * s));
+    analysisGray = new Uint8Array(aw * ah);
+    for (let y = 0; y < ah; y++) {
+      const srcY = Math.min(h - 1, Math.round(y / s));
+      for (let x = 0; x < aw; x++) {
+        const srcX = Math.min(w - 1, Math.round(x / s));
+        analysisGray[y * aw + x] = gray[srcY * w + srcX];
+      }
+    }
+  }
+
+  const regions = detectBibRegions(analysisGray, aw, ah);
+  // NOT regions[0]: the first blob is routinely a scrap of banner lettering or
+  // a sleeve seam. Pick the candidate that is both large and carries the most
+  // verified digit strokes, otherwise OCR gets fed a 24x26 fragment of text.
+  let found = null;
+  for (const r of regions) {
+    const areaRatio = (r.w * r.h) / (aw * ah);
+    const score = (r.components || 0) + areaRatio * 12;
+    if (!found || score > found.score) found = { score, box: r };
+  }
+  found = found ? found.box : null;
+
+  if (!found) {
+    // A bib that fills most of the frame can still miss the whole-frame scan
+    // (a strap, banner or blown-out edge splits its bright card). Rescan
+    // overlapping tiles so a close-up bib is located instead of given up on.
+    const tw = Math.max(24, Math.round(aw * 0.55));
+    const th = Math.max(24, Math.round(ah * 0.55));
+    const stepX = Math.max(8, Math.round(tw * 0.5));
+    const stepY = Math.max(8, Math.round(th * 0.5));
+    let best = null;
+    if (tw <= aw && th <= ah) {
+      for (let sy = 0; sy < ah; sy += stepY) {
+        const ty = Math.min(sy, ah - th);
+        for (let sx = 0; sx < aw; sx += stepX) {
+          const tx = Math.min(sx, aw - tw);
+          const sub = cropGray(analysisGray, aw, ah, tx, ty, tw, th);
+          for (const r of detectBibRegions(sub.data, sub.w, sub.h)) {
+            const score = r.components * 10 + (r.contrast || 0) / 255;
+            if (!best || score > best.score) {
+              best = { score, box: { x: r.x + tx, y: r.y + ty, w: r.w, h: r.h } };
+            }
+          }
+          if (tx === aw - tw) break;
+        }
+        if (ty === ah - th) break;
+      }
+    }
+    if (best) found = best.box;
+  }
+
+  if (found) {
+    const r = found;
     const mx = r.w * 0.08, my = r.h * 0.12;
     const sx = Math.max(0, (r.x - mx) * w);
     const sy = Math.max(0, (r.y - my) * h);
     const sw = Math.min(w - sx, (r.w + mx * 2) * w);
     const sh = Math.min(h - sy, (r.h + my * 2) * h);
-    return cropToCanvas(cropCanvas, sx, sy, sw, sh, 240);
+    return cropToCanvas(cropCanvas, sx, sy, sw, sh, 640);
   }
+
+  // Nothing bib-like anywhere: return the frame unchanged so the caller can
+  // tell "not located" (identity check) and refuse to guess a number.
   return cropCanvas;
 }
 
@@ -961,7 +1229,7 @@ export class FinishCam {
     this.reads = 0;
     this.recentBibs = new Map();         // bib -> timestamp of last finish
     this.wallFlash = null;               // { at, point, bib } for visual 3D wall pulse
-    this.workW = 360;                    // bib-detection analysis resolution
+    this.workW = 480;                    // bib-detection analysis resolution
 
     this._grabCanvas = document.createElement("canvas");
     this._fullCanvas = document.createElement("canvas");
@@ -1124,7 +1392,7 @@ export class FinishCam {
     const sh = Math.min(vh - sy, (track.bbox.h + padY * 2) * vh);
     if (sw < 16 || sh < 12) return;
 
-    const bibCrop = cropToCanvas(video, sx, sy, sw, sh, 240);
+    const bibCrop = cropToCanvas(video, sx, sy, sw, sh, 480);
     const worker = await this._getWorker();
     const read = await recognizeDigits(worker, bibCrop);
     if (!read) return;
@@ -1209,18 +1477,89 @@ export class FinishCam {
     const sw = source.videoWidth || source.naturalWidth || source.width;
     const sh = source.videoHeight || source.naturalHeight || source.height;
     if (!sw || !sh) return null;
-    const crop = cropToCanvas(source, 0, 0, sw, sh, 640);
-    const bibPatch = locateBibPatch(crop);
+
+    // Downscale only. `cropToCanvas` upsizes anything under its `minW` (up to
+    // 6x), which handed Tesseract 600px-tall glyphs on a 320px still — it
+    // read those worse than the untouched original.
+    const maxW = 1000;
+    const fit = Math.min(1, maxW / sw);
+    const frame = document.createElement("canvas");
+    frame.width = Math.max(8, Math.round(sw * fit));
+    frame.height = Math.max(8, Math.round(sh * fit));
+    const fctx = frame.getContext("2d", { willReadFrequently: true });
+    fctx.imageSmoothingEnabled = true;
+    fctx.imageSmoothingQuality = "high";
+    fctx.drawImage(source, 0, 0, frame.width, frame.height);
+
     const worker = await this._getWorker();
-    let read = await recognizeDigits(worker, bibPatch);
-    if ((!read || read.confidence < 55) && bibPatch !== crop) {
-      const alt = await recognizeDigits(worker, crop);
-      if (alt && (!read || alt.confidence > read.confidence)) read = alt;
+    const located = locateBibPatch(frame);
+    const reads = [];
+    const seen = new Set();
+
+    const take = async (canvas, srcName) => {
+      const r = await recognizeDigits(worker, canvas, { deep: true });
+      if (!r) return null;
+      const agreed = seen.has(r.digits);
+      seen.add(r.digits);
+      reads.push({ ...r, crop: canvas, source: srcName });
+      return { r, agreed };
+    };
+
+    // 1. The structurally located bib region is the best evidence we can get.
+    if (located !== frame) {
+      const got = await take(located, "bib-region");
+      if (got && got.r.confidence >= 90) {
+        return this._finishRead(got.r, located, "bib-region", 1);
+      }
     }
-    if (!read) return null;
+
+    // 2. Otherwise let Tesseract propose digit-shaped words anywhere in the
+    //    frame and re-read each one properly. The digits from this scan are
+    //    never trusted directly; they are only candidate boxes.
+    const agreed = () => {
+      const counts = new Map();
+      for (const r of reads) counts.set(r.digits, (counts.get(r.digits) || 0) + 1);
+      return [...counts.values()].some((c) => c >= 2);
+    };
+    if (!agreed()) {
+      for (const wd of await scanForDigitWords(worker, frame, 3)) {
+        const padX = wd.w * 0.18, padY = wd.h * 0.3;
+        const sx = Math.max(0, wd.x - padX), sy = Math.max(0, wd.y - padY);
+        const c = cropToCanvas(
+          frame, sx, sy,
+          Math.min(frame.width - sx, wd.w + padX * 2),
+          Math.min(frame.height - sy, wd.h + padY * 2),
+          480
+        );
+        const got = await take(c, "digit-word");
+        if (got && got.agreed) break;
+        if (reads.length >= 3) break;
+      }
+    }
+
+    if (!reads.length) return null;
+    const groups = new Map();
+    for (const r of reads) {
+      const g = groups.get(r.digits) || { digits: r.digits, count: 0, best: r };
+      g.count++;
+      if (r.confidence >= g.best.confidence) g.best = r;
+      groups.set(r.digits, g);
+    }
+    const ranked = [...groups.values()].sort(
+      (a, b) => b.count - a.count || b.best.confidence - a.best.confidence
+    );
+    const top = ranked[0];
+    // A lone mid-confidence read off a busy frame is exactly how "0001" at
+    // 84% got recorded, so one unopposed read has to be genuinely confident.
+    if (top.count < 2 && top.best.confidence < 88) return null;
+    return this._finishRead(top.best, top.best.crop, top.best.source, top.count);
+  }
+
+  /** Canonicalize a read and package it for the caller. */
+  _finishRead(read, crop, source, agreement) {
     const canonical = canonicalizeBibRead(read.digits, this.getRosterBibs());
     const bib = canonical ? canonical.bib : read.digits.padStart(4, "0");
-    return { ...read, digits: bib, thumb: thumbOf(bibPatch), crop: bibPatch };
+    return { ...read, digits: bib, thumb: thumbOf(crop), crop, source, agreement };
   }
 
   /* ---- 3D Finish-Gate Wall overlay ---- */

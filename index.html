@@ -2,461 +2,1696 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Brighton Oaks 5K — Home</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Brighton Oaks 5K — Thanksgiving Day Run</title>
+  <meta name="description" content="The Brighton Oaks 5K is a Thanksgiving morning run through the pines and dirt roads of Brighton Oaks, South Carolina. Register, check live results and explore the course." />
+  <meta name="theme-color" content="#140f08" />
   <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
   <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-title" content="BO 5k" />
   <link rel="manifest" href="/Favicon Generator/site.webmanifest" />
-  <!-- Include in <head> (once per page) -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Roboto:wght@400;700&family=Rye&family=Special+Elite&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@500;600&family=Rye&family=Special+Elite&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="images/trail.jpeg" />
+
   <style>
     @font-face{
       font-family: 'Oakhill';
       src: url('fonts/Oakhill.ttf') format('truetype');
+      font-display: swap;
     }
-    @font-face{
-      font-family: 'run';
-      src: url('fonts/RUNNING DEMO.otf') format('opentype');
+
+    :root{
+      --bg:        #140f08;
+      --bg-soft:   #1c140b;
+      --panel:     #221810;
+      --panel-2:   #2b1e12;
+      --line:      rgba(201,162,109,.16);
+      --line-2:    rgba(201,162,109,.34);
+      --text:      #f4e9d4;
+      --muted:     #c3ab85;
+      --faint:     #927c5e;
+      --orange:    #d2762e;
+      --orange-2:  #ed9a56;
+      --green:     #6b8f3c;
+      --green-2:   #8fbf5e;
+      --paper:     #f2e6cd;
+      --ink:       #2b1c0c;
+      --display:   'Rye', 'Oakhill', Georgia, serif;
+      --mono:      'Roboto Mono', ui-monospace, Menlo, monospace;
+      --type:      'Special Elite', 'Courier New', monospace;
+      --ease:      cubic-bezier(.22,.61,.36,1);
+      --radius:    18px;
+      --radius-sm: 11px;
+      --navh:      70px;
+      --shadow:    0 18px 50px -18px rgba(0,0,0,.85);
     }
-    :root {
-      --accent: #5d7c34;
-      --accent2: #d2762e;
-      --bg: #16100a;
-      --card: #271c11;
-      --text: #f1e6cf;
-      --muted: #c0a982;
-      --shadow: 0 6px 20px rgba(8, 4, 0, 0.5);
-      --display: 'Rye', 'Oakhill', Georgia, serif;
-    }
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0; height: 100%;
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg);
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html{ scroll-behavior: smooth; }
+
+    body{
+      margin: 0;
+      background: var(--bg);
       background-image:
-        radial-gradient(ellipse at 18% -10%, rgba(210, 118, 46, 0.10), transparent 55%),
-        radial-gradient(ellipse at 85% 112%, rgba(122, 84, 44, 0.14), transparent 62%);
+        radial-gradient(900px 520px at 12% -8%, rgba(210,118,46,.10), transparent 70%),
+        radial-gradient(760px 520px at 92% 4%, rgba(107,143,60,.09), transparent 70%),
+        radial-gradient(900px 700px at 50% 120%, rgba(122,84,44,.14), transparent 70%);
       background-attachment: fixed;
       color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-    .navbar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 28px; background: rgba(22, 16, 10, 0.95); box-shadow: var(--shadow);
-      border-bottom: 2px solid rgba(201, 162, 109, 0.28);
-      position: sticky; top: 0; z-index: 100;
+
+    ::selection{ background: rgba(210,118,46,.35); color: #fff; }
+
+    h1,h2,h3,h4{ margin: 0; line-height: 1.15; letter-spacing: -.01em; }
+    p{ margin: 0; }
+    a{ color: var(--orange-2); }
+    img{ max-width: 100%; }
+
+    :focus-visible{
+      outline: 2px solid var(--orange-2);
+      outline-offset: 3px;
+      border-radius: 4px;
     }
-    .navbar .logo {
-      display: flex; align-items: center; gap: 12px;
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--accent2);
-      font-family: var(--display);
+
+    .wrap{ width: min(1180px, 100% - 44px); margin-inline: auto; }
+
+    /* ============================== NAV ============================== */
+    .site-nav{
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      height: var(--navh);
+      padding: 0 clamp(16px, 3vw, 34px);
+      background: rgba(20,14,8,.55);
+      border-bottom: 1px solid transparent;
+      transition: background .35s var(--ease), border-color .35s var(--ease), box-shadow .35s var(--ease), height .35s var(--ease);
+      backdrop-filter: blur(14px) saturate(1.15);
+      -webkit-backdrop-filter: blur(14px) saturate(1.15);
     }
-    .navbar .logo img { height: 46px; border-radius: 8px; }
-    .navbar .nav-links { 
-      font-family: 'run', sans-serif;
-      display: flex; 
-      gap: 14px; 
+    .site-nav.scrolled{
+      background: rgba(17,11,6,.92);
+      border-bottom-color: var(--line);
+      box-shadow: 0 14px 34px -22px #000;
+      height: 62px;
     }
-    .navbar a {
+
+    .brand{
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
       text-decoration: none;
       color: var(--text);
-      font-weight: 600;
-      transition: all 0.3s ease;
-      padding: 8px 16px;
-      border-radius: 8px;
+      min-width: 0;
+    }
+    .brand-logo{
+      width: 44px; height: 44px;
+      object-fit: contain;
+      padding: 4px;
+      border-radius: 11px;
+      background: linear-gradient(160deg, #f8efdc 0%, #e6d3ae 100%);
+      border: 1px solid rgba(201,162,109,.55);
+      box-shadow: 0 6px 14px -8px rgba(0,0,0,.9);
+      transition: transform .4s var(--ease);
+      flex: none;
+    }
+    .brand:hover .brand-logo{ transform: rotate(-4deg) scale(1.05); }
+    .brand-text{ display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+    .brand-text strong{
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: 1.02rem;
+      letter-spacing: .02em;
+      white-space: nowrap;
+    }
+    .brand-text em{
+      font-style: normal;
+      font-size: .62rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .nav-links{
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-links a{
       position: relative;
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: .9rem;
+      padding: 9px 14px;
+      border-radius: 999px;
+      transition: color .25s var(--ease), background .25s var(--ease);
+      white-space: nowrap;
+    }
+    .nav-links a::after{
+      content: '';
+      position: absolute;
+      left: 14px; right: 14px; bottom: 5px;
+      height: 1.5px;
+      background: currentColor;
+      transform: scaleX(0);
+      transform-origin: left;
+      opacity: .8;
+      transition: transform .3s var(--ease);
+    }
+    .nav-links a:hover{ color: var(--text); background: rgba(244,233,212,.06); }
+    .nav-links a:hover::after{ transform: scaleX(1); }
+    .nav-links a.active{ color: var(--text); }
+    .nav-links a.active::after{ transform: scaleX(1); background: var(--orange); }
+
+    .nav-links a.nav-cta{
+      margin-left: 6px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--orange) 0%, #b55c1b 100%);
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 8px 22px -10px rgba(210,118,46,.9);
+    }
+    .nav-links a.nav-cta::after{ display: none; }
+    .nav-links a.nav-cta:hover{ transform: translateY(-1px); box-shadow: 0 12px 26px -10px rgba(210,118,46,1); }
+
+    .nav-toggle{
+      display: none;
+      width: 44px; height: 44px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 5px;
+      background: rgba(244,233,212,.07);
+      border: 1px solid var(--line-2);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background .25s var(--ease), border-color .25s var(--ease);
+    }
+    .nav-toggle:hover{ background: rgba(244,233,212,.13); }
+    .nav-toggle span{
+      display: block;
+      width: 18px; height: 2px;
+      border-radius: 2px;
+      background: var(--text);
+      transition: transform .3s var(--ease), opacity .2s var(--ease);
+    }
+    .nav-toggle[aria-expanded="true"] span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+    .nav-toggle[aria-expanded="true"] span:nth-child(2){ opacity: 0; }
+    .nav-toggle[aria-expanded="true"] span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+
+    /* ============================== TICKER ============================== */
+    .ticker{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 9px 18px;
+      font-size: .84rem;
+      font-weight: 600;
+      letter-spacing: .01em;
+      color: #ffe6cd;
+      background: linear-gradient(90deg, rgba(210,118,46,.02), rgba(210,118,46,.18) 45%, rgba(210,118,46,.02));
+      border-bottom: 1px solid rgba(210,118,46,.25);
+      text-align: center;
+      flex-wrap: wrap;
+    }
+    .ticker .pulse{
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--orange-2);
+      box-shadow: 0 0 0 0 rgba(237,154,86,.7);
+      animation: pulse 2.4s infinite;
+      flex: none;
+    }
+    .ticker b{ color: #fff; font-weight: 800; }
+    @keyframes pulse{
+      0%   { box-shadow: 0 0 0 0 rgba(237,154,86,.65); }
+      70%  { box-shadow: 0 0 0 9px rgba(237,154,86,0); }
+      100% { box-shadow: 0 0 0 0 rgba(237,154,86,0); }
+    }
+
+    /* ============================== HERO ============================== */
+    .hero{
+      position: relative;
+      min-height: clamp(620px, 90vh, 880px);
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      isolation: isolate;
+      border-bottom: 1px solid var(--line);
+    }
+    .hero-media{ position: absolute; inset: 0; z-index: 0; background: #0d0905; }
+    .hero-slide{
+      position: absolute;
+      inset: 0;
+      background-position: center;
+      background-size: cover;
+      opacity: 0;
+      transform: scale(1.03);
+      transition: opacity 1.8s var(--ease), transform 10s linear;
+      will-change: opacity, transform;
+    }
+    .hero-slide.on{ opacity: 1; transform: scale(1.13); }
+
+    .hero-veil{
+      position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(14,9,5,.58) 0%, rgba(14,9,5,.16) 34%, rgba(14,9,5,.5) 74%, var(--bg) 100%),
+        radial-gradient(120% 95% at 16% 48%, rgba(14,9,5,.72) 0%, rgba(14,9,5,.22) 52%, transparent 100%);
+    }
+    .hero-grain{
+      position: absolute; inset: 0; z-index: 2; pointer-events: none;
+      opacity: .5;
+      background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 3px 3px;
+      mix-blend-mode: overlay;
+    }
+    #leavesCanvas{
+      position: absolute; inset: 0; z-index: 3;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      opacity: .55;
+    }
+
+    .hero-inner{
+      position: relative;
+      z-index: 4;
+      width: min(1180px, 100% - 44px);
+      margin-inline: auto;
+      padding: clamp(40px, 7vw, 72px) 0 clamp(34px, 5vw, 60px);
+    }
+
+    .hero-kicker{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 16px 7px 13px;
+      border-radius: 999px;
+      background: rgba(23,15,8,.55);
+      border: 1px solid rgba(237,154,86,.35);
+      backdrop-filter: blur(8px);
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: #ffd8b4;
+      margin-bottom: 22px;
+    }
+    .hero-kicker .dot{
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green-2);
+      box-shadow: 0 0 10px rgba(143,191,94,.9);
+      flex: none;
+    }
+
+    .hero h1{
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(2.5rem, 7.2vw, 4.9rem);
+      letter-spacing: .01em;
+      line-height: 1.02;
+      margin: 0 0 6px;
+      color: #fdf4e3;
+      text-shadow: 0 6px 34px rgba(0,0,0,.7), 0 2px 0 rgba(0,0,0,.35);
+      max-width: 16ch;
+    }
+    .hero h1 .accent{
+      display: inline-block;
+      color: var(--orange);
+      text-shadow: 0 6px 30px rgba(210,118,46,.4);
+    }
+    .hero-lede{
+      max-width: 54ch;
+      margin-top: 14px;
+      color: #e2d3ba;
+      font-size: clamp(.98rem, 1.5vw, 1.1rem);
+      text-shadow: 0 2px 14px rgba(0,0,0,.7);
+    }
+
+    /* ---- countdown ---- */
+    .countdown{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: clamp(24px, 4vw, 34px) 0 0;
+    }
+    .cd-unit{
+      min-width: 86px;
+      padding: 12px 14px 10px;
+      border-radius: 14px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(48,34,20,.72), rgba(24,16,9,.72));
+      border: 1px solid rgba(201,162,109,.26);
+      box-shadow: inset 0 1px 0 rgba(255,236,206,.08), 0 10px 26px -16px #000;
+      backdrop-filter: blur(10px);
+      transition: border-color .3s var(--ease), transform .3s var(--ease);
+    }
+    .cd-unit:hover{ border-color: rgba(210,118,46,.5); transform: translateY(-2px); }
+    .cd-num{
+      display: block;
+      font-family: var(--mono);
+      font-size: clamp(1.5rem, 3.1vw, 2.05rem);
+      font-weight: 600;
+      line-height: 1;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -.02em;
+    }
+    .cd-label{
+      display: block;
+      margin-top: 6px;
+      font-size: .6rem;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    .cd-unit.race-day{ border-color: rgba(143,191,94,.55); }
+    .cd-unit.race-day .cd-num{ color: var(--green-2); font-family: 'Inter', sans-serif; font-size: 1.15rem; letter-spacing: .02em; }
+
+    .hero-actions{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: clamp(24px, 3.6vw, 32px);
+    }
+
+    .btn{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 14px 26px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      font-family: inherit;
+      font-size: .95rem;
+      font-weight: 700;
+      letter-spacing: .01em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .22s var(--ease), box-shadow .28s var(--ease), background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);
+      will-change: transform;
+    }
+    .btn svg{ width: 17px; height: 17px; flex: none; }
+    .btn-primary{
+      background: linear-gradient(135deg, var(--orange) 0%, #bd631d 100%);
+      color: #fff;
+      box-shadow: 0 14px 30px -14px rgba(210,118,46,.95), inset 0 1px 0 rgba(255,255,255,.22);
+    }
+    .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 20px 38px -14px rgba(210,118,46,1); }
+    .btn-ghost{
+      background: rgba(20,14,8,.5);
+      border-color: rgba(244,233,212,.26);
+      color: var(--text);
+      backdrop-filter: blur(8px);
+    }
+    .btn-ghost:hover{ background: rgba(244,233,212,.12); border-color: rgba(244,233,212,.5); transform: translateY(-2px); }
+    .btn-green{
+      background: linear-gradient(135deg, var(--green) 0%, #4f6d29 100%);
+      color: #fff;
+      box-shadow: 0 14px 30px -16px rgba(107,143,60,.95), inset 0 1px 0 rgba(255,255,255,.18);
+    }
+    .btn-green:hover{ transform: translateY(-2px); }
+    .btn:active{ transform: translateY(0) scale(.99); }
+
+    .hero-meta{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 22px;
+      margin-top: clamp(26px, 4vw, 38px);
+      padding-top: 20px;
+      border-top: 1px solid rgba(244,233,212,.14);
+      max-width: 760px;
+    }
+    .hero-meta li{ list-style: none; display: flex; align-items: center; gap: 9px; font-size: .86rem; color: #d8c8ae; font-weight: 600; }
+    .hero-meta li svg{ width: 16px; height: 16px; color: var(--orange-2); flex: none; }
+
+    .scroll-cue{
+      position: absolute;
+      left: 50%; bottom: 22px;
+      transform: translateX(-50%);
+      z-index: 5;
+      width: 26px; height: 42px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(244,233,212,.4);
+      display: grid;
+      place-items: center;
+      transition: border-color .3s var(--ease);
+    }
+    .scroll-cue:hover{ border-color: var(--orange-2); }
+    .scroll-cue::before{
+      content: '';
+      width: 3px; height: 8px;
+      border-radius: 3px;
+      background: rgba(244,233,212,.8);
+      animation: cue 1.9s var(--ease) infinite;
+    }
+    @keyframes cue{
+      0%   { transform: translateY(-6px); opacity: 0; }
+      40%  { opacity: 1; }
+      100% { transform: translateY(8px); opacity: 0; }
+    }
+
+    /* ============================== SECTIONS ============================== */
+    .section{ padding: clamp(56px, 8vw, 96px) 0; }
+    .section--tight{ padding: clamp(40px, 6vw, 64px) 0; }
+    .section[id]{ scroll-margin-top: 84px; }
+
+    .sec-head{ max-width: 660px; margin-bottom: clamp(28px, 4vw, 44px); }
+    .sec-head.center{ margin-inline: auto; text-align: center; }
+    .eyebrow{
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--orange-2);
+      margin-bottom: 12px;
+    }
+    .eyebrow::before{
+      content: '';
+      width: 22px; height: 1.5px;
+      background: currentColor;
+      opacity: .7;
+    }
+    .sec-head.center .eyebrow::after{
+      content: '';
+      width: 22px; height: 1.5px;
+      background: currentColor;
+      opacity: .7;
+    }
+    .sec-head h2{
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+      color: #fbf1de;
+      letter-spacing: .01em;
+    }
+    .sec-head p{
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 58ch;
+    }
+    .sec-head.center p{ margin-inline: auto; }
+
+    /* ---- reveal ---- */
+    .reveal{
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .8s var(--ease), transform .8s var(--ease);
+      transition-delay: var(--d, 0ms);
+    }
+    .reveal.in{ opacity: 1; transform: none; }
+
+    /* ============================== STORY ============================== */
+    .story{
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: clamp(28px, 5vw, 64px);
+      align-items: center;
+    }
+    .story-collage{
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      grid-template-rows: repeat(2, 1fr);
+      gap: 12px;
+      min-height: 460px;
+    }
+    .story-collage figure{
+      margin: 0;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    .story-collage figure::after{
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 45%, rgba(12,8,4,.6));
+      pointer-events: none;
+    }
+    .story-collage figure:first-child{ grid-row: span 2; }
+    .story-collage img{
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 1s var(--ease);
+    }
+    .story-collage figure:hover img{ transform: scale(1.05); }
+    .story-collage figcaption{
+      position: absolute;
+      left: 14px; right: 14px; bottom: 12px;
+      z-index: 1;
+      font-size: .7rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: rgba(253,244,227,.86);
+    }
+
+    .story-copy .stamp{
+      display: inline-block;
+      font-family: var(--type);
+      font-size: .78rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--orange-2);
+      border: 1px dashed rgba(210,118,46,.55);
+      border-radius: 8px;
+      padding: 5px 12px;
+      transform: rotate(-1.6deg);
+      margin-bottom: 16px;
+    }
+    .story-copy h2{
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(1.7rem, 3.4vw, 2.35rem);
+      color: #fbf1de;
+      margin-bottom: 16px;
+    }
+    .story-copy p{
+      color: var(--muted);
+      font-family: var(--type);
+      font-size: .97rem;
+      line-height: 1.85;
+      margin-bottom: 14px;
+    }
+    .story-stats{
+      display: flex;
+      gap: 28px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+    }
+    .story-stats div strong{
+      display: block;
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      color: #fff;
+      line-height: 1.1;
+    }
+    .story-stats div span{
+      font-size: .68rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-weight: 700;
+    }
+
+    /* ============================== COURSE ============================== */
+    .course-grid{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .course-card{
+      position: relative;
+      display: block;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      text-decoration: none;
+      color: inherit;
+      box-shadow: var(--shadow);
+      transition: transform .4s var(--ease), border-color .4s var(--ease), box-shadow .4s var(--ease);
+    }
+    .course-card:hover{ transform: translateY(-6px); border-color: rgba(210,118,46,.45); }
+    .course-card .thumb{
+      position: relative;
+      aspect-ratio: 4 / 3;
       overflow: hidden;
     }
-    .navbar a:hover {
-      color: var(--accent2);
-      background: rgba(255, 127, 17, 0.1);
-      transform: translateY(-1px);
+    .course-card .thumb img{
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 1.1s var(--ease), filter .5s var(--ease);
+      filter: saturate(.92);
     }
-    .navbar a.active {
-      background: var(--accent);
-      color: white;
+    .course-card:hover .thumb img{ transform: scale(1.07); filter: saturate(1.05); }
+    .course-card .thumb::after{
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(12,8,4,.15) 0%, rgba(12,8,4,.05) 40%, rgba(12,8,4,.82) 100%);
     }
-
-    .hero {
-      height: 60vh;
-      display: flex; align-items: center; justify-content: center;
-      background: url('images/trail.jpeg') center/cover no-repeat;
-      filter: saturate(0.8);
-      position: relative; text-align: center; color: #fff;
+    .course-card .mile{
+      position: absolute;
+      top: 12px; left: 12px;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: rgba(14,9,5,.72);
+      border: 1px solid rgba(244,233,212,.28);
+      backdrop-filter: blur(6px);
+      font-family: var(--mono);
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      color: #ffe1c4;
     }
-    .hero::after {
-      content: ''; position: absolute; inset: 0;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0.32) 45%, rgba(24,12,2,0.78) 100%);
+    .course-card .card-body{
+      position: relative;
+      padding: 0 20px 22px;
+      margin-top: -46px;
+      z-index: 2;
     }
-    .hero-content { position: relative; z-index: 1; }
-    .hero-content h1 { font-size: 3rem; margin: 0; text-shadow: 0 4px 14px rgba(0,0,0,0.6); }
-    .countdown {
-      font-size: 1.5rem; font-weight: 700; margin: 16px 0; color: var(--accent2);
-      text-shadow: 0 0 10px rgba(255,127,17,0.4);
-    }
-    .hero-buttons { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
-    .hero-buttons a {
-      font-family: var(--display);
-      background: var(--accent2);
+    .course-card h3{
+      font-size: 1.12rem;
+      font-weight: 800;
       color: #fff;
-      font-size: 1.2rem;
-      font-weight: 700;
-      padding: 14px 32px;
-      border-radius: 10px;
-      text-decoration: none;
-      box-shadow: 0 2px 12px #0003;
-      transition: background 0.2s, transform 0.15s;
-      border: none;
-      outline: none;
-      cursor: pointer;}
-    .hero-buttons a.secondary { background: var(--accent); }
-    .hero-buttons a:hover { transform: scale(1.05); }
-
-    .section {
-      padding: 40px 20px;
-      max-width: 1200px;
-      margin: auto;
+      margin-bottom: 6px;
     }
-    .section h2 {
-      text-align: center; color: var(--accent2); margin-bottom: 24px;
-      font-family: var(--display); font-weight: 400;
-      text-shadow: 0 2px 0 rgba(0,0,0,0.35);
-    }
-
-    .gallery {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;
-    }
-    .gallery img {
-      width: 100%; border-radius: 12px; box-shadow: var(--shadow);
-      filter: sepia(0.4) saturate(0.85) contrast(1.04);
-      border: 1px solid rgba(201, 162, 109, 0.35);
-      transition: transform 0.4s ease, filter 0.4s ease;
-    }
-    .gallery img:hover { transform: scale(1.05); filter: sepia(0.12) saturate(1); }
-
-    .poster-wrap {
-      display: flex; flex-wrap: wrap; gap: 30px; align-items: center; justify-content: center;
-    }
-    .poster-wrap img {
-      max-width: 300px; width: 100%; border-radius: 12px;
-      box-shadow: 0 16px 40px rgba(8,4,0,0.55); transform: rotate(-1.5deg);
-    }
-    .poster-copy { max-width: 420px; }
-    .poster-copy .stamp {
-      display: inline-block; font-family: 'Special Elite', monospace;
-      border: 2px dashed rgba(210, 118, 46, 0.6); color: var(--accent2);
-      padding: 4px 12px; border-radius: 6px; transform: rotate(-2deg);
-      font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px;
-    }
-    .poster-copy p { font-family: 'Special Elite', 'Courier New', monospace; line-height: 1.8; color: var(--muted); }
-
-    .about {
-      background: var(--card);
-      border: 1px solid rgba(201, 162, 109, 0.25);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      padding: 30px;
-      text-align: center;
-      line-height: 1.6;
-      margin-top: 40px;
-      font-family: 'Special Elite', 'Courier New', monospace;
-    }
-
-    .footer {
-      background: rgba(22, 16, 10, 0.96);
+    .course-card p{
+      font-size: .88rem;
       color: var(--muted);
+      line-height: 1.6;
+    }
+    .course-card .more{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 14px;
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--orange-2);
+    }
+    .course-card .more svg{ width: 14px; height: 14px; transition: transform .3s var(--ease); }
+    .course-card:hover .more svg{ transform: translateX(4px); }
+
+    /* ============================== GALLERY ============================== */
+    .gallery{
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-auto-rows: 208px;
+      gap: 14px;
+      grid-auto-flow: dense;
+    }
+    .ph{
+      position: relative;
+      margin: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      cursor: zoom-in;
+      transition: border-color .35s var(--ease), transform .35s var(--ease);
+    }
+    .ph:hover{ border-color: rgba(210,118,46,.45); }
+    .ph--wide{ grid-column: span 2; }
+    .ph--tall{ grid-row: span 2; }
+    .ph img{
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 1.1s var(--ease), filter .5s var(--ease);
+      filter: saturate(.9) contrast(1.02);
+    }
+    .ph:hover img{ transform: scale(1.06); filter: saturate(1.05) contrast(1.04); }
+    .ph figcaption{
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      padding: 38px 16px 14px;
+      background: linear-gradient(180deg, transparent, rgba(11,7,3,.86));
+      color: #f7ecd9;
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .02em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .ph figcaption span:last-child{ color: var(--orange-2); font-size: .95rem; line-height: 1; }
+
+    /* lightbox */
+    .lightbox{
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(9,6,3,.94);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s var(--ease);
+    }
+    .lightbox.open{ opacity: 1; pointer-events: auto; }
+    .lightbox img{
+      max-width: min(1100px, 94vw);
+      max-height: 82vh;
+      border-radius: 14px;
+      box-shadow: 0 30px 90px -20px #000;
+      transform: scale(.97);
+      transition: transform .35s var(--ease);
+    }
+    .lightbox.open img{ transform: scale(1); }
+    .lightbox figcaption{
+      margin-top: 14px;
       text-align: center;
-      padding: 30px 12px;
-      margin-top: 60px;
-      border-top: 2px solid rgba(201, 162, 109, 0.28);
+      color: var(--muted);
+      font-size: .88rem;
+    }
+    .lightbox-close{
+      position: absolute;
+      top: 18px; right: 18px;
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(244,233,212,.1);
+      border: 1px solid rgba(244,233,212,.28);
+      color: #fff;
+      font-size: 1.4rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: background .25s var(--ease), transform .25s var(--ease);
+    }
+    .lightbox-close:hover{ background: rgba(244,233,212,.2); transform: rotate(90deg); }
+
+    /* ============================== INCLUDED ============================== */
+    .included{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .feature{
+      display: flex;
+      gap: 15px;
+      padding: 22px;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(255,232,190,.045), rgba(0,0,0,0) 60%),
+        var(--panel);
+      border: 1px solid var(--line);
+      transition: transform .35s var(--ease), border-color .35s var(--ease), background .35s var(--ease);
+    }
+    .feature:hover{ transform: translateY(-4px); border-color: rgba(210,118,46,.36); }
+    .feature .ico{
+      width: 42px; height: 42px;
+      flex: none;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: rgba(210,118,46,.14);
+      border: 1px solid rgba(210,118,46,.3);
+      color: var(--orange-2);
+    }
+    .feature .ico svg{ width: 20px; height: 20px; }
+    .feature h3{ font-size: .98rem; font-weight: 800; color: #fdf4e3; margin-bottom: 4px; }
+    .feature p{ font-size: .86rem; color: var(--muted); line-height: 1.55; }
+
+    /* ============================== CTA BAND ============================== */
+    .cta-band{
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(201,162,109,.28);
+      box-shadow: var(--shadow);
+      isolation: isolate;
+    }
+    .cta-band .bg{
+      position: absolute; inset: 0; z-index: 0;
+      background: url('images/OrganeBurg Road.jpg') center 42% / cover no-repeat;
+      transform: scale(1.02);
+    }
+    .cta-band::after{
+      content: '';
+      position: absolute; inset: 0; z-index: 1;
+      background:
+        linear-gradient(100deg, rgba(13,9,5,.94) 0%, rgba(13,9,5,.84) 42%, rgba(13,9,5,.35) 100%);
+    }
+    .cta-inner{
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1.15fr auto;
+      gap: 30px;
+      align-items: center;
+      padding: clamp(30px, 5vw, 54px);
+    }
+    .cta-inner h2{
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(1.6rem, 3.4vw, 2.25rem);
+      color: #fdf4e3;
+      margin-bottom: 10px;
+    }
+    .cta-inner p{ color: #d9c9ae; font-size: .95rem; max-width: 46ch; }
+    .cta-inner .actions{ display: flex; gap: 10px; flex-wrap: wrap; }
+    .cta-note{
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 16px;
+      font-size: .8rem;
+      color: var(--faint);
+      font-weight: 600;
+    }
+    .cta-note b{ color: var(--orange-2); }
+
+    /* ============================== POSTER ============================== */
+    .poster-band{
+      display: grid;
+      grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+      gap: clamp(28px, 5vw, 64px);
+      align-items: center;
+    }
+    .poster-frame{
+      position: relative;
+      padding: 14px;
+      border-radius: 18px;
+      background: linear-gradient(160deg, #f3e7cd, #ddcaa3);
+      box-shadow: 0 26px 60px -24px #000, 0 0 0 1px rgba(122,84,44,.35);
+      transform: rotate(-1.8deg);
+      transition: transform .5s var(--ease);
+    }
+    .poster-frame:hover{ transform: rotate(-.6deg) translateY(-4px); }
+    .poster-frame img{ display: block; width: 100%; border-radius: 8px; }
+    .poster-frame::before{
+      content: '';
+      position: absolute;
+      top: -12px; left: 50%;
+      transform: translateX(-50%) rotate(-3deg);
+      width: 96px; height: 24px;
+      background: rgba(226,203,158,.55);
+      border: 1px solid rgba(150,116,64,.28);
+      box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    }
+    .poster-copy h2{
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+      color: #fbf1de;
+      margin-bottom: 14px;
+    }
+    .poster-copy p{
+      font-family: var(--type);
+      color: var(--muted);
+      line-height: 1.85;
+      font-size: .95rem;
+      margin-bottom: 12px;
     }
 
-    #leavesCanvas {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;
+    /* ============================== FOOTER ============================== */
+    .site-footer{
+      margin-top: clamp(40px, 7vw, 80px);
+      border-top: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(28,20,11,.4), rgba(14,9,5,.9));
+      padding: clamp(40px, 6vw, 64px) 0 28px;
+    }
+    .footer-grid{
+      display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr 1fr;
+      gap: 32px;
+    }
+    .footer-brand .brand{ margin-bottom: 14px; }
+    .footer-brand p{ color: var(--muted); font-size: .88rem; max-width: 34ch; line-height: 1.7; }
+    .footer-col h4{
+      font-size: .7rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+    .footer-col a{
+      display: block;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: .89rem;
+      padding: 5px 0;
+      transition: color .2s var(--ease), transform .2s var(--ease);
+    }
+    .footer-col a:hover{ color: var(--orange-2); transform: translateX(3px); }
+    .footer-bottom{
+      margin-top: 40px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: .78rem;
+      color: var(--faint);
+    }
+    .footer-bottom a{ color: var(--faint); text-decoration: none; }
+    .footer-bottom a:hover{ color: var(--orange-2); }
+
+    /* ============================== RESPONSIVE ============================== */
+    @media (max-width: 1040px){
+      .story{ grid-template-columns: 1fr; }
+      .story-collage{ min-height: 420px; order: -1; }
+      .included{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .gallery{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .footer-grid{ grid-template-columns: 1.4fr 1fr 1fr; }
+      .footer-col:last-child{ grid-column: span 3; }
     }
 
-    @media (max-width: 900px) {
-      .section { padding: 30px 16px; }
-      .hero-content h1 { font-size: 2rem; }
-      .hero-buttons { gap: 12px; }
-      .hero-buttons a { 
-        padding: 12px 24px;
-        font-size: 1.1rem;
-      }
-      .gallery { gap: 12px; }
-    }
-
-    @media (max-width: 480px) {
-      .navbar .nav-links {
-        gap: 8px;
-      }
-      .navbar a {
-        font-size: 14px;
-        padding: 6px 12px;
-      }
-    }
-
-    /* Mobile Optimizations */
-    @media screen and (max-width: 900px) {
-      .hero {
-        min-height: 50vh;
-      }
-      
-      .hero-content {
-        padding: 20px;
-      }
-      
-      .hero h1 {
-        font-size: 2.5rem;
-      }
-      
-      .hero p {
-        font-size: 1.2rem;
-      }
-      
-      .features {
-        grid-template-columns: 1fr;
-        gap: 20px;
-        padding: 20px;
-      }
-      
-      .feature-card {
-        padding: 20px;
-      }
-      
-      .cta-section {
-        padding: 40px 20px;
-      }
-      
-      .cta-buttons {
+    @media (max-width: 900px){
+      .nav-toggle{ display: inline-flex; }
+      .nav-links{
+        position: fixed;
+        top: var(--navh);
+        left: 0; right: 0;
         flex-direction: column;
-        gap: 15px;
+        align-items: stretch;
+        gap: 4px;
+        padding: 14px clamp(16px, 4vw, 24px) 22px;
+        background: rgba(17,11,6,.97);
+        border-bottom: 1px solid var(--line);
+        box-shadow: 0 30px 60px -30px #000;
+        backdrop-filter: blur(18px);
+        transform: translateY(-12px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .25s var(--ease), transform .25s var(--ease);
+        max-height: calc(100vh - var(--navh));
+        overflow-y: auto;
       }
-      
-      .cta-button {
-        width: 100%;
-        max-width: 300px;
-      }
-    }
-
-    @media screen and (max-width: 480px) {
-      .navbar {
-        padding: 10px;
-      }
-      
-      .navbar .logo {
-        font-size: 1.2rem;
-      }
-      
-      .navbar .nav-links {
-        gap: 6px;
-      }
-      
-      .navbar a {
-        padding: 6px 10px;
-        font-size: 14px;
-      }
-      
-      .hero h1 {
-        font-size: 2rem;
-      }
-      
-      .hero p {
+      .nav-links.open{ opacity: 1; transform: none; pointer-events: auto; }
+      .nav-links a{
         font-size: 1rem;
+        padding: 14px 12px;
+        border-radius: 12px;
+        border-bottom: 1px solid rgba(201,162,109,.1);
       }
-      
-      .feature-card h3 {
-        font-size: 1.2rem;
-      }
-      
-      .feature-card p {
-        font-size: 0.9rem;
-      }
+      .nav-links a:last-child{ border-bottom: none; }
+      .nav-links a::after{ display: none; }
+      .nav-links a.nav-cta{ margin: 10px 0 0; border-bottom: none; }
+      .site-nav.scrolled{ height: var(--navh); }
+      body.menu-open{ overflow: hidden; }
+
+      .hero{ min-height: 88svh; align-items: flex-end; }
+      .hero-inner{ padding-bottom: 56px; }
+      .hero-meta{ gap: 8px 18px; }
+      .cta-inner{ grid-template-columns: 1fr; }
+      .poster-band{ grid-template-columns: 1fr; }
+      .poster-frame{ max-width: 330px; margin-inline: auto; }
+      .course-grid{ grid-template-columns: 1fr; }
+      .gallery{ grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 168px; }
+      .ph--wide{ grid-column: span 2; }
+      .ph--tall{ grid-row: span 1; }
+      .included{ grid-template-columns: 1fr; }
+      .footer-grid{ grid-template-columns: 1fr 1fr; gap: 26px; }
+      .footer-col:last-child{ grid-column: auto; }
+      .footer-brand{ grid-column: span 2; }
     }
 
-    /* Touch optimizations */
-    @media (hover: none) {
-      button, .cta-button, .navbar a {
-        -webkit-tap-highlight-color: transparent;
-        touch-action: manipulation;
-      }
-      
-      button:active, .cta-button:active, .navbar a:active {
-        transform: scale(0.98);
-      }
-      
-      .notification {
-        bottom: 20px;
-        top: auto;
-        left: 50%;
-        transform: translateX(-50%) translateY(100%);
-        width: 90%;
-        max-width: 400px;
-        text-align: center;
-      }
-      
-      .notification.show {
-        transform: translateX(-50%) translateY(0);
-      }
-      
-      .feature-card:hover {
-        transform: none;
-      }
-      
-      .cta-button:hover {
-        transform: none;
-      }
+    @media (max-width: 560px){
+      .wrap, .hero-inner{ width: min(1180px, 100% - 32px); }
+      .brand-text strong{ font-size: .94rem; }
+      .brand-text em{ font-size: .56rem; letter-spacing: .12em; }
+      .brand-logo{ width: 37px; height: 37px; }
+      .ticker{ font-size: .78rem; padding: 8px 12px; gap: 7px; }
+      .hero{ min-height: 92svh; }
+      .hero-kicker{ font-size: .64rem; padding: 6px 12px; letter-spacing: .12em; }
+      .countdown{ gap: 7px; }
+      .cd-unit{ min-width: 0; flex: 1 1 0; padding: 10px 6px 9px; border-radius: 12px; }
+      .cd-num{ font-size: 1.3rem; }
+      .cd-label{ font-size: .52rem; letter-spacing: .12em; }
+      .hero-actions{ gap: 9px; }
+      .hero-actions .btn{ flex: 1 1 auto; padding: 13px 16px; font-size: .9rem; }
+      .hero-meta{ font-size: .8rem; gap: 6px 14px; }
+      .hero-meta li{ font-size: .78rem; }
+      .scroll-cue{ display: none; }
+      .story-collage{ min-height: 320px; grid-template-columns: 1fr 1fr; }
+      .story-collage figure:first-child{ grid-row: span 1; grid-column: span 2; }
+      .story-stats{ gap: 20px; }
+      .gallery{ grid-auto-rows: 148px; gap: 10px; }
+      .ph figcaption{ padding: 26px 11px 10px; font-size: .72rem; }
+      .cta-band{ border-radius: 18px; }
+      .cta-inner{ padding: 26px 20px; }
+      .footer-grid{ grid-template-columns: 1fr; }
+      .footer-brand{ grid-column: auto; }
+      .footer-bottom{ flex-direction: column; gap: 6px; }
+      .section{ padding: 48px 0; }
     }
-    .announcement {
-  background: var(--accent2);
-  color: white;
-  text-align: center;
-  padding: 12px 18px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  font-family: 'Roboto', sans-serif;
-  box-shadow: var(--shadow);
-  z-index: 90;
-}
 
-@media (max-width: 600px) {
-  .announcement {
-    font-size: 0.95rem;
-    padding: 10px;
-  }
-}
+    @media (hover: none){
+      .ph figcaption{ padding-bottom: 12px; }
+      .course-card:hover{ transform: none; }
+      .feature:hover{ transform: none; }
+      .btn:active{ transform: scale(.985); }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      html{ scroll-behavior: auto; }
+      *, *::before, *::after{
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+      }
+      .reveal{ opacity: 1; transform: none; }
+      .hero-slide{ transform: none; }
+    }
   </style>
 </head>
 <body>
-  <canvas id="leavesCanvas"></canvas>
-  <nav class="navbar">
-    <div class="logo"><img src="images/bright1.png" alt="Brighton Oaks 5K" /> Brighton Oaks 5K</div>
-    <div class="nav-links">
+
+  <nav class="site-nav" id="siteNav">
+    <a class="brand" href="index.html" aria-label="Brighton Oaks 5K home">
+      <img class="brand-logo" src="images/bright1.png" alt="" width="42" height="42" />
+      <span class="brand-text">
+        <strong>Brighton Oaks 5K</strong>
+        <em>2nd Annual · Thanksgiving Day</em>
+      </span>
+    </a>
+
+    <div class="nav-links" id="navLinks">
       <a href="index.html" class="active">Home</a>
       <a href="registration.html">Register</a>
       <a href="results.html">Results</a>
-      <a href="bibprinter.html">Bib Printer</a>
+      <a href="map.html">Course</a>
+      <a href="bibprinter.html" class="nav-cta">Bib Printer</a>
     </div>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
-  <div class="announcement">
-  🚨 <b>Race Tour Meeting:</b> Wednesday, Nov 25 at 1:00 PM — Meet at the start line by the Patterson fire pit!
-</div>
 
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Welcome to the Brighton Oaks 5K!</h1>
-      <div id="countdown" class="countdown">Race Day: ...</div>
-      <div class="hero-buttons">
-        <a href="results.html" class="secondary">Live Results</a>
-        <a href="registration.html">Register Now</a>
-        <a href="map.html" class="secondary">Course Map</a>
-      </div>
+  <div class="ticker">
+    <span class="pulse"></span>
+    <span><b>Race Tour Meeting:</b> Wednesday, Nov 25 at 1:00 PM — meet at the start line by the Patterson fire pit</span>
+  </div>
+
+  <header class="hero">
+    <div class="hero-media" aria-hidden="true">
+      <div class="hero-slide on" style="background-image:url('images/trail.jpeg')"></div>
+      <div class="hero-slide" style="background-image:url('images/road.jpeg')"></div>
+      <div class="hero-slide" style="background-image:url('images/Last 400m.jpg')"></div>
     </div>
-  </section>
+    <div class="hero-veil" aria-hidden="true"></div>
+    <div class="hero-grain" aria-hidden="true"></div>
+    <canvas id="leavesCanvas" aria-hidden="true"></canvas>
 
+    <div class="hero-inner">
+      <div class="hero-kicker"><span class="dot"></span> Thanksgiving Morning · Nov 26, 2026</div>
 
-  <section class="section">
-    <h2>Scenes from the Course</h2>
-    <div class="gallery">
-      <img src="images/trail.jpeg" alt="Forest Trail">
-      <img src="images/IMG_0700.jpeg" alt="Open Fields">
-      <img src="images/road.jpeg" alt="Race Road">
-      <img src="images/gutpit.jpeg" alt="Course Icon">
-      <img src="images/Brighton Oaks grocery.jpg" alt="The old country store">
-      <img src="images/OrganeBurg Road.jpg" alt="Organeburg Road">
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="poster-wrap">
-      <img src="images/bright.png" alt="2nd Annual Brighton Oaks 5K poster" />
-      <div class="poster-copy">
-        <div class="stamp">Est. Thanksgiving 2025</div>
-        <h2 style="text-align:left">Some Things Never Change</h2>
-        <p>The same pines. The same dirt roads. The same old country store on the corner. The Brighton Oaks 5K is a run back in time — a Thanksgiving morning tradition for the whole town, from the gas pumps at the start to the porch at the finish.</p>
-        <p>Grab a friend, pin on a number, and become part of the story.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="about">
-      <h2>Run, Race, and Celebrate!</h2>
-      <p>
-        Join us for a fun and fast 5K through the wonderful scenery of Brighton Oaks, South Carolina! This first annual Thanksgiving Day run welcomes all — from seasoned runners to first-timers. Enjoy the course, community, and celebration. Registration closes November 22, but exceptions can be made — fill out our <a href="form.html" style="color:var(--accent2)"><b>email form</b></a>.
+      <h1>Brighton Oaks <span class="accent">5K</span></h1>
+      <p class="hero-lede">
+        A run back in time — through the pines, down the dirt roads, and past the porch of the old
+        country store. Pin on a number, bring the family, and start Thanksgiving the way the town does.
       </p>
-    </div>
-  </section>
 
-  <footer class="footer">
-    © 2025 Brighton Oaks 5K — All rights reserved.
+      <div class="countdown" id="countdown" aria-label="Countdown to race day">
+        <div class="cd-unit"><span class="cd-num" id="cdDays">--</span><span class="cd-label">Days</span></div>
+        <div class="cd-unit"><span class="cd-num" id="cdHours">--</span><span class="cd-label">Hours</span></div>
+        <div class="cd-unit"><span class="cd-num" id="cdMins">--</span><span class="cd-label">Minutes</span></div>
+        <div class="cd-unit"><span class="cd-num" id="cdSecs">--</span><span class="cd-label">Seconds</span></div>
+      </div>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="registration.html">
+          Register now
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="results.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 7-8"/><path d="M3 21h18"/></svg>
+          Live results
+        </a>
+        <a class="btn btn-ghost" href="map.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-6 2V6l6-2 6 2 6-2v16l-6 2-6-2z"/><path d="M9 4v16M15 6v16"/></svg>
+          Course map
+        </a>
+      </div>
+
+      <ul class="hero-meta" style="list-style:none;padding:0;margin-left:0;">
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>
+          Thursday, Nov 26 · 8:30 AM
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+          Brighton Oaks, South Carolina
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          5K · 3.107 miles
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          Free entry · shirt included
+        </li>
+      </ul>
+    </div>
+
+    <a class="scroll-cue" href="#story" aria-label="Scroll to story"></a>
+  </header>
+
+  <main>
+    <!-- ============================== STORY ============================== -->
+    <section class="section" id="story">
+      <div class="wrap">
+        <div class="story">
+          <div class="story-collage reveal">
+            <figure>
+              <img src="images/Brighton Oaks grocery.jpg" alt="The old Brighton Oaks country store and gas pumps" loading="lazy" decoding="async" />
+              <figcaption>The old country store</figcaption>
+            </figure>
+            <figure>
+              <img src="images/gutpit.jpeg" alt="A dirt road cutting through the pines on the course" loading="lazy" decoding="async" />
+              <figcaption>The gut pit</figcaption>
+            </figure>
+            <figure>
+              <img src="images/OrganeBurg Road.jpg" alt="Orangenburg Road stretching through the trees" loading="lazy" decoding="async" />
+              <figcaption>Orangenburg Road</figcaption>
+            </figure>
+          </div>
+
+          <div class="story-copy reveal" style="--d:120ms">
+            <div class="stamp">Est. Thanksgiving 2025</div>
+            <h2>Some things never change.</h2>
+            <p>
+              The same pines. The same dirt roads. The same old country store on the corner. The Brighton
+              Oaks 5K is a run back in time — a Thanksgiving morning tradition for the whole town, from
+              the gas pumps at the start to the porch at the finish.
+            </p>
+            <p>
+              Grab a friend, pin on a number, and become part of the story. Walkers, first-timers and
+              folks chasing a personal best all toe the same line.
+            </p>
+
+            <div class="story-stats">
+              <div><strong>5K</strong><span>Distance</span></div>
+              <div><strong>1</strong><span>Start line</span></div>
+              <div><strong>All</strong><span>Ages &amp; paces</span></div>
+              <div><strong>0</strong><span>Entry fee</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== COURSE ============================== -->
+    <section class="section section--tight" id="course">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <div class="eyebrow">The course</div>
+          <h2>Three miles through Brighton Oaks</h2>
+          <p>Mostly flat and fast, with just enough sand and shade to keep it honest. Here's what waits at each stage.</p>
+        </div>
+
+        <div class="course-grid">
+          <a class="course-card reveal" href="map.html" style="--d:0ms">
+            <div class="thumb">
+              <img src="images/First half mile.jpg" alt="The tree-lined dirt lane at the start of the race" loading="lazy" decoding="async" />
+              <span class="mile">Mile 0 – 0.5</span>
+            </div>
+            <div class="card-body">
+              <h3>The first half mile</h3>
+              <p>Down the gravel lane between the pines. Everyone's still finding their legs — and their pace.</p>
+              <span class="more">See the route
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </span>
+            </div>
+          </a>
+
+          <a class="course-card reveal" href="map.html" style="--d:120ms">
+            <div class="thumb">
+              <img src="images/Mile 1 - 2.jpg" alt="A sandy dirt road on miles one and two of the course" loading="lazy" decoding="async" />
+              <span class="mile">Mile 1 – 2</span>
+            </div>
+            <div class="card-body">
+              <h3>The long straight</h3>
+              <p>A soft sand road under the hardwoods. Settle in, find a shoulder, and let the pack carry you.</p>
+              <span class="more">See the route
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </span>
+            </div>
+          </a>
+
+          <a class="course-card reveal" href="map.html" style="--d:240ms">
+            <div class="thumb">
+              <img src="images/Last 400m.jpg" alt="The final straight out of the trees to the finish" loading="lazy" decoding="async" />
+              <span class="mile">Last 400m</span>
+            </div>
+            <div class="card-body">
+              <h3>Out of the trees</h3>
+              <p>The pines open up and the crowd gets loud. Empty the tank — the finish is right there.</p>
+              <span class="more">See the route
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== GALLERY ============================== -->
+    <section class="section" id="gallery">
+      <div class="wrap">
+        <div class="sec-head center reveal">
+          <div class="eyebrow">Scenes from the course</div>
+          <h2>Where you'll be running</h2>
+          <p>Pine straw, sand roads, a stagecoach road and the porch of the old store. Tap any photo to see it full size.</p>
+        </div>
+
+        <div class="gallery reveal">
+          <figure class="ph ph--wide" tabindex="0">
+            <img src="images/trail.jpeg" alt="The pine trail that opens the course" loading="lazy" decoding="async" />
+            <figcaption><span>The pine trail</span><span>&#8599;</span></figcaption>
+          </figure>
+          <figure class="ph ph--tall" tabindex="0">
+            <img src="images/Last 400m.jpg" alt="Runners coming out of the trees on the last 400 metres" loading="lazy" decoding="async" />
+            <figcaption><span>The last 400</span><span>&#8599;</span></figcaption>
+          </figure>
+          <figure class="ph" tabindex="0">
+            <img src="images/gutpit.jpeg" alt="The gut pit road crossing" loading="lazy" decoding="async" />
+            <figcaption><span>The gut pit</span><span>&#8599;</span></figcaption>
+          </figure>
+          <figure class="ph" tabindex="0">
+            <img src="images/Brighton Oaks grocery.jpg" alt="Brighton Oaks grocery and its vintage gas pumps" loading="lazy" decoding="async" />
+            <figcaption><span>The old store</span><span>&#8599;</span></figcaption>
+          </figure>
+          <figure class="ph ph--wide" tabindex="0">
+            <img src="images/Augusta stage coach.jpg" alt="The old Augusta stagecoach road" loading="lazy" decoding="async" />
+            <figcaption><span>The stagecoach road</span><span>&#8599;</span></figcaption>
+          </figure>
+          <figure class="ph" tabindex="0">
+            <img src="images/First half mile.jpg" alt="Fence line along the first half mile" loading="lazy" decoding="async" />
+            <figcaption><span>Fence line</span><span>&#8599;</span></figcaption>
+          </figure>
+          <figure class="ph" tabindex="0">
+            <img src="images/Mile 1 - 2.jpg" alt="The sand road through miles one and two" loading="lazy" decoding="async" />
+            <figcaption><span>Sand road</span><span>&#8599;</span></figcaption>
+          </figure>
+          <figure class="ph" tabindex="0">
+            <img src="images/IMG_0700.jpeg" alt="Open fields and pines along the course" loading="lazy" decoding="async" />
+            <figcaption><span>Open fields</span><span>&#8599;</span></figcaption>
+          </figure>
+          <figure class="ph" tabindex="0">
+            <img src="images/road.jpeg" alt="The paved road section of the route" loading="lazy" decoding="async" />
+            <figcaption><span>The road in</span><span>&#8599;</span></figcaption>
+          </figure>
+          <figure class="ph" tabindex="0">
+            <img src="images/OrganeBurg Road.jpg" alt="Orangenburg Road at golden hour" loading="lazy" decoding="async" />
+            <figcaption><span>Orangenburg Road</span><span>&#8599;</span></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== INCLUDED ============================== -->
+    <section class="section section--tight" id="race-day">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <div class="eyebrow">Race day</div>
+          <h2>What's waiting for you</h2>
+          <p>Small-town race, properly run. Everything below is included with your entry.</p>
+        </div>
+
+        <div class="included">
+          <div class="feature reveal" style="--d:0ms">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 7-8"/><path d="M3 21h18"/></svg></div>
+            <div>
+              <h3>Live timing &amp; results</h3>
+              <p>Finish times post the moment you cross the line, with pace and standings.</p>
+            </div>
+          </div>
+
+          <div class="feature reveal" style="--d:80ms">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 5.6L18 3.2l-6.3 2.3L5.4 7.3 3 9.7l3.4 1.4 1.8 4.5L11 18.4l1.4-3.4 3.3-1.7 4.7 1.3 1.2-3.1-1-2.4 1.4-2.2z"/></svg></div>
+            <div>
+              <h3>Race shirt</h3>
+              <p>Pick your size at registration — youth through XX-large.</p>
+            </div>
+          </div>
+
+          <div class="feature reveal" style="--d:160ms">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/><path d="M9 8h6M9 12h4"/></svg></div>
+            <div>
+              <h3>Printable bib</h3>
+              <p>Print your numbered bib at home from the bib printer before you head out.</p>
+            </div>
+          </div>
+
+          <div class="feature reveal" style="--d:0ms">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M8.5 14L7 22l5-2.5L17 22l-1.5-8"/></svg></div>
+            <div>
+              <h3>Division awards</h3>
+              <p>Top finishers and age-group winners are recognized after the race.</p>
+            </div>
+          </div>
+
+          <div class="feature reveal" style="--d:80ms">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c2 3 4 4.4 4 7.2a4 4 0 0 1-8 0C8 7.4 10 6 12 3z"/><path d="M5 21c1.5-3 4-4.5 7-4.5S17.5 18 19 21"/></svg></div>
+            <div>
+              <h3>Fire pit finish</h3>
+              <p>Coffee, warmth and the whole town on the porch at the Patterson fire pit.</p>
+            </div>
+          </div>
+
+          <div class="feature reveal" style="--d:160ms">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-6 2V6l6-2 6 2 6-2v16l-6 2-6-2z"/><path d="M9 4v16M15 6v16"/></svg></div>
+            <div>
+              <h3>Course map &amp; GPX</h3>
+              <p>Interactive map, elevation and a downloadable route to study in advance.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CTA ============================== -->
+    <section class="section section--tight">
+      <div class="wrap">
+        <div class="cta-band reveal">
+          <div class="bg" aria-hidden="true"></div>
+          <div class="cta-inner">
+            <div>
+              <h2>Registration closes November 22.</h2>
+              <p>It takes about a minute, and your bib number and pace prediction are generated instantly. Late entries are still possible by email.</p>
+              <div class="cta-note">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                <span>Race day is <b>Thursday, November 26, 2026 · 8:30 AM</b></span>
+              </div>
+            </div>
+            <div class="actions">
+              <a class="btn btn-primary" href="registration.html">Claim your bib</a>
+              <a class="btn btn-ghost" href="form.html">Email entry</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== POSTER ============================== -->
+    <section class="section" id="poster">
+      <div class="wrap">
+        <div class="poster-band">
+          <div class="poster-frame reveal">
+            <img src="images/bright.png" alt="2nd Annual Brighton Oaks 5K race poster" loading="lazy" decoding="async" />
+          </div>
+          <div class="poster-copy reveal" style="--d:120ms">
+            <div class="eyebrow">The 2nd Annual</div>
+            <h2>November 26th, 2026 · Garnett, SC</h2>
+            <p>
+              The first running in 2025 was a morning of frost, coffee and neighbours on the porch. This
+              year the poster is back on the store window — same pumps, same pines, one more Thanksgiving.
+            </p>
+            <p>
+              Bring a friend, pin on a number, and become part of the story. Registration closes
+              November 22, though exceptions can be made through the email form.
+            </p>
+            <div class="hero-actions" style="margin-top:22px">
+              <a class="btn btn-green" href="registration.html">Register</a>
+              <a class="btn btn-ghost" href="map.html">Explore the course</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="index.html">
+            <img class="brand-logo" src="images/bright1.png" alt="" width="42" height="42" loading="lazy" />
+            <span class="brand-text">
+              <strong>Brighton Oaks 5K</strong>
+              <em>Thanksgiving Day Run</em>
+            </span>
+          </a>
+          <p>A Thanksgiving morning 5K through Brighton Oaks, South Carolina. Run it, walk it, or cheer from the porch.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Race</h4>
+          <a href="registration.html">Register</a>
+          <a href="results.html">Live results</a>
+          <a href="bibprinter.html">Bib printer</a>
+          <a href="map.html">Course map</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Info</h4>
+          <a href="#race-day">What's included</a>
+          <a href="#gallery">Photo gallery</a>
+          <a href="form.html">Email entry</a>
+          <a href="weather.html">Race day weather</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Organizers</h4>
+          <a href="organizer.html">Organizer console</a>
+          <a href="score.html">Scoring</a>
+          <a href="sports.html">Sports</a>
+          <a href="24:7.html">24:7</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2025–2026 Brighton Oaks 5K — All rights reserved.</span>
+        <span>Brighton Oaks, South Carolina · Thursday, November 26, 2026</span>
+      </div>
+    </div>
   </footer>
 
+  <!-- ============================== LIGHTBOX ============================== -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close photo">&times;</button>
+    <figure style="margin:0;display:grid;place-items:center;">
+      <img id="lightboxImg" src="" alt="" />
+      <figcaption id="lightboxCap"></figcaption>
+    </figure>
+  </div>
+
   <script>
+    /* ---------------- Sticky nav ---------------- */
+    const nav = document.getElementById('siteNav');
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    function setMenu(open) {
+      navLinks.classList.toggle('open', open);
+      navToggle.setAttribute('aria-expanded', String(open));
+      document.body.classList.toggle('menu-open', open);
+    }
+    navToggle.addEventListener('click', () => {
+      setMenu(!navLinks.classList.contains('open'));
+    });
+    navLinks.addEventListener('click', (e) => {
+      if (e.target.closest('a')) setMenu(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setMenu(false);
+    });
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 900) setMenu(false);
+    });
+
+    /* ---------------- Countdown ---------------- */
     const raceDate = new Date('2026-11-26T08:30:00');
+    const cd = {
+      days: document.getElementById('cdDays'),
+      hours: document.getElementById('cdHours'),
+      mins: document.getElementById('cdMins'),
+      secs: document.getElementById('cdSecs'),
+    };
+    const pad = (n) => String(n).padStart(2, '0');
+
     function updateCountdown() {
-      const now = new Date();
-      const diff = raceDate - now;
-      const el = document.getElementById('countdown');
-      if (diff <= 0) { el.textContent = 'The race is on!'; return; }
-      const days = Math.floor(diff / (1000*60*60*24));
-      const hrs = Math.floor((diff / (1000*60*60)) % 24);
-      const mins = Math.floor((diff / (1000*60)) % 60);
-      const secs = Math.floor((diff / 1000) % 60);
-      el.textContent = `Race Day: ${days}d ${hrs}h ${mins}m ${secs}s`;
+      const diff = raceDate - new Date();
+      if (diff <= 0) {
+        document.getElementById('countdown').innerHTML =
+          '<div class="cd-unit race-day"><span class="cd-num">The race is on!</span><span class="cd-label">Good luck</span></div>';
+        return;
+      }
+      const s = Math.floor(diff / 1000);
+      cd.days.textContent = pad(Math.floor(s / 86400));
+      cd.hours.textContent = pad(Math.floor((s % 86400) / 3600));
+      cd.mins.textContent = pad(Math.floor((s % 3600) / 60));
+      cd.secs.textContent = pad(s % 60);
     }
-    setInterval(updateCountdown, 1000);
     updateCountdown();
+    setInterval(updateCountdown, 1000);
 
-    // Falling Leaves
-    const canvas = document.getElementById("leavesCanvas");
-    const ctx = canvas.getContext("2d");
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.addEventListener("resize", resize);
-    resize();
-
-    const leafPaths = ["images/leaf1.png", "images/leaf2.png", "images/leaf3.png"];
-    const leafImages = [];
-    leafPaths.forEach(path => { const img = new Image(); img.src = path; leafImages.push(img); });
-
-    const leaves = [];
-    function makeLeaf() {
-      const img = leafImages[Math.floor(Math.random() * leafImages.length)];
-      return { img, x: Math.random() * canvas.width, y: Math.random() * -canvas.height, size: 25 + Math.random() * 35, speedY: 0.8 + Math.random() * 1.8, speedX: Math.random() - 0.5, rotation: Math.random() * Math.PI * 2, rotationSpeed: Math.random() * 0.04 - 0.02 };
+    /* ---------------- Hero slideshow ---------------- */
+    const slides = Array.from(document.querySelectorAll('.hero-slide'));
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (slides.length > 1 && !reduceMotion) {
+      let current = 0;
+      setInterval(() => {
+        slides[current].classList.remove('on');
+        current = (current + 1) % slides.length;
+        slides[current].classList.add('on');
+      }, 7000);
     }
 
-    for (let i = 0; i < 80; i++) leaves.push(makeLeaf());
+    /* ---------------- Reveal on scroll ---------------- */
+    const revealables = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window && !reduceMotion) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+      revealables.forEach((el) => io.observe(el));
+    } else {
+      revealables.forEach((el) => el.classList.add('in'));
+    }
 
-    function drawLeaf(l) {
-      ctx.save();
-      ctx.translate(l.x, l.y);
-      ctx.rotate(l.rotation);
-      const scale = l.size / 40;
-      ctx.drawImage(l.img, -20 * scale, -20 * scale, 40 * scale, 40 * scale);
-      ctx.restore();
+    /* ---------------- Lightbox ---------------- */
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxCap = document.getElementById('lightboxCap');
+    const lightboxClose = document.getElementById('lightboxClose');
+    let lastFocused = null;
+
+    function openLightbox(figure) {
+      const img = figure.querySelector('img');
+      const cap = figure.querySelector('figcaption span');
+      lightboxImg.src = img.currentSrc || img.src;
+      lightboxImg.alt = img.alt;
+      lightboxCap.textContent = cap ? cap.textContent : '';
+      lightbox.classList.add('open');
+      lastFocused = document.activeElement;
+      lightboxClose.focus();
+    }
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      lightboxImg.src = '';
+      if (lastFocused) lastFocused.focus();
+    }
+
+    document.querySelectorAll('.ph').forEach((figure) => {
+      figure.addEventListener('click', () => openLightbox(figure));
+      figure.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openLightbox(figure);
+        }
+      });
+    });
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+    });
+
+    /* ---------------- Falling leaves ---------------- */
+    const canvas = document.getElementById('leavesCanvas');
+    const ctx = canvas.getContext('2d');
+    const leafPaths = ['images/leaf1.png', 'images/leaf2.png', 'images/leaf3.png'];
+    const leafImages = leafPaths.map((path) => {
+      const img = new Image();
+      img.src = path;
+      return img;
+    });
+    const leafCount = window.innerWidth < 760 ? 14 : 26;
+    let leaves = [];
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.max(1, rect.width * dpr);
+      canvas.height = Math.max(1, rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function makeLeaf(w = canvas.clientWidth, h = canvas.clientHeight) {
+      return {
+        img: leafImages[Math.floor(Math.random() * leafImages.length)],
+        x: Math.random() * w,
+        y: Math.random() * -h,
+        size: 16 + Math.random() * 20,
+        speedY: 0.35 + Math.random() * 0.85,
+        speedX: (Math.random() - 0.5) * 0.5,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.02,
+        sway: Math.random() * Math.PI * 2,
+      };
+    }
+
+    function resetLeaves() {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      leaves = Array.from({ length: leafCount }, () => makeLeaf(w, h));
     }
 
     function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      leaves.forEach(l => {
-        l.x += l.speedX;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      ctx.clearRect(0, 0, w, h);
+      leaves.forEach((l) => {
+        l.sway += 0.01;
+        l.x += l.speedX + Math.sin(l.sway) * 0.35;
         l.y += l.speedY;
         l.rotation += l.rotationSpeed;
-        if (l.y > canvas.height + 40) { l.y = -40; l.x = Math.random() * canvas.width; }
-        if (l.x < -50) l.x = canvas.width + 50;
-        if (l.x > canvas.width + 50) l.x = -50;
-        drawLeaf(l);
+        if (l.y > h + 40) {
+          l.y = -40;
+          l.x = Math.random() * w;
+        }
+        if (l.x < -60) l.x = w + 60;
+        if (l.x > w + 60) l.x = -60;
+
+        ctx.save();
+        ctx.translate(l.x, l.y);
+        ctx.rotate(l.rotation);
+        ctx.globalAlpha = 0.85;
+        ctx.drawImage(l.img, -l.size / 2, -l.size / 2, l.size, l.size);
+        ctx.restore();
       });
       requestAnimationFrame(animate);
     }
-    animate();
 
+    if (!reduceMotion) {
+      resize();
+      resetLeaves();
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          resize();
+          resetLeaves();
+        }, 180);
+      });
+      if (leafImages[0]) {
+        leafImages[0].addEventListener('load', animate, { once: true });
+        if (leafImages[0].complete) animate();
+      }
+    }
   </script>
 </body>
 </html>

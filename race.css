@@ -57,6 +57,16 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+html { scroll-behavior: smooth; }
+
+::selection { background: rgba(210, 118, 46, 0.35); color: #fff; }
+
+:focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 a { color: var(--accent2); }
 
 h1, h2, h3, h4 { line-height: 1.2; margin: 0 0 10px; font-weight: 700; letter-spacing: -0.01em; }
@@ -225,9 +235,8 @@ p { margin: 0 0 12px; }
   position: relative;
   padding: 54px 22px 48px;
   background:
-    linear-gradient(180deg, rgba(22, 14, 6, 0.58) 0%, rgba(18, 11, 5, 0.93) 100%),
+    linear-gradient(180deg, rgba(22, 14, 6, 0.62) 0%, rgba(18, 11, 5, 0.94) 100%),
     var(--hero-img, none) center/cover no-repeat;
-  filter: saturate(0.82);
   border-bottom: 2px solid rgba(201, 162, 109, 0.3);
   overflow: hidden;
 }
@@ -599,14 +608,32 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 }
 @media (max-width: 640px) {
   .navbar { padding: 10px 14px; flex-wrap: wrap; }
-  .nav-links { width: 100%; justify-content: flex-start; overflow-x: auto; padding-top: 4px; }
-  .nav-links a { padding: 7px 11px; font-size: 0.84rem; }
+  .nav-links {
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 4px 0 2px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(90deg, #000 0, #000 92%, transparent 100%);
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a { padding: 7px 11px; font-size: 0.84rem; flex: none; }
   .page, .page-wide { padding: 18px 14px 32px; }
   .hero { padding: 36px 16px 32px; }
   .podium { grid-template-columns: 1fr; }
   .clock-big { font-size: 2.1rem; }
   .toast-wrap { left: 14px; right: 14px; }
   .toast { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 @media print {
