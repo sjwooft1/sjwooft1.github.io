@@ -2,12 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Brighton Oaks 5K — Race Timing Console</title>
   <meta name="description" content="Organizer timing console for the Brighton Oaks 5K: race clock, tap-to-finish timing, OCR finish-line camera, registrations and results management." />
   <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
   <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
+  <meta name="theme-color" content="#0e1626" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="BO 5K Timing" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
+  <link rel="manifest" href="./organizer.webmanifest" />
   <link rel="stylesheet" href="race.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
@@ -24,6 +31,38 @@
       display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
     }
     .console-clock { display: flex; flex-direction: column; margin-left: auto; }
+
+    /* Phones: this bar is sticky, so every row it takes costs visible race. */
+    @media (max-width: 640px) {
+      .console-bar { padding: 8px 14px; }
+      .console-inner { gap: 8px 12px; }
+      .console-clock { margin-left: 0; flex: 1 1 100%; }
+      /* start / pause / reset share one full-width row instead of stacking */
+      .console-bar .btn-row { order: 3; flex: 1 1 100%; gap: 8px; }
+      .console-bar .btn.lg { flex: 1 1 0; min-width: 0; padding: 11px 6px; font-size: 0.9rem; }
+      .console-clock .small { font-size: 0.75rem; }
+    }
+
+    /* Registrations: eight columns can't fit a phone, and the two that matter
+       during check-in were scrolling off to the right. Division, shirt, est.
+       finish and registration date stay on desktop and in the CSV export. */
+    @media (max-width: 700px) {
+      /* wide by default so eight columns breathe; here four columns share
+         the phone's width instead of scrolling sideways */
+      #tab-registrations table.data { min-width: 0; }
+      #tab-registrations table.data th,
+      #tab-registrations table.data td { padding: 10px 9px; }
+      #tab-registrations .btn.sm { padding: 8px 10px; font-size: 0.8rem; }
+      #tab-registrations table.data th { white-space: normal; }
+      #tab-registrations .table-wrap th:nth-child(3),
+      #tab-registrations .table-wrap th:nth-child(4),
+      #tab-registrations .table-wrap th:nth-child(5),
+      #tab-registrations .table-wrap th:nth-child(7),
+      #tab-registrations .table-wrap td:nth-child(3),
+      #tab-registrations .table-wrap td:nth-child(4),
+      #tab-registrations .table-wrap td:nth-child(5),
+      #tab-registrations .table-wrap td:nth-child(7) { display: none; }
+    }
     .runners-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
@@ -116,6 +155,19 @@
       #tab-line .settings-row input[type="range"] { width: 100%; }
       #tab-line .btn-row { flex-wrap: wrap; }
       #tab-line .camera-stage { aspect-ratio: 4 / 3; }
+    }
+
+    /* ---- Phone / Add to Home Screen ---- */
+    @media (max-width: 900px), (pointer: coarse) {
+      /* Landscape on a notched phone: the sticky bar would run under the notch. */
+      .console-bar {
+        padding-left: max(14px, env(safe-area-inset-left));
+        padding-right: max(14px, env(safe-area-inset-right));
+      }
+    }
+    @supports (padding: env(safe-area-inset-bottom)) {
+      /* Installed app: leave the home indicator its space. */
+      body { padding-bottom: env(safe-area-inset-bottom); }
     }
 
     /* Fullscreen camera mode (automatic on mobile when camera starts, or via Fullscreen button) */
@@ -221,6 +273,49 @@
     .settings-row input[type="range"] { width: 160px; }
     .toggle { display: inline-flex; gap: 8px; align-items: center; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
 
+    /* ---- check-in ---- */
+    .checkin-stage {
+      position: relative; width: 100%; max-width: 340px; aspect-ratio: 4 / 3;
+      margin-top: 12px; border-radius: 10px; overflow: hidden; background: #000;
+    }
+    .checkin-stage video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .checkin-stage::after {
+      content: ""; position: absolute; inset: 18%;
+      border: 2px dashed rgba(52, 211, 153, 0.85); border-radius: 10px; pointer-events: none;
+    }
+    .label-print { display: none; }
+
+    /* ---- Avery 5821 label sheet ----
+       Letter sheet, 2.5" x 4" labels, 8 per sheet: two 4" columns split by
+       1/6" margins and a 1/6" gutter, four 2.5" rows with 1/2" top and
+       bottom margins. Matched to the supplied 5821 template. */
+    @media print {
+      @page { size: letter; margin: 0; }
+      body { background: #fff !important; }
+      body > *:not(.label-print) { display: none !important; }
+      .label-print { display: block !important; }
+      .label-page {
+        width: 8.5in; height: 11in; box-sizing: border-box;
+        padding: 0.5in 0.1667in 0;
+        display: grid; grid-template-columns: 4in 4in; grid-auto-rows: 2.5in;
+        column-gap: 0.1667in; row-gap: 0;
+        break-after: page; page-break-after: always;
+      }
+      .label-page:last-child { break-after: auto; page-break-after: auto; }
+      .label-cell {
+        box-sizing: border-box; width: 4in; height: 2.5in;
+        padding: 0.13in 0.15in; display: flex; align-items: center; gap: 0.1in;
+        overflow: hidden; color: #111; background: #fff;
+      }
+      .label-main { flex: 1; min-width: 0; }
+      .label-race { font-size: 7pt; letter-spacing: 0.16em; text-transform: uppercase; color: #666; }
+      .label-name { font-size: 15pt; font-weight: 800; line-height: 1.08; margin: 2pt 0 3pt; overflow-wrap: anywhere; }
+      .label-bib { font-family: var(--mono); font-size: 12pt; font-weight: 700; letter-spacing: 0.04em; }
+      .label-cat { font-size: 8pt; color: #666; margin-top: 2pt; }
+      .label-qr { flex: 0 0 auto; width: 1.1in; height: 1.1in; }
+      .label-qr canvas, .label-qr img { width: 1.1in !important; height: 1.1in !important; display: block; }
+    }
+
     .shortcut-table { width: 100%; font-size: 0.85rem; }
     .shortcut-table td { padding: 5px 8px 5px 0; color: var(--muted); }
     .shortcut-table td:first-child { width: 78px; }
@@ -228,7 +323,7 @@
 </head>
 <body>
   <!-- ================= Unlock gate ================= -->
-  <div id="gate" style="display:none; min-height:100vh; align-items:center; justify-content:center; padding:20px">
+  <div id="gate" style="display:none; min-height:100vh; min-height:100dvh; align-items:center; justify-content:center; padding:20px">
     <div class="card" style="max-width:420px; width:100%; text-align:center">
       <div class="brand-mark" style="margin:0 auto 14px">BO</div>
       <h2>Organizer Access</h2>
@@ -265,7 +360,7 @@
       <div class="console-inner">
         <div>
           <div class="clock-label">Official race clock</div>
-          <div class="clock-big" id="clockDisplay" style="font-size:2.5rem">00:00<span class="ms">.000</span></div>
+          <div class="clock-big" id="clockDisplay">00:00<span class="ms">.000</span></div>
         </div>
         <div class="btn-row">
           <button class="btn lg" id="startBtn">Start race</button>
@@ -620,6 +715,30 @@
           </div>
 
           <div class="card" style="background:var(--bg-soft); margin-bottom:16px">
+            <div class="card-head" style="margin-bottom:10px">
+              <div class="eyebrow" style="margin:0">Check-in</div>
+              <span class="badge gray" id="checkinBadge">Scanner off</span>
+            </div>
+            <p class="small muted" style="margin-top:0">Print a label for every runner, stick it on their packet, then scan the QR as they arrive — <b id="checkinCount">0 of 0 checked in</b>.</p>
+            <div class="btn-row">
+              <button class="btn sm" id="checkinStartBtn">Start scanner</button>
+              <button class="btn ghost sm" id="checkinStopBtn" disabled>Stop</button>
+              <button class="btn ghost sm" id="printLabelsBtn">Print labels (Avery 5821)</button>
+              <button class="btn ghost sm" id="checkinUndoBtn">↩ Undo last check-in</button>
+            </div>
+            <div class="checkin-stage" id="checkinStage" style="display:none">
+              <video id="checkinVideo" autoplay playsinline muted></video>
+            </div>
+            <div class="toolbar" style="margin-top:12px">
+              <div class="field" style="flex:1; min-width:180px">
+                <input type="text" id="checkinInput" placeholder="Bib number, if the scan won't read" />
+              </div>
+              <button class="btn" id="checkinManualBtn">Check in</button>
+            </div>
+            <div class="small muted" id="checkinStatus" style="margin-top:8px">Nothing scanned yet.</div>
+          </div>
+
+          <div class="card" style="background:var(--bg-soft); margin-bottom:16px">
             <div class="eyebrow">Bib number requests</div>
             <div class="toolbar">
               <label class="toggle" style="flex:1; min-width:220px">
@@ -654,11 +773,11 @@
               <thead>
                 <tr>
                   <th>Bib</th><th>Runner</th><th>Div</th><th>Shirt</th>
-                  <th style="text-align:right">Est. finish</th><th>Registered</th><th>Actions</th>
+                  <th style="text-align:right">Est. finish</th><th>Checked in</th><th>Registered</th><th>Actions</th>
                 </tr>
               </thead>
               <tbody id="regsBody">
-                <tr><td colspan="7" class="muted" style="text-align:center;padding:24px">Loading registrations…</td></tr>
+                <tr><td colspan="8" class="muted" style="text-align:center;padding:24px">Loading registrations…</td></tr>
               </tbody>
             </table>
           </div>
@@ -736,8 +855,24 @@
     </footer>
   </div>
 
+  <!-- Print-only: the check-in label sheet (built on demand, never shown on screen) -->
+  <div class="label-print" id="labelPrint"></div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <!-- check-in labels: QR drawing, and reading them back off the camera.
+       Vendored under vendor/ so printing and scanning work with no internet. -->
+  <script src="./vendor/qrcode.min.js"></script>
+  <script src="./vendor/jsQR.js"></script>
+  <script>
+    // Offline: keep the console itself on the device (see sw.js). Registered
+    // after load so it never competes with the timing console starting up.
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch((e) => console.warn("offline cache unavailable", e));
+      });
+    }
+  </script>
   <script type="module">
     import {
       getDb, ref, set, push, get, onValue,
@@ -1227,7 +1362,7 @@
       const body = document.getElementById("regsBody");
       const rows = sortRunners(roster());
       if (!rows.length) {
-        body.innerHTML = `<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">No registrations yet.</td></tr>`;
+        body.innerHTML = `<tr><td colspan="8" class="muted" style="text-align:center;padding:24px">No registrations yet.</td></tr>`;
         return;
       }
       body.innerHTML = rows.map((r) => `
@@ -1237,9 +1372,17 @@
           <td>${escapeHtml(divisionLabel(r.division))}</td>
           <td>${escapeHtml(r.size || "—")}</td>
           <td class="num">${r.estimatedTime ? formatShort(r.estimatedTime) : "—"}</td>
+          <td class="small">
+            ${r.checkedInAt
+              ? `${fmtDateTime(r.checkedInAt)} <button class="btn ghost sm" data-uncheck="${r.id}" title="Undo this check-in">Undo</button>`
+              : '<span class="muted">—</span>'}
+          </td>
           <td class="small muted">${fmtDateTime(r.registeredAt)}</td>
           <td><button class="btn danger sm" data-remove="${r.id}" data-name="${escapeHtml(r.name)}">Remove</button></td>
         </tr>`).join("");
+      body.querySelectorAll("[data-uncheck]").forEach((btn) => {
+        btn.addEventListener("click", () => undoCheckIn(btn.getAttribute("data-uncheck")));
+      });
       body.querySelectorAll("[data-remove]").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = btn.getAttribute("data-remove");
@@ -1253,6 +1396,240 @@
           toast(`${name} removed`, "info");
         });
       });
+    }
+
+    /* ---- check-in: labels, scanner, and the roster's checkedInAt ----
+       The QR on a label carries the registration id, which never changes.
+       A bib would be friendlier to type but can be reassigned by the bib
+       seeding, and a sticker on a packet cannot be reprinted at 8:25 AM. */
+    const CHECKIN_PREFIX = "bo5k:";
+    let checkinStream = null;
+    let checkinTimer = null;
+    let checkinCanvas = null;
+    let checkinDetector = null;
+    let checkinBusy = false;
+    let lastScan = { code: null, at: 0 };
+
+    function runnerByBibAny(raw) {
+      const digits = String(raw || "").replace(/\D/g, "");
+      if (!digits) return null;
+      const want = digits.padStart(4, "0");
+      return field().find((r) => String(r.bib) === want) || null;
+    }
+
+    function renderCheckin() {
+      const total = roster().length;
+      const done = roster().filter((r) => r.checkedInAt).length;
+      const el = document.getElementById("checkinCount");
+      if (el) el.textContent = `${done} of ${total} checked in`;
+    }
+
+    function setCheckinBadge(text, tone) {
+      const badge = document.getElementById("checkinBadge");
+      if (!badge) return;
+      badge.className = `badge ${tone}`;
+      badge.textContent = text;
+    }
+
+    async function checkInRegistration(id, source = "scan") {
+      const reg = state.registrations[id];
+      if (!reg) { toast("That code isn't in the roster", "error"); return false; }
+      if (reg.checkedInAt) {
+        toast(`${reg.name || "Runner"} was already checked in at ${fmtDateTime(reg.checkedInAt)}`, "info");
+        return false;
+      }
+      const at = serverNow();
+      state.registrations[id] = { ...reg, checkedInAt: at, checkedInSource: source };
+      // Two fields only: the rest of the record belongs to the registration form.
+      await dbSet(`registrations/${id}/checkedInAt`, at, true);
+      dbSet(`registrations/${id}/checkedInSource`, source, true);
+      saveSnapshot();
+      renderAll();
+      blip(1320);
+      const name = state.registrations[id].name || "Runner";
+      toast(`${name} checked in`, "success");
+      const status = document.getElementById("checkinStatus");
+      if (status) status.textContent = `${name} — checked in ${new Date(at).toLocaleTimeString()}`;
+      return true;
+    }
+
+    /** Undo one check-in: a mis-scan, or a bib typed against the wrong runner. */
+    async function undoCheckIn(id) {
+      const reg = state.registrations[id];
+      if (!reg || !reg.checkedInAt) return false;
+      const kept = { ...reg };
+      delete kept.checkedInAt;
+      delete kept.checkedInSource;
+      state.registrations[id] = kept;
+      // null removes the keys in the database, so the roster looks untouched.
+      await dbSet(`registrations/${id}/checkedInAt`, null, true);
+      dbSet(`registrations/${id}/checkedInSource`, null, true);
+      saveSnapshot();
+      renderAll();
+      const status = document.getElementById("checkinStatus");
+      if (status) status.textContent = `${reg.name || "Runner"} — check-in undone`;
+      toast(`Check-in undone for ${reg.name || "runner"}`, "info");
+      return true;
+    }
+
+    async function undoLastCheckin() {
+      const last = roster()
+        .filter((r) => r.checkedInAt)
+        .sort((a, b) => b.checkedInAt - a.checkedInAt)[0];
+      if (!last) { toast("Nobody is checked in yet", "info"); return; }
+      await undoCheckIn(last.id);
+    }
+
+    async function handleScanned(text) {
+      const now = Date.now();
+      const payload = String(text || "").trim();
+      if (!payload) return;
+      // A label held in front of the lens is read many times a second.
+      if (payload === lastScan.code && now - lastScan.at < 4000) return;
+
+      let id = payload.startsWith(CHECKIN_PREFIX) ? payload.slice(CHECKIN_PREFIX.length) : null;
+      let runner = id ? field().find((r) => r.id === id) : null;
+      if (!runner && state.registrations[payload]) runner = field().find((r) => r.id === payload);
+      if (!runner) runner = runnerByBibAny(payload);
+      if (!runner) return; // not one of ours — keep looking
+
+      lastScan = { code: payload, at: now };
+      await checkInRegistration(runner.id, "scan");
+    }
+
+    function checkinFromInput() {
+      const input = document.getElementById("checkinInput");
+      const raw = input.value.trim();
+      if (!raw) return;
+      const runner = runnerByBibAny(raw)
+        || field().find((r) => String(r.name || "").toLowerCase() === raw.toLowerCase());
+      if (!runner) { toast(`No runner matches "${raw}"`, "error"); return; }
+      input.value = "";
+      checkInRegistration(runner.id, "manual");
+    }
+
+    async function startCheckinScanner() {
+      if (checkinStream) return;
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast("This browser can't open a camera — type the bib instead", "error");
+        return;
+      }
+      try {
+        checkinStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false,
+        });
+      } catch (err) {
+        console.warn("check-in camera failed", err);
+        toast("Couldn't open the camera — type the bib instead", "error");
+        return;
+      }
+      const video = document.getElementById("checkinVideo");
+      video.srcObject = checkinStream;
+      video.play().catch(() => {});
+      document.getElementById("checkinStage").style.display = "";
+      document.getElementById("checkinStartBtn").disabled = true;
+      document.getElementById("checkinStopBtn").disabled = false;
+      setCheckinBadge("● Scanning", "green");
+
+      // Native decoder where the browser has one (fast), jsQR everywhere else.
+      const Detector = window.BarcodeDetector;
+      if (Detector && Detector.getSupportedFormats) {
+        try {
+          const formats = await Detector.getSupportedFormats();
+          if (formats.includes("qr_code")) checkinDetector = new Detector({ formats: ["qr_code"] });
+        } catch (e) { console.warn("barcode detector unavailable", e); }
+      }
+      if (!checkinDetector && !window.jsQR) {
+        document.getElementById("checkinStatus").textContent =
+          "This browser can't read QR codes — type the bib number above.";
+      }
+      if (!checkinCanvas) checkinCanvas = document.createElement("canvas");
+      if (checkinTimer) clearInterval(checkinTimer);
+      checkinTimer = setInterval(scanCheckinFrame, 260);
+    }
+
+    function stopCheckinScanner() {
+      if (checkinTimer) clearInterval(checkinTimer);
+      checkinTimer = null;
+      checkinDetector = null;
+      if (checkinStream) {
+        checkinStream.getTracks().forEach((t) => t.stop());
+        checkinStream = null;
+      }
+      const video = document.getElementById("checkinVideo");
+      if (video) video.srcObject = null;
+      document.getElementById("checkinStage").style.display = "none";
+      document.getElementById("checkinStartBtn").disabled = false;
+      document.getElementById("checkinStopBtn").disabled = true;
+      setCheckinBadge("Scanner off", "gray");
+    }
+
+    async function scanCheckinFrame() {
+      const video = document.getElementById("checkinVideo");
+      if (!video || !video.videoWidth || checkinBusy) return;
+      checkinBusy = true;
+      try {
+        let text = null;
+        if (checkinDetector) {
+          const found = await checkinDetector.detect(video);
+          if (found && found.length) text = found[0].rawValue;
+        } else if (window.jsQR) {
+          const w = 480;
+          const h = Math.round((w * video.videoHeight) / video.videoWidth);
+          if (checkinCanvas.width !== w || checkinCanvas.height !== h) {
+            checkinCanvas.width = w;
+            checkinCanvas.height = h;
+          }
+          const ctx = checkinCanvas.getContext("2d", { willReadFrequently: true });
+          ctx.drawImage(video, 0, 0, w, h);
+          const pixels = ctx.getImageData(0, 0, w, h);
+          const found = window.jsQR(pixels.data, w, h, { inversionAttempts: "dontInvert" });
+          if (found) text = found.data;
+        }
+        if (text) await handleScanned(text);
+      } catch (err) {
+        console.warn("check-in scan failed", err);
+      } finally {
+        checkinBusy = false;
+      }
+    }
+
+    /** One label per runner on an Avery 5821 sheet (2.5" x 4", 8 per page). */
+    function printCheckinLabels() {
+      const runners = sortRunners(roster());
+      if (!runners.length) { toast("No registrations loaded yet", "error"); return; }
+      if (!window.QRCode) { toast("The QR library didn't load — check the connection", "error"); return; }
+
+      const sheet = document.getElementById("labelPrint");
+      sheet.innerHTML = "";
+      for (let i = 0; i < runners.length; i += 8) {
+        const page = document.createElement("div");
+        page.className = "label-page";
+        runners.slice(i, i + 8).forEach((r) => {
+          const cell = document.createElement("div");
+          cell.className = "label-cell";
+          cell.innerHTML = `
+            <div class="label-main">
+              <div class="label-race">Brighton Oaks 5K</div>
+              <div class="label-name">${escapeHtml(r.name)}</div>
+              <div class="label-bib">BIB ${escapeHtml(r.bib)}</div>
+              <div class="label-cat">${escapeHtml(divisionLabel(r.division))}</div>
+            </div>
+            <div class="label-qr"></div>`;
+          page.appendChild(cell);
+          new QRCode(cell.querySelector(".label-qr"), {
+            text: `${CHECKIN_PREFIX}${r.id}`,
+            width: 128,
+            height: 128,
+            correctLevel: QRCode.CorrectLevel.M,
+          });
+        });
+        sheet.appendChild(page);
+      }
+      const pages = Math.ceil(runners.length / 8);
+      toast(`Printing ${runners.length} labels on ${pages} sheet${pages === 1 ? "" : "s"}`, "success");
+      setTimeout(() => window.print(), 150);
     }
 
     function renderResults() {
@@ -1344,6 +1721,7 @@
       renderRunners();
       renderStats();
       renderRegs();
+      renderCheckin();
       renderResults();
       renderCrossings();
     }
@@ -1866,16 +2244,16 @@
       );
     }
 
-    /** Short blip so the operator knows a crossing registered without watching. */
+    /** Short blip so the operator knows something registered without watching. */
     let audioCtx = null;
-    function cueCrossing() {
+    function blip(freq = 880) {
       try {
         const Ctx = window.AudioContext || window.webkitAudioContext;
         if (Ctx) {
           if (!audioCtx) audioCtx = new Ctx();
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
-          osc.frequency.value = 880;
+          osc.frequency.value = freq;
           gain.gain.value = 0.07;
           osc.connect(gain);
           gain.connect(audioCtx.destination);
@@ -1885,6 +2263,7 @@
       } catch {}
       try { if (navigator.vibrate) navigator.vibrate(60); } catch {}
     }
+    function cueCrossing() { blip(880); }
 
     /**
      * Make the results table mirror the crossings: the *time* belongs to the
@@ -2749,6 +3128,16 @@
     document.getElementById("gunThreshold").addEventListener("input", (e) => {
       gun.setThreshold((parseInt(e.target.value, 10) || 60) / 100);
       if (gun.state === "armed") renderGun({});
+    });
+
+    // check-in tab wiring
+    document.getElementById("checkinStartBtn").addEventListener("click", startCheckinScanner);
+    document.getElementById("checkinStopBtn").addEventListener("click", stopCheckinScanner);
+    document.getElementById("printLabelsBtn").addEventListener("click", printCheckinLabels);
+    document.getElementById("checkinUndoBtn").addEventListener("click", undoLastCheckin);
+    document.getElementById("checkinManualBtn").addEventListener("click", checkinFromInput);
+    document.getElementById("checkinInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); checkinFromInput(); }
     });
 
     // registrations tab

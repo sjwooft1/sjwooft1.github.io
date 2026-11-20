@@ -1,21 +1,37 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "Brighton Oaks 5K",
+  "short_name": "BO 5K",
+  "description": "The Brighton Oaks 5K — register, follow live results and explore the course.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#16100a",
+  "background_color": "#16100a",
   "icons": [
     {
-      "src": "/favicon.png/web-app-manifest-192x192.png",
+      "src": "web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "web-app-manifest-192x192-maskable.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/favicon.png/web-app-manifest-512x512.png",
+      "src": "web-app-manifest-512x512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
-  ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  ]
 }

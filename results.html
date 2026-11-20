@@ -9,6 +9,10 @@
   <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
   <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
+  <meta name="theme-color" content="#16100a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="BO 5k" />
   <link rel="manifest" href="/Favicon Generator/site.webmanifest" />
   <link rel="stylesheet" href="race.css" />
@@ -263,6 +267,8 @@
           finishTime: res.finishTime ?? null,
           finishedAt: res.finishedAt ?? null,
           dnf: !!res.dnf,
+          // Written by the organizer's check-in scan, on the registration itself.
+          checkedInAt: reg.checkedInAt ?? null,
         };
       });
     }
@@ -319,7 +325,9 @@
             ? '<span class="badge green">Finished</span>'
             : r.status === "dnf"
               ? '<span class="badge red">DNF</span>'
-              : '<span class="badge blue">On course</span>';
+              : r.checkedInAt
+                ? '<span class="badge amber">Checked in</span>'
+                : '<span class="badge blue">On course</span>';
           return `
             <tr class="clickable ${r.id === selectedId ? "highlight" : ""}" data-id="${r.id}">
               <td class="place">${medal || (r.place ?? "—")}</td>
@@ -469,7 +477,7 @@
       const { finished, course, dnf } = standings();
       const rows = [["Place", "Bib", "Name", "Division", "Age Group", "Finish Time", "Pace /mi", "Predicted", "Status"]];
       finished.forEach((r, i) => rows.push([i + 1, r.bib, r.name, divisionLabel(r.division), ageGroup(r.age), formatClock(r.finishTime), pacePerMile(r.finishTime), r.estimatedTime ? formatShort(r.estimatedTime) : "", "Finished"]));
-      course.forEach((r) => rows.push(["", r.bib, r.name, divisionLabel(r.division), ageGroup(r.age), "", "", r.estimatedTime ? formatShort(r.estimatedTime) : "", "On course"]));
+      course.forEach((r) => rows.push(["", r.bib, r.name, divisionLabel(r.division), ageGroup(r.age), "", "", r.estimatedTime ? formatShort(r.estimatedTime) : "", r.checkedInAt ? "Checked in" : "On course"]));
       dnf.forEach((r) => rows.push(["", r.bib, r.name, divisionLabel(r.division), ageGroup(r.age), "", "", "", "DNF"]));
       downloadCsv("brighton-oaks-5k-results.csv", rows);
       toast("Results exported", "success");

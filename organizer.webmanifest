@@ -1,0 +1,37 @@
+{
+  "name": "Brighton Oaks 5K — Timing Console",
+  "short_name": "BO 5K Timing",
+  "description": "Organizer console: race clock, tap-to-finish timing, check-in, print and results.",
+  "start_url": "./organizer.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0e1626",
+  "background_color": "#16100a",
+  "icons": [
+    {
+      "src": "/Favicon%20Generator/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Favicon%20Generator/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Favicon%20Generator/web-app-manifest-192x192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/Favicon%20Generator/web-app-manifest-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -8,6 +8,10 @@
   <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
   <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
+  <meta name="theme-color" content="#16100a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="BO 5k" />
   <link rel="manifest" href="/Favicon Generator/site.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -363,8 +367,11 @@
     }
 
     @media screen and (max-width: 480px) {
+      /* the logo and the links can no longer share one row on a phone */
       .navbar {
         padding: 10px;
+        flex-wrap: wrap;
+        gap: 8px;
       }
       
       .navbar .logo {
@@ -373,7 +380,12 @@
       
       .navbar .nav-links {
         gap: 6px;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
       }
+      .navbar .nav-links::-webkit-scrollbar { display: none; }
       
       .navbar a {
         padding: 6px 10px;

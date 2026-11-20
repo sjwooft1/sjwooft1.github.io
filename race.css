@@ -171,6 +171,7 @@ p { margin: 0 0 12px; }
 .page { max-width: 1220px; margin: 0 auto; padding: 26px 22px 40px; }
 .page-wide { max-width: 1440px; margin: 0 auto; padding: 22px 22px 40px; }
 .grid { display: grid; gap: 18px; }
+.grid > * { min-width: 0; }
 .grid-2 { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
 .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
@@ -601,8 +602,10 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 
 /* ---------- Responsive ---------- */
 @media (max-width: 980px) {
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
-  .form-grid { grid-template-columns: 1fr; }
+  /* minmax(0, …) so a wide table can scroll inside its card instead of
+     pushing the whole page sideways on a phone. */
+  .grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); }
+  .form-grid { grid-template-columns: minmax(0, 1fr); }
   .clock-big { font-size: 2.5rem; }
   .hero h1 { font-size: 1.85rem; }
 }
@@ -641,4 +644,87 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
   html, body { background: #fff; color: #111; }
   .card { border: 1px solid #ccc; box-shadow: none; }
   table.data th { background: #eee; color: #333; }
+}
+
+/* ============================================================
+   Phones, tablets and installed apps
+   ============================================================ */
+
+/* Safari inflates body text in landscape unless this is pinned. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+@media (max-width: 900px), (pointer: coarse) {
+  /* iOS Safari zooms the whole page when a field smaller than 16px takes
+     focus — which leaves the console magnified mid-check-in. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea { font-size: 16px !important; }
+
+  /* Cold hands, gloves, a phone held at arm's length: 44px is the smallest
+     reliable target. */
+  .btn, .btn.sm, .btn.lg { min-height: 44px; }
+  .btn.sm { padding: 10px 14px; font-size: 0.88rem; }
+  .tabs button { min-height: 48px; padding: 14px 16px; }
+  .filter-chips button { min-height: 44px; padding: 10px 15px; }
+  .nav-links a { display: inline-flex; align-items: center; min-height: 44px; }
+  .toggle { min-height: 44px; gap: 10px; }
+  /* Big enough to hit, and drawn in the race's own colours instead of the
+     browser's bright-white default box. */
+  input[type="checkbox"], input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    flex: none;
+    margin: 0;
+    display: inline-grid;
+    place-content: center;
+    background: var(--bg-soft);
+    border: 1.5px solid var(--border-strong);
+    border-radius: 6px;
+  }
+  input[type="radio"] { border-radius: 50%; }
+  input[type="checkbox"]::before,
+  input[type="radio"]::before {
+    content: "";
+    width: 12px;
+    height: 12px;
+    transform: scale(0);
+    transition: transform 0.12s ease-in-out;
+    background: #fff;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  }
+  input[type="radio"]::before { clip-path: none; border-radius: 50%; }
+  input[type="checkbox"]:checked,
+  input[type="radio"]:checked { background: var(--accent2); border-color: var(--accent2); }
+  input[type="checkbox"]:checked::before,
+  input[type="radio"]:checked::before { transform: scale(1); }
+  input[type="checkbox"]:focus-visible,
+  input[type="radio"]:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+
+  /* The tab strip scrolls sideways; a desktop-style scrollbar over it is noise. */
+  .tabs { scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  /* No 300ms double-tap delay, no grey flash on tap. */
+  button, .btn, .nav-links a, .tabs button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Leaflet's zoom buttons ship at 30px. */
+  .leaflet-control-zoom a {
+    width: 44px !important;
+    height: 44px !important;
+    line-height: 44px !important;
+    font-size: 22px !important;
+  }
+
+  /* Landscape on a notched phone: keep the gutters off the notch. */
+  @supports (padding: env(safe-area-inset-left)) {
+    .navbar, .page, .page-wide {
+      padding-left: max(14px, env(safe-area-inset-left));
+      padding-right: max(14px, env(safe-area-inset-right));
+    }
+  }
 }
