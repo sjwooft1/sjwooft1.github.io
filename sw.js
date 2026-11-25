@@ -3,8 +3,8 @@
 
    A race venue is often a field with no usable signal, and the console is
    the thing that must not fail there. This worker keeps the app itself on
-   the phone: the page, its stylesheet, the local modules, the vendored QR
-   libraries, the Leaflet/Tesseract/Firebase scripts and the web fonts.
+   the phone:    the page, its stylesheet, the local modules, the vendored QR
+   libraries, the Leaflet/Firebase scripts and the web fonts.
 
    It deliberately does NOT touch live race data. Requests to the Firebase
    database, auth and analytics pass straight through to the network, so the
@@ -16,7 +16,7 @@
    Firebase's IndexedDB cache); nothing here can or should try to cache it.
    ============================================================ */
 
-const VERSION = "v4";
+const VERSION = "v8";
 const SHELL_CACHE = `bo5k-shell-${VERSION}`;
 const FONT_CACHE = `bo5k-fonts-${VERSION}`;
 const RUNTIME_CACHE = `bo5k-runtime-${VERSION}`;
@@ -30,7 +30,6 @@ const SHELL = [
   "./race.css",
   "./fonts/Oakhill.ttf",
   "./race-core.js",
-  "./finish-cam.js",
   "./crossing-cam.js",
   "./pdf-export.js",
   "./gun-sensor.js",
@@ -48,7 +47,6 @@ const SHELL = [
   "/Favicon%20Generator/web-app-manifest-512x512-maskable.png",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
-  "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js",
   "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js",
   "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js",
 ];
@@ -92,6 +90,13 @@ self.addEventListener("install", (event) => {
       await self.skipWaiting();
     })()
   );
+});
+
+/* The console's Update button asks the newest worker to take over, then
+   reloads the page itself. Never do that unprompted: a reload mid-race would
+   cost the device its camera. */
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {

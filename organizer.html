@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Brighton Oaks 5K — Race Timing Console</title>
-  <meta name="description" content="Organizer timing console for the Brighton Oaks 5K: race clock, tap-to-finish timing, OCR finish-line camera, registrations and results management." />
+  <meta name="description" content="Organizer timing console for the Brighton Oaks 5K: race clock, two-device finish-line camera, registrations and results management." />
   <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
   <link rel="shortcut icon" href="/Favicon Generator/favicon.ico" />
@@ -114,6 +114,23 @@
     }
     .camera-stage .stage-msg > div { max-width: 100%; }
 
+    /* Live motion meter. This is the one thing to check before the gun: if
+       the bar does not move when somebody walks through the band, the
+       camera or the band is wrong — and that is visible now instead of
+       being discovered when the first runner is already through. */
+    .signal-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .signal-row .signal-copy { flex: 1 1 240px; min-width: 0; }
+    .signal-meter {
+      flex: 0 0 100%; height: 10px; border-radius: 6px;
+      background: rgba(148, 163, 184, 0.16);
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    .signal-meter > span {
+      display: block; height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent2), var(--green));
+      transition: width 90ms linear;
+    }
+
     /* Phone layout for the two-device tab. A grid item defaults to
        min-width:auto, so the camera stage and the settings row push the
        single mobile column wider than the viewport (608px inside 375px) and
@@ -191,6 +208,13 @@
     .camera-stage:fullscreen video,
     .camera-stage:-webkit-full-screen video {
       object-fit: cover;
+    }
+    /* The finish line must show the whole frame (a cropped edge is a missed
+       runner), and the crossing overlay measures this same letterboxed box. */
+    #lineStage.fs-active video,
+    #lineStage:fullscreen video,
+    #lineStage:-webkit-full-screen video {
+      object-fit: contain;
     }
     body.cam-fs-lock {
       overflow: hidden !important;
@@ -372,6 +396,7 @@
             <span class="badge gray" id="syncBadge">● Checking sync…</span>
             <span class="badge orange" id="queueBadge" style="display:none">0 queued</span>
             <span class="badge amber" id="practiceBadge" style="display:none">Practice — nothing is saved</span>
+            <button class="btn ghost sm" id="appUpdateBtn" type="button" style="padding:4px 9px; font-size:0.72rem" title="Check for a newer version of the console">⟳ Update</button>
           </div>
           <div class="small muted" id="clockSub" style="margin-top:4px">Clock not started</div>
           <label class="toggle small" style="margin-top:6px; white-space:nowrap"><input type="checkbox" id="practiceChk" /> Practice mode</label>
@@ -383,7 +408,6 @@
       <div class="tabs" id="tabs">
         <button class="on" data-tab="timing">⏱ Timing Console</button>
         <button data-tab="line">🏁 Finish Line (2 devices)</button>
-        <button data-tab="camera">📷 Finish Camera (OCR)</button>
         <button data-tab="registrations">Registrations</button>
         <button data-tab="results">Results</button>
         <button data-tab="map">Course Map</button>
@@ -454,143 +478,12 @@
         </div>
       </section>
 
-      <!-- ==================== CAMERA ==================== -->
-      <section class="tab-panel" id="tab-camera">
-        <div class="stat-strip" style="margin-bottom:18px">
-          <div class="stat"><div class="stat-label">Scanner</div><div class="stat-value" id="scanState" style="font-size:1.15rem">Standby</div><div class="stat-sub" id="scanStateSub">Start the camera, then arm the scanner</div></div>
-          <div class="stat"><div class="stat-label">Bibs in view</div><div class="stat-value mono" id="scanTracks">0</div></div>
-          <div class="stat"><div class="stat-label">Bib reads</div><div class="stat-value mono" id="scanReads">0</div></div>
-          <div class="stat"><div class="stat-label">Auto finishes</div><div class="stat-value mono" id="scanFinishes">0</div></div>
-        </div>
-
-        <div class="grid grid-2">
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <div class="eyebrow">3D Photo Finish Gate</div>
-                <h2>Finish-Line Wall Scanner</h2>
-              </div>
-              <span class="badge gray" id="camBadge">Camera off</span>
-            </div>
-            <p class="muted small">Mount the camera on a tripod aimed across or up the finish chute. Position the <b>3D Finish Gate wall</b> by dragging base posts <b>A</b> and <b>B</b> along the ground line and the top arch <b>↕</b> to match runner height. The scanner watches specifically for <b>bib numbers</b> (ignoring people without bibs, trees, or shadows) — when a bib number is spotted, OCR reads it and stamps a finish as it crosses the 3D wall.</p>
-
-            <div class="camera-stage" id="cameraStage">
-              <video id="cameraVideo" autoplay playsinline muted></video>
-              <canvas id="camOverlay"></canvas>
-              <div class="cam-fs-hud-top">
-                <div class="cam-fs-pill">
-                  <span id="fsStatusDot" style="color:var(--green)">●</span>
-                  <span id="fsStatusText">Camera live</span>
-                  <span class="cam-fs-clock" id="fsClockDisplay">00:00.000</span>
-                </div>
-                <div class="cam-fs-pill">
-                  <span>Finishes: <b class="mono" id="fsFinishCount">0</b></span>
-                  <button class="btn ghost sm" id="fsExitBtn" type="button" style="padding:4px 10px">✕ Exit fullscreen</button>
-                </div>
-              </div>
-              <div class="cam-fs-hud-bottom">
-                <button class="btn primary" id="fsStartRaceBtn" type="button">Start race</button>
-                <button class="btn" id="fsArmBtn" type="button">Arm scanner</button>
-                <button class="btn ghost" id="fsCaptureBtn" type="button">📸 Manual read</button>
-                <button class="btn danger" id="fsStopBtn" type="button">Stop</button>
-              </div>
-            </div>
-
-            <div class="btn-row" style="margin-top:14px">
-              <button class="btn primary" id="startCamBtn">Start camera</button>
-              <button class="btn" id="armCamBtn" disabled>Arm scanner</button>
-              <button class="btn ghost" id="fullscreenCamBtn">⛶ Fullscreen</button>
-              <button class="btn ghost" id="captureBtn" disabled>📸 Manual read</button>
-              <button class="btn ghost" id="stopCamBtn" disabled>Stop</button>
-              <label class="btn ghost" style="cursor:pointer">
-                Upload photo
-                <input type="file" id="photoUpload" accept="image/*" capture="environment" style="display:none" />
-              </label>
-            </div>
-
-            <div class="settings-row">
-              <div class="field">
-                <label for="lineYRange">Gate ground depth</label>
-                <input type="range" id="lineYRange" min="18" max="95" value="72" />
-              </div>
-              <div class="field">
-                <label for="wallHeightRange">3D wall height</label>
-                <input type="range" id="wallHeightRange" min="18" max="72" value="44" />
-              </div>
-              <div class="field">
-                <label for="confFloor">Min confidence (%)</label>
-                <input type="number" id="confFloor" min="45" max="95" value="68" style="width:84px" />
-              </div>
-              <label class="toggle"><input type="checkbox" id="autoRecordChk" checked /> Auto-record confident crossings</label>
-            </div>
-
-            <div id="ocrStatus" class="small muted" style="margin-top:12px">Camera idle — start the camera and arm the scanner to begin watching the finish line.</div>
-            <div class="notice error" id="camError" style="margin-top:12px"></div>
-          </div>
-
-          <aside class="grid" style="align-content:start; gap:18px">
-            <div class="card">
-              <div class="card-head" style="margin-bottom:10px">
-                <div class="eyebrow" style="margin:0">Auto finish feed</div>
-                <button class="btn ghost sm" id="clearLogBtn">Clear</button>
-              </div>
-              <div id="captureLog"><div class="empty" style="padding:18px">No finishes recorded by the scanner yet</div></div>
-            </div>
-
-            <div class="card" id="reviewCard" style="display:none">
-              <div class="eyebrow">Needs review</div>
-              <p class="small muted">A runner crossed with an uncertain bib — confirm before the finish is official.</p>
-              <div id="reviewPanel">
-                <img class="thumb" id="reviewThumb" alt="Crossing frame" />
-                <div class="stat-strip" style="grid-template-columns:repeat(2,minmax(0,1fr)); margin:13px 0">
-                  <div class="stat">
-                    <div class="stat-label">Bib read</div>
-                    <div class="stat-value mono" id="reviewBib">—</div>
-                  </div>
-                  <div class="stat">
-                    <div class="stat-label">OCR confidence</div>
-                    <div class="stat-value mono" id="reviewConf">—</div>
-                  </div>
-                </div>
-                <div class="field">
-                  <label for="reviewBibInput">Confirm or correct the bib number</label>
-                  <input type="text" id="reviewBibInput" inputmode="numeric" placeholder="e.g. 0042" />
-                  <div class="help" id="reviewMatch">No roster match yet</div>
-                </div>
-                <div class="notice info show" id="reviewTimeNote" style="margin:12px 0">
-                  <span>⏱</span><div id="reviewTimeText">Crossing time: —</div>
-                </div>
-                <div class="btn-row">
-                  <button class="btn primary" id="recordOcrBtn">Record finish</button>
-                  <button class="btn ghost" id="discardCaptureBtn">Discard</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="eyebrow">Setup checklist</div>
-              <ul class="small muted" style="margin:6px 0 0; padding-left:18px; line-height:1.9">
-                <li>Camera 6–15 ft from the finish chute, chest height, angled toward oncoming runners</li>
-                <li>Drag base posts <b>A</b> &amp; <b>B</b> onto the left and right edges of the physical finish line</li>
-                <li>Drag the top arch <b>↕</b> so the 3D vertical wall covers runners from ground to chest</li>
-                <li>People walking by without a bib number are ignored — OCR triggers only when a bib number pattern is spotted</li>
-                <li>Roster bibs match first; uncertain reads land in <b>Needs review</b></li>
-              </ul>
-            </div>
-
-            <div class="card" id="manualReviewCard" style="display:none">
-              <div class="eyebrow">Manual read result</div>
-              <div id="manualReview"></div>
-            </div>
-          </aside>
-        </div>
-      </section>
-
       <!-- ==================== FINISH LINE (TWO DEVICES) ==================== -->
       <section class="tab-panel" id="tab-line">
         <div class="stat-strip" style="margin-bottom:18px">
           <div class="stat"><div class="stat-label">Race clock</div><div class="stat-value mono" id="lineClock" style="font-size:1.2rem">00:00.000</div><div class="stat-sub" id="lineClockSub">Waiting for the start device</div></div>
           <div class="stat"><div class="stat-label">Line</div><div class="stat-value" id="lineState" style="font-size:1.15rem">Camera off</div><div class="stat-sub" id="lineStateSub">Start the camera, then arm the line</div></div>
+          <div class="stat"><div class="stat-label">Screen</div><div class="stat-value" id="lineWake" style="font-size:1.15rem">Off</div><div class="stat-sub" id="lineWakeSub">Starts with the camera</div></div>
           <div class="stat"><div class="stat-label">Crossings</div><div class="stat-value mono" id="lineCount">0</div></div>
           <div class="stat"><div class="stat-label">Last crossing</div><div class="stat-value mono" id="lineLast" style="font-size:1.15rem">—</div><div class="stat-sub" id="lineLastSub">nobody yet</div></div>
         </div>
@@ -604,18 +497,45 @@
               </div>
               <span class="badge gray" id="lineBadge">Camera off</span>
             </div>
-            <p class="muted small">Start the race on your other device, then film the finish line here. Every runner who crosses the marked line gets a finish time against that shared clock — no bib reading involved, so a smudged number can never cost a time. Crossings are assigned in expected finish order; write the real bibs down and correct them below. <b>Only the chest counts:</b> the time stamps when the athlete's torso reaches the line — swinging arms, trailing feet and heads above the strip are ignored.</p>
+            <p class="muted small">Start the race on your other device (or let the start gun start it), then film the finish line here. Every runner who crosses the marked line gets a finish time against that shared clock — no bib reading involved, so a smudged number can never cost a time. The detector follows the <b>whole runner</b> through the band below and stamps the moment their centre meets the line; if they are briefly hidden behind somebody, the crossing is still recorded. Crossings are assigned in expected finish order — write the real bibs down and correct them below. On a phone the preview opens fullscreen on its own and keeps the screen awake, so the camera stays open from the gun to the last runner.</p>
 
             <div class="camera-stage" id="lineStage">
               <video id="lineVideo" autoplay playsinline muted></video>
               <canvas id="lineOverlay"></canvas>
               <div class="stage-msg" id="linePlaceholder"><div>Camera off — press <b>Start camera</b><br /><span style="font-size:0.85em">Allow camera access when the browser asks</span></div></div>
+              <!-- Shown only in fullscreen: the race clock, the crossing count
+                   and the two controls needed while the phone is on a tripod. -->
+              <div class="cam-fs-hud-top">
+                <div class="cam-fs-pill">
+                  <span id="lineFsDot" style="color:var(--green)">●</span>
+                  <span id="lineFsStatus">Camera live</span>
+                  <span class="cam-fs-clock" id="lineFsClock">00:00.000</span>
+                </div>
+                <div class="cam-fs-pill" id="lineFsWakePill" style="display:none">
+                  <span id="lineFsWakeDot" style="color:var(--green)">●</span>
+                  <span id="lineFsWakeText">Screen kept awake</span>
+                </div>
+                <div class="cam-fs-pill">
+                  <span>Crossings: <b class="mono" id="lineFsCount">0</b></span>
+                  <button class="btn ghost sm" id="lineFsExitBtn" type="button" style="padding:4px 10px">✕ Exit fullscreen</button>
+                </div>
+              </div>
+              <div class="cam-fs-hud-bottom">
+                <button class="btn primary" id="lineFsArmBtn" type="button">Arm line</button>
+                <button class="btn ghost" id="lineFsSimBtn" type="button" disabled title="Practice mode only">Simulate crossing</button>
+              </div>
+            </div>
+
+            <div class="signal-row" style="margin-top:10px">
+              <div class="signal-meter" id="lineMeter" aria-hidden="true"><span id="lineMeterFill"></span></div>
+              <div class="signal-copy small muted" id="lineSignalText">Arm the line, then walk through the band — the bar above must move.</div>
             </div>
 
             <div class="btn-row" style="margin-top:14px">
               <button class="btn primary" id="lineStartCamBtn">Start camera</button>
               <button class="btn" id="lineArmBtn" disabled>Arm line</button>
               <button class="btn ghost" id="lineStopBtn" disabled>Stop</button>
+              <button class="btn ghost" id="lineFullscreenBtn">⛶ Fullscreen</button>
               <button class="btn ghost" id="lineSimBtn" disabled title="Practice mode only">Simulate crossing</button>
             </div>
 
@@ -625,12 +545,12 @@
                 <input type="range" id="lineXRange" min="5" max="95" value="50" />
               </div>
               <div class="field">
-                <label for="lineChest">Chest height (%)</label>
-                <input type="range" id="lineChest" min="15" max="85" value="49" />
+                <label for="lineBandTop">Runner band top (%)</label>
+                <input type="range" id="lineBandTop" min="0" max="90" value="6" />
               </div>
               <div class="field">
-                <label for="lineBandH">Chest band (%)</label>
-                <input type="range" id="lineBandH" min="8" max="60" value="26" />
+                <label for="lineBandBottom">Runner band bottom (%)</label>
+                <input type="range" id="lineBandBottom" min="10" max="100" value="98" />
               </div>
               <div class="field">
                 <label for="lineDir">Runners cross</label>
@@ -644,6 +564,16 @@
                 <label for="lineSens">Sensitivity</label>
                 <input type="range" id="lineSens" min="40" max="220" value="100" />
               </div>
+            </div>
+
+            <div class="notice error" id="lineClockWarn" style="margin-top:12px">
+              <span>⏱</span>
+              <div><b>The race clock is not running.</b> Crossings are still recorded with their moment, but they have no finish time until the clock starts — start the race on the Timing tab, or record the gun and press Listen.</div>
+            </div>
+
+            <div class="notice error" id="lineWakeWarn">
+              <span>☀</span>
+              <div><b>This device can't keep the screen awake.</b> Set its Auto-Lock / screen timeout to <b>Never</b> and keep it plugged in before the race — otherwise the phone locks and the finish camera stops.</div>
             </div>
 
             <div class="small muted" id="lineStatus" style="margin-top:12px">Drag on the preview to put the line on the physical finish line.</div>
@@ -793,7 +723,7 @@
               <h2>Finishers</h2>
             </div>
             <div class="btn-row">
-              <button class="btn sm" id="sharePdfBtn">Share PDF with photos</button>
+              <button class="btn sm" id="sharePdfBtn">Official results PDF</button>
               <button class="btn ghost sm" id="copyListBtn">Copy athlete list</button>
               <button class="btn ghost sm" id="exportResultsBtn">Export CSV</button>
               <button class="btn ghost sm" onclick="window.print()">Print</button>
@@ -814,7 +744,7 @@
               </tbody>
             </table>
           </div>
-          <p class="small muted" style="margin:10px 0 0">The PDF lists every athlete and embeds the photo taken as their chest met the line. Those photos live only on this device, so the PDF is built here and then shared as a single file.</p>
+          <p class="small muted" style="margin:10px 0 0">The PDF is an official results sheet: branded header, finishers summary, the full placed table and an appendix of the finish-line photos. The photos live only on this device, so the document is built here and shared as a single file.</p>
         </div>
       </section>
 
@@ -859,28 +789,114 @@
   <div class="label-print" id="labelPrint"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <!-- check-in labels: QR drawing, and reading them back off the camera.
        Vendored under vendor/ so printing and scanning work with no internet. -->
   <script src="./vendor/qrcode.min.js"></script>
   <script src="./vendor/jsQR.js"></script>
   <script>
-    // Offline: keep the console itself on the device (see sw.js). Registered
-    // after load so it never competes with the timing console starting up.
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch((e) => console.warn("offline cache unavailable", e));
+    /* Offline copy + the Update button.
+
+       A console added to a phone's home screen (a web clip) can keep the copy
+       it was installed with for days: the browser never shows a reload button
+       and may not reload it on its own. So there is an explicit Update button
+       in the race bar. It asks the service worker to check for a newer build,
+       swaps to it, and reloads once the new worker is in charge.
+
+       It never reloads by itself — an update landing mid-race would cost the
+       line device its camera. */
+    (function () {
+      const btn = document.getElementById("appUpdateBtn");
+      if (!("serviceWorker" in navigator)) {
+        if (btn) btn.style.display = "none";
+        return;
+      }
+
+      let registration = null;
+      let waiting = null;
+      let updateRequested = false;
+      let resetTimer = null;
+
+      function paint(label, ready) {
+        if (!btn) return;
+        btn.textContent = label;
+        btn.classList.toggle("primary", !!ready);
+        btn.disabled = false;
+      }
+
+      function adopt(worker) {
+        if (!worker) return;
+        waiting = worker;
+        paint("⟳ Update ready", true);
+      }
+
+      function currentWaiting() {
+        return waiting || (registration && registration.waiting) || null;
+      }
+
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!updateRequested) return; // only a tapped update reloads the console
+        location.reload();
       });
-    }
+
+      async function runUpdate() {
+        updateRequested = true;
+        paint("⟳ Updating…", true);
+        clearTimeout(resetTimer);
+
+        const pending = currentWaiting();
+        if (pending) pending.postMessage({ type: "SKIP_WAITING" });
+        try { if (registration) await registration.update(); } catch {}
+
+        // Give a fresh worker time to install and take over: controllerchange
+        // above reloads when it does. If nothing new arrives, say so.
+        resetTimer = setTimeout(() => {
+          if (!updateRequested) return;
+          const stillWaiting = currentWaiting();
+          if (stillWaiting) {
+            stillWaiting.postMessage({ type: "SKIP_WAITING" });
+            setTimeout(() => {
+              if (!updateRequested) return;
+              updateRequested = false;
+              location.reload();
+            }, 1500);
+            return;
+          }
+          updateRequested = false;
+          paint("✓ Up to date", false);
+          setTimeout(() => { if (!updateRequested) paint("⟳ Update", false); }, 2200);
+        }, 3500);
+      }
+
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").then((reg) => {
+          registration = reg;
+          if (reg.waiting && navigator.serviceWorker.controller) adopt(reg.waiting);
+          reg.addEventListener("updatefound", () => {
+            const fresh = reg.installing;
+            if (!fresh) return;
+            fresh.addEventListener("statechange", () => {
+              if (fresh.state === "installed" && navigator.serviceWorker.controller) adopt(fresh);
+            });
+          });
+        }).catch((e) => console.warn("offline cache unavailable", e));
+      });
+
+      // A clip can sit open for a whole race; check again when it comes back.
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden || !registration) return;
+        registration.update().catch(() => {});
+      });
+
+      if (btn) btn.addEventListener("click", runUpdate);
+    })();
   </script>
   <script type="module">
     import {
-      getDb, ref, set, push, get, onValue,
+      EVENT, getDb, ref, set, push, get, onValue,
       formatClock, formatShort, pacePerMile, parseTimeInput, clockParts,
-      computeBibs, sortRunners, divisionLabel, escapeHtml, fmtDateTime,
+      computeBibs, sortRunners, divisionLabel, ageGroup, escapeHtml, fmtDateTime,
       downloadCsv, toast, watchConnection
     } from "./race-core.js";
-    import { FinishCam } from "./finish-cam.js";
     import { CrossingCam } from "./crossing-cam.js";
     import { buildResultsPdf, buildResultsText } from "./pdf-export.js";
     import { GunSensor } from "./gun-sensor.js";
@@ -942,7 +958,7 @@
       frames: {},              // crossing id -> [photo data URLs], kept out of the DB list
     };
 
-    const LS_KEYS = { snapshot: "bo5k_console_snapshot", queue: "bo5k_write_queue", log: "bo5k_capture_log" };
+    const LS_KEYS = { snapshot: "bo5k_console_snapshot", queue: "bo5k_write_queue" };
 
     /* Practice mode: everything stays inside this tab. Nothing is written to
        the race database and nothing is left in local storage, so a dry run at
@@ -1075,19 +1091,25 @@
         state.raceStart == null ? "Start race" : state.paused ? "Resume" : "Running…";
       document.getElementById("startBtn").disabled = state.raceStart != null && !state.paused;
       document.getElementById("pauseBtn").disabled = state.raceStart == null || state.paused;
-      const fsClock = document.getElementById("fsClockDisplay");
-      if (fsClock) fsClock.textContent = `${p.main}${p.ms}`;
-      const fsStart = document.getElementById("fsStartRaceBtn");
-      if (fsStart) {
-        fsStart.textContent = state.raceStart == null ? "Start race" : state.paused ? "Resume" : "Pause clock";
-      }
       const lineClock = document.getElementById("lineClock");
       if (lineClock) lineClock.textContent = `${p.main}${p.ms}`;
+      const lineFsClock = document.getElementById("lineFsClock");
+      if (lineFsClock) lineFsClock.textContent = `${p.main}${p.ms}`;
       const lineClockSub = document.getElementById("lineClockSub");
       if (lineClockSub) {
         lineClockSub.textContent = state.raceStart == null
           ? "Waiting for the start device"
           : state.paused ? "Paused" : "Live · shared with the start device";
+      }
+      // A crossing stamped with no clock has no time, so the finish-line tab
+      // says so in full view instead of quietly recording dashes.
+      const lineWarn = document.getElementById("lineClockWarn");
+      if (lineWarn) {
+        const show = state.raceStart == null ? "1" : "0";
+        if (lineWarn.dataset.on !== show) {
+          lineWarn.dataset.on = show;
+          lineWarn.classList.toggle("show", show === "1");
+        }
       }
     }
     /* The clock value comes from timestamps, but the *display* still has to be
@@ -1727,433 +1749,6 @@
     }
 
     /* =====================================================================
-       8. Finish-line scanner (motion tracking + multi-pass OCR)
-    ===================================================================== */
-    const video = document.getElementById("cameraVideo");
-    const camBadge = document.getElementById("camBadge");
-    const ocrStatus = document.getElementById("ocrStatus");
-    const camError = document.getElementById("camError");
-    let stream = null;
-    let cam = null;               // FinishCam engine (finish-cam.js)
-    let pendingCapture = null;    // review-queue item { bibGuess, confidence, thumb, at }
-    const scanStats = { reads: 0, finishes: 0 };
-
-    function camShowError(msg) {
-      camError.textContent = msg;
-      camError.classList.add("show");
-    }
-    function camClearError() {
-      camError.classList.remove("show");
-    }
-
-    function rosterBibs() {
-      return roster().map((r) => r.bib);
-    }
-
-    function runnerByBib(bib) {
-      const val = String(bib || "").trim();
-      if (!val) return null;
-      return field().find((x) => String(x.bib) === val.padStart(4, "0") || String(x.bib) === val);
-    }
-
-    function ensureCam() {
-      if (cam) return cam;
-      cam = new FinishCam({
-        video,
-        overlay: document.getElementById("camOverlay"),
-        getRosterBibs: rosterBibs,
-        onFinish: onAutoFinish,
-        onReview: onScanReview,
-        onRead: onScanRead,
-        onStatus: onScanStatus,
-        onGateChange: (g) => {
-          const midY = Math.round(((g.y1 + g.y2) / 2) * 100);
-          const wh = Math.round((g.wallHeight || 0.44) * 100);
-          document.getElementById("lineYRange").value = String(midY);
-          const whEl = document.getElementById("wallHeightRange");
-          if (whEl) whEl.value = String(wh);
-        },
-      });
-      cam.attachLineDrag();
-      syncCamSettings();
-      cam._drawOverlay([]);
-      return cam;
-    }
-
-    function syncCamSettings() {
-      if (!cam) return;
-      const depth = (parseInt(document.getElementById("lineYRange").value, 10) || 72) / 100;
-      const whEl = document.getElementById("wallHeightRange");
-      const wallH = whEl ? (parseInt(whEl.value, 10) || 44) / 100 : 0.44;
-      cam.setLine(depth);
-      cam.setWallHeight(wallH);
-      cam.minConf = parseInt(document.getElementById("confFloor").value, 10) || 68;
-      cam.autoRecord = document.getElementById("autoRecordChk").checked;
-    }
-
-    /* ---- scanner events ---- */
-
-    function onAutoFinish({ bib, confidence, when, thumb }) {
-      scanStats.finishes++;
-      document.getElementById("scanFinishes").textContent = scanStats.finishes;
-      const fsCount = document.getElementById("fsFinishCount");
-      if (fsCount) fsCount.textContent = scanStats.finishes;
-      const r = runnerByBib(bib);
-      if (r) {
-        recordFinish(r.id, toServer(when), "ocr");
-      } else {
-        // unknown bib — save as an extra finisher so the crossing is never lost
-        const id = `ocr_${when}`;
-        const entry = {
-          name: `Unmatched bib ${bib}`,
-          bibNumber: bib,
-          estimatedTime: null,
-          finishTime: elapsedAt(toServer(when)),
-          finishedAt: toServer(when),
-          recordedAt: serverNow(),
-          method: "ocr",
-          dnf: false,
-        };
-        state.results[id] = entry;
-        state.finishStack.push(id);
-        dbSet(`results/${id}`, entry, true);
-        saveSnapshot(); renderAll();
-        toast(`Scanner recorded unmatched bib ${bib} — fix the name in Results`, "info");
-      }
-      pushCaptureLog({ thumb, at: when, confidence }, bib);
-    }
-
-    function onScanReview({ guess, confidence, thumb, when }) {
-      pendingCapture = { bibGuess: guess, confidence, thumb, at: toServer(when) };
-      showReview(pendingCapture);
-    }
-
-    function onScanRead() {
-      scanStats.reads++;
-      document.getElementById("scanReads").textContent = scanStats.reads;
-    }
-
-    function onScanStatus({ state: st, tracks }) {
-      document.getElementById("scanTracks").textContent = tracks;
-      const el = document.getElementById("scanState");
-      const sub = document.getElementById("scanStateSub");
-      const fsText = document.getElementById("fsStatusText");
-      const fsDot = document.getElementById("fsStatusDot");
-      if (st === "scanning") {
-        el.textContent = "Bib spotted";
-        el.style.color = "var(--green)";
-        sub.textContent = "Reading & tracking spotted bib numbers";
-        if (fsText) fsText.textContent = `Bib spotted · ${tracks} in view`;
-        if (fsDot) fsDot.style.color = "var(--green)";
-      } else if (st === "armed") {
-        el.textContent = "Armed";
-        el.style.color = "var(--green)";
-        sub.textContent = "Watching for bib numbers at the finish gate";
-        if (fsText) fsText.textContent = "Armed · watching for bibs";
-        if (fsDot) fsDot.style.color = "var(--green)";
-      } else {
-        el.textContent = "Standby";
-        el.style.color = "";
-        sub.textContent = "Start the camera, then arm the scanner";
-        if (fsText) fsText.textContent = stream ? "Camera live" : "Standby";
-        if (fsDot) fsDot.style.color = stream ? "var(--accent2)" : "var(--muted)";
-      }
-    }
-
-    /* ---- Fullscreen camera support (automatic on mobile) ---- */
-
-    const cameraStage = document.getElementById("cameraStage");
-
-    function isMobileViewport() {
-      return window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
-    }
-
-    function isCamFullscreen() {
-      return cameraStage.classList.contains("fs-active") ||
-        document.fullscreenElement === cameraStage ||
-        document.webkitFullscreenElement === cameraStage;
-    }
-
-    async function enterCamFullscreen() {
-      cameraStage.classList.add("fs-active");
-      document.body.classList.add("cam-fs-lock");
-      const fsBtn = document.getElementById("fullscreenCamBtn");
-      if (fsBtn) fsBtn.textContent = "✕ Exit fullscreen";
-      try {
-        if (cameraStage.requestFullscreen && !document.fullscreenElement) {
-          await cameraStage.requestFullscreen();
-        } else if (cameraStage.webkitRequestFullscreen && !document.webkitFullscreenElement) {
-          cameraStage.webkitRequestFullscreen();
-        }
-      } catch {}
-      setTimeout(() => { if (cam) cam._drawOverlay(cam.tracker.tracks); }, 60);
-    }
-
-    async function exitCamFullscreen() {
-      cameraStage.classList.remove("fs-active");
-      document.body.classList.remove("cam-fs-lock");
-      const fsBtn = document.getElementById("fullscreenCamBtn");
-      if (fsBtn) fsBtn.textContent = "⛶ Fullscreen";
-      try {
-        if (document.fullscreenElement && document.exitFullscreen) {
-          await document.exitFullscreen();
-        } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        }
-      } catch {}
-      setTimeout(() => { if (cam) cam._drawOverlay(cam.tracker.tracks); }, 60);
-    }
-
-    function toggleCamFullscreen() {
-      if (isCamFullscreen()) exitCamFullscreen();
-      else enterCamFullscreen();
-    }
-
-    document.addEventListener("fullscreenchange", () => {
-      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        cameraStage.classList.remove("fs-active");
-        document.body.classList.remove("cam-fs-lock");
-        const fsBtn = document.getElementById("fullscreenCamBtn");
-        if (fsBtn) fsBtn.textContent = "⛶ Fullscreen";
-      }
-      setTimeout(() => { if (cam) cam._drawOverlay(cam.tracker.tracks); }, 60);
-    });
-    window.addEventListener("resize", () => {
-      if (cam) cam._drawOverlay(cam.tracker.tracks);
-    });
-
-    /* ---- camera lifecycle ---- */
-
-    async function startCamera() {
-      camClearError();
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        camShowError("This browser doesn't support camera access. Use the Upload photo button instead.");
-        return;
-      }
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } },
-          audio: false,
-        });
-        video.srcObject = stream;
-        ensureCam();
-        document.getElementById("startCamBtn").disabled = true;
-        document.getElementById("captureBtn").disabled = false;
-        document.getElementById("stopCamBtn").disabled = false;
-        document.getElementById("armCamBtn").disabled = false;
-        camBadge.className = "badge green";
-        camBadge.textContent = "● Camera live";
-        ocrStatus.textContent = "Camera running — align the 3D Finish Gate wall (posts A & B + height ↕), then arm the scanner (or start the race).";
-        if (isMobileViewport()) {
-          await enterCamFullscreen();
-        }
-      } catch (err) {
-        console.warn("camera start failed", err);
-        camShowError("Couldn't open the camera (permission denied or no camera). Use the Upload photo button instead.");
-      }
-    }
-
-    function stopCamera() {
-      disarmScanner();
-      if (isCamFullscreen()) exitCamFullscreen();
-      if (stream) {
-        stream.getTracks().forEach((t) => t.stop());
-        stream = null;
-      }
-      video.srcObject = null;
-      document.getElementById("startCamBtn").disabled = false;
-      document.getElementById("captureBtn").disabled = true;
-      document.getElementById("stopCamBtn").disabled = true;
-      document.getElementById("armCamBtn").disabled = true;
-      camBadge.className = "badge gray";
-      camBadge.textContent = "Camera off";
-      ocrStatus.textContent = "Camera stopped.";
-    }
-
-    function armScanner() {
-      camClearError();
-      try {
-        ensureCam();
-        syncCamSettings();
-        cam.arm();
-        const btn = document.getElementById("armCamBtn");
-        btn.textContent = "Disarm scanner";
-        btn.classList.add("primary");
-        const fsArm = document.getElementById("fsArmBtn");
-        if (fsArm) {
-          fsArm.textContent = "Disarm scanner";
-          fsArm.classList.add("primary");
-        }
-        ocrStatus.textContent = "Scanner armed — runners crossing the line are timed automatically.";
-      } catch (err) {
-        camShowError(err.message || "Camera is not ready yet.");
-      }
-    }
-
-    function disarmScanner() {
-      if (cam) cam.disarm();
-      const btn = document.getElementById("armCamBtn");
-      btn.textContent = "Arm scanner";
-      btn.classList.remove("primary");
-      const fsArm = document.getElementById("fsArmBtn");
-      if (fsArm) {
-        fsArm.textContent = "Arm scanner";
-        fsArm.classList.remove("primary");
-      }
-    }
-
-    function toggleScanner() {
-      if (cam && cam.armed) disarmScanner();
-      else armScanner();
-    }
-
-    /** Auto-arm when the race clock starts (if the camera is live). */
-    function armForRace() {
-      if (stream && (!cam || !cam.armed)) {
-        armScanner();
-        toast("Finish-line scanner armed with the race clock", "success");
-      }
-      // The line camera belongs to the device that films the line, so it is
-      // the only one that opens its own camera when the race begins.
-      if (isLineDevice()) {
-        startAndArmLine().then((armed) => {
-          if (armed) toast("Finish camera armed — the clock is running", "success");
-        });
-      }
-    }
-
-    /* ---- manual reads (capture button + uploads) ---- */
-
-    async function manualRead(source) {
-      camClearError();
-      try {
-        ensureCam();
-        ocrStatus.textContent = "Reading bib…";
-        const read = await cam.readOnce(source);
-        if (!read) {
-          ocrStatus.textContent = "No digits found — try a closer, steadier shot, or type the bib on the Timing tab.";
-          return;
-        }
-        ocrStatus.textContent = `Bib read: ${read.digits} (${read.confidence}% confidence) — confirm below.`;
-        showReview({
-          bibGuess: read.digits.padStart(4, "0"),
-          confidence: read.confidence,
-          thumb: read.thumb,
-          at: serverNow(),
-        });
-      } catch (err) {
-        console.warn("OCR failed", err);
-        camShowError(`OCR unavailable (${err.message}). You can still record finishes manually on the Timing tab.`);
-      }
-    }
-
-    /* ---- review panel ---- */
-
-    function showReview(capture) {
-      pendingCapture = capture;
-      document.getElementById("reviewCard").style.display = "block";
-      document.getElementById("reviewThumb").src = capture.thumb || "";
-      document.getElementById("reviewBib").textContent = capture.bibGuess || "—";
-      document.getElementById("reviewConf").textContent = capture.confidence ? `${capture.confidence}%` : "—";
-      document.getElementById("reviewBibInput").value = capture.bibGuess || "";
-      document.getElementById("reviewTimeText").textContent =
-        `Crossing time: ${new Date(capture.at).toLocaleTimeString()} · finish will be recorded as ${
-          state.raceStart != null ? formatClock(elapsedAt(capture.at)) : "…(start the race first)"}`;
-      updateReviewMatch();
-      document.getElementById("reviewBibInput").focus();
-    }
-
-    function updateReviewMatch() {
-      const val = document.getElementById("reviewBibInput").value.trim();
-      const matchEl = document.getElementById("reviewMatch");
-      const r = runnerByBib(val);
-      if (!val) { matchEl.textContent = "No roster match yet"; return null; }
-      if (r) {
-        matchEl.innerHTML = `Matched: <b style="color:var(--green)">${escapeHtml(r.name)}</b> · bib ${escapeHtml(r.bib)}`;
-      } else {
-        matchEl.innerHTML = `<span style="color:var(--amber)">No roster runner with bib ${escapeHtml(val)} — it will be saved as an extra finisher.</span>`;
-      }
-      return r;
-    }
-
-    function recordOcrFinish() {
-      if (!pendingCapture) return;
-      if (state.raceStart == null) { toast("Start the race first", "error"); return; }
-      const val = document.getElementById("reviewBibInput").value.trim();
-      const r = updateReviewMatch();
-      const when = pendingCapture.at || Date.now();
-      if (r) {
-        recordFinish(r.id, when, "ocr");
-      } else if (val) {
-        const id = `ocr_${when}`;
-        const entry = {
-          name: `Unmatched bib ${val}`,
-          bibNumber: val.padStart(4, "0"),
-          estimatedTime: null,
-          finishTime: elapsedAt(toServer(when)),
-          finishedAt: toServer(when),
-          recordedAt: serverNow(),
-          method: "ocr",
-          dnf: false,
-        };
-        state.results[id] = entry;
-        state.finishStack.push(id);
-        dbSet(`results/${id}`, entry, true);
-        saveSnapshot(); renderAll();
-        toast(`Recorded unmatched bib ${val} — fix the name in Results`, "info");
-      } else {
-        toast("Enter a bib number first", "error");
-        return;
-      }
-      pushCaptureLog(pendingCapture, val);
-      closeReview();
-    }
-
-    function closeReview() {
-      pendingCapture = null;
-      document.getElementById("reviewCard").style.display = "none";
-      ocrStatus.textContent = cam && cam.armed
-        ? "Scanner armed — watching the finish line."
-        : "Ready.";
-    }
-
-    /* ---- auto finish feed (local only) ---- */
-
-    function loadLog() {
-      try { return JSON.parse(localStorage.getItem(LS_KEYS.log) || "[]"); }
-      catch { return []; }
-    }
-    function pushCaptureLog(capture, bib) {
-      const log = loadLog();
-      log.unshift({
-        thumb: capture.thumb || null,
-        bib,
-        at: capture.at,
-        confidence: capture.confidence ?? null,
-        recorded: true,
-      });
-      localStorage.setItem(LS_KEYS.log, JSON.stringify(log.slice(0, 12)));
-      renderCaptureLog();
-    }
-    function renderCaptureLog() {
-      const log = loadLog();
-      const box = document.getElementById("captureLog");
-      if (!log.length) {
-        box.innerHTML = `<div class="empty" style="padding:18px">No finishes recorded by the scanner yet</div>`;
-        return;
-      }
-      box.innerHTML = log.map((c) => `
-        <div class="feed-row">
-          ${c.thumb ? `<img src="${c.thumb}" alt="crossing" />` : ""}
-          <div style="flex:1">
-            <div class="mono" style="font-weight:700">#${escapeHtml(c.bib || "—")}</div>
-            <div class="small muted">${new Date(c.at).toLocaleTimeString()} · ${c.confidence != null ? c.confidence + "% conf" : ""}</div>
-          </div>
-          <span class="badge ${c.recorded ? "green" : "gray"}">${c.recorded ? "Recorded" : "Skipped"}</span>
-        </div>`).join("");
-    }
-
-    /* =====================================================================
        9. Course map
     ===================================================================== */
     let map = null, poly = null, markers = [];
@@ -2192,8 +1787,207 @@
        wrong or unreadable bib can never cost a runner their result.
     ===================================================================== */
     const lineVideo = document.getElementById("lineVideo");
+    const lineStage = document.getElementById("lineStage");
     let lineCam = null;
     let lineStream = null;
+    let lineStopping = false;
+    let lineRestarts = 0;
+    let wakeLock = null;
+
+    /** Roster lookup for a bib typed or assigned at the line. */
+    function runnerByBib(raw) {
+      const val = String(raw || "").trim();
+      if (!val) return null;
+      return runnerByBibAny(val) || field().find((r) => String(r.bib) === val) || null;
+    }
+
+    /**
+     * The gun — or the other device — started the clock: open and arm the line
+     * camera here. It is left filming: the device on the line does not need
+     * anybody to touch it again until the last runner is through.
+     */
+    function armForRace() {
+      if (!isLineDevice()) return;
+      startAndArmLine().then((armed) => {
+        if (armed) toast("Finish camera armed — the clock is running", "success");
+      });
+    }
+
+    /* ---- fullscreen: the whole race on one screen ----
+       A phone propped on a tripod has no room for tabs and settings, and a
+       browser that is not fullscreen can be swiped away mid-race. Entering is
+       automatic on a phone when the camera starts; the HUD carries the clock,
+       the crossing count and the arm control while the rest is hidden. */
+    function isMobileViewport() {
+      return window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
+    }
+
+    function isLineFullscreen() {
+      return lineStage.classList.contains("fs-active") ||
+        document.fullscreenElement === lineStage ||
+        document.webkitFullscreenElement === lineStage;
+    }
+
+    function paintLineFullscreen() {
+      const on = isLineFullscreen();
+      const fsBtn = document.getElementById("lineFullscreenBtn");
+      if (fsBtn) fsBtn.textContent = on ? "✕ Exit fullscreen" : "⛶ Fullscreen";
+      document.body.classList.toggle("cam-fs-lock", on);
+      if (lineCam) setTimeout(() => { try { lineCam._drawOverlay(null); } catch {} }, 60);
+    }
+
+    async function enterLineFullscreen() {
+      lineStage.classList.add("fs-active");
+      paintLineFullscreen();
+      try {
+        if (lineStage.requestFullscreen && !document.fullscreenElement) {
+          await lineStage.requestFullscreen();
+        } else if (lineStage.webkitRequestFullscreen && !document.webkitFullscreenElement) {
+          lineStage.webkitRequestFullscreen();
+        }
+      } catch {}
+      paintLineFullscreen();
+    }
+
+    async function exitLineFullscreen() {
+      lineStage.classList.remove("fs-active");
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      } catch {}
+      paintLineFullscreen();
+    }
+
+    function toggleLineFullscreen() {
+      if (isLineFullscreen()) exitLineFullscreen();
+      else enterLineFullscreen();
+    }
+
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        lineStage.classList.remove("fs-active");
+      }
+      paintLineFullscreen();
+    });
+    window.addEventListener("resize", () => {
+      if (lineCam) { try { lineCam._drawOverlay(null); } catch {} }
+    });
+
+    /* ---- wake lock: the screen stays on for the whole race ----
+       A locked phone stops the camera, so the line device asks the OS to keep
+       the screen awake. The OS drops that lock for reasons no page controls —
+       the tab going to the background, the power button, an incoming call,
+       battery saver — so it is taken again when the console comes back and
+       retried while the camera is still running, and the state is shown on
+       screen. Where the browser has no Wake Lock API (or refuses it), the
+       console says so instead of pretending: the device's own Auto-Lock has
+       to be set to Never. */
+    const WAKE_RETRY_MS = 8000;
+    let wakeRetry = null;
+    let wakeWarned = false;
+
+    function paintWakeLock(mode) {
+      const held = mode === "held";
+      const off = mode === "off";
+      const retrying = mode === "retrying";
+
+      const value = document.getElementById("lineWake");
+      const sub = document.getElementById("lineWakeSub");
+      if (value) {
+        value.textContent = held ? "Kept awake" : retrying ? "Re-waking…" : off ? "Off" : "Check setting";
+        value.style.color = held ? "var(--green)" : off ? "" : "var(--red)";
+      }
+      if (sub) {
+        sub.textContent = held
+          ? "The screen will not sleep while the camera runs"
+          : retrying
+            ? "The OS dropped it — asking again"
+            : off
+              ? "Starts with the camera"
+              : "Set Auto-Lock to Never on this device";
+      }
+
+      // The plain warning only fits the normal layout; fullscreen carries the
+      // same news in its HUD pill, which is what a tripod phone actually shows.
+      const warn = document.getElementById("lineWakeWarn");
+      if (warn) warn.classList.toggle("show", mode === "unsupported" || mode === "blocked");
+
+      const pill = document.getElementById("lineFsWakePill");
+      if (pill) pill.style.display = off ? "none" : "inline-flex";
+      const dot = document.getElementById("lineFsWakeDot");
+      if (dot) dot.style.color = held ? "var(--green)" : "var(--red)";
+      const text = document.getElementById("lineFsWakeText");
+      if (text) {
+        text.textContent = held ? "Screen kept awake" : retrying ? "Re-waking…" : "Set Auto-Lock to Never";
+      }
+    }
+
+    function scheduleWakeRetry() {
+      if (wakeRetry || lineStopping || !lineStream) return;
+      wakeRetry = setTimeout(() => { wakeRetry = null; holdWakeLock(); }, WAKE_RETRY_MS);
+    }
+
+    async function holdWakeLock() {
+      if (!lineStream) { paintWakeLock("off"); return; }
+      if (!navigator.wakeLock || !navigator.wakeLock.request) { paintWakeLock("unsupported"); return; }
+      if (wakeLock || document.hidden) return;
+      try {
+        const lock = await navigator.wakeLock.request("screen");
+        // The camera may have been stopped while the OS was answering.
+        if (!lineStream) { try { lock.release(); } catch {} return; }
+        wakeLock = lock;
+        paintWakeLock("held");
+        lock.addEventListener("release", () => {
+          if (wakeLock === lock) wakeLock = null;
+          if (lineStopping || !lineStream) { paintWakeLock("off"); return; }
+          paintWakeLock("retrying");
+          scheduleWakeRetry();
+        });
+      } catch (e) {
+        if (!wakeWarned) { wakeWarned = true; console.warn("wake lock unavailable", e); }
+        paintWakeLock("blocked");
+        scheduleWakeRetry();
+      }
+    }
+
+    function releaseWakeLock() {
+      clearTimeout(wakeRetry);
+      wakeRetry = null;
+      const lock = wakeLock;
+      wakeLock = null;
+      if (lock) { try { lock.release(); } catch {} }
+      paintWakeLock("off");
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && lineStream) holdWakeLock();
+    });
+    // Safari only grants a lock from a user gesture, and a phone that was
+    // woken by a tap should ask again then rather than wait for the retry.
+    document.addEventListener("pointerdown", () => {
+      if (lineStream && !wakeLock) holdWakeLock();
+    }, true);
+    window.addEventListener("pageshow", () => { if (lineStream) holdWakeLock(); });
+
+    /** If the OS ends the video track, reopen the camera rather than lose the
+        rest of the race. Capped so a broken camera cannot loop forever. */
+    function watchLineTracks(stream) {
+      stream.getVideoTracks().forEach((track) => {
+        track.addEventListener("ended", () => {
+          if (lineStopping || lineStream !== stream) return;
+          lineStream = null;
+          if (lineRestarts >= 5) {
+            toast("The camera keeps stopping — press Start camera", "error", 6000);
+            return;
+          }
+          lineRestarts++;
+          setTimeout(() => { if (!lineStream) startLineCamera(); }, 800);
+        });
+      });
+    }
 
     function persistCrossings() {
       state.crossingsAt = serverNow();
@@ -2220,7 +2014,7 @@
     /** A runner crossed the line: stamp the time, guess the bib, keep going. */
     function onLineCross({ at, frames }) {
       if (state.raceStart == null) {
-        toast("Crossing seen — but the race clock hasn't started", "error");
+        toast("Crossing recorded — but the race clock never started, so it has no time. Start the race to time the rest.", "error", 6000);
       }
       const bib = nextExpectedBib();
       const crossing = {
@@ -2310,6 +2104,8 @@
       if (!body) return;
       const count = state.crossings.length;
       document.getElementById("lineCount").textContent = String(count);
+      const fsCount = document.getElementById("lineFsCount");
+      if (fsCount) fsCount.textContent = String(count);
       const last = state.crossings[count - 1];
       document.getElementById("lineLast").textContent = last && last.time != null ? formatClock(last.time) : "—";
       document.getElementById("lineLastSub").textContent = last
@@ -2437,34 +2233,51 @@
       }
     }
 
-    /** Everyone in the field — finishers first — each with their line photo. */
+    /** Everyone in the field — finishers first, place-ordered — with the
+        structured fields the results document lays out. */
     async function resultsEntries() {
       const frames = await loadAllFramesLocal();
-      const finished = field()
+      const finishers = field()
         .filter((r) => (state.results[r.id] || {}).finishTime != null)
         .sort((a, b) => state.results[a.id].finishTime - state.results[b.id].finishTime);
       const rest = field()
         .filter((r) => (state.results[r.id] || {}).finishTime == null)
         .sort((a, b) => String(a.bib).localeCompare(String(b.bib)));
 
-      return [...finished, ...rest].map((r, i) => {
+      const entry = (r, place) => {
         const res = state.results[r.id] || {};
         const photos = res.crossingId
           ? frames[res.crossingId] || state.frames[res.crossingId] || []
           : [];
-        const detail = [];
-        if (res.finishTime != null) detail.push(`Place ${i + 1}`, pacePerMile(res.finishTime));
-        else if (res.dnf) detail.push("DNF");
-        if (r.division) detail.push(divisionLabel(r.division));
         return {
-          place: res.finishTime != null ? i + 1 : null,
+          place,
           bib: String(r.bib || ""),
           name: r.name || "",
-          line: [res.finishTime != null ? formatClock(res.finishTime) : "no finish time", ...detail].join("  ·  "),
+          division: r.division || "",
+          ageGroup: r.age ? ageGroup(r.age) : "",
+          timeMs: res.finishTime ?? null,
+          dnf: !!res.dnf,
+          pace: res.finishTime != null ? pacePerMile(res.finishTime) : "",
           // The last frame is the one taken as the chest met the line.
           photo: photos.length ? photos[photos.length - 1] : null,
         };
-      });
+      };
+
+      return [
+        ...finishers.map((r, i) => entry(r, i + 1)),
+        ...rest.map((r) => entry(r, null)),
+      ];
+    }
+
+    /** The event block printed at the top of every exported document. */
+    function resultsMeta() {
+      return {
+        date: EVENT.raceDate.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric", year: "numeric" }),
+        location: EVENT.location,
+        distance: "5K · 3.107 miles",
+        note: "Official gun times recorded at the finish line",
+        short: "Official results",
+      };
     }
 
     function resultsFilename(ext) {
@@ -2494,8 +2307,9 @@
         const entries = await resultsEntries();
         const photoCount = entries.filter((e) => e.photo).length;
         const { bytes, pages } = buildResultsPdf({
-          title: "Brighton Oaks 5K — Finish photos",
-          subtitle: `${entries.length} athletes · ${photoCount} finish photo${photoCount === 1 ? "" : "s"} · built ${fmtDateTime(Date.now())}`,
+          title: EVENT.name,
+          subtitle: EVENT.edition,
+          meta: resultsMeta(),
           entries,
         });
         const blob = new Blob([bytes], { type: "application/pdf" });
@@ -2504,8 +2318,8 @@
 
         if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
           try {
-            await navigator.share({ files: [file], title: "Brighton Oaks 5K results" });
-            toast(`Shared — ${pages} pages, ${photoCount} photos`, "success");
+            await navigator.share({ files: [file], title: "Brighton Oaks 5K official results" });
+            toast(`Shared — ${pages} pages · ${entries.length} athletes`, "success");
             return;
           } catch (err) {
             if (err && err.name === "AbortError") return; // the organizer backed out
@@ -2513,7 +2327,7 @@
         }
 
         saveBlob(blob, filename);
-        toast(`PDF saved — ${pages} page${pages === 1 ? "" : "s"}, ${photoCount} photo${photoCount === 1 ? "" : "s"}`, "success");
+        toast(`PDF saved — ${pages} page${pages === 1 ? "" : "s"} · ${entries.length} athletes · ${photoCount} photo${photoCount === 1 ? "" : "s"}`, "success");
       } catch (err) {
         console.warn("pdf export failed", err);
         toast("Couldn't build the PDF", "error");
@@ -2527,8 +2341,9 @@
       if (!field().length) { toast("No athletes to list yet", "error"); return; }
       const entries = await resultsEntries();
       const text = buildResultsText({
-        title: "Brighton Oaks 5K — Results",
-        subtitle: `${entries.length} athletes`,
+        title: EVENT.name,
+        subtitle: EVENT.edition,
+        meta: resultsMeta(),
         entries,
       });
       try {
@@ -2635,20 +2450,25 @@
     }
 
     /* ---- calibration, remembered on this device ----
-       The strip is lined up against the physical finish line once. A reload
-       mid-race must not drop it back to defaults and start missing finishers,
-       so line position, chest height and band height are saved per device.
-       Direction and sensitivity stay live-only: they are judgements about the
-       runners, not measurements of where this camera stands. */
+       The line and the runner band are set once at the venue. A reload
+       mid-race must not drop them back to defaults and start missing
+       finishers, so line position and the band's top/bottom are saved per
+       device. Direction and sensitivity stay live-only: they are
+       judgements about the runners, not measurements of the camera. */
     const LINE_CAL_KEY = "bo5k_line_cal";
-    const pct = (id, fallback) => (parseInt(document.getElementById(id).value, 10) || fallback) / 100;
+    const pct = (id, fallback) => {
+      const v = parseInt(document.getElementById(id).value, 10);
+      return (Number.isFinite(v) ? v : fallback) / 100;
+    };
 
     function applyLineCalibration() {
       if (!lineCam) return;
+      const top = pct("lineBandTop", 6);
+      const bottom = pct("lineBandBottom", 98);
       lineCam.setLine(pct("lineXRange", 50));
       lineCam.setDirection(document.getElementById("lineDir").value);
       lineCam.setSensitivity(pct("lineSens", 100));
-      lineCam.setBand(pct("lineChest", 49), pct("lineBandH", 26));
+      lineCam.setBand(Math.min(top, bottom - 0.05), bottom);
     }
 
     function loadLineCalibration() {
@@ -2657,9 +2477,10 @@
         if (!cal) return;
         [
           ["lineXRange", cal.lineX],
-          ["lineChest", cal.chest],
-          ["lineBandH", cal.bandH],
+          ["lineBandTop", cal.bandTop],
+          ["lineBandBottom", cal.bandBottom],
         ].forEach(([id, value]) => {
+          if (value == null) return;
           const el = document.getElementById(id);
           if (el && Number.isFinite(Number(value))) el.value = String(Math.round(Number(value)));
         });
@@ -2670,13 +2491,13 @@
       try {
         localStorage.setItem(LINE_CAL_KEY, JSON.stringify({
           lineX: Number(document.getElementById("lineXRange").value),
-          chest: Number(document.getElementById("lineChest").value),
-          bandH: Number(document.getElementById("lineBandH").value),
+          bandTop: Number(document.getElementById("lineBandTop").value),
+          bandBottom: Number(document.getElementById("lineBandBottom").value),
         }));
       } catch (e) { console.warn("line calibration save failed", e); }
     }
 
-    function onLineStatus({ state: st, motion }) {
+    function onLineStatus({ state: st, motion, signal, tracking, center }) {
       const badge = document.getElementById("lineBadge");
       const el = document.getElementById("lineState");
       const sub = document.getElementById("lineStateSub");
@@ -2700,10 +2521,40 @@
         badge.className = "badge gray";
         badge.textContent = lineStream ? "Camera live" : "Camera off";
       }
+
+      // The fullscreen HUD shows the same state, and the arm control it
+      // carries must never disagree with the one behind it.
+      const fsStatus = document.getElementById("lineFsStatus");
+      const fsDot = document.getElementById("lineFsDot");
+      if (fsStatus) fsStatus.textContent = el.textContent;
+      if (fsDot) fsDot.style.color = el.style.color || "var(--muted)";
+      const fsArm = document.getElementById("lineFsArmBtn");
+      if (fsArm) {
+        fsArm.textContent = lineCam && lineCam.armed ? "Disarm line" : "Arm line";
+        fsArm.classList.toggle("primary", !!(lineCam && lineCam.armed));
+      }
+
+      // The meter is the field check: it must move for a person in the band.
+      const fill = document.getElementById("lineMeterFill");
+      if (fill) fill.style.width = `${Math.round(Math.min(1, signal || 0) * 100)}%`;
+      const signalText = document.getElementById("lineSignalText");
+      if (signalText) {
+        if (!lineCam || !lineCam.armed) {
+          signalText.textContent = "Arm the line, then walk through the band — the bar above must move.";
+        } else if (tracking) {
+          const at = Math.round((center || 0) * 100);
+          signalText.innerHTML = `<b style="color:var(--green)">Runner detected</b> · ${at}% across, line at ${Math.round((lineCam.lineX || 0.5) * 100)}%`;
+        } else if (motion > 0) {
+          signalText.textContent = "Motion in the band — waiting for a body to track.";
+        } else {
+          signalText.textContent = "Band clear — watching for the next runner.";
+        }
+      }
+
       const statusEl = document.getElementById("lineStatus");
       if (statusEl) {
         statusEl.textContent = lineCam && lineCam.armed
-          ? `Armed · motion ${Math.round(motion || 0)} · ${state.crossings.length} crossings`
+          ? `Armed · ${state.crossings.length} crossings · motion ${Math.round(motion || 0)}`
           : "Drag on the preview to put the line on the physical finish line.";
       }
     }
@@ -2726,7 +2577,11 @@
         document.getElementById("lineArmBtn").disabled = false;
         document.getElementById("lineStopBtn").disabled = false;
         ensureLineCam();
+        watchLineTracks(lineStream);
+        wakeWarned = false;
+        holdWakeLock();
         onLineStatus({ state: "standby" });
+        if (isMobileViewport()) await enterLineFullscreen();
       } catch (err) {
         console.warn("line camera failed", err);
         toast("Couldn't open the camera — check the browser permission", "error");
@@ -2734,6 +2589,10 @@
     }
 
     function stopLineCamera() {
+      lineStopping = true;
+      lineRestarts = 0;
+      releaseWakeLock();
+      if (isLineFullscreen()) exitLineFullscreen();
       if (lineCam) lineCam.disarm();
       if (lineStream) {
         lineStream.getTracks().forEach((t) => t.stop());
@@ -2748,6 +2607,7 @@
       document.getElementById("lineArmBtn").classList.remove("primary");
       document.getElementById("lineStopBtn").disabled = true;
       onLineStatus({ state: "standby" });
+      setTimeout(() => { lineStopping = false; }, 1000);
     }
 
     function toggleLine() {
@@ -2756,6 +2616,12 @@
         document.getElementById("lineArmBtn").textContent = "Arm line";
         document.getElementById("lineArmBtn").classList.remove("primary");
         return;
+      }
+      if (state.raceStart == null) {
+        toast("The clock isn't running — start the race (or listen for the gun) before the first runner, or crossings will have no time", "error", 5000);
+      }
+      if (!roster().length) {
+        toast("No roster is loaded — crossings will be timed, but every one needs a bib before it becomes a result", "error", 5000);
       }
       try {
         ensureLineCam();
@@ -2794,7 +2660,6 @@
       loadLineCalibration();
       loadSnapshot();
       persistQueue();
-      renderCaptureLog();
       renderAll();
       renderClock();
       renderGun({});
@@ -2871,7 +2736,6 @@
       document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("on"));
       document.getElementById(`tab-${tab}`).classList.add("on");
       if (tab === "map") setTimeout(() => { initMap(); map && map.invalidateSize(); }, 60);
-      if (tab === "camera") setTimeout(() => { ensureCam()._drawOverlay([]); }, 40);
       if (tab === "line") setTimeout(() => { ensureLineCam()._drawOverlay(null); }, 60);
     });
 
@@ -2885,6 +2749,7 @@
       practiceMode = e.target.checked;
       document.getElementById("practiceBadge").style.display = practiceMode ? "inline-flex" : "none";
       document.getElementById("lineSimBtn").disabled = !practiceMode;
+      document.getElementById("lineFsSimBtn").disabled = !practiceMode;
       document.body.style.borderTop = practiceMode ? "3px solid var(--amber)" : "";
       if (practiceMode) {
         toast("Practice mode ON — crossings and finishes stay in this tab only", "info");
@@ -2955,55 +2820,19 @@
       renderRunners();
     });
 
-    // camera
-    document.getElementById("startCamBtn").addEventListener("click", startCamera);
-    document.getElementById("stopCamBtn").addEventListener("click", stopCamera);
-    document.getElementById("fullscreenCamBtn").addEventListener("click", toggleCamFullscreen);
-    document.getElementById("fsExitBtn").addEventListener("click", exitCamFullscreen);
-    document.getElementById("fsStartRaceBtn").addEventListener("click", () => {
-      if (state.raceStart == null || state.paused) startRace();
-      else togglePause();
-    });
-    document.getElementById("fsArmBtn").addEventListener("click", toggleScanner);
-    document.getElementById("fsCaptureBtn").addEventListener("click", () => manualRead(video));
-    document.getElementById("fsStopBtn").addEventListener("click", stopCamera);
-    document.getElementById("captureBtn").addEventListener("click", () => manualRead(video));
-    document.getElementById("photoUpload").addEventListener("change", (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const img = new Image();
-      img.onload = () => {
-        manualRead(img);
-        URL.revokeObjectURL(img.src);
-      };
-      img.src = URL.createObjectURL(file);
-      e.target.value = "";
-    });
-    document.getElementById("armCamBtn").addEventListener("click", toggleScanner);
-    document.getElementById("lineYRange").addEventListener("input", () => {
-      syncCamSettings();
-    });
-    document.getElementById("wallHeightRange").addEventListener("input", () => {
-      syncCamSettings();
-    });
-    document.getElementById("confFloor").addEventListener("change", syncCamSettings);
-    document.getElementById("autoRecordChk").addEventListener("change", syncCamSettings);
-    document.getElementById("reviewBibInput").addEventListener("input", updateReviewMatch);
-    document.getElementById("recordOcrBtn").addEventListener("click", recordOcrFinish);
-    document.getElementById("discardCaptureBtn").addEventListener("click", closeReview);
-    document.getElementById("clearLogBtn").addEventListener("click", () => {
-      localStorage.removeItem(LS_KEYS.log);
-      renderCaptureLog();
-    });
-
     // finish-line tab (two-device timing)
-    document.getElementById("lineStartCamBtn").addEventListener("click", startLineCamera);
+          document.getElementById("lineStartCamBtn").addEventListener("click", startLineCamera);
     document.getElementById("lineStopBtn").addEventListener("click", stopLineCamera);
     document.getElementById("lineArmBtn").addEventListener("click", toggleLine);
+    document.getElementById("lineFullscreenBtn").addEventListener("click", toggleLineFullscreen);
+    document.getElementById("lineFsExitBtn").addEventListener("click", exitLineFullscreen);
+    document.getElementById("lineFsArmBtn").addEventListener("click", toggleLine);
+    // The HUD's practice trigger reuses the real button (and its guard).
+    document.getElementById("lineFsSimBtn").addEventListener("click", () => document.getElementById("lineSimBtn").click());
     // One place reads the controls into the camera, so a new slider can't
     // forget to reach the detector.
     const recalibrate = () => { ensureLineCam(); applyLineCalibration(); };
-    ["lineXRange", "lineChest", "lineBandH"].forEach((id) => {
+    ["lineXRange", "lineBandTop", "lineBandBottom"].forEach((id) => {
       document.getElementById(id).addEventListener("input", () => {
         recalibrate();
         saveLineCalibration();
@@ -3236,7 +3065,7 @@
     document.addEventListener("keydown", (e) => {
       const typing = /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName || "");
       if (e.key === "Escape") {
-        if (stream) stopCamera();
+        if (isLineFullscreen()) exitLineFullscreen();
         return;
       }
       if (typing) return;

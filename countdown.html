@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Brighton Oaks 5K — Race Countdown</title>
+  <meta name="description" content="A full-screen countdown to the Brighton Oaks 5K start that becomes the official race clock on race morning." />
+  <meta name="theme-color" content="#100b06" />
+  <link rel="icon" type="image/png" href="/Favicon Generator/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/Favicon Generator/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/Favicon Generator/apple-touch-icon.png" />
+  <link rel="stylesheet" href="race.css" />
+  <link rel="preload" as="image" href="images/trail.jpeg" />
+  <link rel="preload" as="image" href="images/leaf1.png" />
+  <link rel="preload" as="image" href="images/leaf2.png" />
+  <style>
+    /* ============================================================
+       TV / lobby display. Everything is sized in viewport units so the
+       same page fills a 1080p TV, a 4K wall screen or a laptop on a
+       table without any scrolling.
+       ============================================================ */
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background-color: #100b06;
+      background-image:
+        radial-gradient(ellipse 70% 60% at 50% -10%, rgba(210, 118, 46, 0.16), transparent 70%),
+        radial-gradient(ellipse 60% 50% at 8% 110%, rgba(93, 124, 52, 0.14), transparent 70%),
+        radial-gradient(ellipse 70% 70% at 100% 100%, rgba(122, 84, 44, 0.18), transparent 70%),
+        repeating-linear-gradient(90deg, rgba(255, 236, 200, 0.014) 0 2px, transparent 2px 7px);
+      color: #f7efdd;
+      cursor: default;
+    }
+    body.tv-idle { cursor: none; }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+      z-index: 2;
+    }
+
+    /* ---------- the course, right behind the clock ----------
+       Local photographs from the race itself, slowly drifting and
+       crossfading, with real maple leaves falling across them. All of it is
+       decoration: the clock stays the brightest thing on the screen. */
+    .tv-scene {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      background: #100b06;
+    }
+    .tv-photo {
+      position: absolute;
+      inset: -3%;
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center 44%;
+      opacity: 0;
+      transform: scale(1.12);
+      transition: opacity 2.6s ease;
+      will-change: opacity, transform;
+    }
+    .tv-photo.on { opacity: 0.86; animation: tvDrift 30s ease-out forwards; }
+    @keyframes tvDrift {
+      from { transform: scale(1.14) translate3d(0, 1.4%, 0); }
+      to { transform: scale(1.02) translate3d(0, -1.2%, 0); }
+    }
+    .tv-veil {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(16, 11, 6, 0.92) 0%, rgba(16, 11, 6, 0.52) 22%, rgba(16, 11, 6, 0.44) 50%, rgba(16, 11, 6, 0.68) 78%, rgba(16, 11, 6, 0.95) 100%),
+        radial-gradient(ellipse 72% 64% at 50% 46%, rgba(16, 11, 6, 0.58) 0%, rgba(16, 11, 6, 0.3) 58%, rgba(16, 11, 6, 0.08) 100%),
+        radial-gradient(ellipse 62% 42% at 50% 0%, rgba(210, 118, 46, 0.18), transparent 70%);
+    }
+    .tv-grain {
+      position: absolute;
+      inset: 0;
+      opacity: 0.28;
+      mix-blend-mode: overlay;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+      background-size: 3px 3px;
+    }
+    .tv-leaves {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.84;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tv-photo.on { animation: none; transform: scale(1.05); }
+      .tv-leaves { display: none; }
+    }
+
+    .tv-shell {
+      position: relative;
+      z-index: 3;
+      height: 100vh;
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: clamp(10px, 2vh, 30px);
+      padding:
+        max(clamp(18px, 3vh, 44px), env(safe-area-inset-top))
+        max(clamp(22px, 4vw, 80px), env(safe-area-inset-right))
+        max(clamp(16px, 2.4vh, 36px), env(safe-area-inset-bottom))
+        max(clamp(22px, 4vw, 80px), env(safe-area-inset-left));
+    }
+
+    /* ---------- header ---------- */
+    .tv-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: clamp(16px, 3vw, 60px);
+      padding-bottom: clamp(10px, 1.8vh, 26px);
+      border-bottom: 1px solid rgba(201, 162, 109, 0.24);
+    }
+    .tv-brand { display: flex; align-items: center; gap: clamp(12px, 1.5vw, 26px); min-width: 0; }
+    .tv-mark {
+      width: clamp(44px, 4.6vw, 86px);
+      aspect-ratio: 1;
+      flex: none;
+      border-radius: 18%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #5d7c34, #3a4f1f);
+      border: 1px solid rgba(201, 162, 109, 0.45);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      font-family: var(--display);
+      font-size: clamp(18px, 2vw, 36px);
+      color: #fff;
+      letter-spacing: 0.02em;
+    }
+    .tv-event {
+      font-family: var(--display);
+      font-size: clamp(22px, 2.7vw, 54px);
+      line-height: 1.05;
+      color: #fdf4e3;
+      letter-spacing: 0.015em;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tv-sub {
+      margin-top: clamp(3px, 0.6vh, 8px);
+      font-size: clamp(9px, 0.85vw, 17px);
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .tv-when { text-align: right; flex: none; }
+    .tv-when-day {
+      font-family: var(--display);
+      font-size: clamp(15px, 1.55vw, 30px);
+      color: var(--accent2);
+      line-height: 1.15;
+    }
+    .tv-when-time {
+      font-size: clamp(9px, 0.85vw, 16px);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    /* ---------- centre stage ---------- */
+    .tv-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 0;
+      gap: clamp(8px, 1.6vh, 26px);
+    }
+    .tv-state {
+      font-size: clamp(11px, 1.15vw, 22px);
+      font-weight: 800;
+      letter-spacing: 0.46em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .tv-state.alert { color: var(--amber); }
+
+    .tv-units {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: clamp(12px, 3vw, 64px);
+      width: 100%;
+    }
+    .tv-unit { min-width: 0; flex: 0 1 auto; }
+    .tv-num {
+      font-family: var(--mono);
+      font-size: min(12vw, 22vh);
+      line-height: 0.86;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: #fdf4e3;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 8px 40px rgba(0, 0, 0, 0.55);
+    }
+    .tv-lbl {
+      margin-top: clamp(8px, 1.4vh, 18px);
+      font-size: clamp(9px, 0.9vw, 16px);
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .tv-clock {
+      font-family: var(--mono);
+      font-size: min(17vw, 32vh);
+      line-height: 0.9;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #fdf4e3;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 10px 50px rgba(0, 0, 0, 0.55);
+      white-space: nowrap;
+    }
+    .tv-clock .ms { color: var(--accent2); font-size: 0.5em; }
+    .tv-live-note {
+      font-size: clamp(9px, 0.95vw, 18px);
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .tv-note {
+      font-size: clamp(9px, 0.9vw, 17px);
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-weight: 700;
+    }
+
+    .tv-pre, .tv-live { width: 100%; }
+    .tv-pre[hidden], .tv-live[hidden] { display: none; }
+
+    /* The last ten seconds get the room's attention. */
+    body.tv-final .tv-num { color: var(--accent2); animation: tvBeat 1s ease-in-out infinite; }
+    body.tv-final .tv-state { color: var(--accent2); }
+    @keyframes tvBeat {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.035); opacity: 0.86; }
+    }
+
+    /* ---------- footer ---------- */
+    .tv-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: clamp(12px, 2vw, 40px);
+      padding-top: clamp(10px, 1.6vh, 22px);
+      border-top: 1px solid rgba(201, 162, 109, 0.24);
+      font-size: clamp(9px, 0.9vw, 17px);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tv-foot b {
+      color: #fdf4e3;
+      font-family: var(--mono);
+      letter-spacing: 0;
+      font-size: 1.15em;
+      margin-left: 6px;
+    }
+    .tv-foot .tv-url { color: var(--faint); overflow: hidden; text-overflow: ellipsis; }
+
+    /* Screen wake lock state, so whoever sets the TV up can see at a glance
+       that the display will not go to sleep during the race. */
+    .tv-awake { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); }
+    .tv-awake .dot {
+      width: 0.6em;
+      height: 0.6em;
+      border-radius: 50%;
+      flex: none;
+      background: var(--amber);
+      box-shadow: 0 0 10px rgba(223, 174, 69, 0.75);
+    }
+    .tv-awake[data-state="held"] { color: var(--green); }
+    .tv-awake[data-state="held"] .dot {
+      background: var(--green);
+      box-shadow: 0 0 10px rgba(143, 191, 94, 0.85);
+    }
+    .tv-awake[data-state="blocked"],
+    .tv-awake[data-state="unsupported"] { color: var(--red, #e0705a); }
+    .tv-awake[data-state="blocked"] .dot,
+    .tv-awake[data-state="unsupported"] .dot {
+      background: var(--red, #e0705a);
+      box-shadow: 0 0 10px rgba(224, 112, 90, 0.8);
+    }
+
+    .tv-hint {
+      position: fixed;
+      z-index: 5;
+      right: clamp(22px, 4vw, 80px);
+      bottom: clamp(74px, 9vh, 120px);
+      padding: 9px 18px;
+      border-radius: 999px;
+      background: rgba(22, 16, 10, 0.85);
+      border: 1px solid rgba(201, 162, 109, 0.3);
+      font-size: clamp(10px, 0.8vw, 14px);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--muted);
+      animation: tvHintOut 1s ease 7s forwards;
+      pointer-events: none;
+    }
+    @keyframes tvHintOut { to { opacity: 0; visibility: hidden; } }
+
+    /* ---------- live finisher announcements ----------
+       The moment a time lands the display says so. Cards queue up so a pack
+       crossing together each gets its own moment instead of overwriting. */
+    .tv-finish {
+      position: fixed;
+      z-index: 4;
+      right: max(clamp(22px, 4vw, 80px), env(safe-area-inset-right));
+      /* Below the header, clear of the race clock and the footer. */
+      top: clamp(110px, 14vh, 160px);
+      width: min(30vw, 470px);
+      min-width: 300px;
+      padding: clamp(16px, 1.8vw, 28px) clamp(18px, 2vw, 32px) clamp(18px, 2vw, 30px);
+      border-radius: 16px;
+      background: linear-gradient(140deg, rgba(39, 28, 17, 0.96), rgba(22, 16, 10, 0.95));
+      border: 1px solid rgba(201, 162, 109, 0.38);
+      box-shadow: 0 26px 70px rgba(0, 0, 0, 0.62);
+      opacity: 0;
+      transform: translateY(20px) scale(0.97);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      pointer-events: none;
+    }
+    .tv-finish.show { opacity: 1; transform: none; }
+    .tv-finish::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      border-radius: 16px 0 0 16px;
+      background: linear-gradient(180deg, var(--amber), var(--accent2));
+    }
+    .tv-finish-eyebrow {
+      font-size: clamp(9px, 0.82vw, 14px);
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--amber);
+    }
+    .tv-finish-name {
+      font-family: var(--display);
+      font-size: clamp(22px, 2.3vw, 44px);
+      line-height: 1.04;
+      color: #fdf4e3;
+      margin-top: 6px;
+      overflow-wrap: anywhere;
+    }
+    .tv-finish-time {
+      font-family: var(--mono);
+      font-size: clamp(30px, 3.4vw, 62px);
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: #fdf4e3;
+      margin-top: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .tv-finish-time .ms { color: var(--accent2); font-size: 0.55em; }
+    .tv-finish-meta {
+      margin-top: 9px;
+      font-size: clamp(10px, 0.88vw, 15px);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    @media (max-width: 720px) {
+      .tv-finish {
+        top: auto;
+        left: max(16px, env(safe-area-inset-left));
+        right: max(16px, env(safe-area-inset-right));
+        bottom: 112px;
+        width: auto;
+        min-width: 0;
+      }
+      .tv-hint { display: none; }
+      .tv-head { flex-wrap: wrap; }
+      .tv-when { text-align: left; }
+      /* Four units have to share a phone's width without clipping. */
+      .tv-units { gap: 8px; }
+      .tv-num { font-size: min(16vw, 20vh); }
+      .tv-clock { font-size: min(21vw, 26vh); }
+      .tv-foot { flex-wrap: wrap; white-space: normal; }
+      .tv-foot .tv-url { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="tv-scene" aria-hidden="true">
+    <div class="tv-photo on" style="background-image:url('images/trail.jpeg');background-position:center 58%"></div>
+    <div class="tv-photo" style="background-image:url('images/First half mile.jpg');background-position:center 52%"></div>
+    <div class="tv-photo" style="background-image:url('images/road.jpeg');background-position:center 56%"></div>
+    <div class="tv-photo" style="background-image:url('images/Brighton Oaks grocery.jpg');background-position:center 54%"></div>
+    <div class="tv-photo" style="background-image:url('images/Last 400m.jpg');background-position:center 52%"></div>
+    <div class="tv-veil"></div>
+    <div class="tv-grain"></div>
+    <canvas class="tv-leaves" id="tvLeaves"></canvas>
+  </div>
+
+  <div class="tv-shell">
+    <header class="tv-head">
+      <div class="tv-brand">
+        <div class="tv-mark">BO</div>
+        <div style="min-width:0">
+          <div class="tv-event">Brighton Oaks 5K</div>
+          <div class="tv-sub">Thanksgiving Day Run</div>
+        </div>
+      </div>
+      <div class="tv-when">
+        <div class="tv-when-day" id="tvWhenDay">Thursday, November 26</div>
+        <div class="tv-when-time">8:30 AM · 5K · 3.107 miles</div>
+      </div>
+    </header>
+
+    <main class="tv-main" id="tvMain">
+      <section class="tv-pre" id="tvPre">
+        <div class="tv-state" id="tvState">RACE STARTS IN</div>
+        <div class="tv-units">
+          <div class="tv-unit"><div class="tv-num" id="tvDays">00</div><div class="tv-lbl">Days</div></div>
+          <div class="tv-unit"><div class="tv-num" id="tvHours">00</div><div class="tv-lbl">Hours</div></div>
+          <div class="tv-unit"><div class="tv-num" id="tvMinutes">00</div><div class="tv-lbl">Minutes</div></div>
+          <div class="tv-unit"><div class="tv-num" id="tvSeconds">00</div><div class="tv-lbl">Seconds</div></div>
+        </div>
+        <div class="tv-note" style="margin-top:clamp(10px,2vh,24px)">Brighton Oaks, South Carolina</div>
+      </section>
+
+      <section class="tv-live" id="tvLive" hidden>
+        <div class="tv-state" id="tvLiveState">RACE IN PROGRESS</div>
+        <div class="tv-clock"><span id="tvClockMain">00:00</span><span class="ms" id="tvClockMs">.000</span></div>
+        <div class="tv-live-note">Official race clock</div>
+      </section>
+    </main>
+
+    <footer class="tv-foot">
+      <span>Finishers <b id="tvFinishers">0</b></span>
+      <span>Leader <b id="tvLeader">—</b></span>
+      <span class="tv-awake" id="tvAwake" data-state="pending"
+            title="Whether this display has asked the device to stay awake">
+        <i class="dot" id="tvAwakeDot"></i><span id="tvAwakeText">Screen lock…</span>
+      </span>
+      <span class="tv-url">Live results · /results</span>
+    </footer>
+  </div>
+
+  <div class="tv-hint" id="tvHint">Click or press F for full screen</div>
+
+  <div class="tv-finish" id="tvFinish" role="status" aria-live="polite">
+    <div class="tv-finish-eyebrow" id="tvFinishEyebrow">Finisher</div>
+    <div class="tv-finish-name" id="tvFinishName">—</div>
+    <div class="tv-finish-time"><span id="tvFinishMain">00:00</span><span class="ms" id="tvFinishMs">.000</span></div>
+    <div class="tv-finish-meta" id="tvFinishMeta"></div>
+  </div>
+
+  <!-- Countdown runs with no network at all. The live race clock and finisher
+       strip are layered on top when Firebase is reachable; a venue with no
+       signal still gets a working display. Keep RACE_AT in step with
+       EVENT.raceDate in race-core.js. -->
+  <script>
+    (function () {
+      "use strict";
+
+      var RACE_AT = new Date("2026-11-26T08:30:00").getTime();
+      var tv = { clock: null, results: null };
+      window.__brightonTv = tv;
+
+      var el = function (id) { return document.getElementById(id); };
+      var pre = el("tvPre"), live = el("tvLive");
+      var stateEl = el("tvState"), liveState = el("tvLiveState");
+      var daysEl = el("tvDays"), hoursEl = el("tvHours");
+      var minsEl = el("tvMinutes"), secsEl = el("tvSeconds");
+      var clockMain = el("tvClockMain"), clockMs = el("tvClockMs");
+      var finishersEl = el("tvFinishers"), leaderEl = el("tvLeader");
+      var whenDay = el("tvWhenDay");
+      var finishEl = el("tvFinish"), finishEyebrow = el("tvFinishEyebrow");
+      var finishName = el("tvFinishName"), finishMain = el("tvFinishMain");
+      var finishMs = el("tvFinishMs"), finishMeta = el("tvFinishMeta");
+
+      try {
+        whenDay.textContent = new Date(RACE_AT).toLocaleDateString([], {
+          weekday: "long", month: "long", day: "numeric",
+        });
+      } catch (e) { /* keep the markup's fallback */ }
+
+      function pad(n, len) {
+        var s = String(Math.max(0, Math.floor(n)));
+        len = len || 2;
+        while (s.length < len) s = "0" + s;
+        return s;
+      }
+
+      function clockParts(ms) {
+        var t = Math.max(0, Math.floor(ms));
+        return {
+          main: pad(Math.floor(t / 60000)) + ":" + pad(Math.floor((t % 60000) / 1000)),
+          ms: "." + pad(t % 1000, 3),
+        };
+      }
+
+      function shortTime(ms) {
+        var t = Math.max(0, Math.round(ms));
+        return Math.floor(t / 60000) + ":" + pad(Math.floor((t % 60000) / 1000)) +
+          "." + Math.floor((t % 1000) / 100);
+      }
+
+      function showLive() {
+        if (pre.hidden && !live.hidden) return;
+        pre.hidden = true;
+        live.hidden = false;
+        document.body.classList.remove("tv-final");
+      }
+
+      function showPre() {
+        if (live.hidden && !pre.hidden) return;
+        live.hidden = true;
+        pre.hidden = false;
+      }
+
+      function paceFor(ms) {
+        var paceMs = Math.max(0, ms) / 3.10686;
+        return Math.floor(paceMs / 60000) + ":" + pad(Math.floor((paceMs % 60000) / 1000));
+      }
+
+      /* Finishers, fastest first. The organizer writes name and bib onto every
+         results entry, so the display needs nothing but the results node. */
+      function finisherList() {
+        var results = tv.results || {};
+        var list = [];
+        for (var id in results) {
+          var r = results[id];
+          if (r && r.finishTime != null && !r.dnf) {
+            list.push({
+              id: id,
+              name: String(r.name || "Runner"),
+              bib: String(r.bibNumber || ""),
+              time: r.finishTime,
+            });
+          }
+        }
+        list.sort(function (a, b) { return a.time - b.time; });
+        return list;
+      }
+
+      var announced = {};        // id -> finish time already celebrated
+      var baselineDone = false;  // the first payload just sets the baseline
+      var finishQueue = [];
+      var showingFinish = false;
+
+      function showNextFinish() {
+        if (showingFinish) return;
+        var next = finishQueue.shift();
+        if (!next) return;
+        showingFinish = true;
+
+        var parts = clockParts(next.time);
+        finishEyebrow.textContent = "Finisher · Place " + next.place;
+        finishName.textContent = next.name;
+        finishMain.textContent = parts.main;
+        finishMs.textContent = parts.ms;
+        finishMeta.textContent = (next.bib ? "Bib " + next.bib + " · " : "") +
+          paceFor(next.time) + " /mi";
+        finishEl.classList.add("show");
+
+        setTimeout(function () {
+          finishEl.classList.remove("show");
+          setTimeout(function () {
+            showingFinish = false;
+            showNextFinish();
+          }, 480);
+        }, 7000);
+      }
+
+      function announceFinishers() {
+        if (tv.results == null) return;
+        var list = finisherList();
+
+        // Opening the display mid-race should not replay the whole field.
+        if (!baselineDone) {
+          baselineDone = true;
+          for (var i = 0; i < list.length; i++) announced[list[i].id] = list[i].time;
+          return;
+        }
+
+        var fresh = [];
+        for (var j = 0; j < list.length; j++) {
+          var f = list[j];
+          if (announced[f.id] === f.time) continue;
+          announced[f.id] = f.time;
+          fresh.push({ name: f.name, bib: f.bib, time: f.time, place: j + 1 });
+        }
+        if (!fresh.length) return;
+
+        finishQueue = finishQueue.concat(fresh);
+        showNextFinish();
+      }
+
+      function renderFooter() {
+        var finishers = finisherList();
+
+        var count = String(finishers.length);
+        if (finishersEl.textContent !== count) finishersEl.textContent = count;
+
+        var leader = finishers.length
+          ? shortTime(finishers[0].time) + " · " + finishers[0].name.slice(0, 22)
+          : "—";
+        if (leaderEl.textContent !== leader) leaderEl.textContent = leader;
+      }
+
+      function tick() {
+        var now = Date.now();
+        var clock = tv.clock || {};
+        var started = clock.raceStart != null;
+
+        if (started) {
+          showLive();
+          var frozen = clock.paused && clock.pausedAt;
+          var ms = frozen
+            ? Math.max(0, clock.pausedAt - clock.raceStart)
+            : Math.max(0, now - clock.raceStart);
+          var parts = clockParts(ms);
+          clockMain.textContent = parts.main;
+          clockMs.textContent = parts.ms;
+          liveState.textContent = clock.paused ? "RACE PAUSED" : clock.running ? "RACE IN PROGRESS" : "RACE COMPLETE";
+          liveState.classList.toggle("alert", !!clock.paused);
+        } else if (now >= RACE_AT) {
+          // Race morning with no live clock yet: count up from the gun.
+          showLive();
+          var fell = clockParts(now - RACE_AT);
+          clockMain.textContent = fell.main;
+          clockMs.textContent = fell.ms;
+          liveState.textContent = "RACE IN PROGRESS";
+          liveState.classList.remove("alert");
+        } else {
+          showPre();
+          var diff = RACE_AT - now;
+          daysEl.textContent = pad(Math.floor(diff / 86400000));
+          hoursEl.textContent = pad(Math.floor(diff / 3600000) % 24);
+          minsEl.textContent = pad(Math.floor(diff / 60000) % 60);
+          secsEl.textContent = pad(Math.floor(diff / 1000) % 60);
+          var today = new Date(now).toDateString() === new Date(RACE_AT).toDateString();
+          stateEl.textContent = today ? "RACE STARTS TODAY IN" : "RACE STARTS IN";
+          document.body.classList.toggle("tv-final", diff <= 10000);
+        }
+
+        renderFooter();
+        announceFinishers();
+      }
+
+      tick();
+      setInterval(tick, 100);
+
+      /* ---------- full screen, wake lock, cursor ---------- */
+      function toggleFullscreen() {
+        try {
+          if (document.fullscreenElement) document.exitFullscreen();
+          else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+        } catch (e) { /* the browser declined; the page still fills the screen */ }
+      }
+
+      /* ---------- screen wake lock: the TV cannot sleep mid-race ----------
+         A screen that dims or sleeps loses the race clock and the finisher
+         pop-ups, so the display asks the OS to stay awake. The OS drops that
+         lock for reasons no page controls (the screen going off, a power
+         save, an input switch), so it is taken again whenever it is released
+         and retried on a timer while the page is up. The footer says which
+         state it is in, and where the browser will not grant a lock at all it
+         says so instead of pretending the display is safe. */
+      var WAKE_RETRY_MS = 8000;
+      var wakeLock = null, wakeRetry = null, wakeWarned = false;
+
+      function paintAwake(state) {
+        var pill = el("tvAwake"), text = el("tvAwakeText");
+        if (pill) pill.setAttribute("data-state", state);
+        if (!text) return;
+        text.textContent =
+          state === "held" ? "Screen awake"
+            : state === "retrying" ? "Re-taking screen lock"
+              : state === "blocked" ? "Screen lock refused — set TV sleep to Never"
+                : state === "unsupported" ? "Set TV sleep to Never"
+                  : "Screen lock…";
+        if (pill) {
+          pill.title = state === "held"
+            ? "The display has asked this device to stay awake"
+            : state === "retrying"
+              ? "The device dropped the lock — asking again"
+              : "This browser will not hold the screen awake: turn off the display's own sleep timer";
+        }
+      }
+
+      function scheduleWakeRetry() {
+        if (wakeRetry) return;
+        wakeRetry = setTimeout(function () { wakeRetry = null; holdWakeLock(); }, WAKE_RETRY_MS);
+      }
+
+      function holdWakeLock() {
+        if (!("wakeLock" in navigator) || !navigator.wakeLock || !navigator.wakeLock.request) {
+          paintAwake("unsupported");
+          return;
+        }
+        // A request only succeeds in a visible document, and asking twice
+        // would leave the first lock untracked.
+        if (wakeLock || document.hidden) return;
+        try {
+          navigator.wakeLock.request("screen").then(function (lock) {
+            if (document.hidden) { try { lock.release(); } catch (e) {} return; }
+            wakeLock = lock;
+            paintAwake("held");
+            lock.addEventListener("release", function () {
+              if (wakeLock === lock) wakeLock = null;
+              paintAwake("retrying");
+              scheduleWakeRetry();
+            });
+          }).catch(function (err) {
+            if (!wakeWarned) { wakeWarned = true; console.warn("screen wake lock unavailable", err); }
+            paintAwake("blocked");
+            scheduleWakeRetry();
+          });
+        } catch (e) {
+          paintAwake("unsupported");
+        }
+      }
+
+      document.addEventListener("click", function (event) {
+        if (event.target.closest && event.target.closest("a, button")) return;
+        if (!document.fullscreenElement) toggleFullscreen();
+        holdWakeLock();
+      });
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "f" || event.key === "F") toggleFullscreen();
+      });
+      // Safari only grants a lock from a user gesture; a tap is the moment to
+      // ask again rather than wait for the retry timer.
+      document.addEventListener("pointerdown", function () { holdWakeLock(); }, true);
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) { holdWakeLock(); tick(); }
+      });
+      window.addEventListener("pageshow", function () { holdWakeLock(); });
+      holdWakeLock();
+
+      var idleTimer = null;
+      function wakeCursor() {
+        document.body.classList.remove("tv-idle");
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(function () { document.body.classList.add("tv-idle"); }, 2500);
+      }
+      ["mousemove", "touchstart", "keydown"].forEach(function (name) {
+        document.addEventListener(name, wakeCursor, { passive: true });
+      });
+      wakeCursor();
+    })();
+  </script>
+
+  <script>
+    /* ---------- Scenery: the course photographs, falling leaves and pine needles ----------
+       Everything is a local file, so a TV with no signal still shows the race.
+       leaf1.png is the maple leaf the homepage uses, tinted into the race's
+       rust, amber and pine palette; leaf2.png and leaf3.png are the repository's
+       pine-needle photographs, which fall faster and tumble end over end. */
+    (function () {
+      "use strict";
+
+      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var photos = document.querySelectorAll(".tv-photo");
+
+      if (photos.length > 1 && !reduceMotion) {
+        var index = 0;
+        setInterval(function () {
+          photos[index].classList.remove("on");
+          index = (index + 1) % photos.length;
+          photos[index].classList.add("on");
+        }, 14000);
+      }
+
+      var canvas = document.getElementById("tvLeaves");
+      if (!canvas || reduceMotion) return;
+      var ctx = canvas.getContext("2d");
+
+      var LEAF_SRC = "images/leaf1.png";
+      var NEEDLE_SRC = ["images/leaf2.png", "images/leaf3.png"];
+      var TINTS = ["#e0904a", "#c8542c", "#dfae45", "#9dbb5f"];
+      var leafSprites = [];
+      var needleSprites = [];
+      var leaves = [];
+      var width = 0, height = 0, dpr = 1, running = false;
+
+      var leafImage = new Image();
+      leafImage.src = LEAF_SRC;
+      var needleImages = NEEDLE_SRC.map(function (src) {
+        var img = new Image();
+        img.src = src;
+        return img;
+      });
+      var sources = [leafImage].concat(needleImages);
+      var settled = 0;
+
+      function buildSprites() {
+        var box = 160;
+
+        if (leafImage.naturalWidth) {
+          var scale = Math.min(box / leafImage.naturalWidth, box / leafImage.naturalHeight);
+          var w = leafImage.naturalWidth * scale;
+          var h = leafImage.naturalHeight * scale;
+
+          TINTS.forEach(function (tint) {
+            var sprite = document.createElement("canvas");
+            sprite.width = box;
+            sprite.height = box;
+            var c = sprite.getContext("2d");
+            c.drawImage(leafImage, (box - w) / 2, (box - h) / 2, w, h);
+            // Keep the veins and shading, wash the colour towards the palette.
+            c.globalCompositeOperation = "source-atop";
+            c.globalAlpha = 0.72;
+            c.fillStyle = tint;
+            c.fillRect(0, 0, box, box);
+            leafSprites.push({ img: sprite, aspect: 1 });
+          });
+          leafSprites.push({ img: leafImage, aspect: 1 });
+        }
+
+        // The needles lie corner to corner across a wide canvas, so keep their
+        // own shape instead of forcing them into a square. Pines drop needles
+        // in little fascicles, so some sprites are a fan of three.
+        function needleSprite(img, cluster) {
+          if (!cluster) return { img: img, aspect: img.naturalHeight / img.naturalWidth };
+
+          var boxW = 300, boxH = 200;
+          var sprite = document.createElement("canvas");
+          sprite.width = boxW;
+          sprite.height = boxH;
+          var c = sprite.getContext("2d");
+          c.translate(boxW / 2, boxH / 2);
+          var w = boxW * 0.92;
+          var h = w * (img.naturalHeight / img.naturalWidth);
+          [-0.16, 0, 0.16].forEach(function (angle, i) {
+            c.save();
+            c.rotate(angle);
+            c.globalAlpha = 0.9;
+            c.drawImage(img, -w / 2, -h / 2 + (i - 1) * 2, w, h);
+            c.restore();
+          });
+          return { img: sprite, aspect: boxH / boxW };
+        }
+
+        var needles = needleImages.filter(function (img) { return img.naturalWidth; });
+        needles.forEach(function (img) { needleSprites.push(needleSprite(img, false)); });
+        if (needles[0]) needleSprites.push(needleSprite(needles[0], true));
+      }
+
+      function sizeCanvas() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var rect = canvas.getBoundingClientRect();
+        width = rect.width || window.innerWidth;
+        height = rect.height || window.innerHeight;
+        canvas.width = Math.max(1, Math.round(width * dpr));
+        canvas.height = Math.max(1, Math.round(height * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function makeLeaf(inView) {
+        var depth = 0.45 + Math.random() * 0.75; // far pieces: smaller, softer, slower
+        var useNeedle = needleSprites.length > 0 && (leafSprites.length === 0 || Math.random() < 0.45);
+        var pool = useNeedle ? needleSprites : leafSprites;
+        var sprite = pool[Math.floor(Math.random() * pool.length)];
+        if (!sprite) return null;
+
+        var common = {
+          sprite: sprite.img,
+          x: Math.random() * width,
+          y: inView ? Math.random() * height : -80 - Math.random() * 160,
+          rot: Math.random() * Math.PI * 2,
+          sway: Math.random() * Math.PI * 2,
+          flip: Math.random() < 0.5 ? -1 : 1,
+        };
+
+        if (useNeedle) {
+          // A needle is long, light and quick: it drops faster than a leaf,
+          // drifts less on the air and tumbles end over end.
+          var needleW = (108 + Math.random() * 96) * depth;
+          common.w = needleW;
+          common.h = needleW * sprite.aspect;
+          common.vy = (30 + Math.random() * 32) * depth;
+          common.vx = (Math.random() - 0.5) * 14 * depth;
+          common.spin = (Math.random() - 0.5) * 1.5;
+          common.swayRate = 0.5 + Math.random() * 0.8;
+          common.swayAmp = 8 + Math.random() * 8;
+          common.alpha = 0.42 + depth * 0.38;
+          return common;
+        }
+
+        var size = (18 + Math.random() * 34) * depth;
+        common.w = size;
+        common.h = size * 0.86;
+        common.vy = (14 + Math.random() * 26) * depth;
+        common.vx = (Math.random() - 0.5) * 10 * depth;
+        common.spin = (Math.random() - 0.5) * 0.55;
+        common.swayRate = 0.4 + Math.random() * 0.5;
+        common.swayAmp = 22;
+        common.alpha = 0.3 + depth * 0.45;
+        return common;
+      }
+
+      function populate() {
+        var count = width < 760 ? 12 : Math.round(Math.min(34, width / 48));
+        leaves = [];
+        for (var i = 0; i < count; i++) {
+          var piece = makeLeaf(true);
+          if (piece) leaves.push(piece);
+        }
+      }
+
+      var last = 0;
+      function frame(now) {
+        var dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016;
+        last = now;
+        ctx.clearRect(0, 0, width, height);
+
+        for (var i = 0; i < leaves.length; i++) {
+          var l = leaves[i];
+          l.sway += l.swayRate * dt;
+          l.y += l.vy * dt;
+          l.x += (l.vx + Math.sin(l.sway) * l.swayAmp) * dt;
+          l.rot += l.spin * dt;
+
+          if (l.y > height + 90) {
+            var next = makeLeaf(false);
+            if (!next) continue;
+            next.y = -90 - Math.random() * 140;
+            leaves[i] = next;
+            continue;
+          }
+          if (l.x < -100) l.x = width + 100;
+          else if (l.x > width + 100) l.x = -100;
+
+          ctx.save();
+          ctx.globalAlpha = l.alpha;
+          ctx.translate(l.x, l.y);
+          ctx.rotate(l.rot);
+          ctx.scale(l.flip, 1);
+          ctx.drawImage(l.sprite, -l.w / 2, -l.h / 2, l.w, l.h);
+          ctx.restore();
+        }
+        requestAnimationFrame(frame);
+      }
+
+      function start() {
+        if (running) return;
+        running = true;
+        sizeCanvas();
+        populate();
+        requestAnimationFrame(frame);
+      }
+
+      function settle() {
+        if (++settled < sources.length) return;
+        buildSprites();
+        // No artwork at all (offline, blocked): the photos still carry the scene.
+        if (leafSprites.length || needleSprites.length) start();
+        else canvas.style.display = "none";
+      }
+
+      sources.forEach(function (img) {
+        if (img.complete) settle();
+        else {
+          img.addEventListener("load", settle, { once: true });
+          img.addEventListener("error", settle, { once: true });
+        }
+      });
+
+      var resizeTimer;
+      window.addEventListener("resize", function () {
+        if (!running) return;
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+          sizeCanvas();
+          populate();
+        }, 200);
+      });
+    })();
+  </script>
+
+  <script type="module">
+    // Live race clock and finisher strip. If the CDN or the network is down
+    // this import fails; the plain script above has already drawn the clock,
+    // so the display keeps working on the device's own time.
+    try {
+      const { subscribe } = await import("./race-core.js");
+      const tv = window.__brightonTv;
+      subscribe("raceClock", (value) => { tv.clock = value || null; });
+      subscribe("results", (value) => { tv.results = value || null; });
+    } catch (err) {
+      console.warn("[countdown] live sync unavailable — using the device clock", err);
+    }
+  </script>
+</body>
+</html>

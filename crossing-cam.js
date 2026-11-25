@@ -7,27 +7,43 @@
    it — the organizer writes those down and matches them afterwards, so
    an unreadable or misread number can never corrupt a recorded time.
 
-   The maths (motion profile, blob pick, crossing interpolation) is pure
-   so it can be unit-tested; only `CrossingCam` touches the DOM.
+   The detector works on movement, not on a pose: every 90 ms it compares
+   the frame with a slowly-adapting background, turns the changed pixels
+   into a per-column motion profile, and follows the heaviest body-shaped
+   run of columns. When that body's centre passes the finish line, the
+   crossing moment is interpolated between the two frames.
+
+   It is deliberately forgiving, because a missed crossing costs a runner
+   a finish time:
+     · the change threshold rises with the scene's own noise, so a dim
+       finish area in the evening is not silently treated as "no motion";
+     · the whole runner band is watched, not just a chest strip, so a
+       camera mounted a little high or low still sees the body;
+     · a run of columns only has to be body-sized, not torso-shaped;
+     · the track survives up to six frames (~0.5 s) without a blob, so a
+       pacer's shoulder, a spectator or a light change cannot swallow a
+       runner at the line.
+
+   The maths (motion profile, blob pick, track and crossing interpolation)
+   is pure so it can be unit-tested; only `CrossingCam` touches the DOM.
    ============================================================ */
 
-/* Vertical slice of the frame that is watched. Runners cross anywhere in
-   the middle of the picture, so ignore the sky/top edge and the strip of
-   foreground that a tripod usually catches. */
-const BAND = { y0: 0.06, y1: 0.98 };
+/* Where a runner can be. Ignore the sky / top edge and the strip of
+   foreground a tripod usually catches. */
+export const BODY_BAND = { y0: 0.06, y1: 0.98 };
 
-/* The strip that actually decides the finish: a finish is the moment the
-   athlete's *chest* breaks the line, so only a horizontal band at chest
-   height is watched. A trailing foot, a swinging hand or a head bobbing
-   above the band cannot stamp a time on its own, and the timestamp is the
-   moment the torso arrives rather than whenever a limb happens to reach
-   the line. Defaults suit a phone at chest height ~10 ft from the line;
-   the organizer nudges it with the chest sliders until the band sits on
-   the bib. */
+/* The strip the finish is read from when a photo is annotated. The line is
+   vertical, so the crossing is decided by the body's horizontal centre
+   anywhere in the runner band; this strip only marks the torso on the photo. */
 export const CHEST_BAND = { y0: 0.36, y1: 0.62 };
-const MOTION_DIFF = 24; // grey levels of change that count as movement
-const ABSORB_TICKS = 25; // ~2.3 s of unchanging difference = a parked object
-const CHEST_FILL = 0.3; // share of the chest strip a body must cover to count
+
+const MOTION_FLOOR = 14; // grey levels a pixel must change by, in a quiet room
+const MOTION_CEILING = 46; // …and never more than this, however noisy the scene
+const NOISE_GAIN = 3.5; // threshold = frame noise × this
+const ABSORB_TICKS = 40; // ~3.6 s of unchanging difference = a parked object
+const MIN_FILL = 0.1; // share of the band height a body must cover
+const TRACK_HOLD = 6; // frames of lost view a track survives
+const SETTLE_TICKS = 5; // frames ignored while the camera settles its exposure
 
 /** Grayscale copy of an RGBA buffer (floats, for smooth background blending). */
 export function toGray(rgba, w, h) {
@@ -39,10 +55,38 @@ export function toGray(rgba, w, h) {
 }
 
 /**
+ * How much two frames differ anyway: the median absolute change over a
+ * sample of pixels. Wind in the trees, sensor noise and a flickering light
+ * all raise this floor, so they raise the motion threshold instead of
+ * masquerading as runners.
+ */
+export function frameNoise(prev, cur, sampleStep = 11) {
+  if (!prev || !cur || !prev.length) return 0;
+  const diffs = [];
+  for (let i = 0; i < prev.length; i += Math.max(1, sampleStep)) {
+    const d = cur[i] - prev[i];
+    diffs.push(d < 0 ? -d : d);
+  }
+  if (!diffs.length) return 0;
+  diffs.sort((a, b) => a - b);
+  return diffs[diffs.length >> 1];
+}
+
+/** Grey levels a pixel must change by to count as movement in this scene. */
+export function motionThreshold(noise, {
+  floor = MOTION_FLOOR,
+  ceiling = MOTION_CEILING,
+  gain = NOISE_GAIN,
+} = {}) {
+  const scaled = (Number(noise) || 0) * gain;
+  return Math.min(ceiling, Math.max(floor, scaled));
+}
+
+/**
  * Per-column count of pixels that changed between two grayscale frames.
  * A runner crossing the frame shows up as a tall, narrow ridge of columns.
  */
-export function columnMotion(prev, cur, w, h, band = BAND, threshold = MOTION_DIFF) {
+export function columnMotion(prev, cur, w, h, band = BODY_BAND, threshold = MOTION_FLOOR) {
   const cols = new Float32Array(w);
   const y0 = Math.max(0, Math.floor(h * band.y0));
   const y1 = Math.min(h, Math.ceil(h * band.y1));
@@ -59,10 +103,11 @@ export function columnMotion(prev, cur, w, h, band = BAND, threshold = MOTION_DI
 
 /**
  * Heaviest contiguous run of active columns — i.e. one runner rather than
- * "somewhere in this crowd". Small gaps (a dark jacket seam, a gap between
- * legs) are tolerated so a single body does not split into two blobs.
+ * "somewhere in this crowd". Gaps (a dark jacket seam, the space between
+ * legs, a stripe on a shirt) are tolerated so one body does not split into
+ * two blobs and lose the line between them.
  */
-export function dominantBlob(cols, { minColumn = 6, minWidth = 3, maxGap = 2 } = {}) {
+export function dominantBlob(cols, { minColumn = 6, minWidth = 3, maxGap = 3 } = {}) {
   let best = null;
   let start = -1;
   let mass = 0;
@@ -100,7 +145,7 @@ export function dominantBlob(cols, { minColumn = 6, minWidth = 3, maxGap = 2 } =
 }
 
 /**
- * Did the tracked object pass the line between two samples? Returns the
+ * Did the tracked body pass the line between two samples? Returns the
  * interpolated moment (finer than the frame interval) plus the direction.
  * A sample sitting exactly on the line counts as crossed, which is what
  * keeps a runner landing on the pixel from being silently skipped.
@@ -121,6 +166,46 @@ export function crossedLine(prevCenter, center, lineX, prevAt, now) {
   };
 }
 
+/** A body first seen in the band. `last` is the most recent sighting. */
+export function createTrack(center, at) {
+  return { first: center, last: center, lastAt: at, ticks: 1, missed: 0 };
+}
+
+/**
+ * One frame of tracking, pure so the field cases can be tested without a
+ * camera: give it the track, where the body is now (`null` when nothing was
+ * found) and the line, and it returns the updated track plus a crossing if
+ * this frame is the one that crossed.
+ *
+ * `null` does *not* throw the track away straight away — a runner behind a
+ * sign, a brief auto-exposure hunt or a blob that thins out for one frame
+ * would otherwise restart the approach and lose the crossing entirely. The
+ * track is held for `holdTicks` frames; if the body reappears past the line,
+ * the crossing is still stamped (interpolated across the gap).
+ */
+export function stepTrack(track, center, at, {
+  linePx,
+  minTravelPx = 0,
+  direction = "either",
+  holdTicks = TRACK_HOLD,
+} = {}) {
+  if (center == null || !Number.isFinite(center)) {
+    if (!track) return { track: null, cross: null };
+    const missed = track.missed + 1;
+    return { track: missed > holdTicks ? null : { ...track, missed }, cross: null };
+  }
+
+  if (!track) return { track: createTrack(center, at), cross: null };
+
+  const cross = crossedLine(track.last, center, linePx, track.lastAt, at);
+  const travelled = Math.abs(center - track.first);
+  const directionOk = direction === "either" || (cross && cross.direction === direction);
+  const next = { first: track.first, last: center, lastAt: at, ticks: track.ticks + 1, missed: 0 };
+
+  if (cross && directionOk && travelled >= minTravelPx) return { track: next, cross };
+  return { track: next, cross: null };
+}
+
 /**
  * Camera driver. Watches a video element, keeps a slowly-adapting background
  * model, and fires `onCross({ at, direction, x })` once per runner.
@@ -129,8 +214,8 @@ export function crossedLine(prevCenter, center, lineX, prevAt, now) {
  *   video, overlay          — elements
  *   now()                   — clock used for timestamps (pass the shared
  *                             race clock so two devices agree)
- *   onCross({ at, direction, x })
- *   onStatus({ state, motion, crossings })
+ *   onCross({ at, direction, x, frames })
+ *   onStatus({ state, motion, signal, tracking, center, crossings })
  *   onLineChange(lineX)
  */
 export class CrossingCam {
@@ -145,23 +230,31 @@ export class CrossingCam {
     this.direction = opts.direction || "either";
     this.lineX = opts.lineX ?? 0.5;
     this.sensitivity = opts.sensitivity ?? 1; // >1 = more sensitive
-    this.band = { ...(opts.band || CHEST_BAND) };
+    this.band = { ...(opts.band || BODY_BAND) };
+    this.chest = { ...(opts.chest || CHEST_BAND) };
 
-    this.workW = opts.workW ?? 240;      // analysis width (cheap but ample)
+    this.workW = opts.workW ?? 320;      // analysis width (cheap but detailed)
     this.intervalMs = opts.intervalMs ?? 90;
-    this.minTravel = opts.minTravel ?? 0.05; // of frame width, before a crossing counts
-    this.cooldownMs = opts.cooldownMs ?? 1200;
+    this.minTravel = opts.minTravel ?? 0.02; // of frame width, before a crossing counts
+    this.cooldownMs = opts.cooldownMs ?? 1000;
+    this.holdTicks = opts.holdTicks ?? TRACK_HOLD;
+    this.settleTicks = opts.settleTicks ?? SETTLE_TICKS;
 
     this.armed = false;
     this.crossings = 0;
+    this.lastSignal = 0;
 
     this._timer = null;
     this._bg = null;
+    this._still = null;
     this._track = null;
     this._busyUntil = 0;
     this._flashAt = -Infinity;
     this._blob = null;
     this._canvas = null;
+    this._settle = 0;
+    this._threshold = MOTION_FLOOR;
+
     this.photoWidth = opts.photoWidth ?? 960;     // identification quality
     this.photoQuality = opts.photoQuality ?? 0.72;
     this.labelFor = opts.labelFor || null;        // (at) => caption burned into the photo
@@ -188,10 +281,11 @@ export class CrossingCam {
     this._busyUntil = 0;
     this._preCanvas = null;
     this._preAt = 0;
+    this._settle = this.settleTicks;
     this.armed = true;
     this._timer = setInterval(this._tick, this.intervalMs);
     this._tick();
-    this.onStatus({ state: "armed", motion: 0, crossings: this.crossings });
+    this.onStatus({ state: "armed", motion: 0, signal: 0, tracking: false, crossings: this.crossings });
   }
 
   disarm() {
@@ -204,8 +298,9 @@ export class CrossingCam {
     this._blob = null;
     this._preCanvas = null;
     this._preAt = 0;
+    this.lastSignal = 0;
     this._drawOverlay(null);
-    this.onStatus({ state: "standby", motion: 0, crossings: this.crossings });
+    this.onStatus({ state: "standby", motion: 0, signal: 0, tracking: false, crossings: this.crossings });
   }
 
   destroy() {
@@ -227,15 +322,17 @@ export class CrossingCam {
   }
 
   /**
-   * Where the chest is. `center` is the height of the strap line as a
-   * fraction of the frame (0.49 = just below the middle), `thickness` how
-   * much of the body around it counts as chest.
+   * The vertical band runners can appear in: `top` and `bottom` as
+   * fractions of the frame (0.06 / 0.98 suits a phone on a tripod at the
+   * line). Everything outside it — sky, road, the tripod's own shadow — is
+   * never mistaken for a runner, and everything inside it is watched in
+   * full, so a camera pointing slightly high or low still times the race.
    */
-  setBand(center, thickness) {
-    const c = Math.min(0.9, Math.max(0.1, Number(center) || 0.49));
-    const t = Math.min(0.7, Math.max(0.08, Number(thickness) || 0.26));
-    const y0 = Math.max(0, Math.min(1 - t, c - t / 2));
-    this.band = { y0, y1: y0 + t };
+  setBand(top, bottom) {
+    const t = Math.min(0.95, Math.max(0, Number(top)));
+    const b = Math.min(1, Math.max(0.05, Number(bottom)));
+    const y0 = Math.min(t, b - 0.05);
+    this.band = { y0: Math.max(0, y0), y1: b };
     this._drawOverlay(this._blob);
   }
 
@@ -299,26 +396,25 @@ export class CrossingCam {
     return canvas;
   }
 
-  /** Chest strip + dashed finish line + race-time caption, scaled to the photo. */
+  /** Runner band + torso strip + dashed finish line + race-time caption. */
   _annotate(ctx, w, h, at) {
-    const bTop = Math.round(this.band.y0 * h);
-    const bBot = Math.round(this.band.y1 * h);
-    const lx = Math.round(this.lineX * w);
+    const lw = Math.max(1, Math.round(w / 640));
     ctx.save();
-    // the chest strip the finish was triggered by
-    ctx.strokeStyle = "rgba(255, 127, 17, 0.55)";
-    ctx.lineWidth = Math.max(1, Math.round(w / 640));
-    ctx.beginPath();
-    ctx.moveTo(0, bTop);
-    ctx.lineTo(w, bTop);
-    ctx.moveTo(0, bBot);
-    ctx.lineTo(w, bBot);
-    ctx.stroke();
+    ctx.strokeStyle = "rgba(255, 127, 17, 0.35)";
+    ctx.lineWidth = lw;
+    [this.band.y0, this.band.y1, this.chest.y0, this.chest.y1].forEach((y) => {
+      const py = Math.round(y * h);
+      ctx.beginPath();
+      ctx.moveTo(0, py);
+      ctx.lineTo(w, py);
+      ctx.stroke();
+    });
     // the finish line itself
     ctx.strokeStyle = "rgba(52, 211, 153, 0.92)";
     ctx.lineWidth = Math.max(2, Math.round(w / 240));
     const dash = Math.max(6, Math.round(w / 45));
     ctx.setLineDash([dash, Math.round(dash * 0.7)]);
+    const lx = Math.round(this.lineX * w);
     ctx.beginPath();
     ctx.moveTo(lx, 0);
     ctx.lineTo(lx, h);
@@ -387,8 +483,9 @@ export class CrossingCam {
       return;
     }
 
-    const now = this.now();
-    const cols = columnMotion(this._bg, gray, w, h, this.band);
+    // How much this scene moves on its own decides what counts as a runner.
+    this._threshold = motionThreshold(frameNoise(this._bg, gray));
+    const cols = columnMotion(this._bg, gray, w, h, this.band, this._threshold);
 
     // Background bookkeeping. Only *unchanged* pixels learn the new scene, so
     // a runner never paints a ghost trail behind themselves — a trail would
@@ -396,10 +493,10 @@ export class CrossingCam {
     // that stays different for ABSORB_TICKS without ever going quiet is not
     // motion at all (a parked pram, a bin, somebody waiting), so it is absorbed
     // instead of masking the next runner.
-    if (!this._still) this._still = new Uint8Array(this._bg.length);
+    if (!this._still || this._still.length !== this._bg.length) this._still = new Uint8Array(this._bg.length);
     for (let i = 0; i < this._bg.length; i++) {
       const d = gray[i] - this._bg[i];
-      if (d > -MOTION_DIFF && d < MOTION_DIFF) {
+      if (d > -this._threshold && d < this._threshold) {
         this._bg[i] += d * 0.15;
         this._still[i] = 0;
       } else if (++this._still[i] >= ABSORB_TICKS) {
@@ -408,40 +505,53 @@ export class CrossingCam {
       }
     }
 
-    const bandPx = Math.round(h * (this.band.y1 - this.band.y0));
-    const minColumn = Math.max(3, Math.round((bandPx * 0.05) / Math.max(0.4, this.sensitivity)));
-    let blob = dominantBlob(cols, { minColumn, minWidth: Math.max(3, Math.round(w * 0.02)) });
-    // A torso fills most of the chest strip. A hand or a foot passing through
-    // it only lights up a sliver, so it is dropped rather than tracked.
-    if (blob && blob.mass < CHEST_FILL * bandPx * blob.width) blob = null;
+    const rows = Math.max(1, Math.min(h, Math.ceil(h * this.band.y1)) - Math.max(0, Math.floor(h * this.band.y0)));
+    const minColumn = Math.max(2, Math.round((rows * 0.04) / Math.max(0.4, this.sensitivity)));
+    let blob = dominantBlob(cols, {
+      minColumn,
+      minWidth: Math.max(3, Math.round(w * 0.025)),
+      maxGap: Math.max(2, Math.round(w * 0.015)),
+    });
+    // A body covers a fair share of the band. A hand, a gust through a banner
+    // or a passing car only lights up a sliver, so it is not tracked.
+    if (blob && blob.mass < MIN_FILL * rows * blob.width) blob = null;
     this._blob = blob;
+    this.lastSignal = blob ? Math.min(1, (blob.mass / (rows * w)) * 5) : 0;
 
-    if (!blob) {
-      this._track = null;
+    const now = this.now();
+
+    // The first frames after arming are the camera settling its exposure;
+    // they would otherwise read as one big change and seed a false track.
+    if (this._settle > 0) {
+      this._settle--;
       this._drawOverlay(null);
-      this.onStatus({ state: this.armed ? "armed" : "standby", motion: 0, crossings: this.crossings });
+      this.onStatus({ state: this.armed ? "armed" : "standby", motion: 0, signal: 0, tracking: false, crossings: this.crossings });
       return;
     }
 
     const linePx = this.lineX * w;
-    if (!this._track) {
-      this._track = { first: blob.center, prev: blob.center, prevAt: now, ticks: 1 };
-      this._refreshPre(now); // the runner's approach, captured before the line
-      this._drawOverlay(blob);
-      this.onStatus({ state: "watching", motion: blob.mass, crossings: this.crossings });
+    const { track, cross } = stepTrack(this._track, blob ? blob.center : null, now, {
+      linePx,
+      minTravelPx: this.minTravel * w,
+      direction: this.direction,
+      holdTicks: this.holdTicks,
+    });
+    this._track = track;
+
+    if (!blob) {
+      this._drawOverlay(null);
+      this.onStatus({
+        state: this.armed ? "armed" : "standby",
+        motion: 0,
+        signal: 0,
+        tracking: false,
+        crossings: this.crossings,
+      });
       return;
     }
 
-    const cross = crossedLine(this._track.prev, blob.center, linePx, this._track.prevAt, now);
-    this._track.prev = blob.center;
-    this._track.prevAt = now;
-    this._track.ticks++;
-
-    const travelled = Math.abs(blob.center - this._track.first);
-    const directionOk = this.direction === "either" || cross?.direction === this.direction;
     let fired = false;
-
-    if (cross && directionOk && travelled >= this.minTravel * w && now >= this._busyUntil) {
+    if (cross && now >= this._busyUntil) {
       fired = true;
       this._busyUntil = now + this.cooldownMs;
       this._track = null; // one crossing per runner; wait for a fresh approach
@@ -462,7 +572,15 @@ export class CrossingCam {
     if (!fired) this._refreshPre(now);
 
     this._drawOverlay(blob);
-    this.onStatus({ state: "watching", motion: blob.mass, crossings: this.crossings });
+    this.onStatus({
+      state: "watching",
+      motion: blob.mass,
+      signal: this.lastSignal,
+      tracking: true,
+      center: blob.center / w,
+      threshold: this._threshold,
+      crossings: this.crossings,
+    });
   }
 
   /* ---- overlay ---- */
@@ -517,13 +635,13 @@ export class CrossingCam {
     const box = this._videoBox();
     if (!box.w) return;
 
-    // the chest strip — only a body filling this band can stamp a finish
+    // the runner band — everything inside it is watched in full
     const bandTop = box.y + box.h * this.band.y0;
     const bandH = box.h * (this.band.y1 - this.band.y0);
-    ctx.fillStyle = "rgba(255,127,17,0.09)";
+    ctx.fillStyle = "rgba(255,127,17,0.06)";
     ctx.fillRect(box.x, bandTop, box.w, bandH);
     ctx.save();
-    ctx.strokeStyle = "rgba(255,127,17,0.45)";
+    ctx.strokeStyle = "rgba(255,127,17,0.4)";
     ctx.lineWidth = 1;
     ctx.setLineDash([]);
     ctx.beginPath();
@@ -533,11 +651,26 @@ export class CrossingCam {
     ctx.lineTo(box.x + box.w, bandTop + bandH);
     ctx.stroke();
     ctx.restore();
+
+    // torso strip: where the finish photo records the chest
+    const chestTop = box.y + box.h * this.chest.y0;
+    const chestH = box.h * (this.chest.y1 - this.chest.y0);
     ctx.save();
-    ctx.fillStyle = "rgba(255,127,17,0.9)";
+    ctx.strokeStyle = "rgba(255,127,17,0.22)";
+    ctx.setLineDash([4, 5]);
+    ctx.beginPath();
+    ctx.moveTo(box.x, chestTop);
+    ctx.lineTo(box.x + box.w, chestTop);
+    ctx.moveTo(box.x, chestTop + chestH);
+    ctx.lineTo(box.x + box.w, chestTop + chestH);
+    ctx.stroke();
+    ctx.restore();
+    ctx.save();
+    ctx.fillStyle = "rgba(255,127,17,0.85)";
     ctx.font = "600 10px ui-monospace, SFMono-Regular, Menlo, monospace";
     ctx.textAlign = "left";
-    ctx.fillText("CHEST", box.x + 6, bandTop + bandH + 13);
+    ctx.fillText("RUNNERS", box.x + 6, bandTop + 12);
+    ctx.fillText("CHEST", box.x + 6, chestTop + chestH + 12);
     ctx.restore();
 
     // detected runner
@@ -556,7 +689,7 @@ export class CrossingCam {
     const lx = box.x + this.lineX * box.w;
     const flash = this.now() - this._flashAt < 600;
     ctx.save();
-    ctx.strokeStyle = flash ? "#ffffff" : this.armed ? "#34d399" : "#94a3b8";
+    ctx.strokeStyle = flash ? "#ffffff" : this.armed ? "#8fbf5e" : "#94a3b8";
     ctx.lineWidth = flash ? 4 : 2;
     ctx.setLineDash(flash ? [] : [10, 7]);
     ctx.beginPath();
@@ -566,7 +699,7 @@ export class CrossingCam {
     ctx.restore();
 
     ctx.save();
-    ctx.fillStyle = flash ? "#ffffff" : this.armed ? "#34d399" : "#94a3b8";
+    ctx.fillStyle = flash ? "#ffffff" : this.armed ? "#8fbf5e" : "#94a3b8";
     ctx.font = "600 11px ui-monospace, SFMono-Regular, Menlo, monospace";
     ctx.textAlign = "center";
     ctx.fillText("FINISH", lx, box.y + 16);

@@ -3,6 +3,9 @@ import {
   columnMotion,
   crossedLine,
   dominantBlob,
+  frameNoise,
+  motionThreshold,
+  stepTrack,
   toGray,
 } from "../crossing-cam.js";
 
@@ -111,38 +114,46 @@ describe("crossedLine", () => {
   });
 });
 
-describe("a runner walking across the frame", () => {
-  /* Mirrors the per-tick bookkeeping in CrossingCam._tick: a track keeps the
-     previous centre/time, fires once on a crossing, then waits for a fresh
-     approach. */
-  function runSequence(xs, lineX = 50, stepMs = 90) {
-    // Same background bookkeeping as CrossingCam._tick: only static pixels
-    // learn the scene, and anything different for ABSORB_TICKS is absorbed.
+describe("frameNoise / motionThreshold", () => {
+  test("a still scene sits on the floor", () => {
     const bg = frame(null);
-    const still = new Uint8Array(W * H);
+    expect(frameNoise(bg, bg)).toBe(0);
+    expect(motionThreshold(0)).toBe(14);
+  });
+
+  test("a scene that flickers raises the bar instead of faking movement", () => {
+    const bg = frame(null);
+    const windy = frame(null, 6, 128 + 6); // every pixel nudged 6 levels
+    expect(frameNoise(bg, windy)).toBe(6);
+    expect(motionThreshold(6)).toBe(21);
+  });
+
+  test("the bar never runs away with itself", () => {
+    expect(motionThreshold(200)).toBe(46);
+  });
+
+  test("a quiet scene still sees a real runner against the raised bar", () => {
+    const bg = frame(null);
+    const cur = frame(40);
+    const threshold = motionThreshold(frameNoise(bg, cur));
+    const cols = columnMotion(bg, cur, W, H, undefined, threshold);
+    expect(dominantBlob(cols, { minColumn: 6, minWidth: 3 }).width).toBe(6);
+  });
+});
+
+describe("stepTrack — a runner walking across the frame", () => {
+  /* Drives the same tracker CrossingCam._tick uses: one entry per frame, the
+     body's centre (or null when nothing was found) and the time. */
+  const LINE = 50;
+  function run(xs, opts = {}, stepMs = 90) {
     let track = null;
     const crossings = [];
     xs.forEach((x, i) => {
-      const cur = frame(x);
-      const cols = columnMotion(bg, cur, W, H);
-      for (let p = 0; p < bg.length; p++) {
-        const d = cur[p] - bg[p];
-        if (d > -24 && d < 24) { bg[p] += d * 0.15; still[p] = 0; }
-        else if (++still[p] >= 25) { bg[p] += d * 0.15; still[p] = 0; }
-      }
-      const blob = dominantBlob(cols, { minColumn: 6, minWidth: 3 });
-      const t = i * stepMs;
-      if (!blob) track = null;
-      else if (!track) track = { first: blob.center, prev: blob.center, prevAt: t };
-      else {
-        const c = crossedLine(track.prev, blob.center, lineX, track.prevAt, t);
-        track.prev = blob.center;
-        track.prevAt = t;
-        if (c && Math.abs(blob.center - track.first) >= 0.05 * W) {
-          crossings.push({ ...c, frame: i });
-          track = null;
-        }
-      }
+      const at = i * stepMs;
+      const center = x == null ? null : x + 3; // centre of the 6px body
+      const r = stepTrack(track, center, at, { linePx: LINE, minTravelPx: 5, ...opts });
+      track = r.track;
+      if (r.cross) crossings.push({ ...r.cross, frame: i });
     });
     return crossings;
   }
@@ -154,38 +165,59 @@ describe("a runner walking across the frame", () => {
   };
 
   test("fires exactly once, in the right direction", () => {
-    const crossings = runSequence(approach(20, 80, 2));
+    const crossings = run(approach(20, 80, 2));
     expect(crossings.length).toBe(1);
     expect(crossings[0].direction).toBe("ltr");
   });
 
   test("stamps a time within one frame of the real crossing", () => {
-    const crossing = runSequence(approach(20, 80, 2))[0];
+    const crossing = run(approach(20, 80, 2))[0];
     // centre is x+3, so it crosses 50 between x=46 (49) and x=48 (51)
     const trueAt = 14 * 90 - 45; // halfway between the two samples
     expect(Math.abs(crossing.at - trueAt)).toBeLessThan(90);
   });
 
   test("fires when travelling right-to-left too", () => {
-    const crossings = runSequence(approach(80, 20, -2));
+    const crossings = run(approach(80, 20, -2));
     expect(crossings.length).toBe(1);
     expect(crossings[0].direction).toBe("rtl");
   });
 
   test("a runner who stops short never records a finish", () => {
-    expect(runSequence(approach(20, 44, 2))).toEqual([]);
+    expect(run(approach(20, 44, 2))).toEqual([]);
   });
 
-  test("a stationary object beside the line never records a finish", () => {
-    // Same parked blob 200 frames running, with the line well clear of it.
+  test("a stationary object never records a finish", () => {
     const parked = Array.from({ length: 200 }, () => 60);
-    expect(runSequence(parked)).toEqual([]);
+    expect(run(parked)).toEqual([]);
   });
 
   test("two runners in a row are two crossings", () => {
     const gaps = [20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80];
     const none = [null, null, null]; // the runner leaves the frame between the two
-    const crossings = runSequence([...gaps, ...none, ...gaps]);
+    const crossings = run([...gaps, ...none, ...gaps]);
     expect(crossings.length).toBe(2);
+  });
+
+  test("a runner hidden for a couple of frames is still one finish", () => {
+    // 46 (just before the line) → two frames with no body → 55 (clearly past)
+    const crossings = run([46, null, null, 55]);
+    expect(crossings.length).toBe(1);
+    expect(crossings[0].direction).toBe("ltr");
+    expect(crossings[0].at).toBeGreaterThan(0);
+    expect(crossings[0].at).toBeLessThan(3 * 90);
+  });
+
+  test("a track lost for longer than the hold is dropped, not stamped late", () => {
+    const gone = Array.from({ length: 8 }, () => null);
+    const crossings = run([30, ...gone, 60]);
+    expect(crossings).toEqual([]);
+  });
+
+  test("a runner first seen right at the line still gets a time", () => {
+    // The detection starts one frame before the crossing: the old travel
+    // gate threw this away, which is exactly how a fast leader got missed.
+    const crossings = run([46, 52], { minTravelPx: 0 });
+    expect(crossings.length).toBe(1);
   });
 });
